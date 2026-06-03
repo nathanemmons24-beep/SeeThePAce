@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>SeeThePace - Sales Blitz Tracker</title>
+  <title>SeeThePace - Sales Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet"/>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -248,7 +248,7 @@
 
   <!-- HEADER -->
   <div id="header">
-    <div id="blitz-title">3-Day BLITZ</div>
+    <div id="blitz-title">3-Day Tracker</div>
     <div id="subtitle">RENEWAL BY ANDERSEN &mdash; SEETHEPACE.COM <span id="status-dot" class="loading">&bull; CONNECTING&hellip;</span></div>
   </div>
 
@@ -327,7 +327,7 @@
       <div class="hint">Columns: <strong>Store, Name, Score</strong></div>
     </div>
     <div class="admin-row">
-      <div class="admin-field"><label>BLITZ TITLE</label><input id="inp-title" type="text" value="3-Day BLITZ" oninput="autoSave()"/></div>
+      <div class="admin-field"><label>TITLE</label><input id="inp-title" type="text" value="3-Day Tracker" oninput="autoSave()"/></div>
       <div class="admin-field"><label>GOAL AMOUNT ($)</label><input id="inp-goal" type="text" value="500000" oninput="autoSave()"/></div>
     </div>
     <div id="admin-actions">
@@ -439,7 +439,7 @@
 
 var SHEET_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSCj5mTfE2UMOth-X_C8voZToabgP92fRNogyQHc4bxEB4AnSkm80TPEYYlWj6wvU2L37PaMA_GqC-/pub?gid=0&single=true&output=csv";
 var POLL_MS    = 10000;
-var ADMIN_PW   = "blitz2024";
+var ADMIN_PW   = "seethepace";
 var PALETTE    = ["#00D4FF","#00FF88","#FFD700","#FF6B35","#A855F7","#FF4EFF","#34D399","#F59E0B","#60A5FA","#FB7185"];
 var MILESTONES = [
   {value:0.10,label:"10%", icon:"\uD83D\uDD25",badge:"Ignition 10%",      color:"#FF6B35"},
@@ -541,7 +541,7 @@ var _saved = (function(){ try{ return JSON.parse(localStorage.getItem("blitz_set
 var state={
   sheetUrl: _saved.sheetUrl || SHEET_URL,
   goal:     _saved.goal     || 500000,
-  title:    _saved.title    || "3-Day BLITZ",
+  title:    _saved.title    || "3-Day Tracker",
   data:     SAMPLE,
   status:   "demo",
   lastUpdated: null
@@ -1348,7 +1348,7 @@ function showSpotlightCard(idx) {
 
   // Store rank badge
   var rankNum = idx + 1;
-  var rankLabel = rankNum===1?"#1 IN THE BLITZ":rankNum===2?"#2 IN THE BLITZ":"#"+rankNum+" IN THE BLITZ";
+  var rankLabel = rankNum===1?"#1 OVERALL":rankNum===2?"#2 OVERALL":"#"+rankNum+" OVERALL";
   var rankColor = rankNum===1?"#FFD700":rankNum===2?"#C0C0C0":"#CD7F32";
   var rb = document.getElementById("spotlight-rank-badge");
   rb.textContent = rankLabel;
