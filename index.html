@@ -485,18 +485,32 @@ var CLIPS = {
 };
 
 var AUDIO_READY = false;
+var _unlockAC = null;
 
 function unlockAudio(){
+  if (AUDIO_READY) return;
   AUDIO_READY = true;
-  var btn = document.getElementById("audio-banner");
-  if(btn) btn.style.display = "none";
-  console.log("Audio ready");
+  try {
+    // Safari REQUIRES a real AudioContext + silent buffer played on user gesture
+    _unlockAC = new (window.AudioContext || window.webkitAudioContext)();
+    if (_unlockAC.state === "suspended") _unlockAC.resume();
+    // Play silent buffer — this is the key unlock step for Safari/Mac
+    var buf = _unlockAC.createBuffer(1, 1, 22050);
+    var src = _unlockAC.createBufferSource();
+    src.buffer = buf;
+    src.connect(_unlockAC.destination);
+    src.start(0);
+    console.log("Audio unlocked. AC state:", _unlockAC.state);
+  } catch(e) {
+    console.warn("Audio unlock error:", e.message);
+  }
 }
 
 function playClip(badge, followupText, followupDelay){
   var b64str = CLIPS[badge];
   if(!b64str){ pSpeak(badge); return; }
   try{
+    // Always fresh AudioContext per clip — most reliable across all browsers
     var ac = new (window.AudioContext||window.webkitAudioContext)();
     if(ac.state==="suspended") ac.resume();
     var bin=atob(b64str),bytes=new Uint8Array(bin.length);
