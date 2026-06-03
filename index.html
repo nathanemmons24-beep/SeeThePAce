@@ -204,20 +204,25 @@
     /* Spotlight overlay */
     #spotlight-overlay {
       display: none;
-      position: fixed; inset: 0; z-index: 200;
-      background: rgba(0,0,0,0.88);
-      backdrop-filter: blur(4px);
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.92);
+      backdrop-filter: blur(6px);
       align-items: center; justify-content: center;
       flex-direction: column;
+      pointer-events: auto;
     }
     #spotlight-overlay.active { display: flex; }
     #spotlight-card {
       width: min(520px, 90vw);
       background: rgba(15,23,42,0.97);
       border-radius: 20px; overflow: hidden;
-      box-shadow: 0 0 80px var(--sp-color, #00D4FF), 0 0 160px var(--sp-color, #00D4FF44);
+      box-shadow: 0 0 80px var(--sp-color, #00D4FF), 0 0 160px rgba(0,212,255,0.2);
       border: 2px solid var(--sp-color, #00D4FF);
-      animation: badgePop 0.4s cubic-bezier(.34,1.56,.64,1) both;
+      animation: spCardIn 0.3s ease both;
+    }
+    @keyframes spCardIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
     }
     #spotlight-header {
       padding: 20px 24px; text-align: center;
