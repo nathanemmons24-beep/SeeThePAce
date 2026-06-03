@@ -672,10 +672,36 @@ function closeModal(){document.getElementById("modal-overlay").classList.remove(
 function checkPass(){var pw=document.getElementById("modal-pass").value;if(pw===ADMIN_PW||pw===""){closeModal();showAdminPanel();}else{document.getElementById("modal-pass").classList.add("error");document.getElementById("modal-error").style.display="block";}}
 function showAdminPanel(){document.getElementById("admin-panel").style.display="block";document.getElementById("top-bar").innerHTML='<button class="btn btn-back" onclick="hideAdminPanel()">\u2190 AUDIENCE VIEW</button>';}
 function hideAdminPanel(){document.getElementById("admin-panel").style.display="none";document.getElementById("top-bar").innerHTML='<button class="btn btn-admin" onclick="openAdmin()">ADMIN</button>';}
-function applySettings(){state.sheetUrl=document.getElementById("inp-url").value.trim()||state.sheetUrl;state.title=document.getElementById("inp-title").value.trim()||state.title;state.goal=parseFloat(document.getElementById("inp-goal").value.replace(/[^0-9.]/g,""))||state.goal;startPolling();}
+function applySettings(){state.sheetUrl=document.getElementById("inp-url").value.trim()||state.sheetUrl;state.title=document.getElementById("inp-title").value.trim()||state.title;state.goal=parseFloat(document.getElementById("inp-goal").value.replace(/[^0-9.]/g,""))||state.goal;saveSettings();startPolling();render();}
 function loadPasted(){var csv=document.getElementById("csv-paste").value.trim();if(!csv)return;var parsed=parseCsv(csv);if(parsed&&Object.keys(parsed.teams).length>0){checkBadgeUpgrades(parsed);state.data=parsed;state.status="live";state.lastUpdated=new Date().toLocaleTimeString()+" (manual)";render();resetCountdown();}}
 
 // \u2550\u2550 BOOT \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+// ══ SETTINGS PERSISTENCE ══════════════════════════════════════════════════════
+function saveSettings() {
+  try {
+    localStorage.setItem('blitz_settings', JSON.stringify({
+      sheetUrl: state.sheetUrl,
+      goal:     state.goal,
+      title:    state.title,
+    }));
+    console.log('Settings saved:', state.title, state.goal);
+  } catch(e) {}
+}
+
+function loadSettings() {
+  try {
+    var saved = localStorage.getItem('blitz_settings');
+    if (saved) {
+      var s = JSON.parse(saved);
+      if (s.sheetUrl) state.sheetUrl = s.sheetUrl;
+      if (s.goal)     state.goal     = s.goal;
+      if (s.title)    state.title    = s.title;
+      console.log('Settings loaded:', state.title, state.goal);
+    }
+  } catch(e) {}
+}
+
+loadSettings();
 renderBadgeLegend();
 render();
 startPolling();
