@@ -660,9 +660,10 @@ function playClip(badge, followupText, followupDelay){
   var b64str = CLIPS[badge];
   if(!b64str){ pSpeak(badge); return; }
   try{
-    // Use unlocked AC if available (Safari/Mac requires this), else create fresh
+    // Safari needs shared unlocked AC; Chrome works with fresh AC
+    var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     var ac;
-    if(_unlockAC && _unlockAC.state !== "closed") {
+    if(isSafari && _unlockAC && _unlockAC.state !== "closed") {
       ac = _unlockAC;
       if(ac.state === "suspended") ac.resume();
     } else {
@@ -688,8 +689,8 @@ function playClip(badge, followupText, followupDelay){
   }catch(e){ console.warn("playClip error:",e.message); }
 }
 
-function pTone(f,tp,d,g,t){g=g||0.3;t=t||0;var c=(_unlockAC&&_unlockAC.state!=="closed"&&_unlockAC.state!=="suspended")?_unlockAC:new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),v=c.createGain();o.connect(v);v.connect(c.destination);o.type=tp;o.frequency.setValueAtTime(f,c.currentTime+t);v.gain.setValueAtTime(0.001,c.currentTime+t);v.gain.linearRampToValueAtTime(g,c.currentTime+t+0.01);v.gain.exponentialRampToValueAtTime(0.001,c.currentTime+t+d);o.start(c.currentTime+t);o.stop(c.currentTime+t+d+0.05);setTimeout(function(){c.close();},( t+d+0.2)*1000);}
-function pNoise(d,g,t,b){g=g||0.15;t=t||0;b=b||1000;var c=(_unlockAC&&_unlockAC.state!=="closed"&&_unlockAC.state!=="suspended")?_unlockAC:new(window.AudioContext||window.webkitAudioContext)(),buf=c.createBuffer(1,c.sampleRate*d,c.sampleRate),data=buf.getChannelData(0);for(var i=0;i<data.length;i++)data[i]=Math.random()*2-1;var src=c.createBufferSource(),v=c.createGain(),flt=c.createBiquadFilter();flt.type="bandpass";flt.frequency.value=b;src.buffer=buf;src.connect(flt);flt.connect(v);v.connect(c.destination);v.gain.setValueAtTime(g,c.currentTime+t);v.gain.exponentialRampToValueAtTime(0.001,c.currentTime+t+d);src.start(c.currentTime+t);setTimeout(function(){c.close();},( t+d+0.2)*1000);}
+function pTone(f,tp,d,g,t){g=g||0.3;t=t||0;var _sf=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);var c=(_sf&&_unlockAC&&_unlockAC.state==="running")?_unlockAC:new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),v=c.createGain();o.connect(v);v.connect(c.destination);o.type=tp;o.frequency.setValueAtTime(f,c.currentTime+t);v.gain.setValueAtTime(0.001,c.currentTime+t);v.gain.linearRampToValueAtTime(g,c.currentTime+t+0.01);v.gain.exponentialRampToValueAtTime(0.001,c.currentTime+t+d);o.start(c.currentTime+t);o.stop(c.currentTime+t+d+0.05);setTimeout(function(){c.close();},( t+d+0.2)*1000);}
+function pNoise(d,g,t,b){g=g||0.15;t=t||0;b=b||1000;var _sf=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);var c=(_sf&&_unlockAC&&_unlockAC.state==="running")?_unlockAC:new(window.AudioContext||window.webkitAudioContext)(),buf=c.createBuffer(1,c.sampleRate*d,c.sampleRate),data=buf.getChannelData(0);for(var i=0;i<data.length;i++)data[i]=Math.random()*2-1;var src=c.createBufferSource(),v=c.createGain(),flt=c.createBiquadFilter();flt.type="bandpass";flt.frequency.value=b;src.buffer=buf;src.connect(flt);flt.connect(v);v.connect(c.destination);v.gain.setValueAtTime(g,c.currentTime+t);v.gain.exponentialRampToValueAtTime(0.001,c.currentTime+t+d);src.start(c.currentTime+t);setTimeout(function(){c.close();},( t+d+0.2)*1000);}
 
 function pSpeak(txt,rate,pitch){
   if(!window.speechSynthesis)return;
