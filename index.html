@@ -1191,14 +1191,7 @@ function runScroll() {
 loadSettings();
 renderBadgeLegend();
 render();
-// Fet/// Fetch settings from Google Sheet ONCE then start polling data
-fetchSettings().then(function() {
-  render();
-}).catch(function(){}).finally(function() {
-  startPolling();
-  resetCountdown();
-});
-// Fetch settings from Google Sheet ONCE, then start polling data
+// Fetch settings once, then start polling — single call only
 fetchSettings().then(function() {
   render();
 }).catch(function(){}).finally(function() {
