@@ -240,6 +240,18 @@
     </div>
   </div>
 
+  <!-- DAY BREAKDOWN -->
+  <div id="day-breakdown" style="display:none;background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 20px;backdrop-filter:blur(14px);margin-bottom:20px">
+    <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:2px;margin-bottom:12px">&#x1F4C5; DAY BY DAY</h3>
+    <div id="day-bars"></div>
+  </div>
+
+  <!-- BIGGEST MOVER -->
+  <div id="biggest-mover" style="display:none;background:rgba(15,23,42,0.75);border:1px solid rgba(0,212,255,0.2);border-radius:14px;padding:14px 20px;backdrop-filter:blur(14px);margin-bottom:20px">
+    <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#00D4FF;letter-spacing:2px;margin-bottom:8px">&#x1F680; BIGGEST MOVER TODAY</h3>
+    <div id="mover-content"></div>
+  </div>
+
   <!-- STORE RANKINGS -->
   <div id="store-rankings">
     <h3>&#x1F3C6; STORE RANKINGS</h3>
@@ -805,7 +817,7 @@ function render(){
       var name=e[0],t=e[1],display=name.includes(" - ")?name.split(" - ").slice(1).join(" "):name,num=name.split(" - ")[0];
       var card=document.createElement("div"); card.className="team-card";
       card.style.border=(isTopStore?"2px solid #FFD700":"1px solid "+t.color+"2A");
-      card.style.boxShadow=isTopStore?"0 0 30px rgba(255,215,0,0.55),0 0 70px rgba(255,215,0,0.25),0 0 120px rgba(255,215,0,0.1)":"0 0 30px "+t.color+"14";
+      card.style.boxShadow="0 0 30px "+t.color+"14";
       var repsHTML="";
       t.reps.forEach(function(rep,i){
         var rank=i+1,badge=getBadge(rep.amount),isTop=rank===1;
@@ -1658,5 +1670,23 @@ fetchSettings().then(function() {
 
 
 </script>
+<!-- MENU -->
+<div id="menu-btn-wrap" style="position:fixed;bottom:20px;right:20px;z-index:600">
+  <button id="menu-toggle" onclick="toggleMenu()" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#4F46E5);border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.5);display:flex;align-items:center;justify-content:center;transition:transform 0.3s">&#x2630;</button>
+  <div id="menu-panel" style="display:none;position:absolute;bottom:60px;right:0;background:rgba(10,18,35,0.97);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:8px;width:200px;box-shadow:0 8px 40px rgba(0,0,0,0.6);backdrop-filter:blur(20px)">
+    <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">CONTROLS</div>
+    <button class="menu-item" onclick="openAdmin();toggleMenu()">&#x2699; ADMIN</button>
+    <button class="menu-item" onclick="startSpotlight();toggleMenu()">&#x2605; SPOTLIGHT</button>
+    <button class="menu-item" onclick="toggleFullscreen();toggleMenu()">&#x26F6; FULLSCREEN</button>
+    <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>
+    <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FULLSCREEN ONLY</div>
+    <button class="menu-item" id="scroll-btn" onclick="toggleScroll()">&#x2B06;&#x2B07; AUTO SCROLL</button>
+    <button class="menu-item" id="bigfont-btn" onclick="toggleBigFont()">&#x1F4FA; TV MODE</button>
+  </div>
+</div>
+
+<!-- CONFETTI -->
+<canvas id="confetti-canvas" style="position:fixed;inset:0;z-index:9997;pointer-events:none;display:none"></canvas>
+
 </body>
 </html>
