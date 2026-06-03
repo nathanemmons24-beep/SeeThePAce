@@ -33,14 +33,42 @@
     .streak-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700;background:rgba(255,80,0,0.2);border:1px solid rgba(255,80,0,0.5);color:#FF5000;margin-left:6px;white-space:nowrap}
 
     /* Spotlight */
-    #spotlight-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.92);backdrop-filter:blur(6px);align-items:center;justify-content:center;flex-direction:column;pointer-events:auto}
+    #spotlight-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(4,8,18,0.97);backdrop-filter:blur(8px);flex-direction:column;pointer-events:auto;overflow-y:auto}
+    #spotlight-overlay.active{display:flex;align-items:flex-start;justify-content:center}
+    #sp-top-bar{position:sticky;top:0;z-index:10;background:rgba(4,8,18,0.97);border-bottom:1px solid rgba(255,255,255,0.07);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;width:100%}
+    #sp-clock{font-family:"Orbitron",monospace;font-size:13px;color:#64748B;letter-spacing:2px;flex-shrink:0}
+    #sp-global-bar{flex:1;min-width:180px}
+    #sp-global-label{font-family:"Orbitron",monospace;font-size:9px;color:#334155;letter-spacing:2px;margin-bottom:3px}
+    #sp-global-track{height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+    #sp-global-fill{height:100%;background:linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF);border-radius:3px;transition:width 1s}
+    #sp-global-amt{font-family:"Orbitron",monospace;font-size:11px;color:#FFD700;margin-top:3px}
+    #sp-close-btn{padding:6px 14px;border-radius:16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#64748B;font-family:"Orbitron",monospace;font-size:10px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+    #spotlight-inner{width:100%;max-width:1100px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:row;gap:16px;align-items:flex-start}
+    #sp-left{flex:1;min-width:0}
+    #sp-right{width:300px;flex-shrink:0}
+    #sp-stats-box{background:rgba(6,11,24,0.98);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:16px;backdrop-filter:blur(12px)}
+    #sp-stats-title{font-family:"Orbitron",monospace;font-size:10px;color:#64748B;letter-spacing:2px;margin-bottom:12px}
+    #sp-stats{display:flex;flex-direction:column;gap:8px}
+    .sp-stat{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px}
+    .sp-stat-label{font-family:"Orbitron",monospace;font-size:9px;color:#94A3B8;letter-spacing:1px;margin-bottom:2px}
+    .sp-stat-value{font-family:"Orbitron",monospace;font-size:15px;font-weight:700;color:#FFFFFF;white-space:nowrap}
+    .sp-stat-sub{font-size:11px;color:#CBD5E1;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .sp-rep-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:8px;margin-bottom:4px;border-left:3px solid transparent}
+    .sp-rep-row.rank1{background:linear-gradient(90deg,rgba(255,215,0,0.12),transparent);border-left-color:#FFD700}
+    .sp-rep-row.rank2{background:rgba(255,255,255,0.04);border-left-color:#C0C0C0}
+    .sp-rep-row.rank3{background:rgba(255,255,255,0.03);border-left-color:#CD7F32}
+    .sp-rep-rank{font-family:"Orbitron",monospace;font-size:12px;font-weight:700;width:22px;text-align:center;flex-shrink:0}
+    .sp-rep-name{flex:1;font-size:14px;font-weight:600;color:#E2E8F0}
+    .sp-rep-amt{font-family:"Orbitron",monospace;font-size:13px;font-weight:700;flex-shrink:0}
+    .sp-highlight-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;white-space:nowrap;margin-top:3px}
+    @media(max-width:700px){#spotlight-inner{flex-direction:column}#sp-right{width:100%}}
     #spotlight-overlay.active{display:flex}
-    #spotlight-card{width:min(520px,90vw);background:rgba(15,23,42,0.97);border-radius:20px;overflow:hidden;box-shadow:0 0 80px var(--sp-color,#00D4FF),0 0 160px rgba(0,212,255,0.2);border:2px solid var(--sp-color,#00D4FF);animation:spCardIn 0.3s ease both}
+    #spotlight-card{width:100%;background:rgba(15,23,42,0.97);border-radius:20px;overflow:hidden;box-shadow:0 0 60px var(--sp-color,#00D4FF44);border:2px solid var(--sp-color,#00D4FF);animation:spCardIn 0.3s ease both}
     #spotlight-header{padding:20px 24px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08)}
     #spotlight-num{font-size:11px;font-family:"Orbitron",monospace;letter-spacing:3px;opacity:0.6}
     #spotlight-name{font-family:"Orbitron",monospace;font-weight:900;font-size:26px;letter-spacing:2px;margin-top:4px}
     #spotlight-total{font-family:"Orbitron",monospace;font-size:32px;font-weight:700;color:#fff;margin-top:6px}
-    #spotlight-reps{padding:12px 8px;max-height:55vh;overflow-y:auto}
+    #spotlight-reps{padding:8px;max-height:60vh;overflow-y:auto}
     #spotlight-nav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid rgba(255,255,255,0.06);font-family:"Orbitron",monospace;font-size:11px;color:#334155}
     #spotlight-dots{display:flex;gap:6px}
     .sp-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15);transition:background 0.3s;cursor:pointer}
