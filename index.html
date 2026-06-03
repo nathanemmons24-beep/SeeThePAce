@@ -110,6 +110,9 @@
     #bar-track{position:relative;height:30px;background:rgba(255,255,255,0.06);border-radius:15px;overflow:visible}
     #bar-fill{position:absolute;top:0;left:0;height:100%;width:0%;background:linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF);border-radius:15px;transition:width 1.2s cubic-bezier(.4,0,.2,1);box-shadow:0 0 24px rgba(0,212,255,0.5)}
     #bar-pct{position:absolute;right:12px;top:0;bottom:0;display:flex;align-items:center;font-family:"Orbitron",monospace;font-size:11px;color:#fff;font-weight:700}
+    .milestone-tick{position:absolute;top:-10px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10;pointer-events:none}
+    .milestone-tick .tick-line{width:2px;height:50px;border-radius:2px}
+    .milestone-tick .tick-icon{font-size:16px;margin-top:2px}
 
     /* Leaderboards */
     #top-leaderboards{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
@@ -875,7 +878,7 @@ function render(){
       var isTopStore=(ci===0);
       var name=e[0],t=e[1],display=name.includes(" - ")?name.split(" - ").slice(1).join(" "):name,num=name.split(" - ")[0];
       var card=document.createElement("div"); card.className="team-card";
-      card.style.border=(isTopStore?"2px solid "+t.color:"1px solid "+t.color+"2A");
+      card.style.border="1px solid "+t.color+"2A";
       card.style.boxShadow="0 0 30px "+t.color+"14";
       var repsHTML="";
       t.reps.forEach(function(rep,i){
