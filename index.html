@@ -103,16 +103,20 @@
     #sync-fill{height:100%;width:0%;border-radius:2px;background:linear-gradient(90deg,#00D4FF,#00FF88);transition:width 1s linear,background 0.3s}
 
     /* Milestone */
-    #milestone-section{margin-bottom:28px}
+    #milestone-section{margin-bottom:32px;padding:16px 0}
     #milestone-header{display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px}
-    #total-display{font-family:"Orbitron",monospace;font-size:16px;color:#FFD700}
+    #total-display{font-family:"Orbitron",monospace;font-size:20px;color:#FFD700;text-shadow:0 0 20px rgba(255,215,0,0.4)}
     #total-display span{color:#475569}
-    #bar-track{position:relative;height:30px;background:rgba(255,255,255,0.06);border-radius:15px;overflow:visible}
-    #bar-fill{position:absolute;top:0;left:0;height:100%;width:0%;background:linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF);border-radius:15px;transition:width 1.2s cubic-bezier(.4,0,.2,1);box-shadow:0 0 24px rgba(0,212,255,0.5)}
-    #bar-pct{position:absolute;right:12px;top:0;bottom:0;display:flex;align-items:center;font-family:"Orbitron",monospace;font-size:11px;color:#fff;font-weight:700}
+    #bar-track{position:relative;height:36px;background:rgba(255,255,255,0.08);border-radius:18px;overflow:visible;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06)}
+    #bar-fill{position:absolute;top:0;left:0;height:100%;width:0%;background:linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF);border-radius:18px;transition:width 1.2s cubic-bezier(.4,0,.2,1);box-shadow:0 0 20px rgba(255,215,0,0.4),0 0 40px rgba(0,212,255,0.3)}
+    #bar-pct{position:absolute;right:14px;top:0;bottom:0;display:flex;align-items:center;font-family:"Orbitron",monospace;font-size:13px;color:#fff;font-weight:900;text-shadow:0 0 10px rgba(255,255,255,0.5)}
+    #next-milestone{color:#64748B;font-size:12px;font-family:"Orbitron",monospace}
+    #milestone-chips{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+    .milestone-chip{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,0.08);color:#475569;background:rgba(255,255,255,0.04);transition:all 0.6s;font-family:"Orbitron",monospace;letter-spacing:0.5px}
+    .milestone-chip.done{box-shadow:0 0 12px var(--chip-glow,transparent)}
     .milestone-tick{position:absolute;top:-10px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10;pointer-events:none}
-    .milestone-tick .tick-line{width:2px;height:50px;border-radius:2px}
-    .milestone-tick .tick-icon{font-size:16px;margin-top:2px}
+    .milestone-tick .tick-line{width:2px;height:54px;border-radius:2px}
+    .milestone-tick .tick-icon{font-size:20px;margin-top:3px;filter:drop-shadow(0 0 6px rgba(255,255,255,0.4))}
 
     /* Leaderboards */
     #top-leaderboards{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
@@ -271,11 +275,13 @@
   <div id="milestone-section">
     <div id="milestone-header">
       <div id="total-display">$0 <span>of $500,000</span></div>
+      <div id="next-milestone"></div>
     </div>
     <div id="bar-track">
       <div id="bar-fill"></div>
       <div id="bar-pct">0%</div>
     </div>
+    <div id="milestone-chips"></div>
   </div>
 
   <!-- TOP LEADERBOARDS -->
@@ -523,7 +529,15 @@ function parseCsv(csv){
 }
 
 // \u2550\u2550 STATE \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-var state={sheetUrl:SHEET_URL,goal:500000,title:"3-Day BLITZ",data:SAMPLE,status:"demo",lastUpdated:null};
+var _saved = (function(){ try{ return JSON.parse(localStorage.getItem("blitz_settings")||"{}"); }catch(e){return{};} })();
+var state={
+  sheetUrl: _saved.sheetUrl || SHEET_URL,
+  goal:     _saved.goal     || 500000,
+  title:    _saved.title    || "3-Day BLITZ",
+  data:     SAMPLE,
+  status:   "demo",
+  lastUpdated: null
+};
 var streakCounts = {}; // "Name|Team" -> number of deals (not syncs)
 var pollTimer=null,countdownTimer=null,secsLeft=10,CIRC=2*Math.PI*15;
 
@@ -843,6 +857,27 @@ function render(){
   var bf=document.getElementById("bar-fill");
   if(bf){bf.style.width=Math.min(pct,100)+"%";bf.style.background=total>=goal?"linear-gradient(90deg,#00FF88,#00D4FF)":"linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF)";}
   var bp=document.getElementById("bar-pct"); if(bp)bp.textContent=pct.toFixed(1)+"%";
+  // Next milestone text
+  var next=MILESTONES.find(function(m){return total/goal<m.value;});
+  var nxt=document.getElementById("next-milestone");
+  if(nxt){nxt.textContent=total>=goal?"GOAL CRUSHED!":next?"Next: "+next.badge+" @ "+next.label:"";nxt.style.color=total>=goal?"#00FF88":"#64748B";}
+  // Milestone chips
+  var chips=document.getElementById("milestone-chips");
+  if(chips){
+    chips.innerHTML="";
+    MILESTONES.forEach(function(m){
+      var done=total/goal>=m.value,chip=document.createElement("div");
+      chip.className="milestone-chip"+(done?" done":"");
+      if(done){
+        chip.style.background=m.color+"22";
+        chip.style.borderColor=m.color;
+        chip.style.color=m.color;
+        chip.style.setProperty("--chip-glow",m.color+"66");
+      }
+      chip.textContent=m.icon+" "+m.badge;
+      chips.appendChild(chip);
+    });
+  }
   var track=document.getElementById("bar-track");
   if(track){
     track.querySelectorAll(".milestone-tick").forEach(function(e){e.remove();});
