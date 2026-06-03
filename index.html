@@ -660,9 +660,15 @@ function playClip(badge, followupText, followupDelay){
   var b64str = CLIPS[badge];
   if(!b64str){ pSpeak(badge); return; }
   try{
-    // Always fresh AudioContext per clip — most reliable across all browsers
-    var ac = new (window.AudioContext||window.webkitAudioContext)();
-    if(ac.state==="suspended") ac.resume();
+    // Use unlocked AC if available (Safari/Mac requires this), else create fresh
+    var ac;
+    if(_unlockAC && _unlockAC.state !== "closed") {
+      ac = _unlockAC;
+      if(ac.state === "suspended") ac.resume();
+    } else {
+      ac = new (window.AudioContext||window.webkitAudioContext)();
+      if(ac.state === "suspended") ac.resume();
+    }
     var bin=atob(b64str),bytes=new Uint8Array(bin.length);
     for(var i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
     ac.decodeAudioData(bytes.buffer.slice(0),
@@ -671,7 +677,7 @@ function playClip(badge, followupText, followupDelay){
         src.buffer=buf; gain.gain.value=1.0;
         src.connect(gain); gain.connect(ac.destination);
         src.onended=function(){
-          ac.close();
+          if(ac !== _unlockAC) ac.close(); // only close if not the shared unlock AC
           if(followupText) setTimeout(function(){pSpeak(followupText,0.85,0.5);},followupDelay||0);
         };
         src.start(0);
@@ -682,8 +688,8 @@ function playClip(badge, followupText, followupDelay){
   }catch(e){ console.warn("playClip error:",e.message); }
 }
 
-function pTone(f,tp,d,g,t){g=g||0.3;t=t||0;var c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),v=c.createGain();o.connect(v);v.connect(c.destination);o.type=tp;o.frequency.setValueAtTime(f,c.currentTime+t);v.gain.setValueAtTime(0.001,c.currentTime+t);v.gain.linearRampToValueAtTime(g,c.currentTime+t+0.01);v.gain.exponentialRampToValueAtTime(0.001,c.currentTime+t+d);o.start(c.currentTime+t);o.stop(c.currentTime+t+d+0.05);setTimeout(function(){c.close();},( t+d+0.2)*1000);}
-function pNoise(d,g,t,b){g=g||0.15;t=t||0;b=b||1000;var c=new(window.AudioContext||window.webkitAudioContext)(),buf=c.createBuffer(1,c.sampleRate*d,c.sampleRate),data=buf.getChannelData(0);for(var i=0;i<data.length;i++)data[i]=Math.random()*2-1;var src=c.createBufferSource(),v=c.createGain(),flt=c.createBiquadFilter();flt.type="bandpass";flt.frequency.value=b;src.buffer=buf;src.connect(flt);flt.connect(v);v.connect(c.destination);v.gain.setValueAtTime(g,c.currentTime+t);v.gain.exponentialRampToValueAtTime(0.001,c.currentTime+t+d);src.start(c.currentTime+t);setTimeout(function(){c.close();},( t+d+0.2)*1000);}
+function pTone(f,tp,d,g,t){g=g||0.3;t=t||0;var c=(_unlockAC&&_unlockAC.state!=="closed"&&_unlockAC.state!=="suspended")?_unlockAC:new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),v=c.createGain();o.connect(v);v.connect(c.destination);o.type=tp;o.frequency.setValueAtTime(f,c.currentTime+t);v.gain.setValueAtTime(0.001,c.currentTime+t);v.gain.linearRampToValueAtTime(g,c.currentTime+t+0.01);v.gain.exponentialRampToValueAtTime(0.001,c.currentTime+t+d);o.start(c.currentTime+t);o.stop(c.currentTime+t+d+0.05);setTimeout(function(){c.close();},( t+d+0.2)*1000);}
+function pNoise(d,g,t,b){g=g||0.15;t=t||0;b=b||1000;var c=(_unlockAC&&_unlockAC.state!=="closed"&&_unlockAC.state!=="suspended")?_unlockAC:new(window.AudioContext||window.webkitAudioContext)(),buf=c.createBuffer(1,c.sampleRate*d,c.sampleRate),data=buf.getChannelData(0);for(var i=0;i<data.length;i++)data[i]=Math.random()*2-1;var src=c.createBufferSource(),v=c.createGain(),flt=c.createBiquadFilter();flt.type="bandpass";flt.frequency.value=b;src.buffer=buf;src.connect(flt);flt.connect(v);v.connect(c.destination);v.gain.setValueAtTime(g,c.currentTime+t);v.gain.exponentialRampToValueAtTime(0.001,c.currentTime+t+d);src.start(c.currentTime+t);setTimeout(function(){c.close();},( t+d+0.2)*1000);}
 
 function pSpeak(txt,rate,pitch){
   if(!window.speechSynthesis)return;
@@ -711,10 +717,15 @@ var SFN={"Ignite":sIgnite,"Double Pane":sDoublePane,"Frame Slayer":sFrameSlayer,
 
 // Queue
 var BQ=[],BQR=false;
-function enqueueBadge(rep,lbl){
-  // Deduplicate — never queue same rep+badge if already in queue
+var firedBadges={}; // "rep|badge" -> amount when it fired, prevents re-fire
+function enqueueBadge(rep,lbl,amount){
+  // Deduplicate — skip if already in queue
   var already = BQ.some(function(x){ return x.rep===rep && x.lbl===lbl; });
-  if(already){ console.log("Skipping duplicate badge:", rep, lbl); return; }
+  if(already){ return; }
+  // Skip if we already fired this badge at this exact amount
+  var fKey = rep+"|"+lbl;
+  if(firedBadges[fKey] === amount){ console.log("Skipping already-fired badge:", rep, lbl, amount); return; }
+  firedBadges[fKey] = amount;
   BQ.push({rep:rep,lbl:lbl});
   if(!BQR)nextBadge();
 }
@@ -769,7 +780,7 @@ function checkBadgeUpgrades(newData) {
 
     // New rep we haven't seen before
     if (!prev) {
-      if (curr.badge) upgrades.push({ rep: key.split("|")[0], lbl: curr.badge.label });
+      if (curr.badge) upgrades.push({ rep: key.split("|")[0], lbl: curr.badge.label, amount: curr.amount });
       return;
     }
 
@@ -791,11 +802,11 @@ function checkBadgeUpgrades(newData) {
 
     if (currRank > prevRank) {
       // Total crossed a new badge threshold — use the new total badge
-      upgrades.push({ rep: key.split("|")[0], lbl: currBadgeLabel });
+      upgrades.push({ rep: key.split("|")[0], lbl: currBadgeLabel, amount: curr.amount });
       console.log("Total badge upgrade:", key, prevBadgeLabel, "->", currBadgeLabel, "| deal:", addedAmount, "| total:", curr.amount);
     } else if (dealBadge) {
       // Deal itself earned a badge but total didn't cross new tier
-      upgrades.push({ rep: key.split("|")[0], lbl: dealBadge.label });
+      upgrades.push({ rep: key.split("|")[0], lbl: dealBadge.label, amount: curr.amount });
       console.log("Deal badge:", key, "deal:", addedAmount, "->", dealBadge.label, "| total:", curr.amount);
     }
   });
@@ -808,7 +819,7 @@ function checkBadgeUpgrades(newData) {
   // Sort lower tiers first, Legend last
   upgrades.sort(function(a, b) { return order.indexOf(a.lbl) - order.indexOf(b.lbl); });
   console.log("Queuing badges:", upgrades.map(function(u){ return u.rep + " -> " + u.lbl; }).join(", "));
-  upgrades.forEach(function(u) { enqueueBadge(u.rep, u.lbl); });
+  upgrades.forEach(function(u) { enqueueBadge(u.rep, u.lbl, u.amount); });
 }
 
 // \u2550\u2550 LEADERBOARDS \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
