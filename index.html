@@ -46,7 +46,10 @@
     #sp-global-amt{font-family:"Orbitron",monospace;font-size:11px;color:#FFD700;margin-top:3px}
     #sp-close-btn{padding:6px 14px;border-radius:16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#64748B;font-family:"Orbitron",monospace;font-size:10px;cursor:pointer;white-space:nowrap}
 
-    #spotlight-inner{width:100%;max-width:900px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px}
+    #spotlight-inner{width:100%;max-width:1100px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:row;gap:16px;align-items:flex-start}
+    #sp-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:0}
+    #sp-right{width:280px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+    @media(max-width:700px){#spotlight-inner{flex-direction:column}#sp-right{width:100%}}
 
     #spotlight-card{width:100%;background:rgba(15,23,42,0.97);border-radius:20px;overflow:hidden;box-shadow:0 0 60px var(--sp-color,#00D4FF44);border:2px solid var(--sp-color,#00D4FF);animation:spCardIn 0.4s ease both}
     #spotlight-header{padding:20px 24px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08)}
@@ -56,11 +59,13 @@
     #spotlight-rank-badge{display:inline-block;margin-top:8px;padding:4px 14px;border-radius:20px;font-family:"Orbitron",monospace;font-size:11px;font-weight:700;letter-spacing:1px}
 
     /* Stats grid */
-    #sp-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;padding:16px}
-    .sp-stat{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px 16px;text-align:center}
-    .sp-stat-label{font-family:"Orbitron",monospace;font-size:9px;color:#475569;letter-spacing:2px;margin-bottom:6px}
-    .sp-stat-value{font-family:"Orbitron",monospace;font-size:18px;font-weight:700;color:#E2E8F0}
-    .sp-stat-sub{font-size:11px;color:#475569;margin-top:3px}
+    #sp-stats{display:flex;flex-direction:column;gap:8px}
+    .sp-stat{background:rgba(15,23,42,0.95);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px}
+    #sp-stats-box{background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;backdrop-filter:blur(12px)}
+    #sp-stats-title{font-family:"Orbitron",monospace;font-size:10px;color:#475569;letter-spacing:2px;margin-bottom:12px}
+    .sp-stat-label{font-family:"Orbitron",monospace;font-size:9px;color:#475569;letter-spacing:1px;margin-bottom:2px;flex:none}
+    .sp-stat-value{font-family:"Orbitron",monospace;font-size:16px;font-weight:700;color:#E2E8F0;white-space:nowrap}
+    .sp-stat-sub{font-size:11px;color:#64748B;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
     /* Reps table */
     #spotlight-reps{padding:0 12px 12px}
@@ -376,22 +381,29 @@
   </div>
 
   <div id="spotlight-inner">
-    <div id="spotlight-card">
-      <div id="spotlight-timer-bar"><div id="spotlight-timer-fill"></div></div>
-      <div id="spotlight-header">
-        <div id="spotlight-num"></div>
-        <div id="spotlight-name"></div>
-        <div id="spotlight-total"></div>
-        <div id="spotlight-rank-badge"></div>
+    <!-- Left: team card + rep leaderboard -->
+    <div id="sp-left">
+      <div id="spotlight-card">
+        <div id="spotlight-timer-bar"><div id="spotlight-timer-fill"></div></div>
+        <div id="spotlight-header">
+          <div id="spotlight-num"></div>
+          <div id="spotlight-name"></div>
+          <div id="spotlight-total"></div>
+          <div id="spotlight-rank-badge"></div>
+        </div>
+        <div id="spotlight-reps"></div>
+        <div id="spotlight-nav">
+          <button onclick="spotlightPrev()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:22px;padding:4px 10px">&#8592;</button>
+          <div id="spotlight-dots"></div>
+          <button onclick="spotlightNext()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:22px;padding:4px 10px">&#8594;</button>
+        </div>
       </div>
-      <!-- Key stats grid -->
-      <div id="sp-stats"></div>
-      <!-- Rep leaderboard -->
-      <div id="spotlight-reps"></div>
-      <div id="spotlight-nav">
-        <button onclick="spotlightPrev()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:22px;padding:4px 10px">&#8592;</button>
-        <div id="spotlight-dots"></div>
-        <button onclick="spotlightNext()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:22px;padding:4px 10px">&#8594;</button>
+    </div>
+    <!-- Right: stats sidebar tile -->
+    <div id="sp-right">
+      <div id="sp-stats-box">
+        <div id="sp-stats-title">&#x1F4CA; TEAM STATS</div>
+        <div id="sp-stats"></div>
       </div>
     </div>
   </div>
@@ -1100,12 +1112,12 @@ function showSpotlightCard(idx) {
   });
 
   var stats = [
-    { label:"TOTAL DEALS",    value: totalDeals,           sub: "" },
-    { label:"AVG DEAL SIZE",  value: fmt(Math.round(avgDeal)), sub: "per deal" },
-    { label:"LARGEST DEAL",   value: fmt(biggestDeal),     sub: biggestRep },
-    { label:"MOST DEALS",     value: mostDealsN+" deals",  sub: mostDealsRep },
-    { label:"TOP REP",        value: topRep ? fmt(topRep.amount) : "-", sub: topRep ? topRep.name : "" },
-    { label:"ACTIVE REPS",    value: reps.length,          sub: "on the board" },
+    { icon:"📊", label:"TOTAL DEALS",  value: totalDeals,                sub: totalDeals===1?"deal":"deals" },
+    { icon:"💰", label:"AVG DEAL",      value: fmt(Math.round(avgDeal)),  sub: "per deal" },
+    { icon:"🏆", label:"LARGEST DEAL",  value: fmt(biggestDeal),          sub: biggestRep },
+    { icon:"🔥", label:"MOST ACTIVE",   value: mostDealsN+" deals",       sub: mostDealsRep },
+    { icon:"⭐",     label:"TOP REP",        value: topRep?fmt(topRep.amount):"-", sub: topRep?topRep.name:"" },
+    { icon:"👤", label:"ACTIVE REPS",   value: reps.length,               sub: "on the board" },
   ];
 
   var statsEl = document.getElementById("sp-stats");
@@ -1113,9 +1125,13 @@ function showSpotlightCard(idx) {
   stats.forEach(function(s) {
     var el = document.createElement("div");
     el.className = "sp-stat";
-    el.innerHTML = '<div class="sp-stat-label">'+s.label+'</div>'+
-      '<div class="sp-stat-value" style="color:'+color+'">'+s.value+'</div>'+
-      (s.sub?'<div class="sp-stat-sub">'+s.sub+'</div>':'');
+    el.innerHTML =
+      '<span style="font-size:22px;flex-shrink:0">'+s.icon+'</span>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div class="sp-stat-label">'+s.label+'</div>'+
+        '<div class="sp-stat-value" style="color:'+color+'">'+s.value+'</div>'+
+        (s.sub?'<div class="sp-stat-sub">'+s.sub+'</div>':'')+
+      '</div>';
     statsEl.appendChild(el);
   });
 
@@ -1975,12 +1991,12 @@ function showSpotlightCard(idx) {
   });
 
   var stats = [
-    { label:"TOTAL DEALS",    value: totalDeals,           sub: "" },
-    { label:"AVG DEAL SIZE",  value: fmt(Math.round(avgDeal)), sub: "per deal" },
-    { label:"LARGEST DEAL",   value: fmt(biggestDeal),     sub: biggestRep },
-    { label:"MOST DEALS",     value: mostDealsN+" deals",  sub: mostDealsRep },
-    { label:"TOP REP",        value: topRep ? fmt(topRep.amount) : "-", sub: topRep ? topRep.name : "" },
-    { label:"ACTIVE REPS",    value: reps.length,          sub: "on the board" },
+    { icon:"📊", label:"TOTAL DEALS",  value: totalDeals,                sub: totalDeals===1?"deal":"deals" },
+    { icon:"💰", label:"AVG DEAL",      value: fmt(Math.round(avgDeal)),  sub: "per deal" },
+    { icon:"🏆", label:"LARGEST DEAL",  value: fmt(biggestDeal),          sub: biggestRep },
+    { icon:"🔥", label:"MOST ACTIVE",   value: mostDealsN+" deals",       sub: mostDealsRep },
+    { icon:"⭐",     label:"TOP REP",        value: topRep?fmt(topRep.amount):"-", sub: topRep?topRep.name:"" },
+    { icon:"👤", label:"ACTIVE REPS",   value: reps.length,               sub: "on the board" },
   ];
 
   var statsEl = document.getElementById("sp-stats");
@@ -1988,9 +2004,13 @@ function showSpotlightCard(idx) {
   stats.forEach(function(s) {
     var el = document.createElement("div");
     el.className = "sp-stat";
-    el.innerHTML = '<div class="sp-stat-label">'+s.label+'</div>'+
-      '<div class="sp-stat-value" style="color:'+color+'">'+s.value+'</div>'+
-      (s.sub?'<div class="sp-stat-sub">'+s.sub+'</div>':'');
+    el.innerHTML =
+      '<span style="font-size:22px;flex-shrink:0">'+s.icon+'</span>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div class="sp-stat-label">'+s.label+'</div>'+
+        '<div class="sp-stat-value" style="color:'+color+'">'+s.value+'</div>'+
+        (s.sub?'<div class="sp-stat-sub">'+s.sub+'</div>':'')+
+      '</div>';
     statsEl.appendChild(el);
   });
 
