@@ -79,15 +79,9 @@
     #milestone-header{display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px}
     #total-display{font-family:"Orbitron",monospace;font-size:16px;color:#FFD700}
     #total-display span{color:#475569}
-    #next-milestone{color:#64748B;font-size:12px}
     #bar-track{position:relative;height:30px;background:rgba(255,255,255,0.06);border-radius:15px;overflow:visible}
     #bar-fill{position:absolute;top:0;left:0;height:100%;width:0%;background:linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF);border-radius:15px;transition:width 1.2s cubic-bezier(.4,0,.2,1);box-shadow:0 0 24px rgba(0,212,255,0.5)}
     #bar-pct{position:absolute;right:12px;top:0;bottom:0;display:flex;align-items:center;font-family:"Orbitron",monospace;font-size:11px;color:#fff;font-weight:700}
-    .milestone-tick{position:absolute;top:-10px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10}
-    .milestone-tick .tick-line{width:2px;height:50px;border-radius:2px}
-    .milestone-tick .tick-icon{font-size:16px;margin-top:2px}
-    #milestone-chips{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
-    .milestone-chip{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,0.08);color:#334155;background:rgba(255,255,255,0.04);transition:all 0.6s}
 
     /* Leaderboards */
     #top-leaderboards{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
@@ -193,7 +187,6 @@
     body.tv-mode #total-display{font-size:26px}
     body.tv-mode #bar-track{height:44px;border-radius:22px}
     body.tv-mode #bar-pct{font-size:16px}
-    body.tv-mode .milestone-chip{font-size:15px;padding:5px 14px}
     body.tv-mode .rank-chip{font-size:17px;padding:8px 18px}
     body.tv-mode .team-card-name{font-size:20px}
     body.tv-mode .team-card-total{font-size:30px}
@@ -247,13 +240,11 @@
   <div id="milestone-section">
     <div id="milestone-header">
       <div id="total-display">$0 <span>of $500,000</span></div>
-      <div id="next-milestone"></div>
     </div>
     <div id="bar-track">
       <div id="bar-fill"></div>
       <div id="bar-pct">0%</div>
     </div>
-    <div id="milestone-chips"></div>
   </div>
 
   <!-- TOP LEADERBOARDS -->
@@ -831,16 +822,7 @@ function render(){
       track.appendChild(tick);
     });
   }
-  var chips=document.getElementById("milestone-chips");
-  if(chips){
-    chips.innerHTML="";
-    MILESTONES.forEach(function(m){
-      var done=total/goal>=m.value,chip=document.createElement("div");
-      chip.className="milestone-chip"+(done?" done":"");
-      if(done){chip.style.background=m.color+"22";chip.style.borderColor=m.color;chip.style.color=m.color;chip.style.boxShadow="0 0 10px "+m.color+"44";}
-      chip.textContent=m.icon+" "+m.badge; chips.appendChild(chip);
-    });
-  }
+
   renderLeaderboards(data);
   renderDayBreakdown(data);
   updateBiggestMover(data);
