@@ -763,17 +763,113 @@ function testSound(badge){
 
 // \u2550\u2550 BADGE ALERT \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function showBadgeAlert(icon,text,repName,color,big,amount){
-  var overlay=document.createElement("div");
-  overlay.style.cssText="position:fixed;inset:0;z-index:9998;pointer-events:none;background:radial-gradient(ellipse at center,"+color+"22 0%,rgba(0,0,0,0.82) 70%);animation:overlayFade "+(big?4.5:3.2)+"s ease forwards;";
+  var dur = big ? 5000 : 3800;
+
+  // ── Fullscreen color flash overlay ────────────────────────────────────────
+  var overlay = document.createElement("div");
+  overlay.style.cssText = "position:fixed;inset:0;z-index:9997;pointer-events:none;" +
+    "background:radial-gradient(ellipse at 50% 40%,"+color+"55 0%,"+color+"11 45%,rgba(0,0,0,0.88) 75%);" +
+    "animation:overlayFade "+dur+"ms ease forwards;";
   document.body.appendChild(overlay);
-  var el=document.createElement("div");
-  var sz=big?"130px":"80px",fsz=big?"52px":"36px",sub=big?"18px":"14px",pad=big?"48px":"32px",minw=big?"420px":"300px";
-  el.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:9999;text-align:center;pointer-events:none;padding:"+pad+";background:radial-gradient(ellipse at center,"+color+"18 0%,rgba(6,11,24,0.97) 75%);border:2px solid "+color+";border-radius:24px;box-shadow:0 0 0 1px "+color+"44,0 0 40px "+color+"88,0 0 80px "+color+"44,inset 0 0 40px "+color+"11;animation:badgePop "+(big?4.5:3.2)+"s cubic-bezier(.34,1.56,.64,1) forwards;min-width:"+minw+";";
-  var amtHTML = amount ? "<div style='font-family:Orbitron,monospace;font-size:"+(big?"28px":"20px")+";font-weight:900;color:#fff;text-shadow:0 0 20px "+color+";margin-top:8px;letter-spacing:2px;'>"+fmt(amount)+"</div>" : "";
-  el.innerHTML="<div style='font-size:"+sz+";line-height:1;filter:drop-shadow(0 0 20px "+color+") drop-shadow(0 0 40px "+color+");'>"+icon+"</div><div style='font-family:Orbitron,monospace;font-size:"+fsz+";font-weight:900;color:"+color+";text-shadow:0 0 20px "+color+",0 0 40px "+color+";letter-spacing:"+(big?10:6)+"px;margin-top:16px;'>"+text+"</div><div style='width:60%;height:2px;background:linear-gradient(90deg,transparent,"+color+",transparent);margin:14px auto 12px;'></div><div style='font-family:Exo 2,sans-serif;font-size:"+sub+";color:rgba(255,255,255,0.85);letter-spacing:3px;text-transform:uppercase;'>"+repName+"</div>"+amtHTML;
+
+  // ── Particle ring effect ──────────────────────────────────────────────────
+  var ring = document.createElement("canvas");
+  ring.style.cssText = "position:fixed;inset:0;z-index:9998;pointer-events:none;";
+  ring.width = window.innerWidth; ring.height = window.innerHeight;
+  document.body.appendChild(ring);
+  (function(){
+    var ctx = ring.getContext("2d");
+    var cx = ring.width/2, cy = ring.height/2;
+    var particles = [];
+    var count = big ? 30 : 18;
+    for(var i=0;i<count;i++){
+      var angle = (i/count)*Math.PI*2;
+      var speed = 3+Math.random()*5;
+      particles.push({
+        x:cx, y:cy,
+        vx: Math.cos(angle)*speed*(0.7+Math.random()*0.6),
+        vy: Math.sin(angle)*speed*(0.7+Math.random()*0.6),
+        size: big ? 6+Math.random()*8 : 4+Math.random()*6,
+        alpha: 1, life: 0
+      });
+    }
+    var start = Date.now();
+    var duration = dur * 0.65;
+    function drawRing(){
+      var elapsed = Date.now()-start;
+      var progress = elapsed/duration;
+      ctx.clearRect(0,0,ring.width,ring.height);
+      var alive = false;
+      particles.forEach(function(p){
+        p.x += p.vx; p.y += p.vy;
+        p.vy += 0.15; // gravity
+        p.alpha = Math.max(0, 1 - progress*1.4);
+        if(p.alpha > 0) alive = true;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+        ctx.fillStyle = color;
+        ctx.globalAlpha = p.alpha;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 12;
+        ctx.fill();
+        ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+      });
+      if(alive && elapsed < duration) requestAnimationFrame(drawRing);
+      else { ctx.clearRect(0,0,ring.width,ring.height); }
+    }
+    requestAnimationFrame(drawRing);
+  })();
+
+  // ── Main badge card ───────────────────────────────────────────────────────
+  var el = document.createElement("div");
+  var sz  = big ? "140px" : "100px";
+  var fsz = big ? "60px"  : "44px";
+  var sub = big ? "20px"  : "16px";
+  var asub = big ? "34px" : "26px";
+  var pad = big ? "56px 64px" : "40px 52px";
+  var minw = big ? "480px" : "360px";
+
+  el.style.cssText =
+    "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);" +
+    "z-index:9999;text-align:center;pointer-events:none;" +
+    "padding:"+pad+";" +
+    "background:radial-gradient(ellipse at 50% 30%,"+color+"28 0%,rgba(4,8,20,0.98) 70%);" +
+    "border:2px solid "+color+";" +
+    "border-radius:28px;" +
+    "box-shadow:" +
+      "0 0 0 1px "+color+"55," +
+      "0 0 30px "+color+"99," +
+      "0 0 80px "+color+"66," +
+      "0 0 140px "+color+"33," +
+      "inset 0 0 60px "+color+"18;" +
+    "animation:badgePop "+dur+"ms cubic-bezier(.34,1.56,.64,1) forwards;" +
+    "min-width:"+minw+";";
+
+  var amtHTML = amount
+    ? "<div style='font-family:Orbitron,monospace;font-size:"+asub+";font-weight:900;" +
+      "color:#fff;text-shadow:0 0 30px "+color+",0 0 60px "+color+";" +
+      "margin-top:10px;letter-spacing:3px;'>"+fmt(amount)+"</div>"
+    : "";
+
+  el.innerHTML =
+    "<div style='font-size:"+sz+";line-height:1;" +
+    "filter:drop-shadow(0 0 24px "+color+") drop-shadow(0 0 48px "+color+") drop-shadow(0 0 72px "+color+");'>" +
+      icon +
+    "</div>" +
+    "<div style='font-family:Orbitron,monospace;font-size:"+fsz+";font-weight:900;" +
+    "color:"+color+";text-shadow:0 0 24px "+color+",0 0 48px "+color+";" +
+    "letter-spacing:"+(big?12:8)+"px;margin-top:18px;'>" +
+      text +
+    "</div>" +
+    "<div style='width:70%;height:2px;background:linear-gradient(90deg,transparent,"+color+",transparent);margin:16px auto 14px;box-shadow:0 0 10px "+color+";'></div>" +
+    "<div style='font-family:Exo 2,sans-serif;font-size:"+sub+";color:rgba(255,255,255,0.9);" +
+    "letter-spacing:4px;text-transform:uppercase;font-weight:600;'>" +
+      repName +
+    "</div>" +
+    amtHTML;
+
   document.body.appendChild(el);
-  var dur=big?4600:3300;
-  setTimeout(function(){el.remove();overlay.remove();},dur);
+  setTimeout(function(){ el.remove(); overlay.remove(); ring.remove(); }, dur);
 }
 
 // \u2550\u2550 BADGE DETECTION \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
