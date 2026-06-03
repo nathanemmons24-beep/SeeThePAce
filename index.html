@@ -210,7 +210,7 @@
     .rep-row.rank1{background:linear-gradient(90deg,rgba(255,215,0,0.13),transparent);border-left-color:#FFD700}
     .rep-row.rank2,.rep-row.rank3{background:rgba(255,255,255,0.03)}
     .rep-rank{font-family:"Orbitron",monospace;font-size:10px;font-weight:700;width:18px;text-align:center;color:#334155}
-    .rep-name{flex:1;font-size:13px;color:#CBD5E1;position:relative}
+    .rep-name{flex:1;font-size:13px;color:#CBD5E1;position:relative;display:flex;flex-direction:column;gap:2px;min-width:0}
     .rep-badge{font-size:13px}
     .rep-amt{font-family:"Orbitron",monospace;font-size:12px;font-weight:700;color:#64748B;min-width:72px;text-align:right}
     .rep-row.rank1 .rep-rank,.rep-row.rank1 .rep-amt{color:#FFD700}
@@ -899,14 +899,14 @@ function render(){
           });
           tooltipHTML+='</div>';
         }
-        var multi=deals.length>1?'<span style="font-size:10px;color:#475569;margin-left:4px">(×'+deals.length+')</span>':"";var todayBadge=rep.todayTotal>0?'<span style="font-size:9px;color:#00FF88;background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:1px 5px;margin-left:4px;font-family:Orbitron,monospace;letter-spacing:1px">TODAY '+fmt(rep.todayTotal)+'</span>':"";
+        var multi=deals.length>1?'<span style="font-size:10px;color:#475569;margin-left:4px">(×'+deals.length+')</span>':"";var todayBadge=rep.todayTotal>0?'<span style="font-size:9px;color:#00FF88;background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:1px 5px;font-family:Orbitron,monospace;letter-spacing:1px;display:inline-block">TODAY '+fmt(rep.todayTotal)+'</span>':"";
         var repKey=rep.name+"|"+name;
         var sl=getStreakLevel(repKey);
         var scls=streakClass(sl);
         var sbadge=streakBadgeHTML(sl);
         repsHTML+='<div class="rep-row '+rc+' '+scls+'" style="'+(rank>=2&&rank<=3?"border-left-color:"+t.color:"")+'">'+
           '<span class="rep-rank" style="color:'+rankColor+'">'+rank+'</span>'+
-          '<span class="rep-name" style="position:relative;cursor:'+(deals.length>1?"help":"default")+'">'+rep.name+multi+todayBadge+sbadge+(isTop?'<span class="top-market-badge">\uD83D\uDC51</span>':'')+tooltipHTML+'</span>'+
+          '<span class="rep-name" style="position:relative;cursor:'+(deals.length>1?"help":"default")+'"><span style="display:flex;align-items:center;flex-wrap:nowrap;gap:2px">'+rep.name+multi+sbadge+(isTop?'<span class="top-market-badge">\uD83D\uDC51</span>':'')+tooltipHTML+'</span>'+(todayBadge?'<span>'+todayBadge+'</span>':'')+'</span>'+
           (badge?'<span class="rep-badge">'+badge.icon+'</span>':'')+
           '<span class="rep-amt" style="color:'+amtColor+'">'+fmt(rep.amount)+'</span></div>';
       });
