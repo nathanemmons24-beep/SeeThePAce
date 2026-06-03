@@ -185,7 +185,35 @@
     .menu-item.active{color:#00FF88;background:rgba(0,255,136,0.08)}
     #scroll-btn,#bigfont-btn{color:#475569}
     :fullscreen #scroll-btn,:fullscreen #bigfont-btn,:-webkit-full-screen #scroll-btn,:-webkit-full-screen #bigfont-btn{color:#CBD5E1}
-</style>
+
+    /* TV Big Font Mode */
+    body.tv-mode #blitz-title{font-size:clamp(40px,7vw,72px)!important;letter-spacing:8px}
+    body.tv-mode #subtitle{font-size:18px;letter-spacing:4px}
+    body.tv-mode #blitz-clock{font-size:clamp(20px,3vw,32px)}
+    body.tv-mode #total-display{font-size:26px}
+    body.tv-mode #bar-track{height:44px;border-radius:22px}
+    body.tv-mode #bar-pct{font-size:16px}
+    body.tv-mode .milestone-chip{font-size:15px;padding:5px 14px}
+    body.tv-mode .rank-chip{font-size:17px;padding:8px 18px}
+    body.tv-mode .team-card-name{font-size:20px}
+    body.tv-mode .team-card-total{font-size:30px}
+    body.tv-mode .rep-name{font-size:18px!important;white-space:normal!important;word-break:break-word}
+    body.tv-mode .rep-amt{font-size:17px!important;min-width:110px}
+    body.tv-mode .rep-rank{font-size:14px!important;width:28px}
+    body.tv-mode .rep-row{padding:12px 18px;gap:14px}
+    body.tv-mode .leader-name{font-size:17px;white-space:normal}
+    body.tv-mode .leader-amt{font-size:15px;min-width:90px}
+    body.tv-mode .leader-row{padding:11px 20px;gap:14px}
+    body.tv-mode #cards-grid{gap:20px}
+    body.tv-mode .team-card{min-width:320px;flex:1 1 320px}
+    body.tv-mode .team-card-reps{padding:12px 10px}
+    body.tv-mode #top-leaderboards{gap:20px}
+    body.tv-mode .leader-board{min-width:360px}
+    body.tv-mode #app{max-width:100%;padding:32px 32px}
+    /* Sticky headers in fullscreen */
+    :fullscreen .team-card-header,:-webkit-full-screen .team-card-header{position:sticky;top:0;z-index:50;backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.08)}
+
+  </style>
 </head>
 <body onclick="unlockAudio()" onkeydown="unlockAudio()">
 <div id="app">
