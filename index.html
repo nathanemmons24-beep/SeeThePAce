@@ -246,6 +246,12 @@
 <body onclick="unlockAudio()" onkeydown="unlockAudio()">
 <div id="app">
 
+  <!-- CONSOLIDATED BANNER -->
+  <div id="consolidated-banner" style="display:none;text-align:center;margin-bottom:12px;padding:8px 20px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);border-radius:10px;font-family:Orbitron,monospace;font-size:11px;color:#00D4FF;letter-spacing:2px">
+    &#x1F5FA; CONSOLIDATED VIEW &nbsp;
+    <button onclick="toggleConsolidated()" style="background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.4);color:#00D4FF;border-radius:8px;padding:2px 8px;cursor:pointer;font-family:Orbitron,monospace;font-size:10px;margin-left:8px">CLEAR</button>
+  </div>
+
   <!-- TODAY FILTER BANNER -->
   <div id="today-filter-banner" style="display:none;text-align:center;margin-bottom:12px;padding:8px 20px;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);border-radius:10px;font-family:Orbitron,monospace;font-size:11px;color:#00FF88;letter-spacing:2px">
     &#x2600;&#xFE0F; SHOWING TODAY'S DEALS ONLY &nbsp;
@@ -986,6 +992,11 @@ function render(){
   // Apply today filter if active
   var rawData = state.data;
   var data = rawData;
+  // Apply consolidated view
+  if (filterConsolidated && rawData && rawData.teams) {
+    data = consolidateData(data);
+  }
+
   if (filterToday && rawData && rawData.teams) {
     var filtered = { total: 0, teams: {} };
     Object.entries(rawData.teams).forEach(function(e) {
@@ -1818,6 +1829,83 @@ function resetMilestone(){lastMilestone=-1;}
 // ══ MENU ══════════════════════════════════════════════════════════════════════
 var menuOpen = false;
 var filterToday = false;
+var filterConsolidated = false;
+
+var CONSOLIDATE_MAP = {
+  "0930 - Atlanta":     "Georgia",
+  "0930 - Eastern GA":  "Georgia",
+  "0930 - Southern GA": "Georgia",
+  "0576 - Cincinnati":  "Midwest North",
+  "0867 - Indy":        "Midwest North",
+  "0868 - So Bend":     "Midwest North",
+  "0791 - Nashville":   "Midwest South",
+  "0792 - Chattanooga": "Midwest South",
+  "0790 - Knoxville":   "Midwest South",
+  "0790 - Tri-Cities TN": "Midwest South",
+};
+
+var CONSOLIDATE_COLORS = {
+  "Georgia":      "#FF6B35",
+  "Midwest North":"#00D4FF",
+  "Midwest South":"#00FF88",
+};
+
+function consolidateData(rawData) {
+  var result = { total: 0, teams: {} };
+  Object.entries(rawData.teams).forEach(function(e) {
+    var storeName = e[0], team = e[1];
+    var groupName = CONSOLIDATE_MAP[storeName] || storeName; // ungrouped stays as-is
+    if (!result.teams[groupName]) {
+      result.teams[groupName] = {
+        total: 0,
+        reps: [],
+        color: CONSOLIDATE_COLORS[groupName] || team.color
+      };
+    }
+    var grp = result.teams[groupName];
+    grp.total += team.total;
+    result.total += team.total;
+    // Merge reps — combine same-name reps across stores
+    team.reps.forEach(function(rep) {
+      var existing = grp.reps.find(function(r){ return r.name === rep.name; });
+      if (existing) {
+        existing.amount    += rep.amount;
+        existing.deals      = existing.deals.concat(rep.deals || []);
+        existing.dealObjs   = existing.dealObjs.concat(rep.dealObjs || []);
+        existing.todayTotal = (existing.todayTotal||0) + (rep.todayTotal||0);
+        if (!existing.latestDate || (rep.latestDate && rep.latestDate > existing.latestDate))
+          existing.latestDate = rep.latestDate;
+      } else {
+        grp.reps.push({
+          name: rep.name, amount: rep.amount,
+          deals: [].concat(rep.deals||[rep.amount]),
+          dealObjs: [].concat(rep.dealObjs||[]),
+          todayTotal: rep.todayTotal||0,
+          latestDate: rep.latestDate||null
+        });
+      }
+    });
+  });
+  // Sort reps within each group
+  Object.values(result.teams).forEach(function(t){
+    t.reps.sort(function(a,b){ return b.amount-a.amount; });
+  });
+  return result;
+}
+function toggleConsolidated() {
+  filterConsolidated = !filterConsolidated;
+  var btn = document.getElementById('consolidated-btn');
+  if (btn) {
+    btn.classList.toggle('active', filterConsolidated);
+    btn.innerHTML = filterConsolidated
+      ? '&#x1F5FA; CONSOLIDATED &#x2713;'
+      : '&#x1F5FA; CONSOLIDATED';
+  }
+  var banner = document.getElementById('consolidated-banner');
+  if (banner) banner.style.display = filterConsolidated ? 'block' : 'none';
+  render();
+}
+
 function toggleTodayFilter() {
   filterToday = !filterToday;
   var btn = document.getElementById('today-filter-btn');
@@ -1966,6 +2054,7 @@ fetchSettings().then(function() {
     <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>
     <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FILTER</div>
     <button class="menu-item" id="today-filter-btn" onclick="toggleTodayFilter()">&#x2600;&#xFE0F; TODAY ONLY</button>
+    <button class="menu-item" id="consolidated-btn" onclick="toggleConsolidated()">&#x1F5FA; CONSOLIDATED</button>
     <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>
     <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FULLSCREEN ONLY</div>
     <button class="menu-item" id="scroll-btn" onclick="toggleScroll()">&#x2B06;&#x2B07; AUTO SCROLL</button>
