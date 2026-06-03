@@ -475,6 +475,7 @@
 <script>
 
 
+
 var SHEET_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSCj5mTfE2UMOth-X_C8voZToabgP92fRNogyQHc4bxEB4AnSkm80TPEYYlWj6wvU2L37PaMA_GqC-/pub?gid=0&single=true&output=csv";
 var POLL_MS    = 10000;
 var ADMIN_PW   = "blitz2024";
@@ -1185,6 +1186,22 @@ function showSpotlightCard(idx) {
     if (deals.length > mostDealsN) { mostDealsN = deals.length; mostDealsRep = r.name; }
   });
 
+
+  // Collect ALL deal objects across reps, sorted newest first
+  var allDealObjs = [];
+  reps.forEach(function(r) {
+    (r.dealObjs||[{amount:r.amount,date:null}]).forEach(function(obj){
+      allDealObjs.push({name:r.name,amount:obj.amount,date:obj.date});
+    });
+  });
+  allDealObjs.sort(function(a,b){
+    if(a.date&&b.date) return b.date-a.date;
+    return b.amount-a.amount;
+  });
+  var last10      = allDealObjs.slice(0,10);
+  var last10Total = last10.reduce(function(s,d){return s+d.amount;},0);
+  var last10Avg   = last10.length>0?Math.round(last10Total/last10.length):0;
+
   var stats = [
     { icon:"📊", label:"TOTAL DEALS",  value: totalDeals,                sub: totalDeals===1?"deal":"deals" },
     { icon:"💰", label:"AVG DEAL",      value: fmt(Math.round(avgDeal)),  sub: "per deal" },
@@ -1193,6 +1210,24 @@ function showSpotlightCard(idx) {
     { icon:"⭐",     label:"TOP REP",        value: topRep?fmt(topRep.amount):"-", sub: topRep?topRep.name:"" },
     { icon:"👤", label:"ACTIVE REPS",   value: reps.length,               sub: "on the board" },
   ];
+
+  // Build last 10 mini list HTML (appended after stats)
+  var last10HTML = "";
+  if (last10.length > 0) {
+    last10HTML = '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07)">' +
+      '<div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:2px;margin-bottom:8px">LAST '+last10.length+' SALES</div>';
+    last10.forEach(function(d, i) {
+      var db = getBadge(d.amount);
+      last10HTML += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)">' +
+        '<span style="font-size:10px;color:#334155;width:16px;text-align:center;font-family:Orbitron,monospace">'+(i+1)+'</span>' +
+        '<span style="flex:1;font-size:12px;color:#94A3B8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+d.name+'</span>' +
+        (d.date?'<span style="font-size:10px;color:#334155">'+formatShortDate(d.date)+'</span>':'') +
+        (db?'<span style="font-size:12px">'+db.icon+'</span>':'') +
+        '<span style="font-family:Orbitron,monospace;font-size:12px;font-weight:700;color:'+color+'">'+fmt(d.amount)+'</span>' +
+        '</div>';
+    });
+    last10HTML += '</div>';
+  }
 
   var statsEl = document.getElementById("sp-stats");
   statsEl.innerHTML = "";
@@ -1208,6 +1243,7 @@ function showSpotlightCard(idx) {
       '</div>';
     statsEl.appendChild(el);
   });
+  if (last10HTML) statsEl.insertAdjacentHTML('beforeend', last10HTML);
 
   // ── Rep Leaderboard ───────────────────────────────────────────────────────
   var repsEl = document.getElementById("spotlight-reps");
@@ -2615,6 +2651,7 @@ fetchSettings().then(function() {
   startPolling();
   resetCountdown();
 });
+
 
 
 </script>
