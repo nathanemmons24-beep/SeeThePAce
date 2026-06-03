@@ -246,6 +246,12 @@
 <body onclick="unlockAudio()" onkeydown="unlockAudio()">
 <div id="app">
 
+  <!-- TODAY FILTER BANNER -->
+  <div id="today-filter-banner" style="display:none;text-align:center;margin-bottom:12px;padding:8px 20px;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);border-radius:10px;font-family:Orbitron,monospace;font-size:11px;color:#00FF88;letter-spacing:2px">
+    &#x2600;&#xFE0F; SHOWING TODAY'S DEALS ONLY &nbsp;
+    <button onclick="toggleTodayFilter()" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.4);color:#00FF88;border-radius:8px;padding:2px 8px;cursor:pointer;font-family:Orbitron,monospace;font-size:10px;margin-left:8px">CLEAR FILTER</button>
+  </div>
+
   <!-- HEADER -->
   <div id="header">
     <div id="blitz-title">3-Day Tracker</div>
@@ -977,7 +983,38 @@ function renderLeaderboards(data){
 
 // \u2550\u2550 RENDER \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function render(){
-  var data=state.data,goal=state.goal,total=data.total,pct=Math.min((total/goal)*100,115);
+  // Apply today filter if active
+  var rawData = state.data;
+  var data = rawData;
+  if (filterToday && rawData && rawData.teams) {
+    var filtered = { total: 0, teams: {} };
+    Object.entries(rawData.teams).forEach(function(e) {
+      var tName = e[0], team = e[1];
+      var filteredReps = [];
+      team.reps.forEach(function(rep) {
+        var todayDeals = (rep.dealObjs||[]).filter(function(d){ return d.isToday; });
+        if (todayDeals.length > 0) {
+          var todayAmt = todayDeals.reduce(function(s,d){ return s+d.amount; }, 0);
+          filteredReps.push({
+            name: rep.name,
+            amount: todayAmt,
+            deals: todayDeals.map(function(d){ return d.amount; }),
+            dealObjs: todayDeals,
+            todayTotal: todayAmt,
+            latestDate: rep.latestDate
+          });
+        }
+      });
+      if (filteredReps.length > 0) {
+        var teamTotal = filteredReps.reduce(function(s,r){ return s+r.amount; }, 0);
+        filteredReps.sort(function(a,b){ return b.amount-a.amount; });
+        filtered.teams[tName] = { total: teamTotal, reps: filteredReps, color: team.color };
+        filtered.total += teamTotal;
+      }
+    });
+    data = filtered;
+  }
+  var goal=state.goal,total=data.total,pct=Math.min((total/goal)*100,115);
   document.getElementById("blitz-title").textContent=state.title;
   var dot=document.getElementById("status-dot");
   if(state.status==="live"){dot.textContent="\u25CF LIVE";dot.className="live";}
@@ -1780,6 +1817,23 @@ function resetMilestone(){lastMilestone=-1;}
 
 // ══ MENU ══════════════════════════════════════════════════════════════════════
 var menuOpen = false;
+var filterToday = false;
+function toggleTodayFilter() {
+  filterToday = !filterToday;
+  var btn = document.getElementById('today-filter-btn');
+  if (btn) {
+    btn.classList.toggle('active', filterToday);
+    btn.innerHTML = filterToday
+      ? '&#x2600;&#xFE0F; TODAY ONLY &#x2713;'
+      : '&#x2600;&#xFE0F; TODAY ONLY';
+  }
+  // Show a banner when filter is active
+  var banner = document.getElementById('today-filter-banner');
+  if (banner) banner.style.display = filterToday ? 'block' : 'none';
+  // Re-render with filtered data
+  render();
+}
+
 function toggleMenu() {
   menuOpen = !menuOpen;
   var panel = document.getElementById('menu-panel');
@@ -1909,6 +1963,9 @@ fetchSettings().then(function() {
     <button class="menu-item" onclick="openAdmin();toggleMenu()">&#x2699; ADMIN</button>
     <button class="menu-item" onclick="startSpotlight();toggleMenu()">&#x2605; SPOTLIGHT</button>
     <button class="menu-item" onclick="toggleFullscreen();toggleMenu()">&#x26F6; FULLSCREEN</button>
+    <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>
+    <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FILTER</div>
+    <button class="menu-item" id="today-filter-btn" onclick="toggleTodayFilter()">&#x2600;&#xFE0F; TODAY ONLY</button>
     <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>
     <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FULLSCREEN ONLY</div>
     <button class="menu-item" id="scroll-btn" onclick="toggleScroll()">&#x2B06;&#x2B07; AUTO SCROLL</button>
