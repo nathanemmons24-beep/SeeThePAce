@@ -381,6 +381,11 @@ var SAMPLE = {
 };
 
 // \u2550\u2550 HELPERS \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+function formatShortDate(d){
+  if(!d) return "";
+  var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return months[d.getMonth()]+" "+d.getDate();
+}
 var fmt = function(n){ return n>=1000000?"$"+(n/1000000).toFixed(2)+"M":"$"+n.toLocaleString(); };
 function getBadge(amt){ var b=null; for(var i=0;i<IND_BADGES.length;i++) if(amt>=IND_BADGES[i].threshold) b=IND_BADGES[i]; return b; }
 function parseCsvLine(line){
