@@ -136,6 +136,32 @@
     .badge-chip span{color:#475569;font-weight:400}
     #footer{text-align:center;margin-top:24px;color:#1E293B;font-size:11px;font-family:"Orbitron",monospace}
 
+    /* Deal tooltip */
+    .rep-name { position: relative; }
+    .deal-tooltip {
+      display: none;
+      position: absolute;
+      left: 0; top: 100%;
+      z-index: 1000;
+      background: rgba(10,18,35,0.98);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 10px 14px;
+      min-width: 200px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .rep-name:hover .deal-tooltip { display: block; }
+    .deal-tooltip-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 3px 0; font-size: 12px; color: #CBD5E1;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .deal-tooltip-row:last-child { border-bottom: none; }
+    .deal-tooltip-amt { font-family: "Orbitron",monospace; font-size:11px; color:#64748B; margin-left:auto; }
+    .deal-tooltip-header { font-size:10px; color:#475569; font-family:"Orbitron",monospace; letter-spacing:1px; margin-bottom:6px; }
+
     /* Unlock banner */
     #audio-banner{text-align:center;margin-bottom:16px}
   </style>
@@ -202,12 +228,6 @@
   <!-- TOP BAR -->
   <div id="top-bar">
     <button class="btn btn-admin" onclick="openAdmin()">ADMIN</button>
-    <button class="btn btn-admin" style="color:#94A3B8;border-color:rgba(148,163,184,0.2)" onclick="testSound('Ignite')">🔥 Ignite</button>
-    <button class="btn btn-admin" style="color:#60A5FA;border-color:rgba(96,165,250,0.2)" onclick="testSound('Double Pane')">⚡ Double Pane</button>
-    <button class="btn btn-admin" style="color:#34D399;border-color:rgba(52,211,153,0.2)" onclick="testSound('Frame Slayer')">🎯 Frame Slayer</button>
-    <button class="btn btn-admin" style="color:#F59E0B;border-color:rgba(245,158,11,0.2)" onclick="testSound('Elite')">🔥 Elite</button>
-    <button class="btn btn-admin" style="color:#A855F7;border-color:rgba(168,85,247,0.2)" onclick="testSound('Titan')">💎 Titan</button>
-    <button class="btn btn-admin" style="color:#FF4EFF;border-color:rgba(255,78,255,0.2)" onclick="testSound('Legend')">👑 Legend</button>
   </div>
 
   <!-- ADMIN PANEL -->
@@ -234,6 +254,18 @@
       <div style="font-family:'Orbitron',monospace;font-size:11px;color:#475569;letter-spacing:1px;margin-bottom:8px">📋 MANUAL DATA PASTE</div>
       <textarea id="csv-paste" placeholder="Store,Name,Score&#10;0867 - Indy,John Smith,25000" style="width:100%;height:80px;padding:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#E2E8F0;font-size:12px;font-family:monospace;outline:none;resize:vertical;box-sizing:border-box"></textarea>
       <button onclick="loadPasted()" style="margin-top:8px;padding:8px 20px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:8px;color:#00FF88;font-family:'Orbitron',monospace;font-size:11px;cursor:pointer;font-weight:700">⬆ LOAD PASTED DATA</button>
+    </div>
+    <!-- TEST SOUNDS -->
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06)">
+      <div style="font-family:'Orbitron',monospace;font-size:11px;color:#475569;letter-spacing:1px;margin-bottom:10px">🔊 TEST SOUNDS</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <button onclick="testSound('Ignite')"      style="padding:6px 14px;border-radius:20px;background:rgba(148,163,184,0.1);border:1px solid rgba(148,163,184,0.3);color:#94A3B8;font-family:'Orbitron',monospace;font-size:11px;cursor:pointer;font-weight:700">🔥 Ignite</button>
+        <button onclick="testSound('Double Pane')" style="padding:6px 14px;border-radius:20px;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);color:#60A5FA;font-family:'Orbitron',monospace;font-size:11px;cursor:pointer;font-weight:700">⚡ Double Pane</button>
+        <button onclick="testSound('Frame Slayer')" style="padding:6px 14px;border-radius:20px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34D399;font-family:'Orbitron',monospace;font-size:11px;cursor:pointer;font-weight:700">🎯 Frame Slayer</button>
+        <button onclick="testSound('Elite')"       style="padding:6px 14px;border-radius:20px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#F59E0B;font-family:'Orbitron',monospace;font-size:11px;cursor:pointer;font-weight:700">🔥 Elite</button>
+        <button onclick="testSound('Titan')"       style="padding:6px 14px;border-radius:20px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);color:#A855F7;font-family:'Orbitron',monospace;font-size:11px;cursor:pointer;font-weight:700">💎 Titan</button>
+        <button onclick="testSound('Legend')"      style="padding:6px 14px;border-radius:20px;background:rgba(255,78,255,0.1);border:1px solid rgba(255,78,255,0.3);color:#FF4EFF;font-family:'Orbitron',monospace;font-size:11px;cursor:pointer;font-weight:700">👑 Legend</button>
+      </div>
     </div>
   </div>
 
@@ -287,7 +319,7 @@ var IND_BADGES = [
 var SAMPLE = {
   total:164082,
   teams:{
-    "0534 - Westchester":        {total:15552, color:"#00D4FF",reps:[{name:"James Pesce",amount:8602},{name:"John Paul Capuano",amount:6950}]},
+    "0534 - Westchester":        {total:15552, color:"#00D4FF",reps:[{name:"James Pesce",amount:8602,deals:[8602]},{name:"John Paul Capuano",amount:6950}]},
     "0535 - Central Northern NJ":{total:20497, color:"#00FF88",reps:[{name:"Alex Sosnov",amount:13718},{name:"Roberto Rios",amount:6779}]},
     "0576 - Cincinnati":         {total:34114, color:"#FFD700",reps:[{name:"Sean Williamson",amount:20518},{name:"Marcus Staples",amount:13596}]},
     "0791 - Nashville":          {total:29436, color:"#FF6B35",reps:[{name:"JT Conway",amount:29436}]},
@@ -321,7 +353,14 @@ function parseCsv(csv){
       if(!store||!name||!scoreRaw)continue;
       var val=parseFloat(scoreRaw.replace(/[^0-9.]/g,""))||0;
       if(!data.teams[store])data.teams[store]={total:0,reps:[],color:PALETTE[ci++%PALETTE.length]};
-      data.teams[store].reps.push({name:name,amount:val});
+      // Combine duplicate names — track individual deals
+      var existing=data.teams[store].reps.find(function(r){return r.name===name;});
+      if(existing){
+        existing.deals.push(val);
+        existing.amount+=val;
+      } else {
+        data.teams[store].reps.push({name:name,amount:val,deals:[val]});
+      }
       data.teams[store].total+=val; data.total+=val;
     }
     Object.values(data.teams).forEach(function(t){t.reps.sort(function(a,b){return b.amount-a.amount;});});
@@ -582,9 +621,22 @@ function render(){
         var rank=i+1,badge=getBadge(rep.amount),isTop=rank===1;
         var rc=rank===1?"rank1":rank===2?"rank2":rank===3?"rank3":"";
         var rankColor=rank===1?"#FFD700":rank<=3?t.color:"#334155",amtColor=rank===1?"#FFD700":"#64748B";
+        // Build tooltip for multiple deals
+        var tooltipHTML="";
+        var deals=rep.deals||[rep.amount];
+        if(deals.length>1){
+          var sorted=[].concat(deals).sort(function(a,b){return b-a;});
+          tooltipHTML='<div class="deal-tooltip"><div class="deal-tooltip-header">'+deals.length+' DEALS</div>';
+          sorted.forEach(function(d){
+            var db=getBadge(d);
+            tooltipHTML+='<div class="deal-tooltip-row">'+(db?'<span>'+db.icon+'</span>':'<span style="width:14px">&nbsp;</span>')+'<span class="deal-tooltip-amt">'+fmt(d)+'</span></div>';
+          });
+          tooltipHTML+='</div>';
+        }
+        var multi=deals.length>1?'<span style="font-size:10px;color:#475569;margin-left:4px">(×'+deals.length+')</span>':"";
         repsHTML+='<div class="rep-row '+rc+'" style="'+(rank>=2&&rank<=3?"border-left-color:"+t.color:"")+'">'+
           '<span class="rep-rank" style="color:'+rankColor+'">'+rank+'</span>'+
-          '<span class="rep-name">'+rep.name+(isTop?'<span class="top-market-badge">\uD83D\uDC51</span>':'')+'</span>'+
+          '<span class="rep-name" style="position:relative;cursor:'+(deals.length>1?"help":"default")+'">'+rep.name+multi+(isTop?'<span class="top-market-badge">\uD83D\uDC51</span>':'')+tooltipHTML+'</span>'+
           (badge?'<span class="rep-badge">'+badge.icon+'</span>':'')+
           '<span class="rep-amt" style="color:'+amtColor+'">'+fmt(rep.amount)+'</span></div>';
       });
@@ -619,7 +671,7 @@ function openAdmin(){document.getElementById("modal-overlay").classList.add("ope
 function closeModal(){document.getElementById("modal-overlay").classList.remove("open");document.getElementById("modal-pass").value="";document.getElementById("modal-pass").classList.remove("error");document.getElementById("modal-error").style.display="none";}
 function checkPass(){var pw=document.getElementById("modal-pass").value;if(pw===ADMIN_PW||pw===""){closeModal();showAdminPanel();}else{document.getElementById("modal-pass").classList.add("error");document.getElementById("modal-error").style.display="block";}}
 function showAdminPanel(){document.getElementById("admin-panel").style.display="block";document.getElementById("top-bar").innerHTML='<button class="btn btn-back" onclick="hideAdminPanel()">\u2190 AUDIENCE VIEW</button>';}
-function hideAdminPanel(){document.getElementById("admin-panel").style.display="none";document.getElementById("top-bar").innerHTML="<button class=\"btn btn-admin\" onclick=\"openAdmin()\">ADMIN</button><button class=\"btn btn-admin\" style=\"color:#94A3B8;border-color:rgba(148,163,184,0.2)\" onclick=\"testSound(&apos;Ignite&apos;)\">&#x1F525; Ignite</button><button class=\"btn btn-admin\" style=\"color:#60A5FA;border-color:rgba(96,165,250,0.2)\" onclick=\"testSound(&apos;Double Pane&apos;)\">&#x26A1; Double Pane</button><button class=\"btn btn-admin\" style=\"color:#34D399;border-color:rgba(52,211,153,0.2)\" onclick=\"testSound(&apos;Frame Slayer&apos;)\">&#x1F3AF; Frame Slayer</button><button class=\"btn btn-admin\" style=\"color:#F59E0B;border-color:rgba(245,158,11,0.2)\" onclick=\"testSound(&apos;Elite&apos;)\">&#x1F525; Elite</button><button class=\"btn btn-admin\" style=\"color:#A855F7;border-color:rgba(168,85,247,0.2)\" onclick=\"testSound(&apos;Titan&apos;)\">&#x1F48E; Titan</button><button class=\"btn btn-admin\" style=\"color:#FF4EFF;border-color:rgba(255,78,255,0.2)\" onclick=\"testSound(&apos;Legend&apos;)\">&#x1F451; Legend</button>";}
+function hideAdminPanel(){document.getElementById("admin-panel").style.display="none";document.getElementById("top-bar").innerHTML='<button class="btn btn-admin" onclick="openAdmin()">ADMIN</button>';}
 function applySettings(){state.sheetUrl=document.getElementById("inp-url").value.trim()||state.sheetUrl;state.title=document.getElementById("inp-title").value.trim()||state.title;state.goal=parseFloat(document.getElementById("inp-goal").value.replace(/[^0-9.]/g,""))||state.goal;startPolling();}
 function loadPasted(){var csv=document.getElementById("csv-paste").value.trim();if(!csv)return;var parsed=parseCsv(csv);if(parsed&&Object.keys(parsed.teams).length>0){checkBadgeUpgrades(parsed);state.data=parsed;state.status="live";state.lastUpdated=new Date().toLocaleTimeString()+" (manual)";render();resetCountdown();}}
 
