@@ -353,30 +353,51 @@
   </div>
 </div>
 
-<!-- TV CONTROLS -->
-<div id="tv-bar">
-  <button class="tv-btn tv-btn-scroll" id="scroll-btn" onclick="toggleScroll()">&#x2B06;&#x2B07; AUTO SCROLL</button>
-  <button class="tv-btn" style="background:rgba(255,215,0,0.1);border-color:rgba(255,215,0,0.4);color:#FFD700" onclick="startSpotlight()">&#x2605; SPOTLIGHT</button>
-  <button class="tv-btn tv-btn-fs" onclick="toggleFullscreen()">&#x26F6; FULLSCREEN</button>
-</div>
+
 
 <!-- SPOTLIGHT -->
 <div id="spotlight-overlay">
-  <div id="spotlight-card">
-    <div id="spotlight-timer-bar"><div id="spotlight-timer-fill"></div></div>
-    <div id="spotlight-header">
-      <div id="spotlight-num"></div>
-      <div id="spotlight-name"></div>
-      <div id="spotlight-total"></div>
+  <!-- Sticky top bar -->
+  <div id="sp-top-bar">
+    <div id="sp-clock"></div>
+    <div id="sp-global-bar">
+      <div id="sp-global-label">OVERALL PROGRESS</div>
+      <div id="sp-global-track"><div id="sp-global-fill" style="width:0%"></div></div>
+      <div id="sp-global-amt"></div>
     </div>
-    <div id="spotlight-reps"></div>
-    <div id="spotlight-nav">
-      <button onclick="spotlightPrev()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:18px">&#8592;</button>
-      <div id="spotlight-dots"></div>
-      <button onclick="spotlightNext()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:18px">&#8594;</button>
+    <button id="sp-close-btn" onclick="stopSpotlight()">&#x2715; CLOSE</button>
+  </div>
+  <div id="spotlight-inner">
+    <!-- Left: team card + rep leaderboard -->
+    <div id="sp-left">
+      <div id="spotlight-card">
+        <div id="spotlight-timer-bar"><div id="spotlight-timer-fill"></div></div>
+        <div id="spotlight-header">
+          <div id="spotlight-num"></div>
+          <div id="spotlight-name"></div>
+          <div id="spotlight-total"></div>
+          <div id="spotlight-rank-badge"></div>
+        </div>
+        <div id="spotlight-reps"></div>
+        <div id="spotlight-nav">
+          <button onclick="spotlightPrev()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:22px;padding:4px 10px">&#8592;</button>
+          <div id="spotlight-dots"></div>
+          <button onclick="spotlightNext()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:22px;padding:4px 10px">&#8594;</button>
+        </div>
+      </div>
+    </div>
+    <!-- Right: stats sidebar -->
+    <div id="sp-right">
+      <div id="sp-stats-box">
+        <div id="sp-stats-title">&#x1F4CA; TEAM STATS</div>
+        <div id="sp-stats"></div>
+      </div>
     </div>
   </div>
-  <button onclick="stopSpotlight()" style="margin-top:20px;padding:8px 24px;border-radius:20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#94A3B8;font-family:Orbitron,monospace;font-size:11px;cursor:pointer;letter-spacing:1px">&#x2715; CLOSE SPOTLIGHT</button>
+  <div style="display:flex;gap:10px;margin-top:16px;padding-bottom:20px">
+    <button id="sp-pause-btn" onclick="toggleSpotlightPause()" style="padding:8px 24px;border-radius:20px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);color:#00D4FF;font-family:Orbitron,monospace;font-size:11px;cursor:pointer;letter-spacing:1px">&#x23F8; PAUSE</button>
+    <button onclick="stopSpotlight()" style="padding:8px 24px;border-radius:20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#94A3B8;font-family:Orbitron,monospace;font-size:11px;cursor:pointer;letter-spacing:1px">&#x2715; CLOSE</button>
+  </div>
 </div>
 
 <script>
@@ -844,7 +865,7 @@ function render(){
       var isTopStore=(ci===0);
       var name=e[0],t=e[1],display=name.includes(" - ")?name.split(" - ").slice(1).join(" "):name,num=name.split(" - ")[0];
       var card=document.createElement("div"); card.className="team-card";
-      card.style.border=(isTopStore?"2px solid #FFD700":"1px solid "+t.color+"2A");
+      card.style.border=(isTopStore?"2px solid "+t.color:"1px solid "+t.color+"2A");
       card.style.boxShadow="0 0 30px "+t.color+"14";
       var repsHTML="";
       t.reps.forEach(function(rep,i){
