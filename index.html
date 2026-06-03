@@ -267,7 +267,7 @@
 
   <!-- BIGGEST MOVER -->
   <div id="biggest-mover" style="display:none;background:rgba(15,23,42,0.75);border:1px solid rgba(0,212,255,0.2);border-radius:14px;padding:14px 20px;backdrop-filter:blur(14px);margin-bottom:20px">
-    <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#00D4FF;letter-spacing:2px;margin-bottom:8px">&#x1F680; BIGGEST MOVER TODAY</h3>
+    <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#00D4FF;letter-spacing:2px;margin-bottom:12px">&#x1F3C6; TOP MOVERS TODAY</h3>
     <div id="mover-content"></div>
   </div>
 
@@ -1331,101 +1331,81 @@ function renderDayBreakdown(data) {
   if (!el || !barsEl || days.length === 0) { if(el) el.style.display='none'; return; }
   el.style.display = 'block';
 
-  // Build canvas chart
-  barsEl.innerHTML = '<canvas id="day-chart" style="width:100%;height:180px"></canvas>';
-  var canvas = document.getElementById('day-chart');
-  if (!canvas) return;
+  // Build bar chart canvas
+  barsEl.innerHTML = '<canvas id="day-chart" style="width:100%;height:200px;display:block"></canvas>';
+  // Use requestAnimationFrame to ensure element is in DOM and sized
+  requestAnimationFrame(function() {
+    var canvas = document.getElementById('day-chart');
+    if (!canvas) return;
+    var DPR = window.devicePixelRatio || 1;
+    var W = barsEl.clientWidth || 600, H = 200;
+    canvas.width  = W * DPR; canvas.height = H * DPR;
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    var ctx = canvas.getContext('2d');
+    ctx.scale(DPR, DPR);
 
-  // Size canvas to actual pixel size
-  var rect = barsEl.getBoundingClientRect();
-  var W = rect.width || 600, H = 180;
-  canvas.width  = W * (window.devicePixelRatio || 1);
-  canvas.height = H * (window.devicePixelRatio || 1);
-  canvas.style.width  = W + 'px';
-  canvas.style.height = H + 'px';
-  var ctx = canvas.getContext('2d');
-  ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+    var PAD = { top:30, right:16, bottom:48, left:76 };
+    var cW = W - PAD.left - PAD.right;
+    var cH = H - PAD.top  - PAD.bottom;
+    var maxVal = Math.max.apply(null, days.map(function(d){ return d[1].total; }));
+    if (maxVal === 0) return;
 
-  var PAD = { top:16, right:16, bottom:40, left:72 };
-  var cW = W - PAD.left - PAD.right;
-  var cH = H - PAD.top  - PAD.bottom;
-  var maxVal = Math.max.apply(null, days.map(function(d){ return d[1].total; }));
-  if (maxVal === 0) return;
+    var barW = Math.max(20, Math.min(80, cW / days.length * 0.55));
+    var gap   = cW / days.length;
+    var barColors = ['#00D4FF','#00FF88','#FFD700','#FF6B35','#A855F7','#FF4EFF'];
 
-  var pts = days.map(function(d, i) {
-    return {
-      x: PAD.left + (days.length === 1 ? cW/2 : i * cW / (days.length - 1)),
-      y: PAD.top  + cH - (d[1].total / maxVal) * cH,
-      label: d[1].label,
-      total: d[1].total,
-      deals: d[1].deals,
-    };
-  });
+    // Horizontal grid lines + Y labels
+    for (var g = 0; g <= 4; g++) {
+      var gy = PAD.top + (g / 4) * cH;
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(PAD.left, gy); ctx.lineTo(W - PAD.right, gy); ctx.stroke();
+      ctx.fillStyle = '#475569';
+      ctx.font = '10px Orbitron, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(fmt(Math.round(maxVal * (1 - g/4))), PAD.left - 8, gy + 4);
+    }
 
-  // Grid lines
-  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-  ctx.lineWidth = 1;
-  for (var g = 0; g <= 4; g++) {
-    var gy = PAD.top + (g / 4) * cH;
-    ctx.beginPath(); ctx.moveTo(PAD.left, gy); ctx.lineTo(W - PAD.right, gy); ctx.stroke();
-    // Y axis labels
-    var yVal = maxVal * (1 - g/4);
-    ctx.fillStyle = '#334155';
-    ctx.font = '10px Orbitron, monospace';
-    ctx.textAlign = 'right';
-    ctx.fillText(fmt(Math.round(yVal)), PAD.left - 6, gy + 4);
-  }
+    days.forEach(function(entry, i) {
+      var day = entry[1];
+      var barH  = (day.total / maxVal) * cH;
+      var bx    = PAD.left + gap * i + gap/2 - barW/2;
+      var by    = PAD.top + cH - barH;
+      var color = barColors[i % barColors.length];
 
-  // Gradient fill under line
-  var grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + cH);
-  grad.addColorStop(0, 'rgba(0,212,255,0.35)');
-  grad.addColorStop(1, 'rgba(0,212,255,0.0)');
-  ctx.beginPath();
-  ctx.moveTo(pts[0].x, PAD.top + cH);
-  pts.forEach(function(p) { ctx.lineTo(p.x, p.y); });
-  ctx.lineTo(pts[pts.length-1].x, PAD.top + cH);
-  ctx.closePath();
-  ctx.fillStyle = grad;
-  ctx.fill();
+      // Bar gradient
+      var grad = ctx.createLinearGradient(0, by, 0, by + barH);
+      grad.addColorStop(0, color);
+      grad.addColorStop(1, color + '55');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(bx, by, barW, barH, [6,6,0,0])
+                    : ctx.rect(bx, by, barW, barH);
+      ctx.fill();
 
-  // Line
-  ctx.beginPath();
-  ctx.strokeStyle = '#00D4FF';
-  ctx.lineWidth = 2.5;
-  ctx.lineJoin = 'round';
-  pts.forEach(function(p, i) { i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y); });
-  ctx.stroke();
+      // Glow effect
+      ctx.shadowColor = color;
+      ctx.shadowBlur  = 12;
+      ctx.fillStyle   = 'transparent';
+      ctx.fill();
+      ctx.shadowBlur  = 0;
 
-  // Dots + labels
-  pts.forEach(function(p) {
-    // Glow dot
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0,212,255,0.25)';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-    ctx.fillStyle = '#00D4FF';
-    ctx.fill();
-    ctx.strokeStyle = '#060B18';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+      // Amount above bar
+      ctx.fillStyle   = '#E2E8F0';
+      ctx.font        = 'bold 11px Orbitron, monospace';
+      ctx.textAlign   = 'center';
+      ctx.fillText(fmt(day.total), bx + barW/2, by - 6);
 
-    // Amount label above dot
-    ctx.fillStyle = '#E2E8F0';
-    ctx.font = 'bold 11px Orbitron, monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(fmt(p.total), p.x, p.y - 10);
+      // Day label below
+      ctx.fillStyle = color;
+      ctx.font      = '10px Orbitron, monospace';
+      ctx.fillText(day.label, bx + barW/2, H - PAD.bottom + 14);
 
-    // X axis label
-    ctx.fillStyle = '#475569';
-    ctx.font = '10px Orbitron, monospace';
-    ctx.fillText(p.label, p.x, H - PAD.bottom + 16);
-
-    // Deal count below label
-    ctx.fillStyle = '#334155';
-    ctx.font = '9px sans-serif';
-    ctx.fillText(p.deals + ' deal' + (p.deals!==1?'s':''), p.x, H - PAD.bottom + 28);
+      // Deal count
+      ctx.fillStyle = '#475569';
+      ctx.font      = '9px sans-serif';
+      ctx.fillText(day.deals + ' deal' + (day.deals !== 1 ? 's' : ''), bx + barW/2, H - PAD.bottom + 28);
+    });
   });
 }
 
@@ -1445,11 +1425,26 @@ function updateBiggestMover(data) {
   gains.sort(function(a,b){return b.gain-a.gain;});
   var top=gains[0];
   el.style.display='block';
-  mc.innerHTML='<div class="mover-row">'+
-    '<span class="mover-arrow">&#x1F680;</span>'+
-    '<div><div class="mover-name" style="color:'+top.color+'">'+top.name+'</div>'+
-    '<div class="mover-store">'+top.store+'</div></div>'+
-    '<div class="mover-gain">+'+fmt(top.gain)+' today</div></div>';
+  // Show top 3 movers
+  var top3 = gains.slice(0, 3);
+  var html = '<div style="display:flex;gap:12px;flex-wrap:wrap">';
+  top3.forEach(function(rep, i) {
+    var isTop = i === 0;
+    html += '<div style="flex:1;min-width:180px;background:rgba(255,255,255,0.04);border:1px solid '+rep.color+'33;border-radius:12px;padding:14px 16px;'+
+      (isTop?'box-shadow:0 0 20px '+rep.color+'33;':'')+'">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
+        '<span style="font-size:'+(isTop?'22':'16')+'px">' + (i===0?'&#x1F947;':i===1?'&#x1F948;':'&#x1F949;') + '</span>'+
+        '<div>'+
+          '<div style="font-size:'+(isTop?'15':'13')+'px;font-weight:700;color:#E2E8F0;line-height:1.2">'+rep.name+'</div>'+
+          '<div style="font-size:10px;color:'+rep.color+';font-family:Orbitron,monospace">'+rep.store+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="font-family:Orbitron,monospace;font-size:'+(isTop?'20':'16')+'px;font-weight:700;color:#00FF88">+'+fmt(rep.gain)+'</div>'+
+      '<div style="font-size:10px;color:#475569;margin-top:2px">today</div>'+
+    '</div>';
+  });
+  html += '</div>';
+  mc.innerHTML = html;
 }
 
 // ══ CONFETTI + MILESTONE CELEBRATIONS ════════════════════════════════════════
