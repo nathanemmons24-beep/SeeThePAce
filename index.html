@@ -162,6 +162,82 @@
     .deal-tooltip-amt { font-family: "Orbitron",monospace; font-size:11px; color:#64748B; margin-left:auto; }
     .deal-tooltip-header { font-size:10px; color:#475569; font-family:"Orbitron",monospace; letter-spacing:1px; margin-bottom:6px; }
 
+    /* Clock */
+    #blitz-clock {
+      font-family: "Orbitron", monospace;
+      font-size: clamp(14px, 2.5vw, 22px);
+      color: #475569; letter-spacing: 3px;
+      text-align: center; margin-bottom: 16px;
+    }
+    #blitz-clock span { color: #64748B; }
+
+    /* Hot streak glow levels */
+    @keyframes streakPulse {
+      0%,100% { box-shadow: var(--streak-shadow); }
+      50%      { box-shadow: var(--streak-shadow-bright); }
+    }
+    .streak-2  { --streak-glow: rgba(255,180,0,0.4);  --streak-color: #FFB400; }
+    .streak-3  { --streak-glow: rgba(255,150,0,0.5);  --streak-color: #FF9600; }
+    .streak-4  { --streak-glow: rgba(255,120,0,0.55); --streak-color: #FF7800; }
+    .streak-5  { --streak-glow: rgba(255,90,0,0.6);   --streak-color: #FF5A00; }
+    .streak-6  { --streak-glow: rgba(255,60,0,0.65);  --streak-color: #FF3C00; }
+    .streak-7  { --streak-glow: rgba(255,30,0,0.7);   --streak-color: #FF1E00; }
+    .streak-8  { --streak-glow: rgba(255,10,0,0.75);  --streak-color: #FF0A00; }
+    .streak-9  { --streak-glow: rgba(255,0,0,0.8);    --streak-color: #FF0000; }
+    .streak-10 { --streak-glow: rgba(255,0,0,0.9);    --streak-color: #FF0000; }
+
+    .hot-streak {
+      border-color: var(--streak-color) !important;
+      --streak-shadow: 0 0 20px var(--streak-glow), 0 0 40px var(--streak-glow);
+      --streak-shadow-bright: 0 0 30px var(--streak-glow), 0 0 60px var(--streak-glow), 0 0 90px var(--streak-glow);
+      box-shadow: var(--streak-shadow) !important;
+      animation: streakPulse 1.5s ease-in-out infinite !important;
+    }
+    .streak-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 1px 7px; border-radius: 10px; font-size: 10px; font-weight: 700;
+      background: rgba(255,80,0,0.2); border: 1px solid rgba(255,80,0,0.5);
+      color: #FF5000; margin-left: 6px; white-space: nowrap;
+      animation: streakPulse 1s ease-in-out infinite;
+    }
+
+    /* Spotlight overlay */
+    #spotlight-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+      flex-direction: column;
+    }
+    #spotlight-overlay.active { display: flex; }
+    #spotlight-card {
+      width: min(520px, 90vw);
+      background: rgba(15,23,42,0.97);
+      border-radius: 20px; overflow: hidden;
+      box-shadow: 0 0 80px var(--sp-color, #00D4FF), 0 0 160px var(--sp-color, #00D4FF44);
+      border: 2px solid var(--sp-color, #00D4FF);
+      animation: badgePop 0.4s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    #spotlight-header {
+      padding: 20px 24px; text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    #spotlight-num   { font-size: 11px; font-family: "Orbitron",monospace; letter-spacing: 3px; opacity: 0.6; }
+    #spotlight-name  { font-family: "Orbitron",monospace; font-weight: 900; font-size: 26px; letter-spacing: 2px; margin-top: 4px; }
+    #spotlight-total { font-family: "Orbitron",monospace; font-size: 32px; font-weight: 700; color: #fff; margin-top: 6px; }
+    #spotlight-reps  { padding: 12px 8px; max-height: 55vh; overflow-y: auto; }
+    #spotlight-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.06);
+      font-family: "Orbitron",monospace; font-size: 11px; color: #334155;
+    }
+    #spotlight-dots { display: flex; gap: 6px; }
+    .sp-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.15); transition: background 0.3s; }
+    .sp-dot.active { background: var(--sp-color, #00D4FF); box-shadow: 0 0 6px var(--sp-color, #00D4FF); }
+    #spotlight-timer-bar { height: 3px; background: rgba(255,255,255,0.06); }
+    #spotlight-timer-fill { height: 100%; width: 100%; background: var(--sp-color,#00D4FF); transition: width linear; }
+
     /* TV / Fullscreen mode */
     #tv-bar {
       position: fixed; bottom: 16px; right: 16px;
@@ -192,6 +268,11 @@
   <div id="header">
     <div id="blitz-title">3-Day BLITZ</div>
     <div id="subtitle">RENEWAL BY ANDERSEN — SEETHEPACE.COM <span id="status-dot" class="loading">● CONNECTING…</span></div>
+  </div>
+
+  <!-- CLOCK -->
+  <div id="blitz-clock">
+    <span id="clock-time">--:--:--</span> <span id="clock-ampm"></span> &nbsp;·&nbsp; <span id="clock-date"></span>
   </div>
 
   <!-- REFRESH TIMER -->
@@ -295,9 +376,29 @@
   <div id="footer">AUTO-SYNCS EVERY 10s · SEETHEPACE.COM</div>
 </div>
 
+<!-- SPOTLIGHT OVERLAY -->
+<div id="spotlight-overlay">
+  <div id="spotlight-card">
+    <div id="spotlight-timer-bar"><div id="spotlight-timer-fill"></div></div>
+    <div id="spotlight-header">
+      <div id="spotlight-num"></div>
+      <div id="spotlight-name"></div>
+      <div id="spotlight-total"></div>
+    </div>
+    <div id="spotlight-reps"></div>
+    <div id="spotlight-nav">
+      <button onclick="spotlightPrev()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:18px">&#8592;</button>
+      <div id="spotlight-dots"></div>
+      <button onclick="spotlightNext()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:18px">&#8594;</button>
+    </div>
+  </div>
+  <button onclick="stopSpotlight()" style="margin-top:20px;padding:8px 24px;border-radius:20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#94A3B8;font-family:'Orbitron',monospace;font-size:11px;cursor:pointer;letter-spacing:1px">✕ CLOSE SPOTLIGHT</button>
+</div>
+
 <!-- TV CONTROLS (always visible, bottom right) -->
 <div id="tv-bar">
   <button class="tv-btn tv-btn-scroll" id="scroll-btn" onclick="toggleScroll()" title="Auto-scroll for TV display">⬆⬇ AUTO SCROLL</button>
+  <button class="tv-btn" style="background:rgba(255,215,0,0.1);border-color:rgba(255,215,0,0.4);color:#FFD700" onclick="startSpotlight()" title="Rotating store spotlight">★ SPOTLIGHT</button>
   <button class="tv-btn tv-btn-fs" onclick="toggleFullscreen()" title="Fullscreen">⛶ FULLSCREEN</button>
 </div>
 
@@ -315,7 +416,6 @@
 </div>
 
 <script>
-// \u2550\u2550 CONFIG \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 var SHEET_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSCj5mTfE2UMOth-X_C8voZToabgP92fRNogyQHc4bxEB4AnSkm80TPEYYlWj6wvU2L37PaMA_GqC-/pub?gid=0&single=true&output=csv";
 var POLL_MS    = 10000;
 var ADMIN_PW   = "blitz2024";
@@ -390,6 +490,7 @@ function parseCsv(csv){
 
 // \u2550\u2550 STATE \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 var state={sheetUrl:SHEET_URL,goal:500000,title:"3-Day BLITZ",data:SAMPLE,status:"demo",lastUpdated:null};
+var streakCounts = {}; // "Name|Team" -> number of deals (not syncs)
 var pollTimer=null,countdownTimer=null,secsLeft=10,CIRC=2*Math.PI*15;
 
 // \u2550\u2550 FETCH \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
@@ -448,6 +549,7 @@ async function fetchData(){
       var parsed=parseCsv(csv);
       if(parsed){
         checkBadgeUpgrades(parsed);
+        updateStreaks(parsed);
         state.data=parsed; state.status="live"; state.lastUpdated=new Date().toLocaleTimeString();
         render(); resetCountdown(); return;
       }
@@ -766,9 +868,13 @@ function render(){
           tooltipHTML+='</div>';
         }
         var multi=deals.length>1?'<span style="font-size:10px;color:#475569;margin-left:4px">(×'+deals.length+')</span>':"";
-        repsHTML+='<div class="rep-row '+rc+'" style="'+(rank>=2&&rank<=3?"border-left-color:"+t.color:"")+'">'+
+        var repKey=rep.name+"|"+name;
+        var sl=getStreakLevel(repKey);
+        var scls=streakClass(sl);
+        var sbadge=streakBadgeHTML(sl);
+        repsHTML+='<div class="rep-row '+rc+' '+scls+'" style="'+(rank>=2&&rank<=3?"border-left-color:"+t.color:"")+'">'+
           '<span class="rep-rank" style="color:'+rankColor+'">'+rank+'</span>'+
-          '<span class="rep-name" style="position:relative;cursor:'+(deals.length>1?"help":"default")+'">'+rep.name+multi+(isTop?'<span class="top-market-badge">\uD83D\uDC51</span>':'')+tooltipHTML+'</span>'+
+          '<span class="rep-name" style="position:relative;cursor:'+(deals.length>1?"help":"default")+'">'+rep.name+multi+sbadge+(isTop?'<span class="top-market-badge">\uD83D\uDC51</span>':'')+tooltipHTML+'</span>'+
           (badge?'<span class="rep-badge">'+badge.icon+'</span>':'')+
           '<span class="rep-amt" style="color:'+amtColor+'">'+fmt(rep.amount)+'</span></div>';
       });
@@ -848,7 +954,162 @@ function loadSettings() {
   } catch(e) {}
 }
 
-// ══ FULLSCREEN ════════════════════════════════════════════════════════════════
+// ══ CLOCK ══════════════════════════════════════════════════════════════════════
+function updateClock() {
+  var now = new Date();
+  var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+  var ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  var pad = function(n){ return n < 10 ? "0"+n : n; };
+  var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var dateStr = days[now.getDay()] + ", " + months[now.getMonth()] + " " + now.getDate();
+  var ct = document.getElementById("clock-time");
+  var ca = document.getElementById("clock-ampm");
+  var cd = document.getElementById("clock-date");
+  if(ct) ct.textContent = pad(h) + ":" + pad(m) + ":" + pad(s);
+  if(ca) ca.textContent = ampm;
+  if(cd) cd.textContent = dateStr;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ══ HOT STREAK ═════════════════════════════════════════════════════════════════
+function updateStreaks(newData) {
+  Object.entries(newData.teams).forEach(function(e) {
+    var teamName = e[0], team = e[1];
+    team.reps.forEach(function(rep) {
+      var key = rep.name + "|" + teamName;
+      var deals = rep.deals ? rep.deals.length : 1;
+      streakCounts[key] = deals;
+    });
+  });
+}
+
+function getStreakLevel(key) {
+  var d = streakCounts[key] || 0;
+  if (d < 2)  return 0;
+  if (d >= 10) return 10;
+  return d;
+}
+
+function streakClass(level) {
+  if (level < 2) return "";
+  return "hot-streak streak-" + Math.min(level, 10);
+}
+
+function streakBadgeHTML(level) {
+  if (level < 2) return "";
+  var flames = level >= 10 ? "🔥🔥🔥" : level >= 7 ? "🔥🔥" : "🔥";
+  var label  = level >= 10 ? "ON FIRE" : level + " DEALS";
+  return '<span class="streak-badge">'+flames+' '+label+'</span>';
+}
+
+// ══ SPOTLIGHT ══════════════════════════════════════════════════════════════════
+var spTimer = null, spIdx = 0, spTeams = [], spActive = false;
+var SP_DURATION = 5000; // ms per card
+
+function startSpotlight() {
+  spTeams = Object.entries(state.data.teams).sort(function(a,b){ return b[1].total - a[1].total; });
+  if (spTeams.length === 0) return;
+  spIdx = 0; spActive = true;
+  document.getElementById("spotlight-overlay").classList.add("active");
+  buildSpotlightDots();
+  showSpotlightCard(spIdx);
+}
+
+function stopSpotlight() {
+  spActive = false;
+  clearTimeout(spTimer);
+  document.getElementById("spotlight-overlay").classList.remove("active");
+  var btn = document.getElementById("scroll-btn");
+  // Stop auto-scroll when spotlight closes if it was running because of TV mode
+}
+
+function spotlightNext() {
+  clearTimeout(spTimer);
+  spIdx = (spIdx + 1) % spTeams.length;
+  showSpotlightCard(spIdx);
+}
+function spotlightPrev() {
+  clearTimeout(spTimer);
+  spIdx = (spIdx - 1 + spTeams.length) % spTeams.length;
+  showSpotlightCard(spIdx);
+}
+
+function buildSpotlightDots() {
+  var dots = document.getElementById("spotlight-dots");
+  if (!dots) return;
+  dots.innerHTML = "";
+  spTeams.forEach(function(_, i) {
+    var d = document.createElement("div");
+    d.className = "sp-dot" + (i === spIdx ? " active" : "");
+    d.onclick = (function(idx){ return function(){ clearTimeout(spTimer); spIdx=idx; showSpotlightCard(idx); }; })(i);
+    dots.appendChild(d);
+  });
+}
+
+function showSpotlightCard(idx) {
+  if (!spActive) return;
+  var entry = spTeams[idx];
+  if (!entry) return;
+  var name = entry[0], team = entry[1];
+  var display = name.includes(" - ") ? name.split(" - ").slice(1).join(" ") : name;
+  var num = name.split(" - ")[0];
+  var color = team.color;
+
+  // Update card
+  document.getElementById("spotlight-card").style.setProperty("--sp-color", color);
+  document.getElementById("spotlight-num").textContent = num;
+  document.getElementById("spotlight-num").style.color = color;
+  document.getElementById("spotlight-name").textContent = display.toUpperCase();
+  document.getElementById("spotlight-name").style.color = color;
+  document.getElementById("spotlight-name").style.textShadow = "0 0 20px " + color;
+  document.getElementById("spotlight-total").textContent = fmt(team.total);
+
+  // Reps
+  var repsEl = document.getElementById("spotlight-reps");
+  repsEl.innerHTML = "";
+  var sorted = [].concat(team.reps).sort(function(a,b){ return b.amount-a.amount; });
+  sorted.forEach(function(rep, i) {
+    var rank = i+1;
+    var badge = getBadge(rep.amount);
+    var key = rep.name + "|" + name;
+    var sl = getStreakLevel(key);
+    var rankColor = rank===1?"#FFD700":rank<=3?color:"#475569";
+    var row = document.createElement("div");
+    row.style.cssText = "display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05);" +
+      (rank===1?"background:linear-gradient(90deg,rgba(255,215,0,0.1),transparent);border-left:3px solid #FFD700":"");
+    row.innerHTML =
+      '<span style="font-family:Orbitron,monospace;font-size:12px;font-weight:700;color:'+rankColor+';width:22px;text-align:center">' + rank + '</span>' +
+      '<span style="flex:1;font-size:15px;color:#E2E8F0;font-weight:'+(rank<=3?700:400)+'">'+rep.name+streakBadgeHTML(sl)+'</span>' +
+      (badge?'<span style="font-size:16px">'+badge.icon+'</span>':'') +
+      '<span style="font-family:Orbitron,monospace;font-size:14px;font-weight:700;color:'+(rank===1?"#FFD700":"#64748B")+'">'+fmt(rep.amount)+'</span>';
+    repsEl.appendChild(row);
+  });
+
+  // Dots
+  document.querySelectorAll(".sp-dot").forEach(function(d,i){ d.classList.toggle("active", i===idx); });
+
+  // Timer bar
+  var fill = document.getElementById("spotlight-timer-fill");
+  if (fill) {
+    fill.style.transition = "none";
+    fill.style.width = "100%";
+    setTimeout(function() {
+      fill.style.transition = "width " + SP_DURATION + "ms linear";
+      fill.style.width = "0%";
+    }, 50);
+  }
+
+  // Auto-advance
+  spTimer = setTimeout(function() {
+    spIdx = (spIdx + 1) % spTeams.length;
+    showSpotlightCard(spIdx);
+  }, SP_DURATION);
+}
+
+// ══ FULLSCREEN ══════════════════════════════════════════════════════════════════
 function toggleFullscreen() {
   if (!document.fullscreenElement && !document.webkitFullscreenElement) {
     var el = document.documentElement;
@@ -930,6 +1191,13 @@ function runScroll() {
 loadSettings();
 renderBadgeLegend();
 render();
+// Fet/// Fetch settings from Google Sheet ONCE then start polling data
+fetchSettings().then(function() {
+  render();
+}).catch(function(){}).finally(function() {
+  startPolling();
+  resetCountdown();
+});
 // Fetch settings from Google Sheet ONCE, then start polling data
 fetchSettings().then(function() {
   render();
