@@ -932,13 +932,18 @@ function render(){
           tooltipHTML+='</div>';
         }
         var multi=deals.length>1?'<span style="font-size:10px;color:#475569;margin-left:4px">(×'+deals.length+')</span>':"";
+        var todayBadge=rep.todayTotal>0?'<span style="font-size:9px;color:#00FF88;background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:1px 5px;font-family:Orbitron,monospace;letter-spacing:1px;display:inline-block">TODAY '+fmt(rep.todayTotal)+'</span>':"";
         var repKey=rep.name+"|"+name;
         var sl=getStreakLevel(repKey);
         var scls=streakClass(sl);
         var sbadge=streakBadgeHTML(sl);
         repsHTML+='<div class="rep-row '+rc+' '+scls+'" style="'+(rank>=2&&rank<=3?"border-left-color:"+t.color:"")+'">'+
           '<span class="rep-rank" style="color:'+rankColor+'">'+rank+'</span>'+
-          '<span class="rep-name" style="position:relative;cursor:'+(deals.length>1?"help":"default")+'">'+rep.name+multi+sbadge+tooltipHTML+'</span>'+
+          '<span class="rep-name" style="position:relative;cursor:'+(deals.length>1?"help":"default")+';display:flex;flex-direction:column;gap:2px">'+
+            '<span style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap">'+rep.name+multi+sbadge+'</span>'+
+            (todayBadge?'<span>'+todayBadge+'</span>':'')+
+            tooltipHTML+
+          '</span>'+
           (badge?'<span class="rep-badge">'+badge.icon+'</span>':'')+
           '<span class="rep-amt" style="color:'+amtColor+'">'+fmt(rep.amount)+'</span></div>';
       });
@@ -1998,13 +2003,18 @@ function render(){
           tooltipHTML+='</div>';
         }
         var multi=deals.length>1?'<span style="font-size:10px;color:#475569;margin-left:4px">(×'+deals.length+')</span>':"";
+        var todayBadge=rep.todayTotal>0?'<span style="font-size:9px;color:#00FF88;background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:1px 5px;font-family:Orbitron,monospace;letter-spacing:1px;display:inline-block">TODAY '+fmt(rep.todayTotal)+'</span>':"";
         var repKey=rep.name+"|"+name;
         var sl=getStreakLevel(repKey);
         var scls=streakClass(sl);
         var sbadge=streakBadgeHTML(sl);
         repsHTML+='<div class="rep-row '+rc+' '+scls+'" style="'+(rank>=2&&rank<=3?"border-left-color:"+t.color:"")+'">'+
           '<span class="rep-rank" style="color:'+rankColor+'">'+rank+'</span>'+
-          '<span class="rep-name" style="position:relative;cursor:'+(deals.length>1?"help":"default")+'">'+rep.name+multi+sbadge+tooltipHTML+'</span>'+
+          '<span class="rep-name" style="position:relative;cursor:'+(deals.length>1?"help":"default")+';display:flex;flex-direction:column;gap:2px">'+
+            '<span style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap">'+rep.name+multi+sbadge+'</span>'+
+            (todayBadge?'<span>'+todayBadge+'</span>':'')+
+            tooltipHTML+
+          '</span>'+
           (badge?'<span class="rep-badge">'+badge.icon+'</span>':'')+
           '<span class="rep-amt" style="color:'+amtColor+'">'+fmt(rep.amount)+'</span></div>';
       });
