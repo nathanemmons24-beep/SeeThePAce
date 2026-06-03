@@ -252,6 +252,11 @@
     body.tv-mode .leader-amt{font-size:15px}
     .tv-btn-bigfont{background:rgba(255,165,0,0.1);border-color:rgba(255,165,0,0.4);color:#FFA500}
     .tv-btn-bigfont.active{background:rgba(255,165,0,0.25);box-shadow:0 0 12px rgba(255,165,0,0.4)}
+    /* Hide scroll + TV mode buttons unless in fullscreen */
+    #scroll-btn, #bigfont-btn { display: none; }
+    :fullscreen #scroll-btn, :fullscreen #bigfont-btn { display: block; }
+    :-webkit-full-screen #scroll-btn, :-webkit-full-screen #bigfont-btn { display: block; }
+    :-moz-full-screen #scroll-btn, :-moz-full-screen #bigfont-btn { display: block; }
     #day-breakdown{background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 20px;backdrop-filter:blur(14px);margin-bottom:20px;display:none}
     #day-breakdown h3{font-family:"Orbitron",monospace;font-size:11px;color:#475569;letter-spacing:2px;margin-bottom:12px}
     .day-bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
@@ -1452,6 +1457,10 @@ function updateFsBtn() {
   if (!btn) return;
   var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
   btn.textContent = isFs ? '⛶ EXIT FULL' : '⛶ FULLSCREEN';
+  if (!isFs) {
+    if (typeof scrollActive !== 'undefined' && scrollActive) toggleScroll();
+    if (typeof tvBigFont !== 'undefined' && tvBigFont) toggleBigFont();
+  }
 }
 
 // ══ AUTO SCROLL ════════════════════════════════════════════════════════════════
@@ -2514,6 +2523,10 @@ function updateFsBtn() {
   if (!btn) return;
   var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
   btn.textContent = isFs ? '⛶ EXIT FULL' : '⛶ FULLSCREEN';
+  if (!isFs) {
+    if (typeof scrollActive !== 'undefined' && scrollActive) toggleScroll();
+    if (typeof tvBigFont !== 'undefined' && tvBigFont) toggleBigFont();
+  }
 }
 
 // ══ AUTO SCROLL ════════════════════════════════════════════════════════════════
