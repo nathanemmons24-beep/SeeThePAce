@@ -457,8 +457,8 @@ async function fetchData(){
 }
 function startPolling(){
   clearInterval(pollTimer);
-  fetchSettings().then(function(){ render(); fetchData(); });
-  pollTimer=setInterval(function(){ fetchSettings().then(function(){ render(); fetchData(); }); },POLL_MS);
+  fetchData();
+  pollTimer=setInterval(fetchData, POLL_MS);
 }
 
 // \u2550\u2550 COUNTDOWN \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
@@ -561,7 +561,13 @@ var SFN={"Ignite":sIgnite,"Double Pane":sDoublePane,"Frame Slayer":sFrameSlayer,
 
 // Queue
 var BQ=[],BQR=false;
-function enqueueBadge(rep,lbl){BQ.push({rep:rep,lbl:lbl});if(!BQR)nextBadge();}
+function enqueueBadge(rep,lbl){
+  // Deduplicate — never queue same rep+badge if already in queue
+  var already = BQ.some(function(x){ return x.rep===rep && x.lbl===lbl; });
+  if(already){ console.log("Skipping duplicate badge:", rep, lbl); return; }
+  BQ.push({rep:rep,lbl:lbl});
+  if(!BQR)nextBadge();
+}
 function nextBadge(){if(!BQ.length){BQR=false;return;}BQR=true;var x=BQ.shift();var fn=SFN[x.lbl];if(fn)fn(x.rep);setTimeout(nextBadge,(BDUR[x.lbl]||3.5)*1000+800);}
 
 function testSound(badge){
@@ -924,14 +930,13 @@ function runScroll() {
 loadSettings();
 renderBadgeLegend();
 render();
-// Fetch settings from Google Sheet first, then start polling
+// Fetch settings from Google Sheet ONCE, then start polling data
 fetchSettings().then(function() {
-  render(); // re-render with sheet settings
+  render();
+}).catch(function(){}).finally(function() {
   startPolling();
-}).catch(function() {
-  startPolling();
+  resetCountdown();
 });
-resetCountdown();
 </script>
 </body>
 </html>
