@@ -393,6 +393,45 @@ var state={sheetUrl:SHEET_URL,goal:500000,title:"3-Day BLITZ",data:SAMPLE,status
 var pollTimer=null,countdownTimer=null,secsLeft=10,CIRC=2*Math.PI*15;
 
 // \u2550\u2550 FETCH \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+var SETTINGS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSCj5mTfE2UMOth-X_C8voZToabgP92fRNogyQHc4bxEB4AnSkm80TPEYYlWj6wvU2L37PaMA_GqC-/pub?gid=1387018828&single=true&output=csv";
+
+async function fetchSettings() {
+  var proxies = [
+    function(u){ return u; },
+    function(u){ return "https://corsproxy.io/?" + encodeURIComponent(u); },
+    function(u){ return "https://api.allorigins.win/raw?url=" + encodeURIComponent(u); },
+  ];
+  for (var i = 0; i < proxies.length; i++) {
+    try {
+      var res = await fetch(proxies[i](SETTINGS_URL), {cache:"no-store"});
+      if (!res.ok) continue;
+      var csv = await res.text();
+      if (csv.trim().startsWith("<") || csv.includes("Host not in allowlist")) continue;
+      var lines = csv.trim().split("\n").filter(Boolean);
+      // Skip header row, parse Key,Value pairs
+      for (var j = 1; j < lines.length; j++) {
+        var cols = parseCsvLine(lines[j]).map(function(c){ return c.replace(/^"|"$/g,"").trim(); });
+        var key = cols[0] ? cols[0].toLowerCase().trim() : "";
+        var val = cols[1] ? cols[1].trim() : "";
+        if (!key || !val) continue;
+        if (key === "title") {
+          state.title = val;
+          console.log("Settings: title =", val);
+        }
+        if (key === "goal") {
+          var g = parseFloat(val.replace(/[^0-9.]/g,""));
+          if (g) { state.goal = g; console.log("Settings: goal =", g); }
+        }
+        if (key === "sheeturl" || key === "sheet url" || key === "sheet_url") {
+          if (val) { state.sheetUrl = val; console.log("Settings: sheetUrl =", val); }
+        }
+      }
+      return; // success
+    } catch(e) { continue; }
+  }
+  console.warn("Settings fetch failed — using saved/default values");
+}
+
 async function fetchData(){
   if(!state.sheetUrl)return;
   var proxies=[
@@ -416,7 +455,11 @@ async function fetchData(){
   }
   state.status="error"; render(); resetCountdown();
 }
-function startPolling(){clearInterval(pollTimer);fetchData();pollTimer=setInterval(fetchData,POLL_MS);}
+function startPolling(){
+  clearInterval(pollTimer);
+  fetchSettings().then(function(){ render(); fetchData(); });
+  pollTimer=setInterval(function(){ fetchSettings().then(function(){ render(); fetchData(); }); },POLL_MS);
+}
 
 // \u2550\u2550 COUNTDOWN \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function resetCountdown(){clearInterval(countdownTimer);secsLeft=POLL_MS/1000;tickCountdown();countdownTimer=setInterval(tickCountdown,1000);}
@@ -818,7 +861,13 @@ function runScroll() {
 loadSettings();
 renderBadgeLegend();
 render();
-startPolling();
+// Fetch settings from Google Sheet first, then start polling
+fetchSettings().then(function() {
+  render(); // re-render with sheet settings
+  startPolling();
+}).catch(function() {
+  startPolling();
+});
 resetCountdown();
 </script>
 </body>
