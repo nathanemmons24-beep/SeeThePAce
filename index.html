@@ -18,7 +18,9 @@
     ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
 
     /* Clock */
-    #blitz-clock{font-family:"Orbitron",monospace;font-size:clamp(14px,2.5vw,22px);color:#475569;letter-spacing:3px;text-align:center;margin-bottom:16px}
+    #blitz-clock{font-family:"Orbitron",monospace;font-size:clamp(14px,2.5vw,22px);color:#475569;letter-spacing:3px;text-align:center;margin-bottom:0;
+      position:sticky;top:0;z-index:200;background:rgba(6,11,24,0.92);
+      backdrop-filter:blur(10px);padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
     #blitz-clock span{color:#64748B}
 
     /* Hot streak */
@@ -33,8 +35,53 @@
     .streak-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700;background:rgba(255,80,0,0.2);border:1px solid rgba(255,80,0,0.5);color:#FF5000;margin-left:6px;white-space:nowrap}
 
     /* Spotlight */
-    #spotlight-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.92);backdrop-filter:blur(6px);align-items:center;justify-content:center;flex-direction:column;pointer-events:auto}
+    #spotlight-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(4,8,18,0.97);backdrop-filter:blur(8px);flex-direction:column;pointer-events:auto;overflow-y:auto}
     #spotlight-overlay.active{display:flex}
+    #sp-top-bar{position:sticky;top:0;z-index:10;background:rgba(4,8,18,0.97);border-bottom:1px solid rgba(255,255,255,0.07);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    #sp-clock{font-family:"Orbitron",monospace;font-size:13px;color:#475569;letter-spacing:2px}
+    #sp-global-bar{flex:1;min-width:200px}
+    #sp-global-label{font-family:"Orbitron",monospace;font-size:9px;color:#334155;letter-spacing:2px;margin-bottom:3px}
+    #sp-global-track{height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+    #sp-global-fill{height:100%;background:linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF);border-radius:3px;transition:width 1s}
+    #sp-global-amt{font-family:"Orbitron",monospace;font-size:11px;color:#FFD700;margin-top:3px}
+    #sp-close-btn{padding:6px 14px;border-radius:16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#64748B;font-family:"Orbitron",monospace;font-size:10px;cursor:pointer;white-space:nowrap}
+
+    #spotlight-inner{width:100%;max-width:900px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px}
+
+    #spotlight-card{width:100%;background:rgba(15,23,42,0.97);border-radius:20px;overflow:hidden;box-shadow:0 0 60px var(--sp-color,#00D4FF44);border:2px solid var(--sp-color,#00D4FF);animation:spCardIn 0.4s ease both}
+    #spotlight-header{padding:20px 24px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08)}
+    #spotlight-num{font-size:11px;font-family:"Orbitron",monospace;letter-spacing:3px;opacity:0.6}
+    #spotlight-name{font-family:"Orbitron",monospace;font-weight:900;font-size:clamp(22px,4vw,36px);letter-spacing:2px;margin-top:4px}
+    #spotlight-total{font-family:"Orbitron",monospace;font-size:clamp(28px,5vw,44px);font-weight:700;color:#fff;margin-top:6px}
+    #spotlight-rank-badge{display:inline-block;margin-top:8px;padding:4px 14px;border-radius:20px;font-family:"Orbitron",monospace;font-size:11px;font-weight:700;letter-spacing:1px}
+
+    /* Stats grid */
+    #sp-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;padding:16px}
+    .sp-stat{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px 16px;text-align:center}
+    .sp-stat-label{font-family:"Orbitron",monospace;font-size:9px;color:#475569;letter-spacing:2px;margin-bottom:6px}
+    .sp-stat-value{font-family:"Orbitron",monospace;font-size:18px;font-weight:700;color:#E2E8F0}
+    .sp-stat-sub{font-size:11px;color:#475569;margin-top:3px}
+
+    /* Reps table */
+    #spotlight-reps{padding:0 12px 12px}
+    .sp-rep-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;margin-bottom:4px;border-left:3px solid transparent}
+    .sp-rep-row.rank1{background:linear-gradient(90deg,rgba(255,215,0,0.12),transparent);border-left-color:#FFD700}
+    .sp-rep-row.rank2{background:rgba(255,255,255,0.04);border-left-color:#C0C0C0}
+    .sp-rep-row.rank3{background:rgba(255,255,255,0.03);border-left-color:#CD7F32}
+    .sp-rep-rank{font-family:"Orbitron",monospace;font-size:12px;font-weight:700;width:24px;text-align:center;flex-shrink:0}
+    .sp-rep-name{flex:1;font-size:15px;font-weight:600;color:#E2E8F0}
+    .sp-rep-deals{font-size:11px;color:#475569;margin-left:4px}
+    .sp-rep-badges{display:flex;gap:4px;flex-shrink:0}
+    .sp-rep-amt{font-family:"Orbitron",monospace;font-size:14px;font-weight:700;flex-shrink:0}
+    .sp-highlight-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap}
+
+    /* Nav */
+    #spotlight-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid rgba(255,255,255,0.06)}
+    #spotlight-dots{display:flex;gap:6px}
+    .sp-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;cursor:pointer}
+    .sp-dot.active{background:var(--sp-color,#00D4FF);box-shadow:0 0 8px var(--sp-color,#00D4FF);transform:scale(1.2)}
+    #spotlight-timer-bar{height:3px;background:rgba(255,255,255,0.06)}
+    #spotlight-timer-fill{height:100%;width:100%;background:var(--sp-color,#00D4FF);transition:width linear}
     #spotlight-card{width:min(520px,90vw);background:rgba(15,23,42,0.97);border-radius:20px;overflow:hidden;box-shadow:0 0 80px var(--sp-color,#00D4FF),0 0 160px rgba(0,212,255,0.2);border:2px solid var(--sp-color,#00D4FF);animation:spCardIn 0.3s ease both}
     #spotlight-header{padding:20px 24px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08)}
     #spotlight-num{font-size:11px;font-family:"Orbitron",monospace;letter-spacing:3px;opacity:0.6}
@@ -317,21 +364,37 @@
 
 <!-- SPOTLIGHT -->
 <div id="spotlight-overlay">
-  <div id="spotlight-card">
-    <div id="spotlight-timer-bar"><div id="spotlight-timer-fill"></div></div>
-    <div id="spotlight-header">
-      <div id="spotlight-num"></div>
-      <div id="spotlight-name"></div>
-      <div id="spotlight-total"></div>
+  <!-- Sticky top bar: clock + global progress + close -->
+  <div id="sp-top-bar">
+    <div id="sp-clock"></div>
+    <div id="sp-global-bar">
+      <div id="sp-global-label">OVERALL PROGRESS</div>
+      <div id="sp-global-track"><div id="sp-global-fill" style="width:0%"></div></div>
+      <div id="sp-global-amt"></div>
     </div>
-    <div id="spotlight-reps"></div>
-    <div id="spotlight-nav">
-      <button onclick="spotlightPrev()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:18px">&#8592;</button>
-      <div id="spotlight-dots"></div>
-      <button onclick="spotlightNext()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:18px">&#8594;</button>
+    <button id="sp-close-btn" onclick="stopSpotlight()">&#x2715; CLOSE</button>
+  </div>
+
+  <div id="spotlight-inner">
+    <div id="spotlight-card">
+      <div id="spotlight-timer-bar"><div id="spotlight-timer-fill"></div></div>
+      <div id="spotlight-header">
+        <div id="spotlight-num"></div>
+        <div id="spotlight-name"></div>
+        <div id="spotlight-total"></div>
+        <div id="spotlight-rank-badge"></div>
+      </div>
+      <!-- Key stats grid -->
+      <div id="sp-stats"></div>
+      <!-- Rep leaderboard -->
+      <div id="spotlight-reps"></div>
+      <div id="spotlight-nav">
+        <button onclick="spotlightPrev()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:22px;padding:4px 10px">&#8592;</button>
+        <div id="spotlight-dots"></div>
+        <button onclick="spotlightNext()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:22px;padding:4px 10px">&#8594;</button>
+      </div>
     </div>
   </div>
-  <button onclick="stopSpotlight()" style="margin-top:20px;padding:8px 24px;border-radius:20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#94A3B8;font-family:Orbitron,monospace;font-size:11px;cursor:pointer;letter-spacing:1px">&#x2715; CLOSE SPOTLIGHT</button>
 </div>
 
 <script>
@@ -924,23 +987,45 @@ function streakBadgeHTML(level) {
 
 // ══ SPOTLIGHT ══════════════════════════════════════════════════════════════════
 var spTimer = null, spIdx = 0, spTeams = [], spActive = false;
-var SP_DURATION = 5000; // ms per card
+var SP_DURATION = 5000;
+var spClockTimer = null;
 
 function startSpotlight() {
   spTeams = Object.entries(state.data.teams).sort(function(a,b){ return b[1].total - a[1].total; });
   if (spTeams.length === 0) return;
   spIdx = 0; spActive = true;
   document.getElementById("spotlight-overlay").classList.add("active");
+  // Scroll overlay to top
+  document.getElementById("spotlight-overlay").scrollTop = 0;
+  updateSpTopBar();
   buildSpotlightDots();
   showSpotlightCard(spIdx);
+  // Tick clock inside spotlight
+  spClockTimer = setInterval(updateSpTopBar, 1000);
 }
 
 function stopSpotlight() {
   spActive = false;
   clearTimeout(spTimer);
+  clearInterval(spClockTimer);
   document.getElementById("spotlight-overlay").classList.remove("active");
-  var btn = document.getElementById("scroll-btn");
-  // Stop auto-scroll when spotlight closes if it was running because of TV mode
+}
+
+function updateSpTopBar() {
+  // Clock
+  var now = new Date();
+  var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+  var ampm = h >= 12 ? "PM" : "AM"; h = h % 12 || 12;
+  var pad = function(n){ return n<10?"0"+n:n; };
+  var clk = document.getElementById("sp-clock");
+  if (clk) clk.textContent = pad(h)+":"+pad(m)+":"+pad(s)+" "+ampm;
+  // Global progress
+  var total = state.data.total, goal = state.goal;
+  var pct = Math.min((total/goal)*100, 100).toFixed(1);
+  var fill = document.getElementById("sp-global-fill");
+  var amt  = document.getElementById("sp-global-amt");
+  if (fill) fill.style.width = pct + "%";
+  if (amt)  amt.textContent  = fmt(total) + " of " + fmt(goal) + " (" + pct + "%)";
 }
 
 function spotlightNext() {
@@ -958,9 +1043,10 @@ function buildSpotlightDots() {
   var dots = document.getElementById("spotlight-dots");
   if (!dots) return;
   dots.innerHTML = "";
-  spTeams.forEach(function(_, i) {
+  spTeams.forEach(function(entry, i) {
     var d = document.createElement("div");
     d.className = "sp-dot" + (i === spIdx ? " active" : "");
+    d.title = (entry[0].includes(" - ") ? entry[0].split(" - ").slice(1).join(" ") : entry[0]);
     d.onclick = (function(idx){ return function(){ clearTimeout(spTimer); spIdx=idx; showSpotlightCard(idx); }; })(i);
     dots.appendChild(d);
   });
@@ -974,50 +1060,116 @@ function showSpotlightCard(idx) {
   var display = name.includes(" - ") ? name.split(" - ").slice(1).join(" ") : name;
   var num = name.split(" - ")[0];
   var color = team.color;
+  var reps = [].concat(team.reps).sort(function(a,b){ return b.amount-a.amount; });
 
-  // Update card
+  // ── Header ────────────────────────────────────────────────────────────────
   document.getElementById("spotlight-card").style.setProperty("--sp-color", color);
-  document.getElementById("spotlight-num").textContent = num;
-  document.getElementById("spotlight-num").style.color = color;
-  document.getElementById("spotlight-name").textContent = display.toUpperCase();
-  document.getElementById("spotlight-name").style.color = color;
-  document.getElementById("spotlight-name").style.textShadow = "0 0 20px " + color;
+  document.getElementById("spotlight-card").style.borderColor = color;
+  document.getElementById("spotlight-card").style.boxShadow = "0 0 60px "+color+"66, 0 0 120px "+color+"22";
+
+  var numEl = document.getElementById("spotlight-num");
+  numEl.textContent = num; numEl.style.color = color;
+
+  var nameEl = document.getElementById("spotlight-name");
+  nameEl.textContent = display.toUpperCase();
+  nameEl.style.color = color;
+  nameEl.style.textShadow = "0 0 30px " + color;
+
   document.getElementById("spotlight-total").textContent = fmt(team.total);
 
-  // Reps
+  // Store rank badge
+  var rankNum = idx + 1;
+  var rankLabel = rankNum===1?"#1 IN THE BLITZ":rankNum===2?"#2 IN THE BLITZ":"#"+rankNum+" IN THE BLITZ";
+  var rankColor = rankNum===1?"#FFD700":rankNum===2?"#C0C0C0":"#CD7F32";
+  var rb = document.getElementById("spotlight-rank-badge");
+  rb.textContent = rankLabel;
+  rb.style.cssText = "display:inline-block;margin-top:8px;padding:4px 14px;border-radius:20px;font-family:Orbitron,monospace;font-size:11px;font-weight:700;letter-spacing:1px;background:"+rankColor+"22;border:1px solid "+rankColor+"66;color:"+rankColor;
+
+  // ── Stats Grid ────────────────────────────────────────────────────────────
+  var totalDeals  = reps.reduce(function(s,r){ return s+(r.deals?r.deals.length:1); }, 0);
+  var avgDeal     = totalDeals > 0 ? team.total / totalDeals : 0;
+  var biggestDeal = 0, biggestRep = "-";
+  var mostDealsN  = 0, mostDealsRep = "-";
+  var topRep      = reps.length > 0 ? reps[0] : null;
+
+  reps.forEach(function(r) {
+    var deals = r.deals || [r.amount];
+    var maxD = Math.max.apply(null, deals);
+    if (maxD > biggestDeal) { biggestDeal = maxD; biggestRep = r.name; }
+    if (deals.length > mostDealsN) { mostDealsN = deals.length; mostDealsRep = r.name; }
+  });
+
+  var stats = [
+    { label:"TOTAL DEALS",    value: totalDeals,           sub: "" },
+    { label:"AVG DEAL SIZE",  value: fmt(Math.round(avgDeal)), sub: "per deal" },
+    { label:"LARGEST DEAL",   value: fmt(biggestDeal),     sub: biggestRep },
+    { label:"MOST DEALS",     value: mostDealsN+" deals",  sub: mostDealsRep },
+    { label:"TOP REP",        value: topRep ? fmt(topRep.amount) : "-", sub: topRep ? topRep.name : "" },
+    { label:"ACTIVE REPS",    value: reps.length,          sub: "on the board" },
+  ];
+
+  var statsEl = document.getElementById("sp-stats");
+  statsEl.innerHTML = "";
+  stats.forEach(function(s) {
+    var el = document.createElement("div");
+    el.className = "sp-stat";
+    el.innerHTML = '<div class="sp-stat-label">'+s.label+'</div>'+
+      '<div class="sp-stat-value" style="color:'+color+'">'+s.value+'</div>'+
+      (s.sub?'<div class="sp-stat-sub">'+s.sub+'</div>':'');
+    statsEl.appendChild(el);
+  });
+
+  // ── Rep Leaderboard ───────────────────────────────────────────────────────
   var repsEl = document.getElementById("spotlight-reps");
-  repsEl.innerHTML = "";
-  var sorted = [].concat(team.reps).sort(function(a,b){ return b.amount-a.amount; });
-  sorted.forEach(function(rep, i) {
+  repsEl.innerHTML = '<div style="font-family:Orbitron,monospace;font-size:10px;color:#334155;letter-spacing:2px;padding:8px 14px 4px">REP LEADERBOARD</div>';
+
+  reps.forEach(function(rep, i) {
     var rank = i+1;
+    var rankColor = rank===1?"#FFD700":rank===2?"#C0C0C0":rank===3?"#CD7F32":color;
     var badge = getBadge(rep.amount);
-    var key = rep.name + "|" + name;
+    var key = rep.name+"|"+name;
     var sl = getStreakLevel(key);
-    var rankColor = rank===1?"#FFD700":rank<=3?color:"#475569";
+    var deals = rep.deals || [rep.amount];
+    var rc = rank===1?"rank1":rank===2?"rank2":rank===3?"rank3":"";
+
+    // Highlight badges for this rep
+    var highlights = [];
+    if (rep === reps[0]) highlights.push('<span class="sp-highlight-badge" style="background:'+color+'22;border:1px solid '+color+'66;color:'+color+'">&#x1F3C6; LEADER</span>');
+    if (rep.amount === biggestDeal) highlights.push('<span class="sp-highlight-badge" style="background:#FFD70022;border:1px solid #FFD70066;color:#FFD700">&#x1F4B0; BIGGEST DEAL</span>');
+    if (deals.length === mostDealsN && mostDealsN > 1) highlights.push('<span class="sp-highlight-badge" style="background:#00FF8822;border:1px solid #00FF8866;color:#00FF88">&#x1F4CA; MOST DEALS</span>');
+    if (sl >= 10) highlights.push(streakBadgeHTML(sl));
+
     var row = document.createElement("div");
-    row.style.cssText = "display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05);" +
-      (rank===1?"background:linear-gradient(90deg,rgba(255,215,0,0.1),transparent);border-left:3px solid #FFD700":"");
+    row.className = "sp-rep-row "+rc;
+    if (rank===2) row.style.borderLeftColor = "#C0C0C0";
+    if (rank===3) row.style.borderLeftColor = "#CD7F32";
     row.innerHTML =
-      '<span style="font-family:Orbitron,monospace;font-size:12px;font-weight:700;color:'+rankColor+';width:22px;text-align:center">' + rank + '</span>' +
-      '<span style="flex:1;font-size:15px;color:#E2E8F0;font-weight:'+(rank<=3?700:400)+'">'+rep.name+streakBadgeHTML(sl)+'</span>' +
-      (badge?'<span style="font-size:16px">'+badge.icon+'</span>':'') +
-      '<span style="font-family:Orbitron,monospace;font-size:14px;font-weight:700;color:'+(rank===1?"#FFD700":"#64748B")+'">'+fmt(rep.amount)+'</span>';
+      '<span class="sp-rep-rank" style="color:'+rankColor+'">'+rank+'</span>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div class="sp-rep-name">'+rep.name+
+          (deals.length>1?'<span class="sp-rep-deals">('+deals.length+' deals)</span>':'')+'</div>'+
+        (highlights.length?'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">'+highlights.join("")+'</div>':'')+'</div>'+
+      (badge?'<span style="font-size:18px;flex-shrink:0">'+badge.icon+'</span>':'')+
+      '<span class="sp-rep-amt" style="color:'+(rank===1?"#FFD700":rankColor)+'">'+fmt(rep.amount)+'</span>';
     repsEl.appendChild(row);
   });
 
-  // Dots
+  // ── Dots + Timer ──────────────────────────────────────────────────────────
   document.querySelectorAll(".sp-dot").forEach(function(d,i){ d.classList.toggle("active", i===idx); });
 
-  // Timer bar
   var fill = document.getElementById("spotlight-timer-fill");
   if (fill) {
-    fill.style.transition = "none";
-    fill.style.width = "100%";
+    fill.style.transition = "none"; fill.style.width = "100%";
+    fill.style.background = color;
     setTimeout(function() {
       fill.style.transition = "width " + SP_DURATION + "ms linear";
       fill.style.width = "0%";
     }, 50);
   }
+
+  // Scroll card into view
+  var inner = document.getElementById("spotlight-inner");
+  if (inner) inner.scrollTop = 0;
 
   // Auto-advance
   spTimer = setTimeout(function() {
@@ -1710,23 +1862,45 @@ function streakBadgeHTML(level) {
 
 // ══ SPOTLIGHT ══════════════════════════════════════════════════════════════════
 var spTimer = null, spIdx = 0, spTeams = [], spActive = false;
-var SP_DURATION = 5000; // ms per card
+var SP_DURATION = 5000;
+var spClockTimer = null;
 
 function startSpotlight() {
   spTeams = Object.entries(state.data.teams).sort(function(a,b){ return b[1].total - a[1].total; });
   if (spTeams.length === 0) return;
   spIdx = 0; spActive = true;
   document.getElementById("spotlight-overlay").classList.add("active");
+  // Scroll overlay to top
+  document.getElementById("spotlight-overlay").scrollTop = 0;
+  updateSpTopBar();
   buildSpotlightDots();
   showSpotlightCard(spIdx);
+  // Tick clock inside spotlight
+  spClockTimer = setInterval(updateSpTopBar, 1000);
 }
 
 function stopSpotlight() {
   spActive = false;
   clearTimeout(spTimer);
+  clearInterval(spClockTimer);
   document.getElementById("spotlight-overlay").classList.remove("active");
-  var btn = document.getElementById("scroll-btn");
-  // Stop auto-scroll when spotlight closes if it was running because of TV mode
+}
+
+function updateSpTopBar() {
+  // Clock
+  var now = new Date();
+  var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+  var ampm = h >= 12 ? "PM" : "AM"; h = h % 12 || 12;
+  var pad = function(n){ return n<10?"0"+n:n; };
+  var clk = document.getElementById("sp-clock");
+  if (clk) clk.textContent = pad(h)+":"+pad(m)+":"+pad(s)+" "+ampm;
+  // Global progress
+  var total = state.data.total, goal = state.goal;
+  var pct = Math.min((total/goal)*100, 100).toFixed(1);
+  var fill = document.getElementById("sp-global-fill");
+  var amt  = document.getElementById("sp-global-amt");
+  if (fill) fill.style.width = pct + "%";
+  if (amt)  amt.textContent  = fmt(total) + " of " + fmt(goal) + " (" + pct + "%)";
 }
 
 function spotlightNext() {
@@ -1744,9 +1918,10 @@ function buildSpotlightDots() {
   var dots = document.getElementById("spotlight-dots");
   if (!dots) return;
   dots.innerHTML = "";
-  spTeams.forEach(function(_, i) {
+  spTeams.forEach(function(entry, i) {
     var d = document.createElement("div");
     d.className = "sp-dot" + (i === spIdx ? " active" : "");
+    d.title = (entry[0].includes(" - ") ? entry[0].split(" - ").slice(1).join(" ") : entry[0]);
     d.onclick = (function(idx){ return function(){ clearTimeout(spTimer); spIdx=idx; showSpotlightCard(idx); }; })(i);
     dots.appendChild(d);
   });
@@ -1760,50 +1935,116 @@ function showSpotlightCard(idx) {
   var display = name.includes(" - ") ? name.split(" - ").slice(1).join(" ") : name;
   var num = name.split(" - ")[0];
   var color = team.color;
+  var reps = [].concat(team.reps).sort(function(a,b){ return b.amount-a.amount; });
 
-  // Update card
+  // ── Header ────────────────────────────────────────────────────────────────
   document.getElementById("spotlight-card").style.setProperty("--sp-color", color);
-  document.getElementById("spotlight-num").textContent = num;
-  document.getElementById("spotlight-num").style.color = color;
-  document.getElementById("spotlight-name").textContent = display.toUpperCase();
-  document.getElementById("spotlight-name").style.color = color;
-  document.getElementById("spotlight-name").style.textShadow = "0 0 20px " + color;
+  document.getElementById("spotlight-card").style.borderColor = color;
+  document.getElementById("spotlight-card").style.boxShadow = "0 0 60px "+color+"66, 0 0 120px "+color+"22";
+
+  var numEl = document.getElementById("spotlight-num");
+  numEl.textContent = num; numEl.style.color = color;
+
+  var nameEl = document.getElementById("spotlight-name");
+  nameEl.textContent = display.toUpperCase();
+  nameEl.style.color = color;
+  nameEl.style.textShadow = "0 0 30px " + color;
+
   document.getElementById("spotlight-total").textContent = fmt(team.total);
 
-  // Reps
+  // Store rank badge
+  var rankNum = idx + 1;
+  var rankLabel = rankNum===1?"#1 IN THE BLITZ":rankNum===2?"#2 IN THE BLITZ":"#"+rankNum+" IN THE BLITZ";
+  var rankColor = rankNum===1?"#FFD700":rankNum===2?"#C0C0C0":"#CD7F32";
+  var rb = document.getElementById("spotlight-rank-badge");
+  rb.textContent = rankLabel;
+  rb.style.cssText = "display:inline-block;margin-top:8px;padding:4px 14px;border-radius:20px;font-family:Orbitron,monospace;font-size:11px;font-weight:700;letter-spacing:1px;background:"+rankColor+"22;border:1px solid "+rankColor+"66;color:"+rankColor;
+
+  // ── Stats Grid ────────────────────────────────────────────────────────────
+  var totalDeals  = reps.reduce(function(s,r){ return s+(r.deals?r.deals.length:1); }, 0);
+  var avgDeal     = totalDeals > 0 ? team.total / totalDeals : 0;
+  var biggestDeal = 0, biggestRep = "-";
+  var mostDealsN  = 0, mostDealsRep = "-";
+  var topRep      = reps.length > 0 ? reps[0] : null;
+
+  reps.forEach(function(r) {
+    var deals = r.deals || [r.amount];
+    var maxD = Math.max.apply(null, deals);
+    if (maxD > biggestDeal) { biggestDeal = maxD; biggestRep = r.name; }
+    if (deals.length > mostDealsN) { mostDealsN = deals.length; mostDealsRep = r.name; }
+  });
+
+  var stats = [
+    { label:"TOTAL DEALS",    value: totalDeals,           sub: "" },
+    { label:"AVG DEAL SIZE",  value: fmt(Math.round(avgDeal)), sub: "per deal" },
+    { label:"LARGEST DEAL",   value: fmt(biggestDeal),     sub: biggestRep },
+    { label:"MOST DEALS",     value: mostDealsN+" deals",  sub: mostDealsRep },
+    { label:"TOP REP",        value: topRep ? fmt(topRep.amount) : "-", sub: topRep ? topRep.name : "" },
+    { label:"ACTIVE REPS",    value: reps.length,          sub: "on the board" },
+  ];
+
+  var statsEl = document.getElementById("sp-stats");
+  statsEl.innerHTML = "";
+  stats.forEach(function(s) {
+    var el = document.createElement("div");
+    el.className = "sp-stat";
+    el.innerHTML = '<div class="sp-stat-label">'+s.label+'</div>'+
+      '<div class="sp-stat-value" style="color:'+color+'">'+s.value+'</div>'+
+      (s.sub?'<div class="sp-stat-sub">'+s.sub+'</div>':'');
+    statsEl.appendChild(el);
+  });
+
+  // ── Rep Leaderboard ───────────────────────────────────────────────────────
   var repsEl = document.getElementById("spotlight-reps");
-  repsEl.innerHTML = "";
-  var sorted = [].concat(team.reps).sort(function(a,b){ return b.amount-a.amount; });
-  sorted.forEach(function(rep, i) {
+  repsEl.innerHTML = '<div style="font-family:Orbitron,monospace;font-size:10px;color:#334155;letter-spacing:2px;padding:8px 14px 4px">REP LEADERBOARD</div>';
+
+  reps.forEach(function(rep, i) {
     var rank = i+1;
+    var rankColor = rank===1?"#FFD700":rank===2?"#C0C0C0":rank===3?"#CD7F32":color;
     var badge = getBadge(rep.amount);
-    var key = rep.name + "|" + name;
+    var key = rep.name+"|"+name;
     var sl = getStreakLevel(key);
-    var rankColor = rank===1?"#FFD700":rank<=3?color:"#475569";
+    var deals = rep.deals || [rep.amount];
+    var rc = rank===1?"rank1":rank===2?"rank2":rank===3?"rank3":"";
+
+    // Highlight badges for this rep
+    var highlights = [];
+    if (rep === reps[0]) highlights.push('<span class="sp-highlight-badge" style="background:'+color+'22;border:1px solid '+color+'66;color:'+color+'">&#x1F3C6; LEADER</span>');
+    if (rep.amount === biggestDeal) highlights.push('<span class="sp-highlight-badge" style="background:#FFD70022;border:1px solid #FFD70066;color:#FFD700">&#x1F4B0; BIGGEST DEAL</span>');
+    if (deals.length === mostDealsN && mostDealsN > 1) highlights.push('<span class="sp-highlight-badge" style="background:#00FF8822;border:1px solid #00FF8866;color:#00FF88">&#x1F4CA; MOST DEALS</span>');
+    if (sl >= 10) highlights.push(streakBadgeHTML(sl));
+
     var row = document.createElement("div");
-    row.style.cssText = "display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.05);" +
-      (rank===1?"background:linear-gradient(90deg,rgba(255,215,0,0.1),transparent);border-left:3px solid #FFD700":"");
+    row.className = "sp-rep-row "+rc;
+    if (rank===2) row.style.borderLeftColor = "#C0C0C0";
+    if (rank===3) row.style.borderLeftColor = "#CD7F32";
     row.innerHTML =
-      '<span style="font-family:Orbitron,monospace;font-size:12px;font-weight:700;color:'+rankColor+';width:22px;text-align:center">' + rank + '</span>' +
-      '<span style="flex:1;font-size:15px;color:#E2E8F0;font-weight:'+(rank<=3?700:400)+'">'+rep.name+streakBadgeHTML(sl)+'</span>' +
-      (badge?'<span style="font-size:16px">'+badge.icon+'</span>':'') +
-      '<span style="font-family:Orbitron,monospace;font-size:14px;font-weight:700;color:'+(rank===1?"#FFD700":"#64748B")+'">'+fmt(rep.amount)+'</span>';
+      '<span class="sp-rep-rank" style="color:'+rankColor+'">'+rank+'</span>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div class="sp-rep-name">'+rep.name+
+          (deals.length>1?'<span class="sp-rep-deals">('+deals.length+' deals)</span>':'')+'</div>'+
+        (highlights.length?'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">'+highlights.join("")+'</div>':'')+'</div>'+
+      (badge?'<span style="font-size:18px;flex-shrink:0">'+badge.icon+'</span>':'')+
+      '<span class="sp-rep-amt" style="color:'+(rank===1?"#FFD700":rankColor)+'">'+fmt(rep.amount)+'</span>';
     repsEl.appendChild(row);
   });
 
-  // Dots
+  // ── Dots + Timer ──────────────────────────────────────────────────────────
   document.querySelectorAll(".sp-dot").forEach(function(d,i){ d.classList.toggle("active", i===idx); });
 
-  // Timer bar
   var fill = document.getElementById("spotlight-timer-fill");
   if (fill) {
-    fill.style.transition = "none";
-    fill.style.width = "100%";
+    fill.style.transition = "none"; fill.style.width = "100%";
+    fill.style.background = color;
     setTimeout(function() {
       fill.style.transition = "width " + SP_DURATION + "ms linear";
       fill.style.width = "0%";
     }, 50);
   }
+
+  // Scroll card into view
+  var inner = document.getElementById("spotlight-inner");
+  if (inner) inner.scrollTop = 0;
 
   // Auto-advance
   spTimer = setTimeout(function() {
