@@ -758,7 +758,9 @@ function nextBadge(){if(!BQ.length){BQR=false;return;}BQR=true;var x=BQ.shift();
 
 function testSound(badge){
   unlockAudio();
-  var fn=SFN[badge]; if(fn) fn("Test Rep",25000);
+  // Test with a deal amount that matches the badge threshold
+  var testAmts={"Ignite":12000,"Double Pane":22000,"Frame Slayer":32000,"Elite":55000,"Titan":80000,"Legend":105000};
+  var fn=SFN[badge]; if(fn) fn("Test Rep",testAmts[badge]||25000);
 }
 
 // \u2550\u2550 BADGE ALERT \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
@@ -912,27 +914,14 @@ function checkBadgeUpgrades(newData) {
     // Amount decreased — deal was removed. Update state silently, no badge.
     var addedAmount = curr.amount - prev.amount;
     if (addedAmount <= 0) {
-      console.log("Deal removed for:", key, "amount changed from", prev.amount, "to", curr.amount);
-      return; // score went down, don't fire badge
+      console.log("Deal removed:", key, prev.amount, "->", curr.amount);
+      return;
     }
-
-    // Badge for the NEWLY added deal amount (not the total)
+    // Badge fires on the INDIVIDUAL DEAL amount only
     var dealBadge = getBadge(addedAmount);
-
-    // Also check if their TOTAL crossed a new threshold
-    var prevBadgeLabel = prev.badge ? prev.badge.label : null;
-    var currBadgeLabel = curr.badge ? curr.badge.label : null;
-    var prevRank = prevBadgeLabel ? order.indexOf(prevBadgeLabel) : -1;
-    var currRank = currBadgeLabel ? order.indexOf(currBadgeLabel) : -1;
-
-    if (currRank > prevRank) {
-      // Total crossed a new badge threshold — use the new total badge
-      upgrades.push({ rep: key.split("|")[0], lbl: currBadgeLabel, amount: curr.amount });
-      console.log("Total badge upgrade:", key, prevBadgeLabel, "->", currBadgeLabel, "| deal:", addedAmount, "| total:", curr.amount);
-    } else if (dealBadge) {
-      // Deal itself earned a badge but total didn't cross new tier
-      upgrades.push({ rep: key.split("|")[0], lbl: dealBadge.label, amount: curr.amount });
-      console.log("Deal badge:", key, "deal:", addedAmount, "->", dealBadge.label, "| total:", curr.amount);
+    if (dealBadge) {
+      upgrades.push({ rep: key.split("|")[0], lbl: dealBadge.label, amount: addedAmount });
+      console.log("Deal badge:", key, "deal:", addedAmount, "->", dealBadge.label);
     }
   });
 
@@ -1064,7 +1053,7 @@ function render(){
       card.style.boxShadow="0 0 30px "+t.color+"14";
       var repsHTML="";
       t.reps.forEach(function(rep,i){
-        var rank=i+1,badge=getBadge(rep.amount),isTop=rank===1;
+        var rank=i+1,isTop=rank===1;
         var rc=rank===1?"rank1":rank===2?"rank2":rank===3?"rank3":"";
         var rankColor=rank===1?"#FFD700":rank<=3?t.color:"#334155",amtColor=rank===1?"#FFD700":"#64748B";
         // Build tooltip for multiple deals
@@ -1099,7 +1088,6 @@ function render(){
             (todayBadge?'<span>'+todayBadge+'</span>':'')+
             tooltipHTML+
           '</span>'+
-          (badge?'<span class="rep-badge">'+badge.icon+'</span>':'')+
           '<span class="rep-amt" style="color:'+amtColor+'">'+fmt(rep.amount)+'</span></div>';
       });
       card.innerHTML='<div class="team-card-header" style="background:linear-gradient(135deg,'+t.color+'1A,'+t.color+'07);border-bottom:1px solid '+t.color+'2A">'+
