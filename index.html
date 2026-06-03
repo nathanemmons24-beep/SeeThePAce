@@ -570,26 +570,75 @@ function showBadgeAlert(icon,text,repName,color,big){
 }
 
 // \u2550\u2550 BADGE DETECTION \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-var prevBadgeState=null;
-function checkBadgeUpgrades(newData){
-  var current={};
-  Object.entries(newData.teams).forEach(function(e){
-    var teamName=e[0],team=e[1];
-    team.reps.forEach(function(rep){
-      var key=rep.name+"|"+teamName,badge=getBadge(rep.amount);
-      current[key]=badge?badge.label:null;
+var prevBadgeState = null;  // { "Name|Team": { amount: X, badge: "Elite" } }
+
+function checkBadgeUpgrades(newData) {
+  var order = ["Ignite","Double Pane","Frame Slayer","Elite","Titan","Legend"];
+
+  // Build current snapshot: track BOTH amount AND badge per rep
+  var current = {};
+  Object.entries(newData.teams).forEach(function(e) {
+    var teamName = e[0], team = e[1];
+    team.reps.forEach(function(rep) {
+      var key = rep.name + "|" + teamName;
+      current[key] = { amount: rep.amount, badge: getBadge(rep.amount) };
     });
   });
-  if(prevBadgeState===null){prevBadgeState=current;console.log("Badge state seeded");return;}
-  var order=["Ignite","Double Pane","Frame Slayer","Elite","Titan","Legend"],upgrades=[];
-  Object.entries(current).forEach(function(e){
-    var key=e[0],curr=e[1],prev=prevBadgeState[key]!==undefined?prevBadgeState[key]:null;
-    var pR=prev?order.indexOf(prev):-1,cR=curr?order.indexOf(curr):-1;
-    if(cR>pR){var rep=key.split("|")[0];upgrades.push({rep:rep,lbl:curr});}
+
+  // First load — seed state, no sounds
+  if (prevBadgeState === null) {
+    prevBadgeState = current;
+    console.log("Badge state seeded:", Object.keys(current).length, "reps");
+    return;
+  }
+
+  var upgrades = [];
+  Object.entries(current).forEach(function(e) {
+    var key = e[0], curr = e[1];
+    var prev = prevBadgeState[key];
+
+    // New rep we haven't seen before
+    if (!prev) {
+      if (curr.badge) upgrades.push({ rep: key.split("|")[0], lbl: curr.badge.label });
+      return;
+    }
+
+    // Amount hasn't changed — skip entirely (prevents repeat fires on same sync)
+    if (curr.amount === prev.amount) return;
+
+    // Amount increased — find which badge the NEW deal amount earned
+    var addedAmount = curr.amount - prev.amount;
+    if (addedAmount <= 0) return; // score went down or no change
+
+    // Badge for the NEWLY added deal amount (not the total)
+    var dealBadge = getBadge(addedAmount);
+
+    // Also check if their TOTAL crossed a new threshold
+    var prevBadgeLabel = prev.badge ? prev.badge.label : null;
+    var currBadgeLabel = curr.badge ? curr.badge.label : null;
+    var prevRank = prevBadgeLabel ? order.indexOf(prevBadgeLabel) : -1;
+    var currRank = currBadgeLabel ? order.indexOf(currBadgeLabel) : -1;
+
+    if (currRank > prevRank) {
+      // Total crossed a new badge threshold — use the new total badge
+      upgrades.push({ rep: key.split("|")[0], lbl: currBadgeLabel });
+      console.log("Total badge upgrade:", key, prevBadgeLabel, "->", currBadgeLabel, "| deal:", addedAmount, "| total:", curr.amount);
+    } else if (dealBadge) {
+      // Deal itself earned a badge but total didn't cross new tier
+      upgrades.push({ rep: key.split("|")[0], lbl: dealBadge.label });
+      console.log("Deal badge:", key, "deal:", addedAmount, "->", dealBadge.label, "| total:", curr.amount);
+    }
   });
-  prevBadgeState=current;
-  upgrades.sort(function(a,b){return order.indexOf(a.lbl)-order.indexOf(b.lbl);});
-  upgrades.forEach(function(u){enqueueBadge(u.rep,u.lbl);});
+
+  // Update state BEFORE playing sounds
+  prevBadgeState = current;
+
+  if (upgrades.length === 0) return;
+
+  // Sort lower tiers first, Legend last
+  upgrades.sort(function(a, b) { return order.indexOf(a.lbl) - order.indexOf(b.lbl); });
+  console.log("Queuing badges:", upgrades.map(function(u){ return u.rep + " -> " + u.lbl; }).join(", "));
+  upgrades.forEach(function(u) { enqueueBadge(u.rep, u.lbl); });
 }
 
 // \u2550\u2550 LEADERBOARDS \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
