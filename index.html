@@ -162,17 +162,31 @@
     .deal-tooltip-amt { font-family: "Orbitron",monospace; font-size:11px; color:#64748B; margin-left:auto; }
     .deal-tooltip-header { font-size:10px; color:#475569; font-family:"Orbitron",monospace; letter-spacing:1px; margin-bottom:6px; }
 
+    /* TV / Fullscreen mode */
+    #tv-bar {
+      position: fixed; bottom: 16px; right: 16px;
+      display: flex; gap: 8px; z-index: 500;
+    }
+    .tv-btn {
+      padding: 8px 16px; border-radius: 20px; font-size: 11px;
+      font-family: "Orbitron", monospace; font-weight: 700;
+      cursor: pointer; border: 1px solid; letter-spacing: 1px;
+      transition: all 0.2s; backdrop-filter: blur(8px);
+    }
+    .tv-btn:hover { opacity: 0.85; transform: scale(1.05); }
+    .tv-btn-fs  { background: rgba(0,212,255,0.1); border-color: rgba(0,212,255,0.4); color: #00D4FF; }
+    .tv-btn-scroll { background: rgba(0,255,136,0.1); border-color: rgba(0,255,136,0.4); color: #00FF88; }
+    .tv-btn-scroll.active { background: rgba(0,255,136,0.25); box-shadow: 0 0 12px rgba(0,255,136,0.4); }
+
+    :fullscreen #tv-bar, :-webkit-full-screen #tv-bar { bottom: 24px; right: 24px; }
+    :fullscreen body, :-webkit-full-screen body { background: #060B18; }
+
     /* Unlock banner */
     #audio-banner{text-align:center;margin-bottom:16px}
   </style>
 </head>
-<body>
+<body onclick="unlockAudio()" onkeydown="unlockAudio()">
 <div id="app">
-
-  <!-- AUDIO UNLOCK -->
-  <div id="audio-banner">
-    <button onclick="unlockAudio()" style="padding:12px 32px;font-size:14px;font-family:'Orbitron',monospace;font-weight:700;letter-spacing:2px;cursor:pointer;border:none;background:linear-gradient(135deg,#7C3AED,#4F46E5);color:#fff;border-radius:30px;box-shadow:0 0 20px rgba(124,58,237,0.5)">🔊 TAP TO ENABLE SOUNDS</button>
-  </div>
 
   <!-- HEADER -->
   <div id="header">
@@ -235,12 +249,12 @@
     <h2>⚙ ADMIN CONTROLS</h2>
     <div class="admin-field">
       <label>GOOGLE SHEET CSV URL</label>
-      <input id="inp-url" type="text" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv"/>
+      <input id="inp-url" type="text" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" oninput="autoSave()"/>
       <div class="hint">Columns: <strong>Store, Name, Score</strong></div>
     </div>
     <div class="admin-row">
-      <div class="admin-field"><label>BLITZ TITLE</label><input id="inp-title" type="text" value="3-Day BLITZ"/></div>
-      <div class="admin-field"><label>GOAL AMOUNT ($)</label><input id="inp-goal" type="text" value="500000"/></div>
+      <div class="admin-field"><label>BLITZ TITLE</label><input id="inp-title" type="text" value="3-Day BLITZ" oninput="autoSave()"/></div>
+      <div class="admin-field"><label>GOAL AMOUNT ($)</label><input id="inp-goal" type="text" value="500000" oninput="autoSave()"/></div>
     </div>
     <div id="admin-actions">
       <button class="btn-apply" onclick="applySettings()">APPLY SETTINGS</button>
@@ -281,6 +295,12 @@
   <div id="footer">AUTO-SYNCS EVERY 10s · SEETHEPACE.COM</div>
 </div>
 
+<!-- TV CONTROLS (always visible, bottom right) -->
+<div id="tv-bar">
+  <button class="tv-btn tv-btn-scroll" id="scroll-btn" onclick="toggleScroll()" title="Auto-scroll for TV display">⬆⬇ AUTO SCROLL</button>
+  <button class="tv-btn tv-btn-fs" onclick="toggleFullscreen()" title="Fullscreen">⛶ FULLSCREEN</button>
+</div>
+
 <!-- MODAL -->
 <div id="modal-overlay">
   <div id="modal-box">
@@ -301,12 +321,12 @@ var POLL_MS    = 10000;
 var ADMIN_PW   = "blitz2024";
 var PALETTE    = ["#00D4FF","#00FF88","#FFD700","#FF6B35","#A855F7","#FF4EFF","#34D399","#F59E0B","#60A5FA","#FB7185"];
 var MILESTONES = [
-  {value:0.10,label:"10%", icon:"\uD83D\uDD25",badge:"Ignition",      color:"#FF6B35"},
-  {value:0.25,label:"25%", icon:"\u26A1",badge:"Quarter Power", color:"#FFD700"},
-  {value:0.50,label:"50%", icon:"\uD83D\uDE80",badge:"Halfway Hero",  color:"#00D4FF"},
-  {value:0.75,label:"75%", icon:"\uD83D\uDC8E",badge:"Diamond Hustle",color:"#A855F7"},
-  {value:1.00,label:"100%",icon:"\uD83D\uDC51",badge:"BLITZ KING",    color:"#FFD700"},
-  {value:1.10,label:"110%",icon:"\uD83C\uDFC6",badge:"LEGEND",        color:"#FF4EFF"},
+  {value:0.10,label:"10%", icon:"\uD83D\uDD25",badge:"Ignition 10%",      color:"#FF6B35"},
+  {value:0.25,label:"25%", icon:"\u26A1",badge:"Quarter Power 25%", color:"#FFD700"},
+  {value:0.50,label:"50%", icon:"\uD83D\uDE80",badge:"Halfway Hero 50%",  color:"#00D4FF"},
+  {value:0.75,label:"75%", icon:"\uD83D\uDC8E",badge:"Diamond Hustle 75%",color:"#A855F7"},
+  {value:1.00,label:"100%",icon:"\uD83D\uDC51",badge:"Pace King 100%",    color:"#FFD700"},
+  {value:1.10,label:"110%",icon:"\uD83C\uDFC6",badge:"LEGEND 110%",        color:"#FF4EFF"},
 ];
 var IND_BADGES = [
   {threshold:10000, label:"Ignite",      icon:"\uD83D\uDD25",color:"#94A3B8"},
@@ -688,6 +708,21 @@ function saveSettings() {
   } catch(e) {}
 }
 
+function autoSave() {
+  // Save whatever is currently typed without applying/reloading
+  try {
+    var url   = document.getElementById("inp-url");
+    var title = document.getElementById("inp-title");
+    var goal  = document.getElementById("inp-goal");
+    var draft = {
+      sheetUrl: (url   && url.value.trim())   ? url.value.trim()   : state.sheetUrl,
+      title:    (title && title.value.trim())  ? title.value.trim() : state.title,
+      goal:     (goal  && goal.value.trim())   ? parseFloat(goal.value.replace(/[^0-9.]/g,"")) || state.goal : state.goal,
+    };
+    localStorage.setItem('blitz_settings', JSON.stringify(draft));
+  } catch(e) {}
+}
+
 function loadSettings() {
   try {
     var saved = localStorage.getItem('blitz_settings');
@@ -701,6 +736,85 @@ function loadSettings() {
   } catch(e) {}
 }
 
+// ══ FULLSCREEN ════════════════════════════════════════════════════════════════
+function toggleFullscreen() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    var el = document.documentElement;
+    if (el.requestFullscreen)       el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  } else {
+    if (document.exitFullscreen)       document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+}
+
+// Update fullscreen button label
+document.addEventListener('fullscreenchange',       updateFsBtn);
+document.addEventListener('webkitfullscreenchange', updateFsBtn);
+function updateFsBtn() {
+  var btn = document.querySelector('.tv-btn-fs');
+  if (!btn) return;
+  var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  btn.textContent = isFs ? '⛶ EXIT FULL' : '⛶ FULLSCREEN';
+}
+
+// ══ AUTO SCROLL ════════════════════════════════════════════════════════════════
+var scrollTimer    = null;
+var scrollActive   = false;
+var scrollDir      = 1;       // 1 = down, -1 = up
+var scrollSpeed    = 1.2;     // px per tick
+var scrollPause    = 2500;    // ms to pause at top/bottom
+var scrollInterval = 16;      // ms per tick (~60fps)
+var scrollPausing  = false;
+
+function toggleScroll() {
+  scrollActive = !scrollActive;
+  var btn = document.getElementById('scroll-btn');
+  if (scrollActive) {
+    btn.classList.add('active');
+    btn.textContent = '⏹ STOP SCROLL';
+    runScroll();
+  } else {
+    btn.classList.remove('active');
+    btn.textContent = '⬆⬇ AUTO SCROLL';
+    clearTimeout(scrollTimer);
+  }
+}
+
+function runScroll() {
+  if (!scrollActive) return;
+  if (scrollPausing) { scrollTimer = setTimeout(runScroll, scrollInterval); return; }
+
+  var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  var cur = window.scrollY;
+
+  // Hit bottom — pause then reverse
+  if (scrollDir === 1 && cur >= maxScroll - 2) {
+    scrollPausing = true;
+    scrollTimer = setTimeout(function() {
+      scrollDir = -1;
+      scrollPausing = false;
+      runScroll();
+    }, scrollPause);
+    return;
+  }
+
+  // Hit top — pause then reverse
+  if (scrollDir === -1 && cur <= 2) {
+    scrollPausing = true;
+    scrollTimer = setTimeout(function() {
+      scrollDir = 1;
+      scrollPausing = false;
+      runScroll();
+    }, scrollPause);
+    return;
+  }
+
+  window.scrollBy(0, scrollDir * scrollSpeed);
+  scrollTimer = setTimeout(runScroll, scrollInterval);
+}
+
+// ══ BOOT ══════════════════════════════════════════════════════════════════════
 loadSettings();
 renderBadgeLegend();
 render();
