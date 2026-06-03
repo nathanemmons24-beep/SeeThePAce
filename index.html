@@ -508,7 +508,14 @@ function parseCsv(csv){
           isToday=(dd.getTime()===today.getTime());
         }
       }
-      if(!data.teams[store])data.teams[store]={total:0,reps:[],color:PALETTE[ci++%PALETTE.length]};
+      if(!data.teams[store]){
+        // Stable color based on store name so it doesn't change between syncs
+        var storeHash=0; for(var h=0;h<store.length;h++) storeHash=(storeHash*31+store.charCodeAt(h))&0xFFFFFF;
+        var storeColor = state.data && state.data.teams && state.data.teams[store]
+          ? state.data.teams[store].color  // reuse existing color if available
+          : PALETTE[storeHash % PALETTE.length];
+        data.teams[store]={total:0,reps:[],color:storeColor};
+      }
       var dealObj={amount:val,date:dealDate,isToday:isToday};
       var existing=data.teams[store].reps.find(function(r){return r.name===name;});
       if(existing){
@@ -788,9 +795,12 @@ function checkBadgeUpgrades(newData) {
     // Amount hasn't changed — skip entirely (prevents repeat fires on same sync)
     if (curr.amount === prev.amount) return;
 
-    // Amount increased — find which badge the NEW deal amount earned
+    // Amount decreased — deal was removed. Update state silently, no badge.
     var addedAmount = curr.amount - prev.amount;
-    if (addedAmount <= 0) return; // score went down or no change
+    if (addedAmount <= 0) {
+      console.log("Deal removed for:", key, "amount changed from", prev.amount, "to", curr.amount);
+      return; // score went down, don't fire badge
+    }
 
     // Badge for the NEWLY added deal amount (not the total)
     var dealBadge = getBadge(addedAmount);
@@ -813,6 +823,17 @@ function checkBadgeUpgrades(newData) {
   });
 
   // Update state BEFORE playing sounds
+  // Clear firedBadges for any rep whose amount changed (deal removed/modified)
+  Object.entries(current).forEach(function(e) {
+    var key = e[0], curr = e[1];
+    var prev = prevBadgeState[key];
+    if (prev && curr.amount !== prev.amount) {
+      // Amount changed — clear their fired badge cache so future badges work
+      Object.keys(firedBadges).forEach(function(k) {
+        if (k.startsWith(key.split("|")[0]+"|")) delete firedBadges[k];
+      });
+    }
+  });
   prevBadgeState = current;
 
   if (upgrades.length === 0) return;
@@ -886,7 +907,7 @@ function render(){
         chip.style.color=m.color;
         chip.style.setProperty("--chip-glow",m.color+"66");
       }
-      chip.textContent=m.icon+" "+m.badge;
+      chip.textContent=m.label;
       chips.appendChild(chip);
     });
   }
@@ -1558,8 +1579,6 @@ function checkMilestoneCelebration(total,goal){
 
 function triggerCelebration(cfg){
   launchConfetti(cfg.size,cfg.color);
-  showMilestoneAnnounce(cfg.msg,cfg.color,cfg.size);
-  playMilestoneSound(cfg.color,cfg.size);
 }
 
 function playMilestoneSound(color,size){
