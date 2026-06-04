@@ -211,10 +211,29 @@
     body.tv-mode #store-rankings{font-size:115%}
     @keyframes toastIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
     @keyframes toastOut{from{transform:translateX(0);opacity:1;max-height:120px}to{transform:translateX(120%);opacity:0;max-height:0;margin-bottom:-8px}}
+
+    #loading-overlay{position:fixed;inset:0;z-index:99999;background:#020B18;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;transition:opacity 0.6s ease}
+    #loading-overlay.fade-out{opacity:0;pointer-events:none}
+    @keyframes stp-glow{0%,100%{text-shadow:0 0 20px #00D4FF,0 0 40px #00D4FF66}50%{text-shadow:0 0 40px #7C3AED,0 0 80px #7C3AED66,0 0 120px #7C3AED33}}
+    @keyframes stp-dots{0%{content:""}33%{content:"."}66%{content:".."}100%{content:"..."}}
+    @keyframes stp-ring{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+    @keyframes stp-pulse{0%,100%{opacity:0.4;transform:scale(0.97)}50%{opacity:1;transform:scale(1.03)}}
+    .stp-title{font-family:Orbitron,monospace;font-size:clamp(28px,6vw,60px);font-weight:900;color:#00D4FF;letter-spacing:10px;animation:stp-glow 2s ease-in-out infinite}
+    .stp-subtitle{font-family:Orbitron,monospace;font-size:13px;color:#334155;letter-spacing:6px;animation:stp-pulse 1.5s ease-in-out infinite}
+    .stp-ring{width:60px;height:60px;border:3px solid rgba(0,212,255,0.15);border-top:3px solid #00D4FF;border-radius:50%;animation:stp-ring 1s linear infinite}
+    .stp-dots::after{content:"";animation:stp-dots 1.5s steps(1) infinite}
   </style>
 </head>
 <body onclick="unlockAudio()" onkeydown="unlockAudio()">
-<div id="app" style="opacity:0;transition:opacity 0.3s">
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay">
+  <div class="stp-title">SEE THE PACE</div>
+  <div class="stp-ring"></div>
+  <div class="stp-subtitle">LOADING<span class="stp-dots"></span></div>
+</div>
+
+<div id="app">
 
   <!-- HEADER -->
   <div id="header">
@@ -2254,6 +2273,22 @@ var firstFetch = false;
 
 
 <script>
+
+var APP_VERSION = "201601";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 var APP_VERSION = "201601";
 
@@ -4548,6 +4583,4 @@ var firedBadges={};
 
 
 
-</script>
-</body>
-</html>
+
