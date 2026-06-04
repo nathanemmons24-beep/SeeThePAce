@@ -602,9 +602,8 @@ async function fetchSettings() {
           var g = parseFloat(val.replace(/[^0-9.]/g,""));
           if (g) { state.goal = g; console.log("Settings: goal =", g); }
         }
-        if (key === "sheeturl" || key === "sheet url" || key === "sheet_url") {
-          if (val) { state.sheetUrl = val; console.log("Settings: sheetUrl =", val); }
-        }
+        // Don't override sheetUrl from Settings — we use Apps Script directly
+        // if (key === "sheeturl") { state.sheetUrl = val; }
       }
       return; // success
     } catch(e) { continue; }
@@ -613,7 +612,6 @@ async function fetchSettings() {
 }
 
 async function fetchData(){
-  // Always use Apps Script URL for data — ignore state.sheetUrl to avoid Settings override
   var DATA_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
   var proxies=[
     function(u){return DATA_URL;},
