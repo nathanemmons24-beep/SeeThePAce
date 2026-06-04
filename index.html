@@ -648,7 +648,7 @@ async function fetchData(){
       }
     }catch(e){continue;}
   }
-  if(state.status!=='live') state.status="error"; render(); resetCountdown();
+  if(state.status!=='live'){ state.status="error"; render(); resetCountdown(); }
 }
 function startPolling(){
   clearInterval(pollTimer);
