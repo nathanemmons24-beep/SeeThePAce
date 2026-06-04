@@ -2059,17 +2059,14 @@ render();
 // Seed badge state immediately so first real sync doesn't fire for existing deals
 if (state.data && state.data.teams) seedBadgeState(state.data);
 // Fetch settings once, then start polling — single call only
-// Load settings then start polling
-fetchSettings().then(function() {
-  render();
-}).catch(function(e){ console.warn("Settings failed:", e); }).finally(function(){
-  // Small delay to ensure page is fully ready
-  setTimeout(function(){
-    fetchData();
-    pollTimer = setInterval(fetchData, POLL_MS);
-    resetCountdown();
-  }, 500);
-});
+// Start fetching data immediately
+setTimeout(function(){
+  fetchData();
+  pollTimer = setInterval(fetchData, POLL_MS);
+  resetCountdown();
+}, 300);
+// Load settings in background
+fetchSettings().then(function(){ render(); }).catch(function(){});
 
 
 
