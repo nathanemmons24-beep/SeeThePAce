@@ -613,10 +613,10 @@ async function fetchSettings() {
 }
 
 async function fetchData(){
-  if(!state.sheetUrl)return;
+  // Always use Apps Script URL for data — ignore state.sheetUrl to avoid Settings override
+  var DATA_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
   var proxies=[
-    function(u){return u;},
-    function(u){return "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";},
+    function(u){return DATA_URL;},
   ];
   for(var i=0;i<proxies.length;i++){
     try{
