@@ -621,15 +621,13 @@ async function fetchData(){
   for(var i=0;i<proxies.length;i++){
     try{
       var url=proxies[i](state.sheetUrl);
-      console.log("Trying:",url.substring(0,80));
       var res=await fetch(url,{cache:"no-store",redirect:"follow",signal:AbortSignal.timeout?AbortSignal.timeout(10000):undefined});
-      console.log("Response:",res.status,res.ok,res.url.substring(0,60));
       if(!res.ok)continue;
       var csv=await res.text();
-      console.log("CSV length:",csv.length,"starts:",csv.substring(0,40));
       if(csv.trim().startsWith("<"))continue; // reject HTML responses
       var parsed=parseCsv(csv);
-      console.log("parseCsv result:", parsed ? Object.keys(parsed.teams).length+" teams, total="+parsed.total : "NULL");
+      // Mark as live immediately once we get valid CSV back
+      if(parsed) state.status="live";
       if(parsed){
         // Only check for new badges if queue is idle — prevents re-fire mid-play
         if (!firstFetch) {
@@ -644,6 +642,7 @@ async function fetchData(){
         }
         updateStreaks(parsed);
         state.data=parsed; state.status="live"; state.lastUpdated=new Date().toLocaleTimeString();
+        console.log("state.data updated, teams:",Object.keys(state.data.teams).length,"total:",state.data.total);
         render(); resetCountdown(); return;
       }
     }catch(e){continue;}
