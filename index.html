@@ -527,12 +527,20 @@ function parseCsv(csv){
       // Parse date column — handles "Tue Jan 06 2026 00:00:00 GMT-0500..." and "6/1/2026"
       var dealDate=null,isToday=false;
       if(dateRaw){
-        // Strip timezone suffix like "GMT-0500 (Eastern Standard Time)"
-        var cleanDate=dateRaw.replace(/GMT[+-]\d{4}.*$/,'').trim();
-        var d=new Date(cleanDate);
-        if(!isNaN(d.getTime())){
-          dealDate=d;
-          var dd=new Date(d); dd.setHours(0,0,0,0);
+        // Apps Script outputs d/m/yyyy (European) — parse manually
+        var dealDate2=null;
+        var dmatch=dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if(dmatch){
+          // d/m/yyyy format
+          dealDate2=new Date(parseInt(dmatch[3]),parseInt(dmatch[2])-1,parseInt(dmatch[1]));
+        } else {
+          // Fallback: strip timezone and try native parse
+          var cleanDate=dateRaw.replace(/GMT[+-]\d{4}.*$/,'').trim();
+          dealDate2=new Date(cleanDate);
+        }
+        if(dealDate2&&!isNaN(dealDate2.getTime())){
+          dealDate=dealDate2;
+          var dd=new Date(dealDate2); dd.setHours(0,0,0,0);
           isToday=(dd.getTime()===today.getTime());
         }
       }
@@ -1636,7 +1644,7 @@ function renderDayBreakdown(data) {
     var maxVal = Math.max.apply(null, days.map(function(d){ return d[1].total; }));
     if (maxVal === 0) return;
 
-    var barW = Math.max(20, Math.min(80, cW / days.length * 0.55));
+    var barW = Math.max(16, Math.min(120, cW / days.length * 0.65));
     var gap   = cW / days.length;
     var barColors = ['#00D4FF','#00FF88','#FFD700','#FF6B35','#A855F7','#FF4EFF'];
 
