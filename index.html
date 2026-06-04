@@ -964,6 +964,7 @@ function renderLeaderboards(data){
 
 // \u2550\u2550 RENDER \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function render(){
+  console.log("render() called, state.data.total=", state.data ? state.data.total : "null", "teams=", state.data ? Object.keys(state.data.teams).length : 0);
   // Apply today filter if active
   var rawData = state.data;
   var data = rawData;
