@@ -184,6 +184,22 @@
     .menu-item.active{color:#00FF88;background:rgba(0,255,136,0.08)}
     #scroll-btn,#bigfont-btn{color:#475569}
     :fullscreen #scroll-btn,:fullscreen #bigfont-btn,:-webkit-full-screen #scroll-btn,:-webkit-full-screen #bigfont-btn{color:#CBD5E1}
+  
+    body.tv-mode #blitz-title{font-size:clamp(40px,7vw,72px)!important;letter-spacing:8px}
+    body.tv-mode #subtitle{font-size:18px;letter-spacing:4px}
+    body.tv-mode #blitz-clock{font-size:clamp(20px,3vw,32px)}
+    body.tv-mode #total-display{font-size:26px}
+    body.tv-mode #bar-track{height:44px;border-radius:22px}
+    body.tv-mode #bar-pct{font-size:16px}
+    body.tv-mode .team-card-name{font-size:20px}
+    body.tv-mode .team-card-total{font-size:30px}
+    body.tv-mode .rep-name{font-size:18px!important;white-space:normal!important;word-break:break-word}
+    body.tv-mode .rep-amt{font-size:17px!important;min-width:110px}
+    body.tv-mode .rep-rank{font-size:14px!important;width:28px}
+    body.tv-mode .rep-row{padding:12px 18px;gap:14px}
+    body.tv-mode #cards-grid{gap:20px}
+    body.tv-mode .team-card{min-width:320px;flex:1 1 320px}
+    body.tv-mode #app{max-width:100%;padding:32px 32px}
   </style>
 </head>
 <body onclick="unlockAudio()" onkeydown="unlockAudio()">
@@ -225,6 +241,18 @@
       <div id="bar-pct">0%</div>
     </div>
     <div id="milestone-chips"></div>
+  </div>
+
+  <!-- DAY BREAKDOWN -->
+  <div id="day-breakdown" style="display:none;background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 20px;backdrop-filter:blur(14px);margin-bottom:20px">
+    <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:2px;margin-bottom:12px">&#x1F4C5; DAY BY DAY</h3>
+    <div id="day-bars"></div>
+  </div>
+
+  <!-- TOP 3 MOVERS TILE -->
+  <div id="top-movers-tile" style="display:none;background:rgba(15,23,42,0.75);border:1px solid rgba(255,107,53,0.2);border-radius:14px;padding:14px 20px;backdrop-filter:blur(14px);margin-bottom:20px">
+    <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#FF6B35;letter-spacing:2px;margin-bottom:12px">&#x1F3C6; TOP MOVERS TODAY</h3>
+    <div id="top-movers-content"></div>
   </div>
 
   <!-- TOP LEADERBOARDS -->
@@ -3911,18 +3939,6 @@ fetchSettings().then(function(){ render(); }).catch(function(){});
 
 
 </script>
-<!-- DAY BREAKDOWN -->
-<div id="day-breakdown" style="display:none;background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 20px;backdrop-filter:blur(14px);margin-bottom:20px">
-  <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:2px;margin-bottom:12px">&#x1F4C5; DAY BY DAY</h3>
-  <div id="day-bars"></div>
-</div>
-
-<!-- TOP 3 MOVERS TILE -->
-<div id="top-movers-tile" style="display:none;background:rgba(15,23,42,0.75);border:1px solid rgba(255,107,53,0.2);border-radius:14px;padding:14px 20px;backdrop-filter:blur(14px);margin-bottom:20px">
-  <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#FF6B35;letter-spacing:2px;margin-bottom:12px">&#x1F3C6; TOP MOVERS TODAY</h3>
-  <div id="top-movers-content"></div>
-</div>
-
 <!-- BIGGEST MOVER (legacy, hidden) -->
 <div id="biggest-mover" style="display:none">
   <div id="mover-content"></div>
@@ -3937,17 +3953,16 @@ fetchSettings().then(function(){ render(); }).catch(function(){});
   <div id="menu-panel" style="display:none;position:absolute;bottom:60px;right:0;background:rgba(10,18,35,0.97);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:8px;width:200px;box-shadow:0 8px 40px rgba(0,0,0,0.6);backdrop-filter:blur(20px)">
     <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">CONTROLS</div>
     <button class="menu-item" onclick="openAdmin();toggleMenu()">&#x2699; ADMIN</button>
-    <button class="menu-item" onclick="openBlitz();toggleMenu()" style="color:#FFD700">&#x26A1; BLITZ SCOREBOARD</button>
-    <button class="menu-item" onclick="startSpotlight();toggleMenu()">&#x2605; SPOTLIGHT</button>
+    <button class="menu-item" style="color:#475569;cursor:default">&#x2728; SPECIAL EVENT <span style="font-size:8px;color:#334155;font-family:Orbitron,monospace;border:1px solid #334155;border-radius:6px;padding:1px 5px;margin-left:4px">COMING SOON</span></button>
+    <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>
+    <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">DISPLAY</div>
     <button class="menu-item" onclick="toggleFullscreen();toggleMenu()">&#x26F6; FULLSCREEN</button>
+    <button class="menu-item" id="bigfont-btn" onclick="toggleBigFont()">&#x1F4FA; TV MODE</button>
     <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>
     <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FILTER</div>
     <button class="menu-item" id="today-filter-btn" onclick="toggleTodayFilter()">&#x2600;&#xFE0F; TODAY ONLY</button>
     <button class="menu-item" id="consolidated-btn" onclick="toggleConsolidated()">&#x1F5FA; CONSOLIDATED</button>
-    <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>
-    <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FULLSCREEN ONLY</div>
-    <button class="menu-item" id="scroll-btn" onclick="toggleScroll()">&#x2B06;&#x2B07; AUTO SCROLL</button>
-    <button class="menu-item" id="bigfont-btn" onclick="toggleBigFont()">&#x1F4FA; TV MODE</button>
+
   </div>
 </div>
 
