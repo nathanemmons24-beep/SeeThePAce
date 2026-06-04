@@ -627,10 +627,8 @@ async function fetchData(){
       if(parsed){
         // Only check for new badges if queue is idle — prevents re-fire mid-play
         if (!firstFetch) {
-          // First real data from sheet — always seed, never fire
           firstFetch = true;
           seedBadgeState(parsed);
-          console.log("First fetch: badge state seeded from live data");
         } else if (!BQR) {
           checkBadgeUpgrades(parsed);
         } else {
@@ -2097,4 +2095,5 @@ fetchSettings().then(function() {
 <canvas id="confetti-canvas" style="position:fixed;inset:0;z-index:9997;pointer-events:none;display:none"></canvas>
 
 </body>
-</html>
+</htmlvar firstFetch = false;
+>
