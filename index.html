@@ -610,7 +610,6 @@ async function fetchSettings() {
 }
 
 async function fetchData(){
-  console.log("fetchData() called at", new Date().toLocaleTimeString());
   var DATA_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
   var proxies=[
     function(u){return DATA_URL;},
@@ -639,7 +638,6 @@ async function fetchData(){
         }
         updateStreaks(parsed);
         state.data=parsed; state.status="live"; state.lastUpdated=new Date().toLocaleTimeString();
-        console.log("state.data updated, teams:",Object.keys(state.data.teams).length,"total:",state.data.total);
         render(); resetCountdown(); return;
       }
     }catch(e){continue;}
@@ -961,7 +959,6 @@ function renderLeaderboards(data){
 
 // \u2550\u2550 RENDER \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function render(){
-  console.log("render() called, state.data.total=", state.data ? state.data.total : "null", "teams=", state.data ? Object.keys(state.data.teams).length : 0);
   // Apply today filter if active
   var rawData = state.data;
   var data = rawData;
