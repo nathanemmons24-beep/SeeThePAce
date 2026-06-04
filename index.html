@@ -2673,6 +2673,7 @@ var firstFetch = false;
 
 
 
+
 var milestoneSeeded = false;
 
 
@@ -4866,6 +4867,30 @@ document.addEventListener('click', function(ev){
   }
 });
 
+
+// ── CREATE MENU VIA JS (avoids HTML parsing issues) ─────────────────────────
+(function(){
+  var wrap = document.createElement('div');
+  wrap.id = 'menu-btn-wrap';
+  wrap.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;width:52px;height:52px;';
+  wrap.innerHTML =
+    '<button id="menu-toggle" onclick="toggleMenu()" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#4F46E5);border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.5);display:flex;align-items:center;justify-content:center">&#x2630;</button>'+
+    '<div id="menu-panel" style="display:none;position:absolute;bottom:60px;right:0;background:rgba(10,18,35,0.97);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:8px;width:200px;box-shadow:0 8px 40px rgba(0,0,0,0.6);backdrop-filter:blur(20px)">'+
+      '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">CONTROLS</div>'+
+      '<button class="menu-item" onclick="openAdmin();toggleMenu()">&#x2699; ADMIN</button>'+
+      '<button class="menu-item" onclick="openBlitz();toggleMenu()" style="color:#FFD700">&#x2728; SPECIAL EVENT</button>'+
+      '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>'+
+      '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">DISPLAY</div>'+
+      '<button class="menu-item" onclick="toggleFullscreen();toggleMenu()">&#x26F6; FULLSCREEN</button>'+
+      '<button class="menu-item" id="bigfont-btn" onclick="toggleBigFont()">&#x1F4FA; TV MODE</button>'+
+      '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>'+
+      '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FILTER</div>'+
+      '<button class="menu-item" id="today-filter-btn" onclick="toggleTodayFilter()">&#x2600; TODAY ONLY</button>'+
+      '<button class="menu-item" id="consolidated-btn" onclick="toggleConsolidated()">&#x1F5FA; CONSOLIDATED</button>'+
+    '</div>';
+  document.body.appendChild(wrap);
+})();
+
 // ══ BOOT ══════════════════════════════════════════════════════════════════════
 loadSettings();
 renderBadgeLegend();
@@ -4894,6 +4919,7 @@ var CLIPS={
 var firstFetch = false;
 var BQ=[],BQR=false;
 var firedBadges={};
+
 
 
 
