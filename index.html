@@ -620,9 +620,13 @@ async function fetchData(){
   ];
   for(var i=0;i<proxies.length;i++){
     try{
-      var res=await fetch(proxies[i](state.sheetUrl),{cache:"no-store",signal:AbortSignal.timeout?AbortSignal.timeout(8000):undefined});
+      var url=proxies[i](state.sheetUrl);
+      console.log("Trying:",url.substring(0,80));
+      var res=await fetch(url,{cache:"no-store",redirect:"follow",signal:AbortSignal.timeout?AbortSignal.timeout(10000):undefined});
+      console.log("Response:",res.status,res.ok,res.url.substring(0,60));
       if(!res.ok)continue;
       var csv=await res.text();
+      console.log("CSV length:",csv.length,"starts:",csv.substring(0,40));
       if(csv.trim().startsWith("<"))continue; // reject HTML responses
       var parsed=parseCsv(csv);
       if(parsed){
