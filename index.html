@@ -615,7 +615,7 @@ async function fetchData(){
   ];
   for(var i=0;i<proxies.length;i++){
     try{
-      var url=proxies[i](state.sheetUrl);
+      var url=proxies[i]("ignored");
       var res=await fetch(url,{cache:"no-store",redirect:"follow",signal:AbortSignal.timeout?AbortSignal.timeout(10000):undefined});
       if(!res.ok)continue;
       var csv=await res.text();
@@ -1212,9 +1212,9 @@ function loadSettings() {
     var saved = localStorage.getItem('blitz_settings');
     if (saved) {
       var s = JSON.parse(saved);
-      // if (s.sheetUrl) state.sheetUrl = s.sheetUrl; // disabled
-      if (s.goal)     state.goal     = s.goal;
-      if (s.title)    state.title    = s.title;
+      // Never load sheetUrl from localStorage
+      if (s.goal)  state.goal  = s.goal;
+      if (s.title) state.title = s.title;
       console.log('Settings loaded:', state.title, state.goal);
     }
   } catch(e) {}
