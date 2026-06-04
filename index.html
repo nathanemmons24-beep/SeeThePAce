@@ -616,10 +616,12 @@ async function fetchData(){
     function(u){return u;},
     function(u){return "https://corsproxy.io/?"+encodeURIComponent(u);},
     function(u){return "https://api.allorigins.win/raw?url="+encodeURIComponent(u);},
+    function(u){return "https://cors-anywhere.herokuapp.com/"+u;},
+    function(u){return "https://thingproxy.freeboard.io/fetch/"+u;},
   ];
   for(var i=0;i<proxies.length;i++){
     try{
-      var res=await fetch(proxies[i](state.sheetUrl),{cache:"no-store"});
+      var res=await fetch(proxies[i](state.sheetUrl),{cache:"no-store",signal:AbortSignal.timeout?AbortSignal.timeout(8000):undefined});
       if(!res.ok)continue;
       var csv=await res.text();
       if(csv.trim().startsWith("<")||csv.includes("Host not in allowlist"))continue;
@@ -642,7 +644,7 @@ async function fetchData(){
       }
     }catch(e){continue;}
   }
-  state.status="error"; render(); resetCountdown();
+  if(state.status!=='live') state.status="error"; render(); resetCountdown();
 }
 function startPolling(){
   clearInterval(pollTimer);
