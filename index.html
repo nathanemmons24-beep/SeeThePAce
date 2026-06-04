@@ -371,6 +371,7 @@
 
 
 
+
 var milestoneSeeded = false;
 
 
@@ -2072,9 +2073,87 @@ function showBlitzBoard() {
   renderBlitz();
 }
 
+var BLITZ_DEMO = {
+  total: 4827350,
+  brackets: {
+    "Large Markets": {
+      total: 2841200, color: "#00FF88", accent: "#FFD700",
+      teams: {
+        "0535 - Central Northern NJ": { total:892400, display:"Central Northern NJ", color:"#00FF88", reps:[
+          {name:"Gerry Zapantis",amount:366857},{name:"Alex Aubrey-Smith",amount:182500},{name:"Ken Haupt",amount:145000},{name:"Rocky Singh",amount:105200},{name:"Barry Dubin",amount:92843}]},
+        "0890 - San Francisco": { total:724600, display:"San Francisco", color:"#FFD700", reps:[
+          {name:"Diana Muldowney",amount:298000},{name:"Daniel Odetto",amount:182600},{name:"Sarah Prentice",amount:144000},{name:"Ryan Acton",amount:100000}]},
+        "0800 - Long Island": { total:538200, display:"Long Island", color:"#00D4FF", reps:[
+          {name:"Marlon McGlashin",amount:182738},{name:"Kevin Upton",amount:152462},{name:"Kyle Gray",amount:121000},{name:"Doug Zakow",amount:82000}]},
+        "0930 - Atlanta": { total:326000, display:"Georgia", color:"#FF6B35", reps:[
+          {name:"Mark Roberts",amount:147960},{name:"Nick Yaffe",amount:91411},{name:"Julia Padgett",amount:86629}]},
+        "0576 - Cincinnati": { total:360000, display:"Cincinnati", color:"#A855F7", reps:[
+          {name:"Jeffrey Dunn",amount:134918},{name:"Logan Kinstle",amount:102455},{name:"Anthony Baird",amount:122627}]}
+      }
+    },
+    "Medium Markets": {
+      total: 1386150, color: "#FFD700", accent: "#00FF88",
+      teams: {
+        "0867 - Indy": { total:548200, display:"Indy", color:"#FFD700", reps:[
+          {name:"Justo Rodriguez",amount:225269},{name:"Brad Dickey",amount:153905},{name:"Jakobe Young",amount:113026},{name:"Brian Caster",amount:56000}]},
+        "0791 - Nashville": { total:412350, display:"Nashville", color:"#00FF88", reps:[
+          {name:"Jonathan Simms",amount:171465},{name:"JT Conway",amount:129436},{name:"Mark Sneed",amount:111449}]},
+        "0534 - Westchester": { total:248600, display:"Westchester", color:"#00D4FF", reps:[
+          {name:"Kim Uniacke",amount:118577},{name:"Nick Patentas",amount:94579},{name:"Brian Greenberg",amount:35444}]},
+        "0868 - So Bend": { total:177000, display:"So Bend", color:"#FF6B35", reps:[
+          {name:"Al Reasonover",amount:127713},{name:"Marshall Clevenger",amount:49287}]}
+      }
+    },
+    "Small Markets": {
+      total: 600000, color: "#00D4FF", accent: "#FFD700",
+      teams: {
+        "0914 - Central GTA": { total:192000, display:"Central GTA", color:"#00D4FF", reps:[
+          {name:"Lee Jackson",amount:97303},{name:"Matthew Dorff",amount:94697}]},
+        "0790 - Knoxville": { total:168000, display:"Knoxville", color:"#FFD700", reps:[
+          {name:"Whitney Kent",amount:98562},{name:"Gregory Fairclough",amount:69438}]},
+        "0792 - Chattanooga": { total:148000, display:"Chattanooga", color:"#00FF88", reps:[
+          {name:"Ben Laney",amount:83432},{name:"Jeff Chambers",amount:64568}]},
+        "0790 - Tri-Cities TN": { total:92000, display:"Tri-Cities TN", color:"#A855F7", reps:[
+          {name:"Greg Hawkins",amount:92000}]}
+      }
+    }
+  }
+};
+
 function getBlitzData() {
   var data = state.data;
+  // Build from real data if available (June 18-20), otherwise use demo
+  var hasRealBlitz = false;
+  if (data && data.teams) {
+    Object.values(data.teams).forEach(function(t){
+      t.reps.forEach(function(r){
+        if((r.dealObjs||[]).some(function(d){
+          if(!d.date) return false;
+          var dd=new Date(d.date); dd.setHours(0,0,0,0);
+          return dd>=BLITZ_START&&dd<=BLITZ_END;
+        })) hasRealBlitz=true;
+      });
+    });
+  }
+  if (!hasRealBlitz) return buildBlitzFromDemo();
   if (!data || !data.teams) return null;
+function buildBlitzFromDemo() {
+  var result = { total: BLITZ_DEMO.total, brackets: {}, allReps: [] };
+  Object.entries(BLITZ_DEMO.brackets).forEach(function(e) {
+    var bName=e[0], b=e[1];
+    result.brackets[bName] = { total:b.total, teams:{}, color:b.color, accent:b.accent };
+    Object.entries(b.teams).forEach(function(te) {
+      var tName=te[0], t=te[1];
+      var repsWithStore = t.reps.map(function(r){ return Object.assign({},r,{store:t.display,color:t.color,bracket:bName}); });
+      result.brackets[bName].teams[tName] = { total:t.total, display:t.display, color:t.color, reps:t.reps };
+      repsWithStore.forEach(function(r){ result.allReps.push(r); });
+    });
+  });
+  result.allReps.sort(function(a,b){return b.amount-a.amount;});
+  return result;
+}
+
+
   var result = { total:0, brackets:{}, allReps:[] };
   // Init brackets
   for (var b in BLITZ_BRACKETS) {
@@ -2112,6 +2191,7 @@ function getBlitzData() {
 
 function renderBlitz() {
   var bd = getBlitzData();
+  var isDemo = bd && bd === buildBlitzFromDemo() || (bd && bd.total === BLITZ_DEMO.total);
   if (!bd) return;
 
   var board = document.getElementById("blitz-board");
@@ -2123,6 +2203,7 @@ function renderBlitz() {
       '<div style="font-family:Orbitron,monospace;font-size:clamp(24px,5vw,48px);font-weight:900;color:#00FF88;letter-spacing:6px;text-shadow:0 0 30px #00FF8866">&#x26A1; BLITZ SCOREBOARD</div>'+
       '<div style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:4px;margin-top:4px">JUNE 18 – 20, 2026</div>'+
     '</div>'+
+    (isDemo ? '<div style="text-align:center;margin-bottom:12px"><span style="font-family:Orbitron,monospace;font-size:9px;color:#FFD700;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:3px 10px;letter-spacing:2px">&#x2139; PREVIEW MODE — DEMO DATA</span></div>' : '')+
 
     // Progress bar
     '<div style="background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.15);border-radius:14px;padding:16px 20px;margin-bottom:20px">'+
@@ -2239,6 +2320,7 @@ var CLIPS={
 var firstFetch = false;
 var BQ=[],BQR=false;
 var firedBadges={};
+
 </script>
 <!-- BIGGEST MOVER (legacy, hidden) -->
 <div id="biggest-mover" style="display:none">
