@@ -135,9 +135,9 @@
     .top-market-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);color:#FFD700;margin-left:6px;white-space:nowrap}
 
     /* Store rankings */
-    #store-rankings{background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 20px;backdrop-filter:blur(14px);margin-bottom:20px}
+    #store-rankings{background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 20px;backdrop-filter:blur(14px);margin-bottom:20px;min-height:180px}
     #store-rankings h3{font-family:"Orbitron",monospace;font-size:11px;color:#475569;letter-spacing:2px;margin-bottom:12px}
-    #rankings-list{display:flex;flex-wrap:wrap;gap:8px}
+    #rankings-list{display:flex;flex-direction:column;gap:0}
     .rank-chip{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:13px}
     .rank-chip .rank-num{font-family:"Orbitron",monospace;font-size:10px;font-weight:700}
     .rank-chip .rank-name{color:#CBD5E1;font-weight:600}
@@ -568,7 +568,7 @@ var _saved = (function(){ try{ return JSON.parse(localStorage.getItem("blitz_set
 var state={
   sheetUrl: _saved.sheetUrl || SHEET_URL,
   goal:     _saved.goal     || 500000,
-  title:    _saved.title    || "3-Day Tracker",
+  title:    _saved.title    || "Loading...",
   data:     SAMPLE,
   status:   "demo",
   lastUpdated: null
@@ -1009,7 +1009,7 @@ function render(){
   var dot=document.getElementById("status-dot");
   if(state.status==="live"){dot.textContent="\u25CF LIVE";dot.className="live";}
   else if(state.status==="error"){dot.textContent="\u25CF SYNC ERROR";dot.className="error";}
-  else{dot.textContent="\u25CF DEMO DATA";dot.className="loading";}
+  else if(state.status==="demo"){dot.textContent="\u25CF LOADING...";dot.className="loading";}
   var lu=document.getElementById("last-updated");
   if(lu)lu.innerHTML=state.lastUpdated?"Last updated: <span>"+state.lastUpdated+"</span>":"";
   document.getElementById("total-display").innerHTML=fmt(total)+' <span>of '+fmt(goal)+'</span>';
@@ -1072,13 +1072,41 @@ function render(){
   if(rl){
     rl.innerHTML="";
     var sorted=Object.entries(data.teams).sort(function(a,b){return b[1].total-a[1].total;});
-    sorted.forEach(function(e,i){
-      var name=e[0],t=e[1],display=name.includes(" - ")?name.split(" - ").slice(1).join(" "):name;
-      var chip=document.createElement("div"); chip.className="rank-chip";
-      chip.style.background=t.color+"12"; chip.style.border="1px solid "+t.color+"33";
-      chip.innerHTML='<span class="rank-num" style="color:'+t.color+'">#'+(i+1)+'</span><span class="rank-name">'+display+'</span><span class="rank-total">'+fmt(t.total)+'</span>';
-      rl.appendChild(chip);
+    // Top 3 podium
+    var podium=document.createElement("div");
+    podium.style.cssText="display:flex;align-items:flex-end;justify-content:center;gap:12px;margin-bottom:16px;";
+    var podiumOrder=[1,0,2]; // 2nd, 1st, 3rd order for display
+    podiumOrder.forEach(function(pos){
+      if(!sorted[pos]) return;
+      var name=sorted[pos][0],t=sorted[pos][1];
+      var display=name.includes(" - ")?name.split(" - ").slice(1).join(" "):name;
+      var heights=["80px","100px","65px"],medals=["🥈","🥇","🥉"],fontSize=["13px","15px","12px"];
+      var col=document.createElement("div");
+      col.style.cssText="display:flex;flex-direction:column;align-items:center;flex:1;max-width:200px;";
+      var medal=medals[pos],ht=heights[pos],fs=fontSize[pos];
+      col.innerHTML=
+        '<div style="font-size:'+(pos===0?"22":"18")+'px;margin-bottom:4px">'+medal+'</div>'+
+        '<div style="font-family:Orbitron,monospace;font-size:'+fs+';font-weight:700;color:'+t.color+';text-align:center;margin-bottom:4px;text-shadow:0 0 12px '+t.color+'66">'+display+'</div>'+
+        '<div style="font-family:Orbitron,monospace;font-size:11px;color:#FFD700;margin-bottom:6px">'+fmt(t.total)+'</div>'+
+        '<div style="width:100%;height:'+ht+';background:'+t.color+'22;border:1px solid '+t.color+'44;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center">'+
+          '<span style="font-family:Orbitron,monospace;font-size:20px;font-weight:900;color:'+t.color+'">#'+(pos+1)+'</span>'+
+        '</div>';
+      podium.appendChild(col);
     });
+    rl.appendChild(podium);
+    // Rest of stores as compact chips
+    if(sorted.length>3){
+      var rest=document.createElement("div");
+      rest.style.cssText="display:flex;flex-wrap:wrap;gap:6px;";
+      sorted.slice(3).forEach(function(e,i){
+        var name=e[0],t=e[1],display=name.includes(" - ")?name.split(" - ").slice(1).join(" "):name;
+        var chip=document.createElement("div");
+        chip.style.cssText="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:16px;background:"+t.color+"12;border:1px solid "+t.color+"33;";
+        chip.innerHTML='<span style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:'+t.color+'">#'+(i+4)+'</span><span style="font-size:12px;color:#CBD5E1">'+display+'</span><span style="font-family:Orbitron,monospace;font-size:10px;color:#64748B">'+fmt(t.total)+'</span>';
+        rest.appendChild(chip);
+      });
+      rl.appendChild(rest);
+    }
   }
   var grid=document.getElementById("cards-grid");
   if(grid){
@@ -1091,41 +1119,59 @@ function render(){
       card.style.border="1px solid "+t.color+"2A";
       card.style.boxShadow="0 0 30px "+t.color+"14";
       var repsHTML="";
+      // Pre-compute team stats for badges
+      var teamDeals=[];
+      t.reps.forEach(function(r){
+        (r.dealObjs||[{amount:r.amount}]).forEach(function(d){ teamDeals.push({name:r.name,amount:d.amount}); });
+      });
+      teamDeals.sort(function(a,b){return b.amount-a.amount;});
+      var teamBigDealRep=teamDeals.length>0?teamDeals[0].name:"";
+      var teamBigDealAmt=teamDeals.length>0?teamDeals[0].amount:0;
+      var teamMostDealsRep="",teamMostDealsN=0;
+      t.reps.forEach(function(r){
+        var n=(r.deals||[r.amount]).length;
+        if(n>teamMostDealsN){teamMostDealsN=n;teamMostDealsRep=r.name;}
+      });
+      var moversSorted=[].concat(t.reps).filter(function(r){return r.todayTotal>0;}).sort(function(a,b){return b.todayTotal-a.todayTotal;});
+      var top3movers=moversSorted.slice(0,3).map(function(r){return r.name;});
+
       t.reps.forEach(function(rep,i){
         var rank=i+1,isTop=rank===1;
         var rc=rank===1?"rank1":rank===2?"rank2":rank===3?"rank3":"";
         var rankColor=rank===1?"#FFD700":rank<=3?t.color:"#334155",amtColor=rank===1?"#FFD700":"#64748B";
-        // Build tooltip for multiple deals
         var deals=rep.deals||[rep.amount];
         var dealObjs=rep.dealObjs||deals.map(function(d){return{amount:d,date:null,isToday:false};});
-        // Always show tooltip — sort by date newest first
         var sortedObjs=[].concat(dealObjs).sort(function(a,b){
           if(a.date&&b.date) return b.date-a.date;
           return b.amount-a.amount;
         });
-        var tooltipHTML='<div class="deal-tooltip">'+
-          '<div class="deal-tooltip-header">'+deals.length+' DEAL'+(deals.length!==1?'S':'')+ '</div>';
+        var tooltipHTML='<div class="deal-tooltip"><div class="deal-tooltip-header">'+deals.length+' DEAL'+(deals.length!==1?'S':'')+ '</div>';
         sortedObjs.forEach(function(obj){
           var db=getBadge(obj.amount);
           var dateStr=obj.date?formatShortDate(obj.date):'';
-          var todayMark=obj.isToday?'<span style="color:#00FF88;font-size:9px;margin-left:4px;font-family:Orbitron,monospace">TODAY</span>':'';          tooltipHTML+='<div class="deal-tooltip-row">'+
-            (db?'<span style="flex-shrink:0">'+db.icon+'</span>':'<span style="width:14px;flex-shrink:0">&nbsp;</span>')+
-            '<span style="flex:1;font-size:11px;color:#94A3B8">'+dateStr+todayMark+'</span>'+
-            '<span class="deal-tooltip-amt">'+fmt(obj.amount)+'</span></div>';
+          var todayMark=obj.isToday?'<span style="color:#00FF88;font-size:9px;margin-left:4px;font-family:Orbitron,monospace">TODAY</span>':'';
+          tooltipHTML+='<div class="deal-tooltip-row">'+(db?'<span style="flex-shrink:0">'+db.icon+'</span>':'<span style="width:14px;flex-shrink:0">&nbsp;</span>')+'<span style="flex:1;font-size:11px;color:#94A3B8">'+dateStr+todayMark+'</span><span class="deal-tooltip-amt">'+fmt(obj.amount)+'</span></div>';
         });
         tooltipHTML+='</div>';
         var multi=deals.length>1?'<span style="font-size:10px;color:#475569;margin-left:4px">(×'+deals.length+')</span>':"";
-        var todayBadge=rep.todayTotal>0?'<span style="font-size:9px;color:#00FF88;background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:1px 5px;font-family:Orbitron,monospace;letter-spacing:1px;display:inline-block">TODAY '+fmt(rep.todayTotal)+'</span>':"";
         var repKey=rep.name+"|"+name;
         var sl=getStreakLevel(repKey);
         var scls=streakClass(sl);
-        var sbadge=streakBadgeHTML(sl);
+        // Smart inline badges
+        var badges=[];
+        if(isTop) badges.push('<span style="font-size:9px;color:#FFD700;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.35);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">LEADER</span>');
+        if(rep.todayTotal>0) badges.push('<span style="font-size:9px;color:#00FF88;background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">TODAY '+fmt(rep.todayTotal)+'</span>');
+        if(rep.name===teamBigDealRep&&t.reps.length>1) badges.push('<span style="font-size:9px;color:#FFD700;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.25);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">BIG DEAL '+fmt(teamBigDealAmt)+'</span>');
+        if(rep.name===teamMostDealsRep&&teamMostDealsN>1) badges.push('<span style="font-size:9px;color:#00D4FF;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">MOST SALES ('+teamMostDealsN+')</span>');
+        var mIdx=top3movers.indexOf(rep.name);
+        if(mIdx>=0){var mc=["#FF6B35","#FF9500","#FFBB00"][mIdx];badges.push('<span style="font-size:9px;color:'+mc+';background:'+mc+'18;border:1px solid '+mc+'44;border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">'+(mIdx===0?"#1":"#"+(mIdx+1))+' MOVER</span>');}
+        if(sl>=10) badges.push(streakBadgeHTML(sl));
+        var badgesHTML=badges.length?'<span style="display:flex;flex-wrap:wrap;gap:3px;margin-top:3px">'+badges.join("")+'</span>':'';
         repsHTML+='<div class="rep-row '+rc+' '+scls+'" style="'+(rank>=2&&rank<=3?"border-left-color:"+t.color:"")+'">'+
           '<span class="rep-rank" style="color:'+rankColor+'">'+rank+'</span>'+
-          '<span class="rep-name" style="position:relative;cursor:help;display:flex;flex-direction:column;gap:2px">'+
-            '<span style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap">'+rep.name+multi+sbadge+'</span>'+
-            (todayBadge?'<span>'+todayBadge+'</span>':'')+
-            tooltipHTML+
+          '<span class="rep-name" style="position:relative;cursor:help;display:flex;flex-direction:column;gap:1px">'+
+            '<span style="display:flex;align-items:center;gap:4px">'+rep.name+multi+'</span>'+
+            badgesHTML+tooltipHTML+
           '</span>'+
           '<span class="rep-amt" style="color:'+amtColor+'">'+fmt(rep.amount)+'</span></div>';
       });
