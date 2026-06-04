@@ -449,6 +449,10 @@
 </div>
 
 <script>
+var firstFetch = false;
+var BQ=[],BQR=false;
+var firedBadges={};
+
 
 
 
@@ -782,8 +786,7 @@ function sLegend(n,amt){[0,0.3].forEach(function(t){pTone(233,"sawtooth",0.25,0.
 var SFN={"Deal Maker":sIgnite,"Closer":sDoublePane,"Rainmaker":sFrameSlayer,"Fibrex Elite":sElite,"Sales Titan":sTitan,"Six Figure Legend":sLegend};
 
 // Queue
-var BQ=[],BQR=false;
-var firedBadges={}; // "rep|badge" -> amount when it fired, prevents re-fire
+ // "rep|badge" -> amount when it fired, prevents re-fire
 function enqueueBadge(rep,lbl,amount){
   // Deduplicate — skip if already in queue
   var already = BQ.some(function(x){ return x.rep===rep && x.lbl===lbl; });
@@ -2049,6 +2052,7 @@ setTimeout(function(){
 }, 300);
 // Load settings in background
 fetchSettings().then(function(){ render(); }).catch(function(){});
+
 
 
 
