@@ -511,7 +511,7 @@ function parseCsvLine(line){
 }
 function parseCsv(csv){
   try{
-    var lines=csv.trim().split("\n").filter(Boolean);
+    var lines=csv.trim().replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n").filter(Boolean);
     if(lines.length<2)return null;
     var data={total:0,teams:{}},ci=0;
     var today=new Date(); today.setHours(0,0,0,0);
@@ -629,6 +629,7 @@ async function fetchData(){
       console.log("CSV length:",csv.length,"starts:",csv.substring(0,40));
       if(csv.trim().startsWith("<"))continue; // reject HTML responses
       var parsed=parseCsv(csv);
+      console.log("parseCsv result:", parsed ? Object.keys(parsed.teams).length+" teams, total="+parsed.total : "NULL");
       if(parsed){
         // Only check for new badges if queue is idle — prevents re-fire mid-play
         if (!firstFetch) {
