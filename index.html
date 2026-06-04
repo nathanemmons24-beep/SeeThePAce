@@ -2053,7 +2053,7 @@ function checkBlitzPw() {
   var inp = document.getElementById("blitz-pw-input");
   var err = document.getElementById("blitz-pw-err");
   if (!inp) return;
-  if (inp.value.trim() === BLITZ_PW) {
+  if (inp.value.trim() === BLITZ_PW || inp.value.trim().toLowerCase() === BLITZ_PW.toLowerCase()) {
     blitzUnlocked = true;
     err.style.display = "none";
     inp.value = "";
