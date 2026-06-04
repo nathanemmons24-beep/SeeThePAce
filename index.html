@@ -336,6 +336,7 @@
 
 <script>
 
+
 var milestoneSeeded = false;
 
 
@@ -1974,12 +1975,10 @@ render();
 // Seed badge state immediately so first real sync doesn't fire for existing deals
 if (state.data && state.data.teams) seedBadgeState(state.data);
 // Fetch settings once, then start polling — single call only
-// Start fetching data immediately
-setTimeout(function(){
-  fetchData();
-  pollTimer = setInterval(fetchData, POLL_MS);
-  resetCountdown();
-}, 300);
+// Fetch data immediately on load
+fetchData();
+pollTimer = setInterval(fetchData, POLL_MS);
+resetCountdown();
 // Load settings in background
 fetchSettings().then(function(){ render(); }).catch(function(){});
 
@@ -3628,14 +3627,13 @@ render();
 // Seed badge state immediately so first real sync doesn't fire for existing deals
 if (state.data && state.data.teams) seedBadgeState(state.data);
 // Fetch settings once, then start polling — single call only
-// Start fetching data immediately
-setTimeout(function(){
-  fetchData();
-  pollTimer = setInterval(fetchData, POLL_MS);
-  resetCountdown();
-}, 300);
+// Fetch data immediately on load
+fetchData();
+pollTimer = setInterval(fetchData, POLL_MS);
+resetCountdown();
 // Load settings in background
 fetchSettings().then(function(){ render(); }).catch(function(){});
+
 
 
 
