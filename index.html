@@ -617,7 +617,6 @@ async function fetchData(){
   for(var i=0;i<proxies.length;i++){
     try{
       var url=proxies[i](state.sheetUrl);
-      console.log("Fetching:",url.substring(0,80));
       var res=await fetch(url,{cache:"no-store",redirect:"follow",signal:AbortSignal.timeout?AbortSignal.timeout(10000):undefined});
       if(!res.ok)continue;
       var csv=await res.text();
@@ -641,7 +640,7 @@ async function fetchData(){
         state.data=parsed; state.status="live"; state.lastUpdated=new Date().toLocaleTimeString();
         render(); resetCountdown(); return;
       }
-    }catch(e){console.error("fetchData error proxy",i,":",e.message||e);continue;}
+    }catch(e){continue;}
   }
   if(state.status!=='live'){ state.status="error"; render(); resetCountdown(); }
 }
