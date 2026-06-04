@@ -252,6 +252,12 @@
     <button onclick="toggleConsolidated()" style="background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.4);color:#00D4FF;border-radius:8px;padding:2px 8px;cursor:pointer;font-family:Orbitron,monospace;font-size:10px;margin-left:8px">CLEAR</button>
   </div>
 
+  <!-- DAY FILTER BANNER -->
+  <div id="day-filter-banner" style="display:none;text-align:center;margin-bottom:12px;padding:8px 20px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.25);border-radius:10px;font-family:Orbitron,monospace;font-size:11px;color:#A855F7;letter-spacing:2px">
+    &#x1F4C5; SHOWING <span id="day-filter-label"></span> ONLY &nbsp;
+    <button onclick="filterDay=null;document.getElementById('day-filter-banner').style.display='none';render();" style="background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.4);color:#A855F7;border-radius:8px;padding:2px 8px;cursor:pointer;font-family:Orbitron,monospace;font-size:10px;margin-left:8px">CLEAR</button>
+  </div>
+
   <!-- TODAY FILTER BANNER -->
   <div id="today-filter-banner" style="display:none;text-align:center;margin-bottom:12px;padding:8px 20px;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);border-radius:10px;font-family:Orbitron,monospace;font-size:11px;color:#00FF88;letter-spacing:2px">
     &#x2600;&#xFE0F; SHOWING TODAY'S DEALS ONLY &nbsp;
@@ -616,7 +622,13 @@ async function fetchData(){
       if(csv.trim().startsWith("<")||csv.includes("Host not in allowlist"))continue;
       var parsed=parseCsv(csv);
       if(parsed){
-        checkBadgeUpgrades(parsed);
+        // Only check for new badges if queue is idle — prevents re-fire mid-play
+        if (!BQR) {
+          checkBadgeUpgrades(parsed);
+        } else {
+          // Still update prevBadgeState so we don't fire again on next sync
+          seedBadgeState(parsed);
+        }
         updateStreaks(parsed);
         state.data=parsed; state.status="live"; state.lastUpdated=new Date().toLocaleTimeString();
         render(); resetCountdown(); return;
@@ -766,7 +778,7 @@ function enqueueBadge(rep,lbl,amount){
   BQ.push({rep:rep,lbl:lbl,amount:amount});
   if(!BQR)nextBadge();
 }
-function nextBadge(){if(!BQ.length){BQR=false;return;}BQR=true;var x=BQ.shift();var fn=SFN[x.lbl];if(fn)fn(x.rep,x.amount||0);setTimeout(nextBadge,(BDUR[x.lbl]||3.5)*1000+800);}
+function nextBadge(){if(!BQ.length){BQR=false;firedBadges={};return;}BQR=true;var x=BQ.shift();var fn=SFN[x.lbl];if(fn)fn(x.rep,x.amount||0);setTimeout(nextBadge,(BDUR[x.lbl]||3.5)*1000+800);}
 
 function testSound(badge){
   unlockAudio();
@@ -887,7 +899,20 @@ function showBadgeAlert(icon,text,repName,color,big,amount){
 }
 
 // \u2550\u2550 BADGE DETECTION \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-var prevBadgeState = null;  // { "Name|Team": { amount: X, badge: "Elite" } }
+var prevBadgeState = null;
+
+function seedBadgeState(newData) {
+  // Build current snapshot without firing any badges
+  var current = {};
+  Object.entries(newData.teams).forEach(function(e) {
+    var teamName = e[0], team = e[1];
+    team.reps.forEach(function(rep) {
+      var key = rep.name + "|" + teamName;
+      current[key] = { amount: rep.amount, badge: getBadge(rep.amount) };
+    });
+  });
+  prevBadgeState = current;
+}  // { "Name|Team": { amount: X, badge: "Elite" } }
 
 function checkBadgeUpgrades(newData) {
   var order = ["Deal Maker","Closer","Rainmaker","Fibrex Elite","Sales Titan","Six Figure Legend"];
@@ -904,7 +929,7 @@ function checkBadgeUpgrades(newData) {
 
   // First load — seed state, no sounds
   if (prevBadgeState === null) {
-    prevBadgeState = current;
+    seedBadgeState(newData);
     console.log("Badge state seeded:", Object.keys(current).length, "reps");
     return;
   }
@@ -961,16 +986,25 @@ function checkBadgeUpgrades(newData) {
 
 // \u2550\u2550 LEADERBOARDS \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function renderLeaderboards(data){
-  var all=[];
+  // allReps — for TOP 10 OVERALL (by total volume per rep)
+  var allReps=[];
+  // allDeals — for TOP 10 LARGEST DEALS (individual deal amounts)
+  var allDeals=[];
   Object.entries(data.teams).forEach(function(e){
     var teamName=e[0],team=e[1];
     var display=teamName.includes(" - ")?teamName.split(" - ").slice(1).join(" "):teamName;
     var topAmt=team.reps.length>0?Math.max.apply(null,team.reps.map(function(r){return r.amount;})):0;
     team.reps.forEach(function(rep){
-      all.push({name:rep.name,amount:rep.amount,store:display,color:team.color,isTopMarket:rep.amount===topAmt&&topAmt>0});
+      allReps.push({name:rep.name,amount:rep.amount,store:display,color:team.color,isTopMarket:rep.amount===topAmt&&topAmt>0});
+      // Individual deals
+      (rep.dealObjs||[{amount:rep.amount,date:null}]).forEach(function(d){
+        allDeals.push({name:rep.name,amount:d.amount,store:display,color:team.color,date:d.date,isTopMarket:false});
+      });
     });
   });
-  all.sort(function(a,b){return b.amount-a.amount;});
+  allReps.sort(function(a,b){return b.amount-a.amount;});
+  allDeals.sort(function(a,b){return b.amount-a.amount;});
+  var all=allReps; // keep 'all' for TOP 10 OVERALL compatibility below
   function makeRow(rep,i){
     var rank=i+1,rc=rank===1?"rank1":rank===2?"rank2":rank===3?"rank3":"";
     var rankColor=rank===1?"#FFD700":rank===2?"#C0C0C0":rank===3?"#CD7F32":"#475569";
@@ -983,7 +1017,7 @@ function renderLeaderboards(data){
       '<span class="leader-amt">'+fmt(rep.amount)+'</span>';
     return row;
   }
-  var t5=document.getElementById("top5-list"); if(t5){t5.innerHTML="";all.slice(0,10).forEach(function(r,i){t5.appendChild(makeRow(r,i));});}
+  var t5=document.getElementById("top5-list"); if(t5){t5.innerHTML="";allDeals.slice(0,10).forEach(function(r,i){t5.appendChild(makeRow(r,i));});}
   var t10=document.getElementById("top10-list"); if(t10){t10.innerHTML="";all.slice(0,10).forEach(function(r,i){t10.appendChild(makeRow(r,i));});}
 }
 
@@ -995,6 +1029,33 @@ function render(){
   // Apply consolidated view
   if (filterConsolidated && rawData && rawData.teams) {
     data = consolidateData(data);
+  }
+
+  // Apply day filter (from clicking bar chart)
+  if (filterDay && data && data.teams) {
+    var dayFiltered = { total: 0, teams: {} };
+    Object.entries(data.teams).forEach(function(e) {
+      var tName=e[0],team=e[1];
+      var filteredReps=[];
+      team.reps.forEach(function(rep){
+        var dayDeals=(rep.dealObjs||[]).filter(function(d){
+          if(!d.date) return false;
+          var dk=new Date(d.date); dk.setHours(0,0,0,0);
+          return dk.toISOString().split("T")[0]===filterDay;
+        });
+        if(dayDeals.length>0){
+          var dayAmt=dayDeals.reduce(function(s,d){return s+d.amount;},0);
+          filteredReps.push({name:rep.name,amount:dayAmt,deals:dayDeals.map(function(d){return d.amount;}),dealObjs:dayDeals,todayTotal:rep.todayTotal,latestDate:rep.latestDate});
+        }
+      });
+      if(filteredReps.length>0){
+        var tt=filteredReps.reduce(function(s,r){return s+r.amount;},0);
+        filteredReps.sort(function(a,b){return b.amount-a.amount;});
+        dayFiltered.teams[tName]={total:tt,reps:filteredReps,color:team.color};
+        dayFiltered.total+=tt;
+      }
+    });
+    data=dayFiltered;
   }
 
   if (filterToday && rawData && rawData.teams) {
@@ -1627,12 +1688,41 @@ function renderDayBreakdown(data) {
       ctx.fillText(fmt(Math.round(maxVal * (1 - g/4))), PAD.left - 8, gy + 4);
     }
 
+    var dayKeys = days.map(function(d){return d[0];});
+
+    // Click handler — filter by clicked day
+    canvas.style.cursor = "pointer";
+    canvas.onclick = function(evt) {
+      var rect2 = canvas.getBoundingClientRect();
+      var clickX = (evt.clientX - rect2.left);
+      var clickedKey = null;
+      days.forEach(function(entry, i) {
+        var bx2 = PAD.left + gap*i + gap/2 - barW/2;
+        if(clickX >= bx2 && clickX <= bx2+barW) clickedKey = entry[0];
+      });
+      if(clickedKey) {
+        filterDay = (filterDay === clickedKey) ? null : clickedKey; // toggle
+        var dayBanner = document.getElementById("day-filter-banner");
+        if(dayBanner) {
+          if(filterDay) {
+            var dk = new Date(filterDay+"T12:00:00");
+            dayBanner.style.display="block";
+            dayBanner.querySelector("#day-filter-label").textContent = formatShortDate(dk);
+          } else {
+            dayBanner.style.display="none";
+          }
+        }
+        render();
+      }
+    };
+
     days.forEach(function(entry, i) {
       var day = entry[1];
+      var isSelected = (filterDay === entry[0]);
       var barH  = (day.total / maxVal) * cH;
       var bx    = PAD.left + gap * i + gap/2 - barW/2;
       var by    = PAD.top + cH - barH;
-      var color = barColors[i % barColors.length];
+      var color = isSelected ? "#FFFFFF" : barColors[i % barColors.length];
 
       // Bar gradient
       var grad = ctx.createLinearGradient(0, by, 0, by + barH);
@@ -1829,6 +1919,7 @@ function resetMilestone(){lastMilestone=-1;}
 // ══ MENU ══════════════════════════════════════════════════════════════════════
 var menuOpen = false;
 var filterToday = false;
+var filterDay = null; // ISO date string "YYYY-MM-DD" or null
 var filterConsolidated = false;
 
 var CONSOLIDATE_MAP = {
@@ -2032,6 +2123,8 @@ function runScroll() {
 loadSettings();
 renderBadgeLegend();
 render();
+// Seed badge state immediately so first real sync doesn't fire for existing deals
+if (state.data && state.data.teams) seedBadgeState(state.data);
 // Fetch settings once, then start polling — single call only
 fetchSettings().then(function() {
   render();
