@@ -343,6 +343,7 @@
 
 
 
+
 var milestoneSeeded = false;
 
 
@@ -1973,6 +1974,135 @@ function runScroll() {
   window.scrollBy(0, scrollDir * scrollSpeed);
   scrollTimer = setTimeout(runScroll, scrollInterval);
 }
+
+
+// ══ BLITZ SCOREBOARD ══════════════════════════════════════════════════════════
+var BLITZ_PW = "seethepace";
+var BLITZ_START = new Date("2026-06-18T00:00:00");
+var BLITZ_END   = new Date("2026-06-20T23:59:59");
+var blitzUnlocked = false;
+
+function openBlitz() {
+  var overlay = document.getElementById("blitz-overlay");
+  overlay.style.display = "flex";
+  if (blitzUnlocked) {
+    renderBlitz();
+  } else {
+    document.getElementById("blitz-auth").style.display = "flex";
+    document.getElementById("blitz-board").style.display = "none";
+    setTimeout(function(){ var inp=document.getElementById("blitz-pw-input"); if(inp) inp.focus(); }, 100);
+  }
+}
+
+function closeBlitz() {
+  document.getElementById("blitz-overlay").style.display = "none";
+}
+
+function checkBlitzPw() {
+  var inp = document.getElementById("blitz-pw-input");
+  var err = document.getElementById("blitz-pw-err");
+  if (!inp) return;
+  if (inp.value.trim().toLowerCase() === BLITZ_PW) {
+    blitzUnlocked = true;
+    err.style.display = "none";
+    inp.value = "";
+    document.getElementById("blitz-auth").style.display = "none";
+    document.getElementById("blitz-board").style.display = "block";
+    renderBlitz();
+  } else {
+    err.style.display = "block";
+    inp.value = "";
+    inp.focus();
+  }
+}
+
+function renderBlitz() {
+  var data = state.data;
+  if (!data || !data.teams) return;
+
+  // Filter deals to June 18-20
+  var blitzData = { total: 0, teams: {} };
+  Object.entries(data.teams).forEach(function(e) {
+    var tName = e[0], team = e[1];
+    var display = tName.includes(" - ") ? tName.split(" - ").slice(1).join(" ") : tName;
+    var filteredReps = [];
+    team.reps.forEach(function(rep) {
+      var blitzDeals = (rep.dealObjs || []).filter(function(d) {
+        if (!d.date) return false;
+        return d.date >= BLITZ_START && d.date <= BLITZ_END;
+      });
+      if (blitzDeals.length > 0) {
+        var amt = blitzDeals.reduce(function(s,d){ return s+d.amount; }, 0);
+        filteredReps.push({ name:rep.name, amount:amt, deals:blitzDeals.map(function(d){return d.amount;}), dealObjs:blitzDeals, todayTotal:0, latestDate:null });
+      }
+    });
+    if (filteredReps.length > 0) {
+      filteredReps.sort(function(a,b){ return b.amount-a.amount; });
+      var teamTotal = filteredReps.reduce(function(s,r){ return s+r.amount; }, 0);
+      blitzData.teams[tName] = { total:teamTotal, reps:filteredReps, color:team.color, display:display };
+      blitzData.total += teamTotal;
+    }
+  });
+
+  // Total bar
+  var totalEl = document.getElementById("blitz-total-bar");
+  if (totalEl) {
+    totalEl.innerHTML =
+      '<div style="text-align:center;margin-bottom:12px">'+
+        '<div style="font-family:Orbitron,monospace;font-size:28px;font-weight:900;color:#FFD700">'+fmt(blitzData.total)+'</div>'+
+        '<div style="font-size:12px;color:#475569;font-family:Orbitron,monospace;letter-spacing:2px">TOTAL BLITZ REVENUE</div>'+
+      '</div>';
+  }
+
+  // Top 10 leaderboard
+  var lbEl = document.getElementById("blitz-leaderboards");
+  if (lbEl) {
+    var allReps = [];
+    Object.values(blitzData.teams).forEach(function(t) {
+      t.reps.forEach(function(r) { allReps.push({name:r.name,amount:r.amount,store:t.display,color:t.color}); });
+    });
+    allReps.sort(function(a,b){ return b.amount-a.amount; });
+    var top10 = allReps.slice(0,10);
+    var medals = ['&#x1F947;','&#x1F948;','&#x1F949;'];
+    var lbHtml = '<div style="flex:1;min-width:280px;background:rgba(15,23,42,0.8);border:1px solid rgba(255,215,0,0.2);border-radius:16px;padding:16px">'+
+      '<div style="font-family:Orbitron,monospace;font-size:11px;color:#FFD700;letter-spacing:2px;margin-bottom:12px">&#x1F3C6; TOP 10 REPS</div>';
+    top10.forEach(function(r,i){
+      lbHtml += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">'+
+        '<span style="width:24px;text-align:center;font-size:'+(i<3?"16":"11")+'px">'+(i<3?medals[i]:'<span style="font-family:Orbitron,monospace;color:#475569">#'+(i+1)+'</span>')+'</span>'+
+        '<div style="flex:1"><div style="font-size:13px;font-weight:700;color:#E2E8F0">'+r.name+'</div>'+
+        '<div style="font-size:10px;color:'+r.color+';font-family:Orbitron,monospace">'+r.store+'</div></div>'+
+        '<div style="font-family:Orbitron,monospace;font-size:13px;font-weight:700;color:#FFD700">'+fmt(r.amount)+'</div></div>';
+    });
+    lbHtml += '</div>';
+    lbEl.innerHTML = lbHtml;
+  }
+
+  // Team cards
+  var teamsEl = document.getElementById("blitz-teams");
+  if (teamsEl) {
+    var sortedTeams = Object.entries(blitzData.teams).sort(function(a,b){ return b[1].total-a[1].total; });
+    teamsEl.innerHTML = sortedTeams.map(function(e){
+      var t = e[1];
+      var repsHtml = t.reps.slice(0,8).map(function(r,i){
+        return '<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid rgba(255,255,255,0.04)">'+
+          '<span style="font-family:Orbitron,monospace;font-size:10px;color:'+(i===0?"#FFD700":"#334155")+';width:16px">'+(i+1)+'</span>'+
+          '<span style="flex:1;font-size:12px;color:#CBD5E1;font-weight:600">'+r.name+'</span>'+
+          '<span style="font-family:Orbitron,monospace;font-size:11px;color:'+(i===0?"#FFD700":"#64748B")+'">'+fmt(r.amount)+'</span>'+
+        '</div>';
+      }).join("");
+      return '<div style="background:rgba(15,23,42,0.8);border:1px solid '+t.color+'2A;border-radius:16px;overflow:hidden">'+
+        '<div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center">'+
+          '<div><div style="font-family:Orbitron,monospace;font-size:13px;font-weight:700;color:'+t.color+'">'+t.display+'</div></div>'+
+          '<div style="font-family:Orbitron,monospace;font-size:16px;font-weight:900;color:#FFD700">'+fmt(t.total)+'</div>'+
+        '</div>'+repsHtml+
+      '</div>';
+    }).join("");
+  }
+}
+
+// Close blitz on Escape
+document.addEventListener("keydown", function(e){ if(e.key==="Escape" && document.getElementById("blitz-overlay").style.display!=="none") closeBlitz(); });
+
 
 // ══ BOOT ══════════════════════════════════════════════════════════════════════
 loadSettings();
@@ -3626,6 +3756,135 @@ function runScroll() {
   scrollTimer = setTimeout(runScroll, scrollInterval);
 }
 
+
+// ══ BLITZ SCOREBOARD ══════════════════════════════════════════════════════════
+var BLITZ_PW = "seethepace";
+var BLITZ_START = new Date("2026-06-18T00:00:00");
+var BLITZ_END   = new Date("2026-06-20T23:59:59");
+var blitzUnlocked = false;
+
+function openBlitz() {
+  var overlay = document.getElementById("blitz-overlay");
+  overlay.style.display = "flex";
+  if (blitzUnlocked) {
+    renderBlitz();
+  } else {
+    document.getElementById("blitz-auth").style.display = "flex";
+    document.getElementById("blitz-board").style.display = "none";
+    setTimeout(function(){ var inp=document.getElementById("blitz-pw-input"); if(inp) inp.focus(); }, 100);
+  }
+}
+
+function closeBlitz() {
+  document.getElementById("blitz-overlay").style.display = "none";
+}
+
+function checkBlitzPw() {
+  var inp = document.getElementById("blitz-pw-input");
+  var err = document.getElementById("blitz-pw-err");
+  if (!inp) return;
+  if (inp.value.trim().toLowerCase() === BLITZ_PW) {
+    blitzUnlocked = true;
+    err.style.display = "none";
+    inp.value = "";
+    document.getElementById("blitz-auth").style.display = "none";
+    document.getElementById("blitz-board").style.display = "block";
+    renderBlitz();
+  } else {
+    err.style.display = "block";
+    inp.value = "";
+    inp.focus();
+  }
+}
+
+function renderBlitz() {
+  var data = state.data;
+  if (!data || !data.teams) return;
+
+  // Filter deals to June 18-20
+  var blitzData = { total: 0, teams: {} };
+  Object.entries(data.teams).forEach(function(e) {
+    var tName = e[0], team = e[1];
+    var display = tName.includes(" - ") ? tName.split(" - ").slice(1).join(" ") : tName;
+    var filteredReps = [];
+    team.reps.forEach(function(rep) {
+      var blitzDeals = (rep.dealObjs || []).filter(function(d) {
+        if (!d.date) return false;
+        return d.date >= BLITZ_START && d.date <= BLITZ_END;
+      });
+      if (blitzDeals.length > 0) {
+        var amt = blitzDeals.reduce(function(s,d){ return s+d.amount; }, 0);
+        filteredReps.push({ name:rep.name, amount:amt, deals:blitzDeals.map(function(d){return d.amount;}), dealObjs:blitzDeals, todayTotal:0, latestDate:null });
+      }
+    });
+    if (filteredReps.length > 0) {
+      filteredReps.sort(function(a,b){ return b.amount-a.amount; });
+      var teamTotal = filteredReps.reduce(function(s,r){ return s+r.amount; }, 0);
+      blitzData.teams[tName] = { total:teamTotal, reps:filteredReps, color:team.color, display:display };
+      blitzData.total += teamTotal;
+    }
+  });
+
+  // Total bar
+  var totalEl = document.getElementById("blitz-total-bar");
+  if (totalEl) {
+    totalEl.innerHTML =
+      '<div style="text-align:center;margin-bottom:12px">'+
+        '<div style="font-family:Orbitron,monospace;font-size:28px;font-weight:900;color:#FFD700">'+fmt(blitzData.total)+'</div>'+
+        '<div style="font-size:12px;color:#475569;font-family:Orbitron,monospace;letter-spacing:2px">TOTAL BLITZ REVENUE</div>'+
+      '</div>';
+  }
+
+  // Top 10 leaderboard
+  var lbEl = document.getElementById("blitz-leaderboards");
+  if (lbEl) {
+    var allReps = [];
+    Object.values(blitzData.teams).forEach(function(t) {
+      t.reps.forEach(function(r) { allReps.push({name:r.name,amount:r.amount,store:t.display,color:t.color}); });
+    });
+    allReps.sort(function(a,b){ return b.amount-a.amount; });
+    var top10 = allReps.slice(0,10);
+    var medals = ['&#x1F947;','&#x1F948;','&#x1F949;'];
+    var lbHtml = '<div style="flex:1;min-width:280px;background:rgba(15,23,42,0.8);border:1px solid rgba(255,215,0,0.2);border-radius:16px;padding:16px">'+
+      '<div style="font-family:Orbitron,monospace;font-size:11px;color:#FFD700;letter-spacing:2px;margin-bottom:12px">&#x1F3C6; TOP 10 REPS</div>';
+    top10.forEach(function(r,i){
+      lbHtml += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">'+
+        '<span style="width:24px;text-align:center;font-size:'+(i<3?"16":"11")+'px">'+(i<3?medals[i]:'<span style="font-family:Orbitron,monospace;color:#475569">#'+(i+1)+'</span>')+'</span>'+
+        '<div style="flex:1"><div style="font-size:13px;font-weight:700;color:#E2E8F0">'+r.name+'</div>'+
+        '<div style="font-size:10px;color:'+r.color+';font-family:Orbitron,monospace">'+r.store+'</div></div>'+
+        '<div style="font-family:Orbitron,monospace;font-size:13px;font-weight:700;color:#FFD700">'+fmt(r.amount)+'</div></div>';
+    });
+    lbHtml += '</div>';
+    lbEl.innerHTML = lbHtml;
+  }
+
+  // Team cards
+  var teamsEl = document.getElementById("blitz-teams");
+  if (teamsEl) {
+    var sortedTeams = Object.entries(blitzData.teams).sort(function(a,b){ return b[1].total-a[1].total; });
+    teamsEl.innerHTML = sortedTeams.map(function(e){
+      var t = e[1];
+      var repsHtml = t.reps.slice(0,8).map(function(r,i){
+        return '<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid rgba(255,255,255,0.04)">'+
+          '<span style="font-family:Orbitron,monospace;font-size:10px;color:'+(i===0?"#FFD700":"#334155")+';width:16px">'+(i+1)+'</span>'+
+          '<span style="flex:1;font-size:12px;color:#CBD5E1;font-weight:600">'+r.name+'</span>'+
+          '<span style="font-family:Orbitron,monospace;font-size:11px;color:'+(i===0?"#FFD700":"#64748B")+'">'+fmt(r.amount)+'</span>'+
+        '</div>';
+      }).join("");
+      return '<div style="background:rgba(15,23,42,0.8);border:1px solid '+t.color+'2A;border-radius:16px;overflow:hidden">'+
+        '<div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center">'+
+          '<div><div style="font-family:Orbitron,monospace;font-size:13px;font-weight:700;color:'+t.color+'">'+t.display+'</div></div>'+
+          '<div style="font-family:Orbitron,monospace;font-size:16px;font-weight:900;color:#FFD700">'+fmt(t.total)+'</div>'+
+        '</div>'+repsHtml+
+      '</div>';
+    }).join("");
+  }
+}
+
+// Close blitz on Escape
+document.addEventListener("keydown", function(e){ if(e.key==="Escape" && document.getElementById("blitz-overlay").style.display!=="none") closeBlitz(); });
+
+
 // ══ BOOT ══════════════════════════════════════════════════════════════════════
 loadSettings();
 renderBadgeLegend();
@@ -3639,6 +3898,7 @@ pollTimer = setInterval(fetchData, POLL_MS);
 resetCountdown();
 // Load settings in background
 fetchSettings().then(function(){ render(); }).catch(function(){});
+
 
 
 
@@ -3677,6 +3937,7 @@ fetchSettings().then(function(){ render(); }).catch(function(){});
   <div id="menu-panel" style="display:none;position:absolute;bottom:60px;right:0;background:rgba(10,18,35,0.97);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:8px;width:200px;box-shadow:0 8px 40px rgba(0,0,0,0.6);backdrop-filter:blur(20px)">
     <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">CONTROLS</div>
     <button class="menu-item" onclick="openAdmin();toggleMenu()">&#x2699; ADMIN</button>
+    <button class="menu-item" onclick="openBlitz();toggleMenu()" style="color:#FFD700">&#x26A1; BLITZ SCOREBOARD</button>
     <button class="menu-item" onclick="startSpotlight();toggleMenu()">&#x2605; SPOTLIGHT</button>
     <button class="menu-item" onclick="toggleFullscreen();toggleMenu()">&#x26F6; FULLSCREEN</button>
     <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>
@@ -3687,6 +3948,32 @@ fetchSettings().then(function(){ render(); }).catch(function(){});
     <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FULLSCREEN ONLY</div>
     <button class="menu-item" id="scroll-btn" onclick="toggleScroll()">&#x2B06;&#x2B07; AUTO SCROLL</button>
     <button class="menu-item" id="bigfont-btn" onclick="toggleBigFont()">&#x1F4FA; TV MODE</button>
+  </div>
+</div>
+
+<!-- BLITZ SCOREBOARD OVERLAY -->
+<div id="blitz-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(4,8,18,0.98);backdrop-filter:blur(8px);overflow-y:auto;flex-direction:column;align-items:center">
+  <!-- Password gate -->
+  <div id="blitz-auth" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px">
+    <div style="font-family:Orbitron,monospace;font-size:32px;font-weight:900;color:#FFD700;letter-spacing:6px;text-shadow:0 0 30px #FFD70066">&#x26A1; BLITZ</div>
+    <div style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:3px;margin-bottom:8px">JUNE 18-20 SCOREBOARD</div>
+    <input id="blitz-pw-input" type="password" placeholder="Enter password" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,215,0,0.3);border-radius:10px;padding:12px 20px;color:#fff;font-family:Orbitron,monospace;font-size:14px;width:260px;text-align:center;outline:none" onkeydown="if(event.key==='Enter')checkBlitzPw()"/>
+    <button onclick="checkBlitzPw()" style="padding:10px 32px;border-radius:20px;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);color:#FFD700;font-family:Orbitron,monospace;font-size:12px;cursor:pointer;letter-spacing:2px">ENTER</button>
+    <div id="blitz-pw-err" style="color:#FF4444;font-family:Orbitron,monospace;font-size:10px;display:none">INCORRECT PASSWORD</div>
+    <button onclick="closeBlitz()" style="margin-top:8px;padding:6px 20px;border-radius:16px;background:transparent;border:1px solid rgba(255,255,255,0.1);color:#475569;font-family:Orbitron,monospace;font-size:10px;cursor:pointer">CANCEL</button>
+  </div>
+  <!-- Blitz board (shown after auth) -->
+  <div id="blitz-board" style="display:none;width:100%;max-width:1200px;padding:20px 16px">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-family:Orbitron,monospace;font-size:clamp(28px,5vw,52px);font-weight:900;color:#FFD700;letter-spacing:6px;text-shadow:0 0 30px #FFD70066">&#x26A1; BLITZ SCOREBOARD</div>
+      <div style="font-family:Orbitron,monospace;font-size:12px;color:#475569;letter-spacing:4px;margin-top:6px">JUNE 18 - 20, 2026</div>
+    </div>
+    <div id="blitz-total-bar" style="margin-bottom:24px"></div>
+    <div id="blitz-leaderboards" style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap"></div>
+    <div id="blitz-teams" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px"></div>
+    <div style="text-align:center;margin-top:20px;padding-bottom:20px">
+      <button onclick="closeBlitz()" style="padding:8px 24px;border-radius:20px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#64748B;font-family:Orbitron,monospace;font-size:11px;cursor:pointer">&#x2715; CLOSE</button>
+    </div>
   </div>
 </div>
 
