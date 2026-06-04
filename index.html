@@ -877,11 +877,15 @@ function enqueueBadge(rep,lbl,amount){
 function nextBadge(){if(!BQ.length){BQR=false;firedBadges={};return;}BQR=true;var x=BQ.shift();var fn=SFN[x.lbl];if(fn)fn(x.rep,x.amount||0);setTimeout(nextBadge,(BDUR[x.lbl]||3.5)*1000+800);}
 
 function testSound(badge){
-  unlockAudio();
-  if(AUDIO_READY && Object.keys(_decoded).length===0) preDecodeClips();
-  // Test with a deal amount that matches the badge threshold
+  unlockAudio(); // creates + resumes AC
   var testAmts={"Deal Maker":12000,"Closer":22000,"Rainmaker":32000,"Fibrex Elite":55000,"Sales Titan":80000,"Six Figure Legend":105000};
-  var fn=SFN[badge]; if(fn) fn("Test Rep",testAmts[badge]||25000);
+  var amt = testAmts[badge]||25000;
+  // Wait for AC to be running, then play directly via playClip
+  getAC(function(ac) {
+    // Directly play the clip via the badge sound function
+    var fn = SFN[badge];
+    if (fn) fn("Test Rep", amt);
+  });
 }
 
 // \u2550\u2550 BADGE ALERT \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
