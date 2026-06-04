@@ -1202,7 +1202,7 @@ function loadSettings() {
     var saved = localStorage.getItem('blitz_settings');
     if (saved) {
       var s = JSON.parse(saved);
-      if (s.sheetUrl) state.sheetUrl = s.sheetUrl;
+      // if (s.sheetUrl) state.sheetUrl = s.sheetUrl; // disabled — using Apps Script
       if (s.goal)     state.goal     = s.goal;
       if (s.title)    state.title    = s.title;
       console.log('Settings loaded:', state.title, state.goal);
