@@ -458,7 +458,7 @@
 
 
 
-var SHEET_URL  = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec";
+var SHEET_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSCj5mTfE2UMOth-X_C8voZToabgP92fRNogyQHc4bxEB4AnSkm80TPEYYlWj6wvU2L37PaMA_GqC-/pub?gid=0&single=true&output=csv";
 var POLL_MS    = 10000;
 var ADMIN_PW   = "seethepace";
 var PALETTE    = ["#00D4FF","#00FF88","#FFD700","#FF6B35","#A855F7","#FF4EFF","#34D399","#F59E0B","#60A5FA","#FB7185"];
@@ -615,13 +615,16 @@ async function fetchSettings() {
 async function fetchData(){
   if(!state.sheetUrl)return;
   var proxies=[
-    function(u){return u;},  // Apps Script URL works directly — no proxy needed
+    function(u){return u;},
     function(u){return "https://api.allorigins.win/raw?url="+encodeURIComponent(u);},
     function(u){return "https://corsproxy.io/?"+encodeURIComponent(u);},
+    function(u){return "https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u);},
+    function(u){return "https://cors.sh/?"+u;},
+    function(u){return "https://proxy.cors.sh/"+u;},
   ];
   for(var i=0;i<proxies.length;i++){
     try{
-      var res=await fetch(proxies[i](state.sheetUrl),{cache:"no-store",redirect:"follow",signal:AbortSignal.timeout?AbortSignal.timeout(8000):undefined});
+      var res=await fetch(proxies[i](state.sheetUrl),{cache:"no-store",signal:AbortSignal.timeout?AbortSignal.timeout(8000):undefined});
       if(!res.ok)continue;
       var csv=await res.text();
       if(csv.trim().startsWith("<"))continue; // reject HTML responses
