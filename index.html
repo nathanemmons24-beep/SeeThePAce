@@ -374,6 +374,7 @@
 
 
 
+
 var milestoneSeeded = false;
 
 
@@ -2205,106 +2206,281 @@ function buildBlitzFromDemo() {
   return result;
 }
 
+function fmtB(n){
+  if(n>=1000000) return '$'+(n/1000000).toFixed(2)+'M';
+  if(n>=1000) return '$'+(n/1000).toFixed(0)+'K';
+  return '$'+Math.round(n).toLocaleString();
+}
+
+var BLITZ_MILESTONES = [
+  {pct:0.05, label:"Ignition", prize:"$500 Gift Card", icon:"⚡"},
+  {pct:0.15, label:"Voltage", prize:"$1,000 Cash", icon:"🔋"},
+  {pct:0.25, label:"Surge", prize:"AirPods Pro", icon:"🎧"},
+  {pct:0.35, label:"Circuit", prize:"Apple Watch", icon:"⌚"},
+  {pct:0.50, label:"Arc Flash", prize:"$2,500 Cash", icon:"💥"},
+  {pct:0.65, label:"Megawatt", prize:"MacBook Air", icon:"💻"},
+  {pct:0.85, label:"Overload", prize:"Sales Excellence Trip ✈️", icon:"🌎"},
+  {pct:1.00, label:"BLACKOUT", prize:"STRETCH — Sales Excellence Trip + $5K", icon:"👑"},
+];
+
+var blitzMilestoneSeeded = false;
+var blitzMilestoneReached = {};
+
 function renderBlitz() {
   var bd = getBlitzData();
-  if (!bd) { 
+  if (!bd) {
     document.getElementById("blitz-board").innerHTML = '<div style="text-align:center;padding:40px;color:#475569;font-family:Orbitron,monospace">NO DATA AVAILABLE</div>';
-    return; 
+    return;
   }
-  var isDemo = true;
 
   var board = document.getElementById("blitz-board");
-  var pct = Math.min((bd.total/BLITZ_GOAL)*100, 110).toFixed(1);
+  var goal17 = 17000000;
+  var goal18 = BLITZ_GOAL; // 18M stretch
+  var pct17 = Math.min((bd.total/goal17)*100,110).toFixed(1);
+  var pct18 = Math.min((bd.total/goal18)*100,110).toFixed(1);
+
+  // Check milestone progress for glow
+  var reached = [];
+  BLITZ_MILESTONES.forEach(function(m,i){
+    if(bd.total >= m.pct * goal18) reached.push(i);
+  });
 
   board.innerHTML =
-    // Header
-    '<div style="text-align:center;margin-bottom:20px">'+
-      '<div style="font-family:Orbitron,monospace;font-size:clamp(24px,5vw,48px);font-weight:900;color:#00FF88;letter-spacing:6px;text-shadow:0 0 30px #00FF8866">&#x26A1; BLITZ SCOREBOARD</div>'+
-      '<div style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:4px;margin-top:4px">JUNE 18 – 20, 2026</div>'+
-    '</div>'+
-    
+    // ── TITLE ──────────────────────────────────────────────────────────
+    '<style>'+
+    '@keyframes blitz-glow{0%,100%{text-shadow:0 0 20px #00FF88,0 0 40px #00FF8866}50%{text-shadow:0 0 40px #FFD700,0 0 80px #FFD70066}}'+
+    '@keyframes blitz-arc{0%{opacity:0.3;transform:scaleX(0.8)}50%{opacity:1;transform:scaleX(1)}100%{opacity:0.3;transform:scaleX(0.8)}}'+
+    '@keyframes blitz-pulse{0%,100%{box-shadow:0 0 10px #00FF8833}50%{box-shadow:0 0 30px #00FF88,0 0 60px #00FF8844}}'+
+    '@keyframes prize-glow{0%,100%{box-shadow:0 0 8px #FFD70033,inset 0 0 8px #FFD70011}50%{box-shadow:0 0 20px #FFD700,0 0 40px #FFD70066,inset 0 0 16px #FFD70022}}'+
+    '@keyframes electric{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}'+
+    '.blitz-card{background:rgba(0,15,8,0.85);border:1px solid rgba(0,255,136,0.15);border-radius:14px;padding:14px 16px;margin-bottom:12px}'+
+    '.blitz-rep-row{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(0,255,136,0.06)}'+
+    '.blitz-rep-row:last-child{border-bottom:none}'+
+    '.blitz-badge{font-size:9px;padding:1px 6px;border-radius:8px;font-family:Orbitron,monospace;font-weight:700;display:inline-block;margin:1px}'+
+    '</style>'+
 
-    // Progress bar
-    '<div style="background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.15);border-radius:14px;padding:16px 20px;margin-bottom:20px">'+
-      '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">'+
-        '<div style="font-family:Orbitron,monospace;font-size:22px;font-weight:900;color:#00FF88;text-shadow:0 0 20px #00FF8866">'+fmt(bd.total)+'</div>'+
-        '<div style="font-family:Orbitron,monospace;font-size:12px;color:#475569">of '+fmt(BLITZ_GOAL)+'</div>'+
-        '<div style="font-family:Orbitron,monospace;font-size:14px;font-weight:700;color:#FFD700">'+pct+'%</div>'+
+    '<div style="text-align:center;margin-bottom:20px;position:relative">'+
+      '<div style="font-family:Orbitron,monospace;font-size:clamp(28px,5vw,52px);font-weight:900;color:#00FF88;letter-spacing:8px;animation:blitz-glow 2s ease-in-out infinite">⚡ BLITZ</div>'+
+      '<div style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:4px;margin-top:4px">JUNE 18–20 · SPECIAL EVENT</div>'+
+      '<div style="height:2px;background:linear-gradient(90deg,transparent,#00FF88,#FFD700,#00FF88,transparent);margin:12px 0;animation:blitz-arc 2s ease-in-out infinite"></div>'+
+    '</div>'+
+
+    // ── TWO COLUMN LAYOUT: milestones left, board right ───────────────
+    '<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">'+
+
+      // ── LEFT: Milestone tracker ──────────────────────────────────────
+      '<div style="width:260px;flex-shrink:0">'+
+        '<div style="font-family:Orbitron,monospace;font-size:10px;color:#00FF88;letter-spacing:2px;margin-bottom:10px;text-align:center">🏆 MILESTONE PRIZES</div>'+
+        renderBlitzMilestones(bd.total, goal18, reached)+
       '</div>'+
-      '<div style="height:20px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden">'+
-        '<div style="height:100%;width:'+Math.min(pct,100)+'%;background:linear-gradient(90deg,#00FF88,#FFD700);border-radius:10px;box-shadow:0 0 20px #00FF8866;transition:width 1s"></div>'+
+
+      // ── RIGHT: Main board ────────────────────────────────────────────
+      '<div style="flex:1;min-width:300px">'+
+        // Progress bars
+        '<div class="blitz-card" style="border-color:rgba(0,255,136,0.3);animation:blitz-pulse 3s ease-in-out infinite;margin-bottom:14px">'+
+          '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">'+
+            '<div style="font-family:Orbitron,monospace;font-size:24px;font-weight:900;color:#00FF88">'+fmtB(bd.total)+'</div>'+
+            '<div style="font-size:11px;color:#475569;font-family:Orbitron,monospace">BLITZ TOTAL</div>'+
+          '</div>'+
+          '<div style="font-family:Orbitron,monospace;font-size:10px;color:#475569;margin-bottom:4px">MAIN GOAL — '+fmtB(goal17)+' ('+pct17+'%)</div>'+
+          '<div style="height:14px;background:rgba(255,255,255,0.05);border-radius:7px;overflow:hidden;margin-bottom:8px">'+
+            '<div style="height:100%;width:'+Math.min(pct17,100)+'%;background:linear-gradient(90deg,#00FF88,#FFD700);border-radius:7px;box-shadow:0 0 12px #00FF8866;animation:electric 3s ease infinite;background-size:200% 200%"></div>'+
+          '</div>'+
+          '<div style="font-family:Orbitron,monospace;font-size:10px;color:#FFD700;margin-bottom:4px">STRETCH GOAL — '+fmtB(goal18)+' ('+pct18+'%)</div>'+
+          '<div style="height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden">'+
+            '<div style="height:100%;width:'+Math.min(pct18,100)+'%;background:linear-gradient(90deg,#FFD700,#FF6B35);border-radius:4px;box-shadow:0 0 8px #FFD70066"></div>'+
+          '</div>'+
+        '</div>'+
+
+        // Day by day + Biggest Daily Blitzer
+        renderBlitzDayByDay(bd)+
+        renderBiggestDailyBlitzer(bd)+
+
+        // Top 10
+        '<div class="blitz-card" style="margin-bottom:14px">'+
+          '<div style="font-family:Orbitron,monospace;font-size:10px;color:#FFD700;letter-spacing:2px;margin-bottom:10px">🏆 TOP 10 OVERALL</div>'+
+          renderBlitzLeaderboard(bd.allReps.slice(0,10))+
+        '</div>'+
+
+        // Brackets
+        renderBlitzBrackets(bd)+
       '</div>'+
     '</div>'+
 
-    // Top 10 Overall
-    '<div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,215,0,0.2);border-radius:14px;padding:16px 20px;margin-bottom:20px">'+
-      '<div style="font-family:Orbitron,monospace;font-size:11px;color:#FFD700;letter-spacing:2px;margin-bottom:12px">&#x1F3C6; TOP 10 OVERALL</div>'+
-      renderBlitzLeaderboard(bd.allReps.slice(0,10))+
-    '</div>'+
-
-    // Brackets
-    renderBlitzBrackets(bd)+
-
-    // Close button
     '<div style="text-align:center;padding:20px 0">'+
-      '<button onclick="closeBlitz()" style="padding:8px 28px;border-radius:20px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:#00FF88;font-family:Orbitron,monospace;font-size:11px;cursor:pointer;letter-spacing:2px">&#x2715; CLOSE</button>'+
+      '<button onclick="closeBlitz()" style="padding:8px 28px;border-radius:20px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:#00FF88;font-family:Orbitron,monospace;font-size:11px;cursor:pointer;letter-spacing:2px">✕ CLOSE</button>'+
     '</div>';
 }
 
-function renderBlitzLeaderboard(reps) {
-  var medals=["&#x1F947;","&#x1F948;","&#x1F949;"];
-  return reps.map(function(r,i){
-    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">'+
-      '<span style="width:24px;text-align:center;font-size:'+(i<3?"16":"11")+'px">'+(i<3?medals[i]:'<span style="font-family:Orbitron,monospace;color:#334155">#'+(i+1)+'</span>')+'</span>'+
-      '<div style="flex:1"><div style="font-size:13px;font-weight:700;color:#E2E8F0">'+r.name+'</div>'+
-      '<div style="font-size:10px;color:'+r.color+';font-family:Orbitron,monospace">'+r.store+'</div></div>'+
-      '<div style="font-family:Orbitron,monospace;font-size:13px;font-weight:700;color:#FFD700">'+fmt(r.amount)+'</div>'+
+function renderBlitzMilestones(total, goal, reached) {
+  return BLITZ_MILESTONES.map(function(m,i){
+    var isReached = total >= m.pct * goal;
+    var isCurrent = !isReached && (i===0 || total >= BLITZ_MILESTONES[i-1].pct*goal);
+    var target = fmtB(m.pct * goal);
+    var glow = isReached ? 'animation:prize-glow 2s ease-in-out infinite;' : '';
+    var bg = isReached ? 'background:rgba(0,255,136,0.1);border-color:rgba(0,255,136,0.4);' :
+             isCurrent ? 'background:rgba(255,215,0,0.06);border-color:rgba(255,215,0,0.3);' :
+             'background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.07);';
+    return '<div style="border:1px solid;border-radius:12px;padding:10px 12px;margin-bottom:8px;'+bg+glow+'">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'+
+        '<span style="font-size:'+(isReached?'18':'14')+'px">'+m.icon+'</span>'+
+        '<div>'+
+          '<div style="font-family:Orbitron,monospace;font-size:10px;font-weight:700;color:'+(isReached?'#00FF88':isCurrent?'#FFD700':'#334155')+'">'+m.label+'</div>'+
+          '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155">'+target+'</div>'+
+        '</div>'+
+        (isReached?'<span style="margin-left:auto;color:#00FF88;font-size:14px">✓</span>':'')+
+      '</div>'+
+      '<div style="font-size:11px;color:'+(isReached?'#FFD700':isCurrent?'#94A3B8':'#1E293B')+'">'+m.prize+'</div>'+
     '</div>';
-  }).join("");
+  }).join('');
+}
+
+function renderBlitzDayByDay(bd) {
+  // Group demo reps by day — use deal dates when available
+  var days = {"Jun 18":0,"Jun 19":0,"Jun 20":0};
+  // For demo, distribute total across days
+  if (bd.total === BLITZ_DEMO.total) {
+    days["Jun 18"] = bd.total * 0.28;
+    days["Jun 19"] = bd.total * 0.45;
+    days["Jun 20"] = bd.total * 0.27;
+  } else {
+    Object.values(bd.brackets).forEach(function(b){
+      Object.values(b.teams).forEach(function(t){
+        t.reps.forEach(function(r){
+          (r.deals||[]).forEach(function(d){
+            if(!d.date) return;
+            var dd = new Date(d.date);
+            var key = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][dd.getMonth()]+' '+dd.getDate();
+            days[key] = (days[key]||0) + d.amount;
+          });
+        });
+      });
+    });
+  }
+  var entries = Object.entries(days).filter(function(e){return e[1]>0;});
+  if (!entries.length) return '';
+  var maxVal = Math.max.apply(null, entries.map(function(e){return e[1];}));
+  var bars = entries.map(function(e){
+    var pct = Math.max(8,(e[1]/maxVal)*100);
+    return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:4px">'+
+      '<div style="font-family:Orbitron,monospace;font-size:9px;color:#00FF88">'+fmtB(e[1])+'</div>'+
+      '<div style="width:100%;height:60px;display:flex;align-items:flex-end">'+
+        '<div style="width:100%;height:'+pct+'%;background:linear-gradient(180deg,#FFD700,#00FF88);border-radius:4px 4px 0 0;box-shadow:0 0 8px #00FF8866;min-height:6px"></div>'+
+      '</div>'+
+      '<div style="font-family:Orbitron,monospace;font-size:9px;color:#475569">'+e[0]+'</div>'+
+    '</div>';
+  }).join('');
+  return '<div class="blitz-card" style="margin-bottom:14px">'+
+    '<div style="font-family:Orbitron,monospace;font-size:10px;color:#00FF88;letter-spacing:2px;margin-bottom:10px">📅 DAY BY DAY</div>'+
+    '<div style="display:flex;gap:8px;align-items:flex-end;height:90px">'+bars+'</div>'+
+  '</div>';
+}
+
+function renderBiggestDailyBlitzer(bd) {
+  // Find top rep by single-day performance (use total for demo)
+  var topRep = bd.allReps[0];
+  if (!topRep) return '';
+  return '<div class="blitz-card" style="border-color:rgba(255,215,0,0.2);margin-bottom:14px;animation:prize-glow 3s ease-in-out infinite">'+
+    '<div style="font-family:Orbitron,monospace;font-size:10px;color:#FFD700;letter-spacing:2px;margin-bottom:10px">⚡ BIGGEST DAILY BLITZER</div>'+
+    '<div style="display:flex;align-items:center;gap:12px">'+
+      '<div style="font-size:32px">🥇</div>'+
+      '<div>'+
+        '<div style="font-size:16px;font-weight:700;color:#E2E8F0">'+topRep.name+'</div>'+
+        '<div style="font-family:Orbitron,monospace;font-size:10px;color:#00FF88">'+topRep.store+'</div>'+
+      '</div>'+
+      '<div style="margin-left:auto;font-family:Orbitron,monospace;font-size:22px;font-weight:900;color:#FFD700">'+fmtB(topRep.amount)+'</div>'+
+    '</div>'+
+  '</div>';
+}
+
+function renderBlitzLeaderboard(reps) {
+  var medals=["🥇","🥈","🥉"];
+  return reps.map(function(r,i){
+    return '<div class="blitz-rep-row">'+
+      '<span style="width:22px;text-align:center;font-size:'+(i<3?'15':'10')+'px;flex-shrink:0">'+
+        (i<3?medals[i]:'<span style="font-family:Orbitron,monospace;color:#1E293B">#'+(i+1)+'</span>')+
+      '</span>'+
+      '<div style="flex:1">'+
+        '<div style="font-size:12px;font-weight:700;color:#E2E8F0">'+r.name+'</div>'+
+        '<div style="font-size:9px;color:'+(r.color||'#00FF88')+';font-family:Orbitron,monospace">'+r.store+'</div>'+
+      '</div>'+
+      '<div style="font-family:Orbitron,monospace;font-size:12px;font-weight:700;color:#FFD700">'+fmtB(r.amount)+'</div>'+
+    '</div>';
+  }).join('');
 }
 
 function renderBlitzBrackets(bd) {
   return Object.entries(bd.brackets).map(function(e){
     var bName=e[0], bracket=e[1];
-    if(bracket.total===0) return '';
+    if(!bracket.total) return '';
     var color=bracket.color, accent=bracket.accent;
     var sortedTeams=Object.entries(bracket.teams).sort(function(a,b){return b[1].total-a[1].total;});
     var bracketReps=[];
-    sortedTeams.forEach(function(t){t[1].reps.forEach(function(r){bracketReps.push({name:r.name,amount:r.amount,store:t[1].display,color:t[1].color});});});
+    sortedTeams.forEach(function(te){
+      var t=te[1];
+      t.reps.forEach(function(r){bracketReps.push({name:r.name,amount:r.amount,store:t.display,color:t.color||color});});
+    });
     bracketReps.sort(function(a,b){return b.amount-a.amount;});
+    var maxT = sortedTeams[0]?sortedTeams[0][1].total:1;
 
-    return '<div style="background:rgba(0,0,0,0.3);border:1px solid '+color+'33;border-radius:14px;padding:16px 20px;margin-bottom:16px">'+
+    return '<div class="blitz-card" style="border-color:'+color+'33;margin-bottom:14px">'+
       // Bracket header
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'+
-        '<div style="font-family:Orbitron,monospace;font-size:13px;font-weight:900;color:'+color+';letter-spacing:2px;text-shadow:0 0 12px '+color+'66">'+bName.toUpperCase()+'</div>'+
-        '<div style="font-family:Orbitron,monospace;font-size:16px;font-weight:700;color:'+accent+'">'+fmt(bracket.total)+'</div>'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid '+color+'22">'+
+        '<div style="font-family:Orbitron,monospace;font-size:12px;font-weight:900;color:'+color+';letter-spacing:2px;text-shadow:0 0 12px '+color+'66">'+bName.toUpperCase()+'</div>'+
+        '<div style="font-family:Orbitron,monospace;font-size:16px;font-weight:700;color:'+accent+'">'+fmtB(bracket.total)+'</div>'+
       '</div>'+
-      // Top 5 bracket reps
-      '<div style="margin-bottom:14px">'+
-        '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;margin-bottom:8px">TOP REPS</div>'+
-        renderBlitzLeaderboard(bracketReps.slice(0,5))+
-      '</div>'+
-      // Team totals in bracket
-      '<div>'+
-        '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;margin-bottom:8px">TEAMS</div>'+
-        '<div style="display:flex;flex-direction:column;gap:6px">'+
-        sortedTeams.map(function(t,i){
-          var tm=t[1];
-          var maxT=sortedTeams[0][1].total||1;
-          var pct=Math.max(4,(tm.total/maxT)*100);
-          return '<div style="display:flex;align-items:center;gap:10px">'+
-            '<span style="font-size:'+(i<3?'14':'10')+'px;width:20px;text-align:center">'+(i===0?'&#x1F947;':i===1?'&#x1F948;':i===2?'&#x1F949;':'#'+(i+1))+'</span>'+
-            '<div style="width:120px;font-size:11px;color:#CBD5E1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+tm.display+'</div>'+
+
+      // Team bar chart
+      '<div style="margin-bottom:12px">'+
+        sortedTeams.map(function(te,i){
+          var t=te[1], pct=Math.max(4,(t.total/maxT)*100);
+          var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+          return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
+            '<span style="font-size:'+(i<3?'14':'10')+'px;width:20px;text-align:center">'+
+              (medal||'<span style="font-family:Orbitron,monospace;font-size:9px;color:#1E293B">#'+(i+1)+'</span>')+
+            '</span>'+
+            '<div style="width:110px;font-size:11px;color:#CBD5E1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.display+'</div>'+
             '<div style="flex:1;height:16px;background:rgba(255,255,255,0.04);border-radius:8px;overflow:hidden">'+
-              '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,'+color+','+color+'88);border-radius:8px;transition:width 1s"></div>'+
+              '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,'+color+','+color+'88);border-radius:8px;box-shadow:0 0 6px '+color+'44;transition:width 1s"></div>'+
             '</div>'+
-            '<div style="font-family:Orbitron,monospace;font-size:10px;color:'+color+';width:80px;text-align:right;font-weight:700">'+fmt(tm.total)+'</div>'+
+            '<div style="font-family:Orbitron,monospace;font-size:10px;color:'+color+';width:72px;text-align:right;font-weight:700">'+fmtB(t.total)+'</div>'+
           '</div>';
-        }).join("")+
-        '</div>'+
+        }).join('')+
+      '</div>'+
+
+      // Team cards with reps + badges
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">'+
+        sortedTeams.map(function(te){
+          var tName=te[0], t=te[1];
+          var teamBigDeal=t.reps[0]?t.reps[0].name:'';
+          var teamBigAmt=t.reps[0]?t.reps[0].amount:0;
+          var mostDealsRep=''; var mostDealsN=0;
+          t.reps.forEach(function(r){var n=(r.deals||[r]).length;if(n>mostDealsN){mostDealsN=n;mostDealsRep=r.name;}});
+          return '<div style="background:rgba(0,0,0,0.3);border:1px solid '+t.color+'22;border-radius:12px;overflow:hidden">'+
+            '<div style="padding:8px 12px;border-bottom:1px solid '+t.color+'15;display:flex;justify-content:space-between;align-items:center">'+
+              '<div style="font-family:Orbitron,monospace;font-size:11px;font-weight:700;color:'+t.color+'">'+t.display+'</div>'+
+              '<div style="font-family:Orbitron,monospace;font-size:13px;font-weight:900;color:#FFD700">'+fmtB(t.total)+'</div>'+
+            '</div>'+
+            t.reps.map(function(r,ri){
+              var badges=[];
+              if(ri===0) badges.push('<span class="blitz-badge" style="color:#FFD700;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.35)">⚡ LEADER</span>');
+              if(r.name===teamBigDeal&&t.reps.length>1) badges.push('<span class="blitz-badge" style="color:#00FF88;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3)">💰 BIG DEAL</span>');
+              if(r.name===mostDealsRep&&mostDealsN>1) badges.push('<span class="blitz-badge" style="color:#00D4FF;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25)">🔥 MOST DEALS</span>');
+              var rankColor=ri===0?'#FFD700':ri<=2?t.color:'#334155';
+              return '<div class="blitz-rep-row">'+
+                '<span style="font-family:Orbitron,monospace;font-size:10px;color:'+rankColor+';width:16px;flex-shrink:0">'+(ri+1)+'</span>'+
+                '<div style="flex:1;min-width:0">'+
+                  '<div style="font-size:12px;font-weight:700;color:#E2E8F0">'+r.name+'</div>'+
+                  (badges.length?'<div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:2px">'+badges.join('')+'</div>':'')+
+                '</div>'+
+                '<div style="font-family:Orbitron,monospace;font-size:11px;font-weight:700;color:'+rankColor+';flex-shrink:0">'+fmtB(r.amount)+'</div>'+
+              '</div>';
+            }).join('')+
+          '</div>';
+        }).join('')+
       '</div>'+
     '</div>';
-  }).join("");
+  }).join('');
 }
 
 document.addEventListener("keydown", function(e){ if(e.key==="Escape" && document.getElementById("blitz-overlay").style.display!=="none") closeBlitz(); });
@@ -2342,6 +2518,7 @@ var firedBadges={};
 
 
 
+
 </script>
 <!-- BIGGEST MOVER (legacy, hidden) -->
 <div id="biggest-mover" style="display:none">
@@ -2371,7 +2548,7 @@ var firedBadges={};
 </div>
 
 <!-- BLITZ SCOREBOARD OVERLAY -->
-<div id="blitz-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(4,8,18,0.98);backdrop-filter:blur(8px);overflow-y:auto;flex-direction:column;align-items:center">
+<div id="blitz-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,5,2,0.99);backdrop-filter:blur(8px);overflow-y:auto;flex-direction:column;align-items:center">
   <!-- Password gate -->
   <div id="blitz-auth" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px">
     <div style="font-family:Orbitron,monospace;font-size:32px;font-weight:900;color:#FFD700;letter-spacing:6px;text-shadow:0 0 30px #FFD70066">&#x26A1; BLITZ</div>
