@@ -611,24 +611,16 @@ async function fetchSettings() {
 
 async function fetchData(){
   var DATA_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
-  try{
-    var res = await fetch(DATA_URL, {cache:"no-store", redirect:"follow"});
-    if(!res.ok){ if(state.status!=="live"){state.status="error";render();} resetCountdown(); return; }
-    var csv = await res.text();
-    if(csv.trim().startsWith("<")){ if(state.status!=="live"){state.status="error";render();} resetCountdown(); return; }
-    var parsed = parseCsv(csv);
-    if(parsed){
-      if(!firstFetch){ firstFetch=true; seedBadgeState(parsed); }
-      else if(!BQR){ checkBadgeUpgrades(parsed); }
-      else{ seedBadgeState(parsed); }
-      updateStreaks(parsed);
-      state.data=parsed; state.status="live"; state.lastUpdated=new Date().toLocaleTimeString();
-      render(); resetCountdown();
-    }
-  }catch(e){
-    console.warn("fetchData error:",e.message);
-    if(state.status!=="live"){state.status="error"; render();}
-    resetCountdown();
+  var res = await fetch(DATA_URL, {cache:"no-store", redirect:"follow"});
+  var csv = await res.text();
+  var parsed = parseCsv(csv);
+  if(parsed){
+    if(!firstFetch){ firstFetch=true; seedBadgeState(parsed); }
+    else if(!BQR){ checkBadgeUpgrades(parsed); }
+    else{ seedBadgeState(parsed); }
+    updateStreaks(parsed);
+    state.data=parsed; state.status="live"; state.lastUpdated=new Date().toLocaleTimeString();
+    render(); resetCountdown();
   }
 }
 function startPolling(){
