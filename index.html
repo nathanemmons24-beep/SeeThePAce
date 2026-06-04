@@ -240,20 +240,21 @@
   </div>
 
   <!-- CLOCK -->
-  <div id="blitz-clock">
+  <div id="blitz-clock" style="text-align:center">
     <span id="clock-time">--:--:--</span>
     <span id="clock-ampm" style="font-size:0.7em;margin-left:4px">--</span>
     <span style="margin:0 8px;opacity:0.3">&middot;</span>
     <span id="clock-date">---</span>
   </div>
-  <div id="countdown-wrap">
-    <svg id="countdown-svg" width="36" height="36" viewBox="0 0 36 36">
+  <div id="countdown-wrap" style="display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0 16px">
+    <svg id="countdown-svg" width="28" height="28" viewBox="0 0 36 36">
       <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
       <circle id="countdown-ring" cx="18" cy="18" r="15" fill="none" stroke="#00D4FF" stroke-width="3" stroke-dasharray="94.2 94.2" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 18 18)"/>
     </svg>
-    <span id="countdown-label">NEXT SYNC IN</span>
-    <span id="last-updated"></span>
+    <span id="countdown-label" style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px">NEXT SYNC IN</span>
+    <span id="last-updated" style="font-family:Orbitron,monospace;font-size:9px;color:#1E293B"></span>
   </div>
+
 
   <!-- PROGRESS -->
   <div id="milestone-section">
