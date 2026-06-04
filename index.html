@@ -578,8 +578,6 @@ var SETTINGS_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9
 async function fetchSettings() {
   var proxies = [
     function(u){ return u; },
-    function(u){ return "https://corsproxy.io/?" + encodeURIComponent(u); },
-    function(u){ return "https://api.allorigins.win/raw?url=" + encodeURIComponent(u); },
   ];
   for (var i = 0; i < proxies.length; i++) {
     try {
@@ -612,6 +610,7 @@ async function fetchSettings() {
 }
 
 async function fetchData(){
+  console.log("fetchData() called at", new Date().toLocaleTimeString());
   var DATA_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
   var proxies=[
     function(u){return DATA_URL;},
@@ -2066,12 +2065,13 @@ render();
 // Seed badge state immediately so first real sync doesn't fire for existing deals
 if (state.data && state.data.teams) seedBadgeState(state.data);
 // Fetch settings once, then start polling — single call only
+// Start polling immediately, don't wait for settings
+startPolling();
+resetCountdown();
+// Load settings in background
 fetchSettings().then(function() {
   render();
-}).catch(function(){}).finally(function() {
-  startPolling();
-  resetCountdown();
-})
+}).catch(function(e){ console.warn("Settings failed:", e); });
 
 
 
