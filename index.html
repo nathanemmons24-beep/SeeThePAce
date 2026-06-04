@@ -336,6 +336,9 @@
 
 <script>
 
+var milestoneSeeded = false;
+
+
 
 var firstFetch = false;
 var BQ=[],BQR=false;
@@ -3633,6 +3636,8 @@ setTimeout(function(){
 }, 300);
 // Load settings in background
 fetchSettings().then(function(){ render(); }).catch(function(){});
+
+
 
 
 
