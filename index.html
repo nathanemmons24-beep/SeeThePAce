@@ -241,6 +241,71 @@
     /* Sticky headers in fullscreen */
     :fullscreen .team-card-header,:-webkit-full-screen .team-card-header{position:sticky;top:0;z-index:50;backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.08)}
 
+
+    /* Notification panel */
+    #notif-panel {
+      position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+      z-index: 8000; display: flex; flex-direction: column; gap: 8px;
+      align-items: flex-end; padding-right: 12px; pointer-events: none;
+      max-height: 90vh; overflow: hidden;
+    }
+    .notif-toast {
+      background: rgba(6,11,24,0.97);
+      border-left: 4px solid var(--notif-color,#00D4FF);
+      border-radius: 12px 0 0 12px;
+      padding: 12px 16px;
+      min-width: 240px; max-width: 300px;
+      box-shadow: -4px 0 30px var(--notif-color,#00D4FF44), 0 4px 20px rgba(0,0,0,0.5);
+      pointer-events: auto;
+      animation: toastIn 0.4s cubic-bezier(.34,1.56,.64,1) both;
+      border-top: 1px solid var(--notif-color,#00D4FF)33;
+      border-bottom: 1px solid var(--notif-color,#00D4FF)33;
+    }
+    @keyframes toastIn {
+      from { transform: translateX(120%); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+    @keyframes toastOut {
+      from { transform: translateX(0);    opacity: 1; max-height: 120px; margin-bottom: 0; }
+      to   { transform: translateX(120%); opacity: 0; max-height: 0;     margin-bottom: -8px; }
+    }
+    .notif-toast.leaving { animation: toastOut 0.35s ease forwards; }
+    .notif-icon  { font-size: 28px; line-height: 1; filter: drop-shadow(0 0 8px var(--notif-color,#00D4FF)); }
+    .notif-badge { font-family: "Orbitron",monospace; font-size: 10px; font-weight: 700;
+      color: var(--notif-color,#00D4FF); letter-spacing: 2px; margin-bottom: 3px; }
+    .notif-name  { font-size: 14px; font-weight: 700; color: #E2E8F0; }
+    .notif-amt   { font-family: "Orbitron",monospace; font-size: 16px; font-weight: 900;
+      color: #fff; text-shadow: 0 0 12px var(--notif-color,#00D4FF); margin-top: 2px; }
+
+    /* Deal log panel */
+    #deal-log-wrap {
+      position: fixed; bottom: 70px; right: 12px; z-index: 7000;
+      width: 280px; display: none;
+    }
+    #deal-log-wrap.visible { display: block; }
+    #deal-log-header {
+      font-family: "Orbitron",monospace; font-size: 10px; color: #475569;
+      letter-spacing: 2px; padding: 8px 12px;
+      background: rgba(6,11,24,0.97); border-radius: 12px 12px 0 0;
+      border: 1px solid rgba(255,255,255,0.08); border-bottom: none;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    #deal-log-list {
+      background: rgba(6,11,24,0.97);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 0 0 12px 12px;
+      max-height: 320px; overflow-y: auto;
+    }
+    .log-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 12px;
+    }
+    .log-row:last-child { border-bottom: none; }
+    .log-icon { font-size: 14px; flex-shrink: 0; }
+    .log-name { flex: 1; color: #CBD5E1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .log-amt  { font-family: "Orbitron",monospace; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .log-time { font-size: 10px; color: #334155; flex-shrink: 0; }
   </style>
 </head>
 <body onclick="unlockAudio()" onkeydown="unlockAudio()">
@@ -788,118 +853,68 @@ function testSound(badge){
 }
 
 // \u2550\u2550 BADGE ALERT \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+// Deal log storage
+var dealLog = [];
+
 function showBadgeAlert(icon,text,repName,color,big,amount){
-  var dur = big ? 5000 : 3800;
-
-  // ── Fullscreen color flash overlay ────────────────────────────────────────
-  var overlay = document.createElement("div");
-  overlay.style.cssText = "position:fixed;inset:0;z-index:9997;pointer-events:none;" +
-    "background:radial-gradient(ellipse at 50% 40%,"+color+"55 0%,"+color+"11 45%,rgba(0,0,0,0.88) 75%);" +
-    "animation:overlayFade "+dur+"ms ease forwards;";
-  document.body.appendChild(overlay);
-
-  // ── Particle ring effect ──────────────────────────────────────────────────
-  var ring = document.createElement("canvas");
-  ring.style.cssText = "position:fixed;inset:0;z-index:9998;pointer-events:none;";
-  ring.width = window.innerWidth; ring.height = window.innerHeight;
-  document.body.appendChild(ring);
-  (function(){
-    var ctx = ring.getContext("2d");
-    var cx = ring.width/2, cy = ring.height/2;
-    var particles = [];
-    var count = big ? 30 : 18;
-    for(var i=0;i<count;i++){
-      var angle = (i/count)*Math.PI*2;
-      var speed = 3+Math.random()*5;
-      particles.push({
-        x:cx, y:cy,
-        vx: Math.cos(angle)*speed*(0.7+Math.random()*0.6),
-        vy: Math.sin(angle)*speed*(0.7+Math.random()*0.6),
-        size: big ? 6+Math.random()*8 : 4+Math.random()*6,
-        alpha: 1, life: 0
-      });
+  // ── Side toast notification ──────────────────────────────────────────────
+  var panel = document.getElementById('notif-panel');
+  if (panel) {
+    var toast = document.createElement('div');
+    toast.className = 'notif-toast';
+    toast.style.setProperty('--notif-color', color);
+    toast.innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px">'+
+        '<span class="notif-icon">'+icon+'</span>'+
+        '<div>'+
+          '<div class="notif-badge">'+text+'</div>'+
+          '<div class="notif-name">'+repName+'</div>'+
+          (amount?'<div class="notif-amt">'+fmt(amount)+'</div>':'')+
+        '</div>'+
+      '</div>';
+    panel.insertBefore(toast, panel.firstChild);
+    // Keep max 4 visible at once
+    while (panel.children.length > 4) {
+      var last = panel.lastChild;
+      if (last) last.remove();
     }
-    var start = Date.now();
-    var duration = dur * 0.65;
-    function drawRing(){
-      var elapsed = Date.now()-start;
-      var progress = elapsed/duration;
-      ctx.clearRect(0,0,ring.width,ring.height);
-      var alive = false;
-      particles.forEach(function(p){
-        p.x += p.vx; p.y += p.vy;
-        p.vy += 0.15; // gravity
-        p.alpha = Math.max(0, 1 - progress*1.4);
-        if(p.alpha > 0) alive = true;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-        ctx.fillStyle = color;
-        ctx.globalAlpha = p.alpha;
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 12;
-        ctx.fill();
-        ctx.globalAlpha = 1; ctx.shadowBlur = 0;
-      });
-      if(alive && elapsed < duration) requestAnimationFrame(drawRing);
-      else { ctx.clearRect(0,0,ring.width,ring.height); }
-    }
-    requestAnimationFrame(drawRing);
-  })();
+    // Slide out after 4s
+    var dur = big ? 5000 : 3500;
+    setTimeout(function() {
+      toast.classList.add('leaving');
+      setTimeout(function(){ if(toast.parentNode) toast.remove(); }, 350);
+    }, dur);
+  }
 
-  // ── Main badge card ───────────────────────────────────────────────────────
-  var el = document.createElement("div");
-  var sz  = big ? "140px" : "100px";
-  var fsz = big ? "60px"  : "44px";
-  var sub = big ? "20px"  : "16px";
-  var asub = big ? "34px" : "26px";
-  var pad = big ? "56px 64px" : "40px 52px";
-  var minw = big ? "480px" : "360px";
-
-  el.style.cssText =
-    "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);" +
-    "z-index:9999;text-align:center;pointer-events:none;" +
-    "padding:"+pad+";" +
-    "background:radial-gradient(ellipse at 50% 30%,"+color+"28 0%,rgba(4,8,20,0.98) 70%);" +
-    "border:2px solid "+color+";" +
-    "border-radius:28px;" +
-    "box-shadow:" +
-      "0 0 0 1px "+color+"55," +
-      "0 0 30px "+color+"99," +
-      "0 0 80px "+color+"66," +
-      "0 0 140px "+color+"33," +
-      "inset 0 0 60px "+color+"18;" +
-    "animation:badgePop "+dur+"ms cubic-bezier(.34,1.56,.64,1) forwards;" +
-    "min-width:"+minw+";";
-
-  var amtHTML = amount
-    ? "<div style='font-family:Orbitron,monospace;font-size:"+asub+";font-weight:900;" +
-      "color:#fff;text-shadow:0 0 30px "+color+",0 0 60px "+color+";" +
-      "margin-top:10px;letter-spacing:3px;'>"+fmt(amount)+"</div>"
-    : "";
-
-  el.innerHTML =
-    "<div style='font-size:"+sz+";line-height:1;" +
-    "filter:drop-shadow(0 0 24px "+color+") drop-shadow(0 0 48px "+color+") drop-shadow(0 0 72px "+color+");'>" +
-      icon +
-    "</div>" +
-    "<div style='font-family:Orbitron,monospace;font-size:"+fsz+";font-weight:900;" +
-    "color:"+color+";text-shadow:0 0 24px "+color+",0 0 48px "+color+";" +
-    "letter-spacing:"+(big?12:8)+"px;margin-top:18px;'>" +
-      text +
-    "</div>" +
-    "<div style='width:70%;height:2px;background:linear-gradient(90deg,transparent,"+color+",transparent);margin:16px auto 14px;box-shadow:0 0 10px "+color+";'></div>" +
-    "<div style='font-family:Exo 2,sans-serif;font-size:"+sub+";color:rgba(255,255,255,0.9);" +
-    "letter-spacing:4px;text-transform:uppercase;font-weight:600;'>" +
-      repName +
-    "</div>" +
-    amtHTML;
-
-  document.body.appendChild(el);
-  setTimeout(function(){ el.remove(); overlay.remove(); ring.remove(); }, dur);
+  // ── Add to deal log ───────────────────────────────────────────────────────
+  var now = new Date();
+  var timeStr = (now.getHours()%12||12)+':'+(now.getMinutes()<10?'0':'')+now.getMinutes()+(now.getHours()>=12?'pm':'am');
+  dealLog.unshift({ icon:icon, text:text, name:repName, color:color, amount:amount||0, time:timeStr });
+  if (dealLog.length > 10) dealLog.pop();
+  updateDealLog();
 }
 
-// \u2550\u2550 BADGE DETECTION \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-var prevBadgeState = null;
+function updateDealLog() {
+  var wrap = document.getElementById('deal-log-wrap');
+  var list = document.getElementById('deal-log-list');
+  if (!wrap || !list || dealLog.length === 0) return;
+  wrap.classList.add('visible');
+  list.innerHTML = '';
+  dealLog.forEach(function(entry) {
+    var row = document.createElement('div');
+    row.className = 'log-row';
+    row.innerHTML =
+      '<span class="log-icon">'+entry.icon+'</span>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div class="log-name">'+entry.name+'</div>'+
+        '<div style="font-size:9px;color:'+entry.color+';font-family:Orbitron,monospace;letter-spacing:1px">'+entry.text+'</div>'+
+      '</div>'+
+      (entry.amount?'<span class="log-amt" style="color:'+entry.color+'">'+fmt(entry.amount)+'</span>':'')+
+      '<span class="log-time">'+entry.time+'</span>';
+    list.appendChild(row);
+  });
+}
+
 
 function seedBadgeState(newData) {
   // Build current snapshot without firing any badges
@@ -1983,6 +1998,12 @@ function consolidateData(rawData) {
   });
   return result;
 }
+function toggleDealLog() {
+  var wrap = document.getElementById('deal-log-wrap');
+  if (wrap) wrap.classList.toggle('visible');
+  toggleMenu();
+}
+
 function toggleConsolidated() {
   filterConsolidated = !filterConsolidated;
   var btn = document.getElementById('consolidated-btn');
@@ -2148,6 +2169,7 @@ fetchSettings().then(function() {
     <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FILTER</div>
     <button class="menu-item" id="today-filter-btn" onclick="toggleTodayFilter()">&#x2600;&#xFE0F; TODAY ONLY</button>
     <button class="menu-item" id="consolidated-btn" onclick="toggleConsolidated()">&#x1F5FA; CONSOLIDATED</button>
+    <button class="menu-item" onclick="toggleDealLog()">&#x1F4CB; BADGE LOG</button>
     <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>
     <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FULLSCREEN ONLY</div>
     <button class="menu-item" id="scroll-btn" onclick="toggleScroll()">&#x2B06;&#x2B07; AUTO SCROLL</button>
@@ -2156,6 +2178,18 @@ fetchSettings().then(function() {
 </div>
 
 <!-- CONFETTI -->
+<!-- NOTIFICATION PANEL -->
+<div id="notif-panel"></div>
+
+<!-- DEAL LOG -->
+<div id="deal-log-wrap">
+  <div id="deal-log-header">
+    <span>&#x1F4CB; RECENT BADGES</span>
+    <button onclick="document.getElementById('deal-log-wrap').classList.remove('visible')" style="background:none;border:none;color:#475569;cursor:pointer;font-size:14px">&#x2715;</button>
+  </div>
+  <div id="deal-log-list"></div>
+</div>
+
 <canvas id="confetti-canvas" style="position:fixed;inset:0;z-index:9997;pointer-events:none;display:none"></canvas>
 
 </body>
