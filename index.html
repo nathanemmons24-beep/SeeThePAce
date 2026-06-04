@@ -458,7 +458,7 @@
 
 
 
-var SHEET_URL  = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
+var SHEET_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSCj5mTfE2UMOth-X_C8voZToabgP92fRNogyQHc4bxEB4AnSkm80TPEYYlWj6wvU2L37PaMA_GqC-/pub?gid=0&single=true&output=csv";
 var POLL_MS    = 10000;
 var ADMIN_PW   = "seethepace";
 var PALETTE    = ["#00D4FF","#00FF88","#FFD700","#FF6B35","#A855F7","#FF4EFF","#34D399","#F59E0B","#60A5FA","#FB7185"];
@@ -478,7 +478,18 @@ var IND_BADGES = [
   {threshold:75000, label:"Sales Titan",       icon:"\uD83D\uDC8E",color:"#A855F7"},
   {threshold:100000,label:"Six Figure Legend",      icon:"\uD83D\uDC51",color:"#FF4EFF"},
 ];
-var SAMPLE = { total:0, teams:{} };
+var SAMPLE = {
+  total:164082,
+  teams:{
+    "0534 - Westchester":        {total:15552, color:"#00D4FF",reps:[{name:"James Pesce",amount:8602,deals:[8602],dealObjs:[{amount:8602,date:null,isToday:false}],todayTotal:0,latestDate:null},{name:"John Paul Capuano",amount:6950,deals:[6950],dealObjs:[{amount:6950,date:null,isToday:false}],todayTotal:0,latestDate:null}]},
+    "0576 - Cincinnati":         {total:34114, color:"#FFD700",reps:[{name:"Sean Williamson",amount:20518,deals:[20518],dealObjs:[{amount:20518,date:null,isToday:false}],todayTotal:0,latestDate:null},{name:"Marcus Staples",amount:13596,deals:[13596],dealObjs:[{amount:13596,date:null,isToday:false}],todayTotal:0,latestDate:null}]},
+    "0791 - Nashville":          {total:29436, color:"#FF6B35",reps:[{name:"JT Conway",amount:29436,deals:[29436],dealObjs:[{amount:29436,date:null,isToday:false}],todayTotal:0,latestDate:null}]},
+    "0867 - Indy":               {total:25483, color:"#A855F7",reps:[{name:"Brian Caster",amount:25483,deals:[25483],dealObjs:[{amount:25483,date:null,isToday:false}],todayTotal:0,latestDate:null}]},
+    "0535 - Central Northern NJ":{total:20497, color:"#00FF88",reps:[{name:"Alex Sosnov",amount:13718,deals:[13718],dealObjs:[{amount:13718,date:null,isToday:false}],todayTotal:0,latestDate:null},{name:"Roberto Rios",amount:6779,deals:[6779],dealObjs:[{amount:6779,date:null,isToday:false}],todayTotal:0,latestDate:null}]},
+    "0930 - Atlanta":            {total:36675, color:"#FF4EFF",reps:[{name:"Anthony Walker",amount:25000,deals:[25000],dealObjs:[{amount:25000,date:null,isToday:false}],todayTotal:0,latestDate:null},{name:"Christopher Anderson",amount:11675,deals:[11675],dealObjs:[{amount:11675,date:null,isToday:false}],todayTotal:0,latestDate:null}]},
+    "0930 - Southern GA":        {total:3325,  color:"#00D4FF",reps:[{name:"Austin Davis",amount:3325,deals:[3325],dealObjs:[{amount:3325,date:null,isToday:false}],todayTotal:0,latestDate:null}]}
+  }
+};
 
 // \u2550\u2550 HELPERS \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function formatShortDate(d){
@@ -562,11 +573,13 @@ var streakCounts = {}; // "Name|Team" -> number of deals (not syncs)
 var pollTimer=null,countdownTimer=null,secsLeft=10,CIRC=2*Math.PI*15;
 
 // \u2550\u2550 FETCH \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-var SETTINGS_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Settings";
+var SETTINGS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSCj5mTfE2UMOth-X_C8voZToabgP92fRNogyQHc4bxEB4AnSkm80TPEYYlWj6wvU2L37PaMA_GqC-/pub?gid=1387018828&single=true&output=csv";
 
 async function fetchSettings() {
   var proxies = [
     function(u){ return u; },
+    function(u){ return "https://corsproxy.io/?"+encodeURIComponent(u); },
+    function(u){ return "https://api.allorigins.win/raw?url="+encodeURIComponent(u); },
   ];
   for (var i = 0; i < proxies.length; i++) {
     try {
@@ -599,9 +612,11 @@ async function fetchSettings() {
 }
 
 async function fetchData(){
-  var DATA_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
   var proxies=[
-    function(u){return DATA_URL;},
+    function(u){return u;},
+    function(u){return "https://api.allorigins.win/raw?url="+encodeURIComponent(u);},
+    function(u){return "https://corsproxy.io/?"+encodeURIComponent(u);},
+    function(u){return "https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u);},
   ];
   for(var i=0;i<proxies.length;i++){
     try{
@@ -611,7 +626,7 @@ async function fetchData(){
       var csv=await res.text();
       if(csv.trim().startsWith("<"))continue; // reject HTML responses
       var parsed=parseCsv(csv);
-      // Mark as live immediately once we get valid CSV back
+// Mark as live immediately once we get valid CSV back
       if(parsed) state.status="live";
       if(parsed){
         // Only check for new badges if queue is idle — prevents re-fire mid-play
@@ -1202,7 +1217,7 @@ function loadSettings() {
     var saved = localStorage.getItem('blitz_settings');
     if (saved) {
       var s = JSON.parse(saved);
-      // if (s.sheetUrl) state.sheetUrl = s.sheetUrl; // disabled — using Apps Script
+      if (s.sheetUrl) state.sheetUrl = s.sheetUrl;
       if (s.goal)     state.goal     = s.goal;
       if (s.title)    state.title    = s.title;
       console.log('Settings loaded:', state.title, state.goal);
