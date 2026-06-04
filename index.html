@@ -200,6 +200,8 @@
     body.tv-mode #cards-grid{gap:20px}
     body.tv-mode .team-card{min-width:320px;flex:1 1 320px}
     body.tv-mode #app{max-width:100%;padding:32px 32px}
+    @keyframes toastIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+    @keyframes toastOut{from{transform:translateX(0);opacity:1;max-height:120px}to{transform:translateX(120%);opacity:0;max-height:0;margin-bottom:-8px}}
   </style>
 </head>
 <body onclick="unlockAudio()" onkeydown="unlockAudio()">
@@ -360,10 +362,9 @@
       <button onclick="spotlightNext()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:18px">&#8594;</button>
     </div>
   </div>
-  <button onclick="stopSpotlight()" style="margin-top:20px;padding:8px 24px;border-radius:20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#94A3B8;font-family:Orbitron,monospace;font-size:11px;cursor:pointer;letter-spacing:1px">&#x2715; CLOSE SPOTLIGHT</button>
-</div>
+  <button onclick="stopSpotlight()" style="margin-top:20
 
-<script>
+
 
 
 
@@ -739,7 +740,16 @@ function enqueueBadge(rep,lbl,amount){
   BQ.push({rep:rep,lbl:lbl,amount:amount});
   if(!BQR)nextBadge();
 }
-function nextBadge(){if(!BQ.length){BQR=false;firedBadges={};return;}BQR=true;var x=BQ.shift();var fn=SFN[x.lbl];if(fn)fn(x.rep,x.amount||0);setTimeout(nextBadge,(BDUR[x.lbl]||3.5)*1000+800);}
+function nextBadge(){
+  if(!BQ.length){BQR=false;firedBadges={};return;}
+  BQR=true;
+  var x=BQ.shift();
+  var fn=SFN[x.lbl];
+  if(fn) fn(x.rep,x.amount||0);
+  // Use actual decoded clip duration + 1s buffer so audio never gets cut off
+  var clipDur=(_decoded&&_decoded[x.lbl])?(_decoded[x.lbl].duration*1000+1000):(BDUR[x.lbl]||3.5)*1000+1000;
+  setTimeout(nextBadge, clipDur);
+}
 
 function testSound(badge){
   unlockAudio(); // creates + resumes AC
@@ -755,8 +765,33 @@ function testSound(badge){
 
 // \u2550\u2550 BADGE ALERT \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function showBadgeAlert(icon,text,repName,color,big,amount){
-  // No-op — badge display handled by audio clip + visual overlay removed per request
-  console.log("Badge:", text, repName, amount);
+  // Show toast notification
+  var panel=document.getElementById('notif-panel');
+  if(!panel){
+    panel=document.createElement('div');
+    panel.id='notif-panel';
+    panel.style.cssText='position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:8000;display:flex;flex-direction:column;gap:8px;align-items:flex-end;padding-right:12px;pointer-events:none;max-height:90vh;overflow:hidden;';
+    document.body.appendChild(panel);
+  }
+  var toast=document.createElement('div');
+  toast.style.cssText='background:rgba(6,11,24,0.97);border-left:4px solid '+color+';border-radius:12px 0 0 12px;padding:14px 18px;min-width:260px;max-width:320px;box-shadow:-4px 0 30px '+color+'44,0 4px 20px rgba(0,0,0,0.5);pointer-events:auto;animation:toastIn 0.4s cubic-bezier(.34,1.56,.64,1) both;border-top:1px solid '+color+'22;border-bottom:1px solid '+color+'22;';
+  toast.innerHTML=
+    '<div style="display:flex;align-items:center;gap:12px">'+
+    '<span style="font-size:32px;line-height:1;filter:drop-shadow(0 0 8px '+color+')">'+icon+'</span>'+
+    '<div>'+
+      '<div style="font-family:Orbitron,monospace;font-size:10px;font-weight:700;color:'+color+';letter-spacing:2px;margin-bottom:3px">'+text+'</div>'+
+      '<div style="font-size:15px;font-weight:700;color:#E2E8F0;margin-bottom:4px">'+repName+'</div>'+
+      (amount?'<div style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:#fff;text-shadow:0 0 12px '+color+'">'+fmt(amount)+'</div>':'')+
+    '</div>'+
+    '</div>';
+  panel.insertBefore(toast,panel.firstChild);
+  while(panel.children.length>3){panel.lastChild.remove();}
+  // Remove after clip finishes
+  var dur=(_decoded&&_decoded[text])?(_decoded[text].duration*1000+500):((BDUR[text]||3.5)*1000+500);
+  setTimeout(function(){
+    toast.style.animation='toastOut 0.35s ease forwards';
+    setTimeout(function(){if(toast.parentNode)toast.remove();},350);
+  },dur);
 }
 
 
@@ -2504,9 +2539,13 @@ var blitzTVMode = false;
 function toggleBlitzTV() {
   blitzTVMode = !blitzTVMode;
   document.body.classList.toggle('blitz-tv', blitzTVMode);
+  // Also scale the blitz overlay text
+  var board = document.getElementById('blitz-board');
+  if (board) board.style.fontSize = blitzTVMode ? '120%' : '';
   var btn = document.getElementById('blitz-tv-btn');
-  if (btn) btn.textContent = blitzTVMode ? '📺 TV ON' : '📺 TV MODE';
-  toggleBlitzMenu();
+  if (btn) { btn.innerHTML = blitzTVMode ? '&#x1F4FA; TV ON' : '&#x1F4FA; TV MODE'; btn.style.color = blitzTVMode ? '#00FF88' : ''; }
+  var panel = document.getElementById('blitz-menu-panel');
+  if (panel) panel.style.display = 'none';
 }
 
 function toggleBlitzFullscreen() {
@@ -2567,6 +2606,20 @@ var firedBadges={};
 
 
 
+
+
+VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU="
+};
+var firstFetch = false;
+var BQ=[],BQR=false;
+var firedBadges={};
+
+
+
+
+
+
+
 </script>
 <!-- BIGGEST MOVER (legacy, hidden) -->
 <div id="biggest-mover" style="display:none">
@@ -2611,7 +2664,7 @@ var firedBadges={};
   </div>
 
   <!-- Blitz Menu Button -->
-  <div id="blitz-menu-wrap" style="display:none;position:fixed;bottom:20px;right:20px;z-index:9500">
+  <div id="blitz-menu-wrap" style="display:none;position:sticky;bottom:20px;float:right;margin-right:16px;z-index:9500;clear:both">
     <button onclick="toggleBlitzMenu()" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#00FF88,#FFD700);border:none;color:#000;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(0,255,136,0.5);display:flex;align-items:center;justify-content:center">&#x2630;</button>
     <div id="blitz-menu-panel" style="display:none;position:absolute;bottom:60px;right:0;background:rgba(0,8,4,0.97);border:1px solid rgba(0,255,136,0.2);border-radius:16px;padding:8px;width:200px;box-shadow:0 8px 40px rgba(0,0,0,0.8);backdrop-filter:blur(20px)">
       <div style="font-family:Orbitron,monospace;font-size:9px;color:#1E293B;letter-spacing:2px;padding:6px 12px 4px">BLITZ CONTROLS</div>
