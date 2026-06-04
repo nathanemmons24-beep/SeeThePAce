@@ -240,7 +240,12 @@
   </div>
 
   <!-- CLOCK -->
-  <div id="blitz-clock">--:--:-- &middot; ---</div>
+  <div id="blitz-clock">
+    <span id="clock-time">--:--:--</span>
+    <span id="clock-ampm" style="font-size:0.7em;margin-left:4px">--</span>
+    <span style="margin:0 8px;opacity:0.3">&middot;</span>
+    <span id="clock-date">---</span>
+  </div>
   <div id="countdown-wrap">
     <svg id="countdown-svg" width="36" height="36" viewBox="0 0 36 36">
       <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
@@ -380,6 +385,7 @@
 </div>
 
 <script>
+
 
 
 
@@ -2636,9 +2642,11 @@ function createMenu(){
 }
 
 // ══ BOOT ══════════════════════════════════════════════════════════════════════
+createMenu();
 loadSettings();
 renderBadgeLegend();
 render();
+// Clock started inline in updateClock definition
 // Seed badge state immediately so first real sync doesn't fire for existing deals
 if (state.data && state.data.teams) seedBadgeState(state.data);
 // Fetch settings once, then start polling — single call only
@@ -2663,6 +2671,7 @@ var CLIPS={
 var firstFetch = false;
 var BQ=[],BQR=false;
 var firedBadges={};
+
 
 
 
