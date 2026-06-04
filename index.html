@@ -372,6 +372,8 @@
 
 
 
+
+
 var milestoneSeeded = false;
 
 
@@ -2135,7 +2137,21 @@ function getBlitzData() {
       });
     });
   }
-  if (!hasRealBlitz) return buildBlitzFromDemo();
+  if (!hasRealBlitz) {
+    // Build from demo inline
+    var result = { total: BLITZ_DEMO.total, brackets: {}, allReps: [] };
+    Object.keys(BLITZ_DEMO.brackets).forEach(function(bName) {
+      var b = BLITZ_DEMO.brackets[bName];
+      result.brackets[bName] = { total:b.total, teams:{}, color:b.color, accent:b.accent };
+      Object.keys(b.teams).forEach(function(tName) {
+        var t = b.teams[tName];
+        result.brackets[bName].teams[tName] = { total:t.total, display:t.display, color:t.color, reps:t.reps };
+        t.reps.forEach(function(r){ result.allReps.push({name:r.name,amount:r.amount,store:t.display,color:t.color,bracket:bName}); });
+      });
+    });
+    result.allReps.sort(function(a,b){return b.amount-a.amount;});
+    return result;
+  }
   if (!data || !data.teams) return null;
 function buildBlitzFromDemo() {
   var result = { total: BLITZ_DEMO.total, brackets: {}, allReps: [] };
@@ -2191,8 +2207,11 @@ function buildBlitzFromDemo() {
 
 function renderBlitz() {
   var bd = getBlitzData();
-  var isDemo = bd && bd === buildBlitzFromDemo() || (bd && bd.total === BLITZ_DEMO.total);
-  if (!bd) return;
+  if (!bd) { 
+    document.getElementById("blitz-board").innerHTML = '<div style="text-align:center;padding:40px;color:#475569;font-family:Orbitron,monospace">NO DATA AVAILABLE</div>';
+    return; 
+  }
+  var isDemo = true;
 
   var board = document.getElementById("blitz-board");
   var pct = Math.min((bd.total/BLITZ_GOAL)*100, 110).toFixed(1);
@@ -2203,7 +2222,7 @@ function renderBlitz() {
       '<div style="font-family:Orbitron,monospace;font-size:clamp(24px,5vw,48px);font-weight:900;color:#00FF88;letter-spacing:6px;text-shadow:0 0 30px #00FF8866">&#x26A1; BLITZ SCOREBOARD</div>'+
       '<div style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:4px;margin-top:4px">JUNE 18 – 20, 2026</div>'+
     '</div>'+
-    (isDemo ? '<div style="text-align:center;margin-bottom:12px"><span style="font-family:Orbitron,monospace;font-size:9px;color:#FFD700;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:3px 10px;letter-spacing:2px">&#x2139; PREVIEW MODE — DEMO DATA</span></div>' : '')+
+    
 
     // Progress bar
     '<div style="background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.15);border-radius:14px;padding:16px 20px;margin-bottom:20px">'+
@@ -2320,6 +2339,8 @@ var CLIPS={
 var firstFetch = false;
 var BQ=[],BQR=false;
 var firedBadges={};
+
+
 
 </script>
 <!-- BIGGEST MOVER (legacy, hidden) -->
