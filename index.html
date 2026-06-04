@@ -2243,6 +2243,7 @@ var firstFetch = false;
 
 
 <script>
+
 var APP_VERSION = "201601";
 
 
@@ -2633,9 +2634,14 @@ function nextBadge(){
   var x=BQ.shift();
   var fn=SFN[x.lbl];
   if(fn) fn(x.rep,x.amount||0);
-  // Use actual decoded clip duration + 1s buffer so audio never gets cut off
-  var clipDur=(_decoded&&_decoded[x.lbl])?(_decoded[x.lbl].duration*1000+1000):(BDUR[x.lbl]||3.5)*1000+1000;
-  setTimeout(nextBadge, clipDur);
+  // Wait for clip to fully finish via onended, then 600ms pause, then next badge
+  var clipDur=(_decoded&&_decoded[x.lbl])?(_decoded[x.lbl].duration*1000+600):(BDUR[x.lbl]||3.5)*1000+600;
+  // Store current badge label so toast can track it
+  window._currentBadge=x.lbl;
+  setTimeout(function(){
+    window._currentBadge=null;
+    nextBadge();
+  }, clipDur);
 }
 
 function testSound(badge){
@@ -2652,35 +2658,33 @@ function testSound(badge){
 
 // \u2550\u2550 BADGE ALERT \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function showBadgeAlert(icon,text,repName,color,big,amount){
-  // Show toast notification
   var panel=document.getElementById('notif-panel');
   if(!panel){
     panel=document.createElement('div');
     panel.id='notif-panel';
-    panel.style.cssText='position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:8000;display:flex;flex-direction:column;gap:8px;align-items:flex-end;padding-right:12px;pointer-events:none;max-height:90vh;overflow:hidden;';
+    panel.style.cssText='position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:8000;display:flex;flex-direction:column;gap:10px;align-items:flex-end;padding-right:14px;pointer-events:none;max-height:90vh;overflow:hidden;';
     document.body.appendChild(panel);
   }
   var toast=document.createElement('div');
-  toast.style.cssText='background:rgba(6,11,24,0.97);border-left:4px solid '+color+';border-radius:12px 0 0 12px;padding:14px 18px;min-width:260px;max-width:320px;box-shadow:-4px 0 30px '+color+'44,0 4px 20px rgba(0,0,0,0.5);pointer-events:auto;animation:toastIn 0.4s cubic-bezier(.34,1.56,.64,1) both;border-top:1px solid '+color+'22;border-bottom:1px solid '+color+'22;';
+  toast.style.cssText='background:rgba(4,8,20,0.97);border-left:5px solid '+color+';border-radius:14px 0 0 14px;padding:16px 20px;min-width:280px;max-width:340px;box-shadow:-4px 0 40px '+color+'66,0 4px 30px rgba(0,0,0,0.6);pointer-events:none;animation:toastIn 0.45s cubic-bezier(.34,1.56,.64,1) both;border-top:1px solid '+color+'22;border-bottom:1px solid '+color+'22;';
   toast.innerHTML=
-    '<div style="display:flex;align-items:center;gap:12px">'+
-    '<span style="font-size:32px;line-height:1;filter:drop-shadow(0 0 8px '+color+')">'+icon+'</span>'+
+    '<div style="display:flex;align-items:center;gap:14px">'+
+    '<span style="font-size:40px;line-height:1;filter:drop-shadow(0 0 12px '+color+')">'+icon+'</span>'+
     '<div>'+
-      '<div style="font-family:Orbitron,monospace;font-size:10px;font-weight:700;color:'+color+';letter-spacing:2px;margin-bottom:3px">'+text+'</div>'+
-      '<div style="font-size:15px;font-weight:700;color:#E2E8F0;margin-bottom:4px">'+repName+'</div>'+
-      (amount?'<div style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:#fff;text-shadow:0 0 12px '+color+'">'+fmt(amount)+'</div>':'')+
+      '<div style="font-family:Orbitron,monospace;font-size:10px;font-weight:700;color:'+color+';letter-spacing:2px;margin-bottom:4px">'+text+'</div>'+
+      '<div style="font-size:16px;font-weight:700;color:#E2E8F0;margin-bottom:5px">'+repName+'</div>'+
+      (amount?'<div style="font-family:Orbitron,monospace;font-size:22px;font-weight:900;color:#fff;text-shadow:0 0 16px '+color+'">'+fmt(amount)+'</div>':'')+
     '</div>'+
     '</div>';
   panel.insertBefore(toast,panel.firstChild);
-  while(panel.children.length>3){panel.lastChild.remove();}
-  // Remove after clip finishes
-  var dur=(_decoded&&_decoded[text])?(_decoded[text].duration*1000+500):((BDUR[text]||3.5)*1000+500);
+  while(panel.children.length>2){panel.lastChild.remove();}
+  // Stay visible for full clip duration
+  var clipDur=(_decoded&&_decoded[text])?(_decoded[text].duration*1000+400):((BDUR[text]||3.5)*1000+400);
   setTimeout(function(){
-    toast.style.animation='toastOut 0.35s ease forwards';
-    setTimeout(function(){if(toast.parentNode)toast.remove();},350);
-  },dur);
+    toast.style.animation='toastOut 0.4s ease forwards';
+    setTimeout(function(){if(toast.parentNode)toast.remove();},400);
+  }, clipDur);
 }
-
 
 function seedBadgeState(newData) {
   // Build current snapshot without firing any badges
@@ -4515,6 +4519,7 @@ var CLIPS={
 var firstFetch = false;
 var BQ=[],BQR=false;
 var firedBadges={};
+
 
 
 
