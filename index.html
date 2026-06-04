@@ -520,6 +520,7 @@ function parseCsv(csv){
       var store=cols[0],name=cols[1],scoreRaw=cols[2],dateRaw=cols[3]||"";
       if(!store||!name||!scoreRaw)continue;
       var val=parseFloat(scoreRaw.replace(/[^0-9.]/g,""))||0;
+      if(val<=0)continue; // skip zero-value rows
       // Parse date column
       var dealDate=null,isToday=false;
       if(dateRaw){
