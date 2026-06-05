@@ -222,10 +222,11 @@
     .stp-ring{width:60px;height:60px;border:3px solid rgba(0,212,255,0.15);border-top:3px solid #00D4FF;border-radius:50%;animation:stp-ring 1s linear infinite}
     .stp-dots::after{content:"";animation:stp-dots 1.5s steps(1) infinite}
 
-    #badge-legend-fixed{position:fixed;left:16px;top:50%;transform:translateY(-50%);z-index:500;background:rgba(6,11,24,0.97);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:14px 16px;backdrop-filter:blur(20px);box-shadow:4px 0 30px rgba(0,0,0,0.5);width:190px}
-    #badge-legend-fixed .bl-title{font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;margin-bottom:10px;text-align:center}
-    #badge-legend-fixed .bl-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
-    #badge-legend-fixed .bl-row:last-child{border-bottom:none}
+    #badge-legend-fixed{position:fixed;bottom:0;left:0;right:0;z-index:500;background:rgba(6,11,24,0.15);border-top:1px solid rgba(255,255,255,0.05);padding:10px 20px;backdrop-filter:blur(4px);display:flex;align-items:center;gap:0;justify-content:space-around;opacity:0.25;transition:opacity 0.3s,background 0.3s,backdrop-filter 0.3s}
+    #badge-legend-fixed:hover{opacity:1;background:rgba(6,11,24,0.97);backdrop-filter:blur(20px);border-top-color:rgba(255,255,255,0.1)}
+    #badge-legend-fixed .bl-title{display:none}
+    #badge-legend-fixed .bl-row{display:flex;align-items:center;gap:8px;padding:4px 12px;border-bottom:none;border-right:1px solid rgba(255,255,255,0.06)}
+    #badge-legend-fixed .bl-row:last-child{border-right:none}
     #badge-legend-fixed .bl-icon{font-size:18px;width:22px;text-align:center;flex-shrink:0}
     #badge-legend-fixed .bl-info{flex:1}
     #badge-legend-fixed .bl-name{font-size:11px;font-weight:700;display:block;line-height:1.3}
