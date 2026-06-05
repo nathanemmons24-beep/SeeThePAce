@@ -1774,7 +1774,7 @@ function renderDayBreakdown(data) {
     var maxVal = Math.max.apply(null, days.map(function(d){ return d[1].total; }));
     if (maxVal === 0) return;
 
-    var barW = Math.max(16, Math.min(120, cW / days.length * 0.65));
+    var barW = Math.max(16, Math.min(120, cW / days.length * 0.85));
     var gap   = cW / days.length;
     var barColors = ['#00D4FF','#00FF88','#FFD700','#FF6B35','#A855F7','#FF4EFF'];
 
