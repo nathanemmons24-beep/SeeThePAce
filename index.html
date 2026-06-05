@@ -91,12 +91,14 @@
     #total-display{font-family:"Orbitron",monospace;font-size:16px;color:#FFD700}
     #total-display span{color:#475569}
     #next-milestone{color:#64748B;font-size:12px}
-    #bar-track{position:relative;height:30px;background:rgba(255,255,255,0.06);border-radius:15px;overflow:visible;margin-top:32px}
+    #bar-wrap{padding-bottom:44px}
+    #bar-track{position:relative;height:30px;background:rgba(255,255,255,0.06);border-radius:15px;overflow:visible}
     #bar-fill{position:absolute;top:0;left:0;height:100%;width:0%;background:linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF);border-radius:15px;transition:width 1.2s cubic-bezier(.4,0,.2,1);box-shadow:0 0 24px rgba(0,212,255,0.5)}
     #bar-pct{position:absolute;right:12px;top:0;bottom:0;display:flex;align-items:center;font-family:"Orbitron",monospace;font-size:11px;color:#fff;font-weight:700}
-    .milestone-tick{position:absolute;top:-28px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10}
-    .milestone-tick .tick-line{width:2px;height:50px;border-radius:2px}
-    .milestone-tick .tick-icon{font-size:16px;margin-top:2px}
+    .milestone-tick{position:absolute;top:0;bottom:-42px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10;pointer-events:none}
+    .milestone-tick .tick-line{width:2px;flex:1;border-radius:2px}
+    .milestone-tick .tick-label{font-family:Orbitron,monospace;font-size:9px;font-weight:700;margin-top:3px;white-space:nowrap}
+    .milestone-tick .tick-icon{font-size:13px;margin-top:1px}
     #milestone-chips{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
     .milestone-chip{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,0.08);color:#334155;background:rgba(255,255,255,0.04);transition:all 0.6s}
 
@@ -1114,7 +1116,7 @@ function render(){
       var labelColor=reached?m.color:"rgba(255,255,255,0.25)";
       var lineColor=reached?m.color:"rgba(255,255,255,0.12)";
       var iconStyle=reached?"":"filter:grayscale(1) opacity(0.25)";
-      tick.innerHTML='<span style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:'+labelColor+';margin-bottom:2px;white-space:nowrap">'+m.label+'</span>'+'<div class="tick-line" style="background:'+lineColor+'"></div>'+'<span class="tick-icon" style="'+iconStyle+'">'+m.icon+'</span>';
+      tick.innerHTML='<div class="tick-line" style="background:'+lineColor+'"></div>'+'<span class="tick-icon" style="'+iconStyle+'">'+m.icon+'</span>'+'<span class="tick-label" style="color:'+labelColor+'">'+m.label+'</span>';
       track.appendChild(tick);
     });
   }
