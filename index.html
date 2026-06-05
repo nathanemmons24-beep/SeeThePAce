@@ -43,6 +43,28 @@
     .rocket-badge-anim{animation:rocketBadgeGlow 2.5s ease-in-out infinite,rocketTextShimmer 2.5s ease-in-out infinite}
     .streaker-badge-anim{animation:streakBadgeGlow 1.4s ease-in-out infinite,streakTextShimmer 1.4s ease-in-out infinite}
 
+    /* Archive */
+    #archive-overlay{display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 16px}
+    #archive-overlay.open{display:flex}
+    #archive-modal{width:min(560px,96vw);background:rgba(10,18,35,0.98);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:24px;box-shadow:0 0 60px rgba(0,0,0,0.8)}
+    #archive-modal h2{font-family:Orbitron,monospace;font-size:16px;color:#00D4FF;letter-spacing:3px;margin-bottom:4px}
+    #archive-modal .arch-sub{font-size:11px;color:#475569;font-family:Orbitron,monospace;letter-spacing:2px;margin-bottom:20px}
+    .arch-year{font-family:Orbitron,monospace;font-size:10px;color:#334155;letter-spacing:2px;margin:16px 0 6px;padding:0 2px}
+    .arch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+    .arch-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all 0.2s;text-align:left}
+    .arch-card:hover{background:rgba(0,212,255,0.08);border-color:rgba(0,212,255,0.3)}
+    .arch-card.active{background:rgba(0,212,255,0.12);border-color:#00D4FF;box-shadow:0 0 12px rgba(0,212,255,0.2)}
+    .arch-card .ac-month{font-family:Orbitron,monospace;font-size:12px;font-weight:700;color:#E2E8F0}
+    .arch-card .ac-total{font-family:Orbitron,monospace;font-size:11px;color:#00D4FF;margin-top:3px}
+    .arch-card .ac-reps{font-size:10px;color:#475569;margin-top:2px}
+    .arch-card.live-card{border-color:rgba(0,255,136,0.4);background:rgba(0,255,136,0.06)}
+    .arch-card.live-card .ac-month{color:#00FF88}
+    .arch-save-btn{width:100%;margin-top:16px;padding:10px;border-radius:10px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:#00FF88;font-family:Orbitron,monospace;font-size:11px;letter-spacing:2px;cursor:pointer;transition:all 0.2s}
+    .arch-save-btn:hover{background:rgba(0,255,136,0.2);border-color:#00FF88}
+    .arch-close{float:right;background:none;border:none;color:#475569;font-size:20px;cursor:pointer;padding:0;line-height:1}
+    .arch-close:hover{color:#E2E8F0}
+    .arch-viewing-banner{background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);border-radius:8px;padding:6px 12px;font-family:Orbitron,monospace;font-size:10px;color:#FFD700;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+
     /* Spotlight */
     #spotlight-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.92);backdrop-filter:blur(6px);align-items:center;justify-content:center;flex-direction:column;pointer-events:auto}
     #spotlight-overlay.active{display:flex}
@@ -264,6 +286,7 @@
     <span style="margin:0 8px;opacity:0.3">&middot;</span>
     <span id="clock-date">---</span>
   </div>
+  <div id="main-archive-banner" style="display:none;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.25);border-radius:8px;padding:6px 14px;font-family:Orbitron,monospace;font-size:10px;color:#FFD700;letter-spacing:1px;margin:6px 0;align-items:center;justify-content:space-between"><span>&#x1F4C2; VIEWING ARCHIVE: <span id="main-archive-label"></span></span><button onclick="loadLiveData()" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.4);color:#00FF88;font-family:Orbitron,monospace;font-size:9px;padding:2px 8px;border-radius:6px;cursor:pointer;letter-spacing:1px">&#x21BA; BACK TO LIVE</button></div>
   <div id="countdown-wrap" style="display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0 16px">
     <svg id="countdown-svg" width="28" height="28" viewBox="0 0 36 36">
       <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
@@ -310,7 +333,22 @@
     </div>
   </div>
 
-  <!-- BADGE LEGEND -->
+  <!-- ARCHIVE OVERLAY -->
+<div id="archive-overlay">
+  <div id="archive-modal">
+    <button class="arch-close" onclick="closeArchive()">&#x2715;</button>
+    <h2>&#x1F4C5; SELECT SCOREBOARD</h2>
+    <div class="arch-sub">BROWSE &amp; RESTORE PAST SCOREBOARDS</div>
+    <div id="archive-viewing-banner" class="arch-viewing-banner" style="display:none">
+      <span>&#x1F4C2; VIEWING: <span id="archive-viewing-label"></span></span>
+      <button onclick="loadLiveData()" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.4);color:#00FF88;font-family:Orbitron,monospace;font-size:9px;padding:2px 8px;border-radius:6px;cursor:pointer;letter-spacing:1px">&#x21BA; BACK TO LIVE</button>
+    </div>
+    <div id="archive-list"></div>
+    <button class="arch-save-btn" onclick="saveCurrentToArchive()">&#x1F4BE; SAVE CURRENT SCOREBOARD TO ARCHIVE</button>
+  </div>
+</div>
+
+<!-- BADGE LEGEND -->
   <div id="badge-legend" style="margin-bottom:20px"></div>
 
   <!-- TEAM CARDS -->
@@ -2747,6 +2785,7 @@ function createMenu(){
 
   var panel = '<div id="menu-panel" style="display:none;position:absolute;bottom:60px;right:0;background:rgba(10,18,35,0.97);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:8px;width:210px;box-shadow:0 8px 40px rgba(0,0,0,0.8);backdrop-filter:blur(20px)">';
   panel += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">CONTROLS</div>';
+  panel += '<button class="menu-item" onclick="openArchive();toggleMenu()">&#x1F4C5; SELECT SCOREBOARD</button>';
   panel += '<button class="menu-item" onclick="openAdmin();toggleMenu()">&#x2699; ADMIN</button>';
   panel += '<button class="menu-item" onclick="openBlitz();toggleMenu()" style="color:#FFD700">&#x2728; SPECIAL EVENT</button>';
   panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
@@ -2764,6 +2803,136 @@ function createMenu(){
     '<button id="menu-toggle" onclick="toggleMenu()" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#4F46E5);border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.5);display:flex;align-items:center;justify-content:center;position:relative;z-index:1">&#x2630;</button>' + panel;
 
   document.body.appendChild(wrap);
+}
+
+// ══ ARCHIVE ═════════════════════════════════════════════════════════════════════
+var ARCHIVE_KEY = 'stp_archive';
+var archiveViewingKey = null; // null = live, string = archive key
+
+function getArchive() {
+  try { return JSON.parse(localStorage.getItem(ARCHIVE_KEY) || '{}'); } catch(e) { return {}; }
+}
+
+function saveArchive(arc) {
+  try { localStorage.setItem(ARCHIVE_KEY, JSON.stringify(arc)); } catch(e) { console.warn('Archive save failed', e); }
+}
+
+function saveCurrentToArchive() {
+  if (!state.data || !state.data.teams) { alert('No live data to save.'); return; }
+  var now = new Date();
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var key = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  var label = monthNames[now.getMonth()] + ' ' + now.getFullYear();
+  var arc = getArchive();
+  var repCount = 0;
+  Object.values(state.data.teams).forEach(function(t){ repCount += t.reps.length; });
+  arc[key] = {
+    label: label,
+    savedAt: now.toLocaleDateString(),
+    total: state.data.total,
+    goal: state.goal,
+    repCount: repCount,
+    data: JSON.parse(JSON.stringify(state.data))
+  };
+  saveArchive(arc);
+  renderArchiveList();
+  alert('Saved: ' + label + ' Scoreboard');
+}
+
+function openArchive() {
+  renderArchiveList();
+  document.getElementById('archive-overlay').classList.add('open');
+}
+
+function closeArchive() {
+  document.getElementById('archive-overlay').classList.remove('open');
+}
+
+function renderArchiveList() {
+  var arc = getArchive();
+  var keys = Object.keys(arc).sort().reverse();
+  var list = document.getElementById('archive-list');
+  if (!list) return;
+
+  var banner = document.getElementById('archive-viewing-banner');
+  var viewLabel = document.getElementById('archive-viewing-label');
+  if (archiveViewingKey && arc[archiveViewingKey]) {
+    banner.style.display = 'flex';
+    viewLabel.textContent = arc[archiveViewingKey].label;
+  } else {
+    banner.style.display = 'none';
+  }
+
+  if (keys.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:32px;color:#334155;font-family:Orbitron,monospace;font-size:11px">NO ARCHIVED SCOREBOARDS YET<br><br>Save current month before the month ends.</div>';
+    return;
+  }
+
+  var byYear = {};
+  keys.forEach(function(k) {
+    var yr = k.split('-')[0];
+    if (!byYear[yr]) byYear[yr] = [];
+    byYear[yr].push(k);
+  });
+
+  var html = '';
+  Object.keys(byYear).sort().reverse().forEach(function(yr) {
+    html += '<div class="arch-year">' + yr + '</div><div class="arch-grid">';
+    byYear[yr].forEach(function(k) {
+      var entry = arc[k];
+      var isActive = (archiveViewingKey === k);
+      var pct = entry.goal ? Math.round((entry.total/entry.goal)*100) : 0;
+      var tot = entry.total >= 1000000 ? '$'+(entry.total/1000000).toFixed(2)+'M' : '$'+entry.total.toLocaleString();
+      html += '<div class="arch-card'+(isActive?' active':'')+'" data-archkey="'+k+'" onclick="loadArchive(this.dataset.archkey)">'+
+        '<div class="ac-month">'+entry.label+'</div>'+
+        '<div class="ac-total">'+tot+'</div>'+
+        '<div class="ac-reps">'+entry.repCount+' reps &middot; '+pct+'% of goal</div>'+
+        '</div>';
+    });
+    html += '</div>';
+  });
+
+  var liveHtml = '<div class="arch-year">LIVE</div><div class="arch-grid">'+
+    '<div class="arch-card live-card'+(archiveViewingKey===null?' active':'')+'" onclick="loadLiveData()">'+
+    '<div class="ac-month">&#x25CF; CURRENT</div>'+
+    '<div class="ac-total">Live feed</div>'+
+    '<div class="ac-reps">Real-time data</div>'+
+    '</div></div>';
+
+  list.innerHTML = liveHtml + html;
+}
+
+
+function loadArchive(key) {
+  var arc = getArchive();
+  var entry = arc[key];
+  if (!entry) return;
+  archiveViewingKey = key;
+  // Freeze state with archived data
+  state.data = entry.data;
+  state.status = 'live';
+  state.goal = entry.goal;
+  state.lastUpdated = 'Archived: ' + entry.savedAt;
+  // Stop live polling while viewing archive
+  clearInterval(pollTimer);
+  renderArchiveList();
+  closeArchive();
+  render();
+  // Show viewing banner on main board
+  var mb = document.getElementById('main-archive-banner');
+  if (mb) { mb.style.display='flex'; mb.querySelector('#main-archive-label').textContent = entry.label + ' Scoreboard'; }
+}
+
+function loadLiveData() {
+  archiveViewingKey = null;
+  loadSettings();
+  // Restart polling
+  clearInterval(pollTimer);
+  fetchData();
+  pollTimer = setInterval(fetchData, POLL_MS);
+  closeArchive();
+  var mb = document.getElementById('main-archive-banner');
+  if (mb) mb.style.display='none';
 }
 
 // ══ BOOT ══════════════════════════════════════════════════════════════════════
