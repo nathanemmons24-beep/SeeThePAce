@@ -390,6 +390,7 @@
 
 
 
+
 var APP_VERSION = "201601";
 
 
@@ -674,23 +675,25 @@ function getAC(callback) {
 
 function preDecodeClips() {
   getAC(function(ac) {
-  Object.keys(CLIPS).forEach(function(badge) {
-    if (_decoded[badge]) return;
-    try {
-      var b64 = CLIPS[badge];
-      var bin = atob(b64);
-      var bytes = new Uint8Array(bin.length);
-      for (var i=0; i<bin.length; i++) bytes[i] = bin.charCodeAt(i);
-      ac.decodeAudioData(bytes.buffer.slice(0),
-        function(audioBuf) {
-          _decoded[badge] = audioBuf;
-          console.log("Pre-decoded:", badge, audioBuf.duration.toFixed(1)+"s");
-        },
-        function(e){ console.warn("Decode failed:", badge, e); }
-      );
-    } catch(e){ console.warn("preDecodeClips error:", badge, e); }
+    Object.keys(CLIPS).forEach(function(badge) {
+      if (_decoded[badge]) return;
+      (function(b) {
+        try {
+          var b64 = CLIPS[b];
+          var bin = atob(b64);
+          var bytes = new Uint8Array(bin.length);
+          for (var i=0; i<bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          ac.decodeAudioData(bytes.buffer.slice(0),
+            function(audioBuf) {
+              _decoded[b] = audioBuf;
+              console.log("Pre-decoded:", b, audioBuf.duration.toFixed(1)+"s");
+            },
+            function(e){ console.warn("Decode failed:", b, e); }
+          );
+        } catch(e){ console.warn("preDecodeClips error:", b, e); }
+      })(badge);
+    });
   });
-  }); // getAC callback
 }
 
 function playClip(badge, followupText, followupDelay){
@@ -741,7 +744,7 @@ function pSpeak(txt,rate,pitch){
 }
 
 // \u2550\u2550 BADGE SOUNDS \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-var BDUR={"Deal Maker":1.8,"Closer":2.0,"Rainmaker":2.2,"Fibrex Elite":2.5,"Sales Titan":2.8,"Six Figure Legend":4.0};
+var BDUR={"Deal Maker":1.5,"Closer":1.2,"Rainmaker":5.5,"Fibrex Elite":3.0,"Sales Titan":5.0,"Six Figure Legend":9.0};
 
 function fmtSpeak(amount){
   // Format dollar amount for natural TTS speech
@@ -782,14 +785,16 @@ function nextBadge(){
   var x=BQ.shift();
   var fn=SFN[x.lbl];
   if(fn) fn(x.rep,x.amount||0);
-  // Wait for clip to fully finish via onended, then 600ms pause, then next badge
-  var clipDur=(_decoded&&_decoded[x.lbl])?(_decoded[x.lbl].duration*1000+600):(BDUR[x.lbl]||3.5)*1000+600;
-  // Store current badge label so toast can track it
   window._currentBadge=x.lbl;
+  // Use actual decoded duration if available, else BDUR fallback
+  var dur=(_decoded&&_decoded[x.lbl])
+    ? (_decoded[x.lbl].duration*1000 + 800)
+    : ((BDUR[x.lbl]||4)*1000 + 800);
+  console.log("nextBadge waiting", dur.toFixed(0)+"ms for", x.lbl);
   setTimeout(function(){
     window._currentBadge=null;
     nextBadge();
-  }, clipDur);
+  }, dur);
 }
 
 function testSound(badge){
@@ -2672,6 +2677,7 @@ var CLIPS={
 var firstFetch = false;
 var BQ=[],BQR=false;
 var firedBadges={};
+
 
 
 
