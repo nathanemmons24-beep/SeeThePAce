@@ -1043,7 +1043,9 @@ function render(){
     });
     data = filtered;
   }
-  var goal=state.goal,total=data.total,pct=Math.min((total/goal)*100,115);
+  var DAYS_IN_MONTH=30;
+  var goal=filterDay?(state.goal/DAYS_IN_MONTH):state.goal;
+  var total=data.total,pct=Math.min((total/goal)*100,115);
   document.getElementById("blitz-title").textContent=state.title;
   var dot=document.getElementById("status-dot");
   var isLoading=(state.status==="demo");
@@ -1059,7 +1061,7 @@ function render(){
   if(isLoading) return;
   var lu=document.getElementById("last-updated");
   if(lu)lu.innerHTML=state.lastUpdated?"Last updated: <span>"+state.lastUpdated+"</span>":"";
-  document.getElementById("total-display").innerHTML=fmt(total)+' <span>of '+fmt(goal)+'</span>';
+  document.getElementById("total-display").innerHTML=fmt(total)+' <span>of '+fmt(goal)+(filterDay?" daily goal":"")+'</span>';
   document.getElementById("total-display").style.color=total>=goal?"#00FF88":"#FFD700";
   var next=MILESTONES.find(function(m){return total/goal<m.value;});
     var bf=document.getElementById("bar-fill");
