@@ -344,7 +344,6 @@
       <button onclick="loadLiveData()" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.4);color:#00FF88;font-family:Orbitron,monospace;font-size:9px;padding:2px 8px;border-radius:6px;cursor:pointer;letter-spacing:1px">&#x21BA; BACK TO LIVE</button>
     </div>
     <div id="archive-list"></div>
-    <button class="arch-save-btn" onclick="saveCurrentToArchive()">&#x1F4BE; SAVE CURRENT SCOREBOARD TO ARCHIVE</button>
   </div>
 </div>
 
@@ -390,6 +389,9 @@
     <label class="admin-label">PASTE CSV MANUALLY</label>
     <textarea id="csv-paste" style="width:100%;height:120px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#CBD5E1;font-family:monospace;font-size:11px;padding:8px;resize:vertical"></textarea>
     <button onclick="loadPasted()" class="btn-sync" style="width:100%;margin-top:8px">LOAD CSV</button>
+  </div>
+  <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.07);padding-top:12px">
+    <button onclick="saveCurrentToArchive()" class="arch-save-btn">&#x1F4BE; SAVE SCOREBOARD TO ARCHIVE</button>
   </div>
 </div>
 
