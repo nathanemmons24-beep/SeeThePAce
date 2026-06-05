@@ -91,16 +91,14 @@
     #total-display{font-family:"Orbitron",monospace;font-size:16px;color:#FFD700}
     #total-display span{color:#475569}
     #next-milestone{color:#64748B;font-size:12px}
-    #bar-wrap{padding-bottom:44px}
+    #bar-wrap{padding-bottom:52px}
     #bar-track{position:relative;height:30px;background:rgba(255,255,255,0.06);border-radius:15px;overflow:visible}
     #bar-fill{position:absolute;top:0;left:0;height:100%;width:0%;background:linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF);border-radius:15px;transition:width 1.2s cubic-bezier(.4,0,.2,1);box-shadow:0 0 24px rgba(0,212,255,0.5)}
     #bar-pct{position:absolute;right:12px;top:0;bottom:0;display:flex;align-items:center;font-family:"Orbitron",monospace;font-size:11px;color:#fff;font-weight:700}
-    .milestone-tick{position:absolute;top:0;bottom:-42px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10;pointer-events:none}
-    .milestone-tick .tick-line{width:2px;flex:1;border-radius:2px}
-    .milestone-tick .tick-label{font-family:Orbitron,monospace;font-size:9px;font-weight:700;margin-top:3px;white-space:nowrap}
-    .milestone-tick .tick-icon{font-size:13px;margin-top:1px}
-    #milestone-chips{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
-    .milestone-chip{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,0.08);color:#334155;background:rgba(255,255,255,0.04);transition:all 0.6s}
+    .milestone-tick{position:absolute;top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10;pointer-events:none}
+    .milestone-tick .tick-line{width:2px;height:30px;border-radius:2px;flex-shrink:0}
+    .milestone-tick .tick-icon{font-size:12px;margin-top:2px;flex-shrink:0}
+    .milestone-tick .tick-label{font-family:Orbitron,monospace;font-size:9px;font-weight:700;margin-top:2px;white-space:nowrap;flex-shrink:0}
 
     /* Leaderboards */
     #top-leaderboards{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
@@ -218,7 +216,6 @@
     body.tv-mode .leader-row{padding:12px 16px!important}
     body.tv-mode .leader-name{font-size:18px!important}
     body.tv-mode .leader-amt{font-size:18px!important}
-    body.tv-mode #milestone-chips .milestone-chip{font-size:13px!important;padding:6px 14px!important}
     body.tv-mode #day-breakdown canvas{height:180px!important}
     body.tv-mode #store-rankings{font-size:115%}
     @keyframes toastIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
@@ -283,7 +280,6 @@
   <div id="milestone-section">
     <div id="total-display">$0 <span>of $85.40M</span></div>
     <div id="bar-wrap"><div id="bar-track"><div id="bar-fill"></div></div></div>
-    <div id="milestone-chips"></div>
     <div id="next-milestone"></div>
   </div>
 
@@ -1090,23 +1086,7 @@ function render(){
       nxt.textContent=next.label+" • "+fmt(needed)+" to go";
       nxt.style.color="#64748B";
     }else{nxt.textContent="";}}
-  // Milestone chips
-  var chips=document.getElementById("milestone-chips");
-  if(chips){
-    chips.innerHTML="";
-    MILESTONES.forEach(function(m){
-      var done=total/goal>=m.value,chip=document.createElement("div");
-      chip.className="milestone-chip"+(done?" done":"");
-      if(done){
-        chip.style.background=m.color+"22";
-        chip.style.borderColor=m.color;
-        chip.style.color=m.color;
-        chip.style.setProperty("--chip-glow",m.color+"66");
-      }
-      chip.textContent=m.label;
-      chips.appendChild(chip);
-    });
-  }
+
   var track=document.getElementById("bar-track");
   if(track){
     track.querySelectorAll(".milestone-tick").forEach(function(e){e.remove();});
