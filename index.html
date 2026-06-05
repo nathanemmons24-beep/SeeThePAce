@@ -392,6 +392,7 @@
 
 
 
+
 var APP_VERSION = "201601";
 
 
@@ -703,8 +704,6 @@ function playClip(badge, followupText, followupDelay){
   getAC(function(ac) {
     function doPlay(audioBuf){
       try {
-        // Stop any currently playing clip
-        if(_activeSource){ try{_activeSource.stop();}catch(e){} _activeSource=null; }
         var src=ac.createBufferSource(), gain=ac.createGain();
         src.buffer=audioBuf; gain.gain.value=1.0;
         src.connect(gain); gain.connect(ac.destination);
@@ -714,7 +713,7 @@ function playClip(badge, followupText, followupDelay){
           if(followupText) setTimeout(function(){pSpeak(followupText,0.85,0.5);},followupDelay||0);
         };
         src.start(0);
-        console.log("Playing:",badge,audioBuf.duration.toFixed(1)+"s","AC:",ac.state);
+        console.log("Playing:",badge,audioBuf.duration.toFixed(1)+"s");
       } catch(e){ console.warn("doPlay error:",e.message); }
     }
     if(_decoded[badge]){ doPlay(_decoded[badge]); return; }
@@ -2687,6 +2686,7 @@ var CLIPS={
 var firstFetch = false;
 var BQ=[],BQR=false;
 var firedBadges={};
+
 
 
 
