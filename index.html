@@ -661,7 +661,7 @@ async function fetchData(){
     else if(!BQR){ checkBadgeUpgrades(parsed); }
     else{ seedBadgeState(parsed); }
     updateStreaks(parsed);
-    state.data=parsed; state.status="live"; state.lastUpdated=new Date().toLocaleTimeString();
+    state.data=parsed; state.status="live"; state.lastUpdated=new Date().toLocaleTimeString(); setTimeout(autoSaveArchiveIfNeeded, 2000);
     var lo=document.getElementById("loading-overlay");
     if(lo&&lo.style.display!=="none"){lo.style.opacity="0";setTimeout(function(){lo.style.display="none";},600);}
     render(); resetCountdown();
@@ -2947,6 +2947,33 @@ if (state.data && state.data.teams) seedBadgeState(state.data);
 // Fetch data immediately on load
 fetchData();
 pollTimer = setInterval(fetchData, POLL_MS);
+
+// Auto-save archive once per day after first successful fetch
+function autoSaveArchiveIfNeeded() {
+  if (!state.data || !state.data.teams) return;
+  var today = new Date().toISOString().split('T')[0];
+  var lastSave = '';
+  try { lastSave = localStorage.getItem('stp_last_autosave') || ''; } catch(e) {}
+  if (lastSave === today) return; // already saved today
+  var now = new Date();
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var key = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  var label = monthNames[now.getMonth()] + ' ' + now.getFullYear();
+  var arc = getArchive();
+  var repCount = 0;
+  Object.values(state.data.teams).forEach(function(t){ repCount += t.reps.length; });
+  arc[key] = {
+    label: label,
+    savedAt: now.toLocaleDateString(),
+    total: state.data.total,
+    goal: state.goal,
+    repCount: repCount,
+    data: JSON.parse(JSON.stringify(state.data))
+  };
+  saveArchive(arc);
+  try { localStorage.setItem('stp_last_autosave', today); } catch(e) {}
+  console.log('Auto-saved archive:', label);
+}
 resetCountdown();
 // Load settings in background
 fetchSettings().then(function(){ render(); }).catch(function(){});
