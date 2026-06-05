@@ -1200,10 +1200,10 @@ function render(){
 
         // Smart inline badges
         var badges=[];
-        if(isCrown) badges.push('<span class="crown-badge">👑 THE CROWN</span>');
-        else if(isRocket) badges.push('<span class="rocket-badge">🚀 ROCKET &middot; '+(moverDays[repKey]||0)+' MOVER DAYS</span>');
-        else if(isOnFire) badges.push('<span class="streaker-badge">STREAKER &middot; '+sl+' DAYS</span>');
-        else if(sl>=2) badges.push('<span class="heating-up-badge">HEATING UP &middot; '+sl+' DAY STREAK</span>');
+        if(isCrown) badges.push('<span style="font-size:9px;color:#FFD700;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.5);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">👑 THE CROWN</span>');
+        else if(isRocket) badges.push('<span style="font-size:9px;color:#CBD5E1;background:rgba(148,163,184,0.12);border:1px solid rgba(148,163,184,0.5);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">🚀 ROCKET &middot; '+(moverDays[repKey]||0)+' MOVER DAYS</span>');
+        else if(isOnFire) badges.push('<span style="font-size:9px;color:#FF6B35;background:rgba(255,107,53,0.12);border:1px solid rgba(255,107,53,0.5);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">STREAKER &middot; '+sl+' DAYS</span>');
+        else if(sl>=2) badges.push('<span style="font-size:9px;color:#FF8C00;background:rgba(255,140,0,0.12);border:1px solid rgba(255,140,0,0.4);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">HEATING UP &middot; '+sl+' DAY STREAK</span>');
         if(isTop) badges.push('<span style="font-size:9px;color:#FFD700;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.35);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">LEADER</span>');
         if(rep.todayTotal>0) badges.push('<span style="font-size:9px;color:#00FF88;background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">TODAY '+fmt(rep.todayTotal)+'</span>');
         if(rep.name===teamBigDealRep&&t.reps.length>1) badges.push('<span style="font-size:9px;color:#FFD700;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.25);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">BIG DEAL '+fmt(teamBigDealAmt)+'</span>');
