@@ -394,6 +394,7 @@
 
 
 
+
 var APP_VERSION = "201601";
 
 
@@ -792,19 +793,8 @@ function nextBadge(){
   var fn=SFN[x.lbl];
   if(fn) fn(x.rep,x.amount||0);
   window._currentBadge=x.lbl;
-  // Wait for actual clip to end via polling activeSource, then 600ms gap
-  function waitForEnd(){
-    if(_activeSource){
-      setTimeout(waitForEnd, 100);
-    } else {
-      setTimeout(function(){
-        window._currentBadge=null;
-        nextBadge();
-      }, 600);
-    }
-  }
-  // Give playClip 200ms to start, then poll for completion
-  setTimeout(waitForEnd, 200);
+  var dur=(_decoded&&_decoded[x.lbl])?(_decoded[x.lbl].duration*1000+1000):((BDUR[x.lbl]||4)*1000+1000);
+  setTimeout(function(){window._currentBadge=null;nextBadge();},dur);
 }
 
 function testSound(badge){
@@ -2687,6 +2677,7 @@ var CLIPS={
 var firstFetch = false;
 var BQ=[],BQR=false;
 var firedBadges={};
+
 
 
 
