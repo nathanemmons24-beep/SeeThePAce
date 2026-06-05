@@ -1200,9 +1200,9 @@ function render(){
 
         // Smart inline badges
         var badges=[];
-        if(isCrown) badges.push('<span style="font-size:9px;color:#FFD700;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.5);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">👑 THE CROWN</span>');
-        else if(isRocket) badges.push('<span style="font-size:9px;color:#CBD5E1;background:rgba(148,163,184,0.12);border:1px solid rgba(148,163,184,0.5);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">🚀 ROCKET &middot; '+(moverDays[repKey]||0)+' MOVER DAYS</span>');
-        else if(isOnFire) badges.push('<span style="font-size:9px;color:#FF6B35;background:rgba(255,107,53,0.12);border:1px solid rgba(255,107,53,0.5);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">STREAKER &middot; '+sl+' DAYS</span>');
+        if(isCrown) badges.push('<span style="font-size:9px;color:#FFD700;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.7);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace;box-shadow:0 0 8px rgba(255,215,0,0.5),0 0 16px rgba(255,215,0,0.2);text-shadow:0 0 6px #FFD700">👑 THE CROWN</span>');
+        else if(isRocket) badges.push('<span style="font-size:9px;color:#E2E8F0;background:rgba(148,163,184,0.15);border:1px solid rgba(203,213,225,0.7);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace;box-shadow:0 0 8px rgba(203,213,225,0.4),0 0 16px rgba(148,163,184,0.2);text-shadow:0 0 6px #CBD5E1">🚀 ROCKET &middot; '+(moverDays[repKey]||0)+' MOVER DAYS</span>');
+        else if(isOnFire) badges.push('<span style="font-size:9px;color:#FF6B35;background:rgba(255,107,53,0.12);border:1px solid rgba(255,107,53,0.7);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace;box-shadow:0 0 8px rgba(255,107,53,0.5),0 0 16px rgba(255,69,0,0.2);text-shadow:0 0 6px #FF4500">🔥 STREAKER &middot; '+sl+' DAYS</span>');
         else if(sl>=2) badges.push('<span style="font-size:9px;color:#FF8C00;background:rgba(255,140,0,0.12);border:1px solid rgba(255,140,0,0.4);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">HEATING UP &middot; '+sl+' DAY STREAK</span>');
         if(isTop) badges.push('<span style="font-size:9px;color:#FFD700;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.35);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">LEADER</span>');
         if(rep.todayTotal>0) badges.push('<span style="font-size:9px;color:#00FF88;background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">TODAY '+fmt(rep.todayTotal)+'</span>');
@@ -1317,12 +1317,37 @@ updateClock();
 
 // ══ HOT STREAK ═════════════════════════════════════════════════════════════════════════
 function updateStreaks(newData) {
+  var today = new Date(); today.setHours(0,0,0,0);
   Object.entries(newData.teams).forEach(function(e) {
     var teamName = e[0], team = e[1];
     team.reps.forEach(function(rep) {
       var key = rep.name + "|" + teamName;
-      var deals = rep.deals ? rep.deals.length : 1;
-      streakCounts[key] = deals;
+      var dealObjs = rep.dealObjs || [];
+      // Get unique sale days (normalize to midnight)
+      var daySet = {};
+      dealObjs.forEach(function(d) {
+        if (d.date) {
+          var dk = new Date(d.date); dk.setHours(0,0,0,0);
+          daySet[dk.getTime()] = true;
+        }
+      });
+      var dayTimestamps = Object.keys(daySet).map(Number).sort(function(a,b){return b-a;});
+      // Count consecutive days ending on today or yesterday
+      var MS_DAY = 86400000;
+      var streak = 0;
+      if (dayTimestamps.length > 0) {
+        // Allow streak if most recent day is today or yesterday
+        var mostRecent = dayTimestamps[0];
+        var diffFromToday = Math.round((today.getTime() - mostRecent) / MS_DAY);
+        if (diffFromToday <= 1) {
+          streak = 1;
+          for (var i = 1; i < dayTimestamps.length; i++) {
+            var diff = Math.round((dayTimestamps[i-1] - dayTimestamps[i]) / MS_DAY);
+            if (diff === 1) { streak++; } else { break; }
+          }
+        }
+      }
+      streakCounts[key] = streak;
     });
   });
 }
