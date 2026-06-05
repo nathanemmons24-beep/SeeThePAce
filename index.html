@@ -221,6 +221,15 @@
     .stp-subtitle{font-family:Orbitron,monospace;font-size:13px;color:#334155;letter-spacing:6px;animation:stp-pulse 1.5s ease-in-out infinite}
     .stp-ring{width:60px;height:60px;border:3px solid rgba(0,212,255,0.15);border-top:3px solid #00D4FF;border-radius:50%;animation:stp-ring 1s linear infinite}
     .stp-dots::after{content:"";animation:stp-dots 1.5s steps(1) infinite}
+
+    #badge-legend-fixed{position:fixed;left:16px;top:50%;transform:translateY(-50%);z-index:500;background:rgba(6,11,24,0.97);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:14px 16px;backdrop-filter:blur(20px);box-shadow:4px 0 30px rgba(0,0,0,0.5);width:190px}
+    #badge-legend-fixed .bl-title{font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;margin-bottom:10px;text-align:center}
+    #badge-legend-fixed .bl-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+    #badge-legend-fixed .bl-row:last-child{border-bottom:none}
+    #badge-legend-fixed .bl-icon{font-size:18px;width:22px;text-align:center;flex-shrink:0}
+    #badge-legend-fixed .bl-info{flex:1}
+    #badge-legend-fixed .bl-name{font-size:11px;font-weight:700;display:block;line-height:1.3}
+    #badge-legend-fixed .bl-amt{font-family:Orbitron,monospace;font-size:9px;color:#475569;display:block}
   </style>
 </head>
 <body onclick="unlockAudio()" onkeydown="unlockAudio()">
@@ -386,6 +395,8 @@
 </div>
 
 <script>
+
+
 
 
 
@@ -765,12 +776,12 @@ function fmtSpeak(amount){
   return parts.join(" ")+" dollars";
 }
 
-function sIgnite(n,amt){pTone(784,"sine",0.08,0.4,0);pTone(1047,"sine",0.08,0.45,0.09);pTone(1319,"sine",0.18,0.5,0.18);playClip("Deal Maker");showBadgeAlert("\uD83D\uDD25","DEAL MAKER!",n,"#94A3B8",false,amt);}
-function sDoublePane(n,amt){[659,784,1047,1319].forEach(function(f,i){pTone(f,"square",0.1,0.3,i*0.07);});pTone(1568,"sine",0.2,0.4,0.3);playClip("Closer");showBadgeAlert("\u26A1","CLOSER!",n,"#60A5FA",false,amt);}
-function sFrameSlayer(n,amt){pNoise(0.04,0.5,0,2500);pNoise(0.04,0.5,0.05,2500);[523,659,784,1047,1319].forEach(function(f,i){pTone(f,"square",0.1,0.35,0.1+i*0.06);});playClip("Rainmaker");showBadgeAlert("\uD83C\uDFAF","RAINMAKER!",n,"#34D399",false,amt);}
-function sElite(n,amt){[196,247,294,392].forEach(function(f){pTone(f,"sawtooth",0.12,0.4,0);});pNoise(0.08,0.5,0,400);[523,659,784,1047,1319,1568].forEach(function(f,i){pTone(f,"square",0.1,0.35,0.1+i*0.055);});playClip("Fibrex Elite");showBadgeAlert("\uD83D\uDD25","FIBREX ELITE!",n,"#F59E0B",false,amt);}
-function sTitan(n,amt){pTone(55,"sawtooth",0.2,0.6,0);pTone(82,"sawtooth",0.15,0.5,0.03);pNoise(0.1,0.55,0,350);[392,523,659,784,1047,1319].forEach(function(f,i){pTone(f,"square",0.12,0.35,0.18+i*0.06);});playClip("Sales Titan");showBadgeAlert("\uD83D\uDC8E","SALES TITAN!",n,"#A855F7",false,amt);}
-function sLegend(n,amt){[0,0.3].forEach(function(t){pTone(233,"sawtooth",0.25,0.7,t);pTone(277,"sawtooth",0.25,0.65,t+0.01);pTone(349,"sawtooth",0.25,0.6,t+0.02);pNoise(0.25,0.55,t,500);});pTone(41,"sawtooth",0.35,0.65,0.65);pNoise(0.18,0.6,0.65,250);[261,329,392,523,659,784,1047,1319,1568].forEach(function(f,i){pTone(f,"square",0.12,0.38,0.72+i*0.055);});[523,659,784,1047,1319].forEach(function(f){pTone(f,"sine",0.5,0.45,1.25);});playClip("Six Figure Legend");showBadgeAlert("\uD83D\uDC51","SIX FIGURE LEGEND",n,"#FF4EFF",true,amt);}
+function sIgnite(n,amt){playClip("Deal Maker");showBadgeAlert("\uD83D\uDD25","DEAL MAKER",n,"#FF6B35",false,amt);}
+function sDoublePane(n,amt){playClip("Closer");showBadgeAlert("\u26A1","CLOSER",n,"#00D4FF",false,amt);}
+function sFrameSlayer(n,amt){playClip("Rainmaker");showBadgeAlert("\uD83C\uDFAF","RAINMAKER",n,"#00FF88",false,amt);}
+function sElite(n,amt){playClip("Fibrex Elite");showBadgeAlert("\uD83D\uDD25","FIBREX ELITE",n,"#FF4EFF",false,amt);}
+function sTitan(n,amt){playClip("Sales Titan");showBadgeAlert("\uD83D\uDC8E","SALES TITAN",n,"#A855F7",false,amt);}
+function sLegend(n,amt){playClip("Six Figure Legend");showBadgeAlert("\uD83D\uDC51","SIX FIGURE LEGEND",n,"#FFD700",true,amt);}
 
 var SFN={"Deal Maker":sIgnite,"Closer":sDoublePane,"Rainmaker":sFrameSlayer,"Fibrex Elite":sElite,"Sales Titan":sTitan,"Six Figure Legend":sLegend};
 
@@ -2702,6 +2713,37 @@ var firedBadges={};
 
 
 
+
+
 </script>
+<!-- FIXED BADGE LEGEND -->
+<div id="badge-legend-fixed">
+  <div class="bl-title">&#x1F3C6; BADGE LEVELS</div>
+  <div class="bl-row">
+    <span class="bl-icon">&#x1F525;</span>
+    <div class="bl-info"><span class="bl-name" style="color:#FF6B35">Deal Maker</span><span class="bl-amt">$10,000+</span></div>
+  </div>
+  <div class="bl-row">
+    <span class="bl-icon">&#x26A1;</span>
+    <div class="bl-info"><span class="bl-name" style="color:#00D4FF">Closer</span><span class="bl-amt">$20,000+</span></div>
+  </div>
+  <div class="bl-row">
+    <span class="bl-icon">&#x1F3AF;</span>
+    <div class="bl-info"><span class="bl-name" style="color:#00FF88">Rainmaker</span><span class="bl-amt">$30,000+</span></div>
+  </div>
+  <div class="bl-row">
+    <span class="bl-icon">&#x1F525;</span>
+    <div class="bl-info"><span class="bl-name" style="color:#FF4EFF">Fibrex Elite</span><span class="bl-amt">$50,000+</span></div>
+  </div>
+  <div class="bl-row">
+    <span class="bl-icon">&#x1F48E;</span>
+    <div class="bl-info"><span class="bl-name" style="color:#A855F7">Sales Titan</span><span class="bl-amt">$75,000+</span></div>
+  </div>
+  <div class="bl-row">
+    <span class="bl-icon">&#x1F451;</span>
+    <div class="bl-info"><span class="bl-name" style="color:#FFD700">Six Figure Legend</span><span class="bl-amt">$100,000+</span></div>
+  </div>
+</div>
+
 </body>
 </html>
