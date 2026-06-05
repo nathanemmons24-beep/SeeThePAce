@@ -1204,7 +1204,7 @@ function render(){
         var titles=computeTitles(data);
         var isCrown=(titles.crownKey===repKey);
         var isRocket=(titles.rocketKeys.indexOf(repKey)>=0&&titles.rocketDays>0);
-        var isOnFire=(titles.fireKey===repKey&&sl>=5);
+        var isOnFire=(titles.fireKeys.indexOf(repKey)>=0&&sl>=2);
         if(isCrown) scls+=" crown-title";
         else if(isRocket) scls+=" rocket-title";
         else if(isOnFire) scls+=" streaker-title";
@@ -1382,10 +1382,9 @@ function streakBadgeHTML(level) {
 // ══ PRESTIGE TITLES ═════════════════════════════════════════════════════════════════════
 
 function computeMoverDays(data) {
-  // For each unique calendar day in the data, find which rep(s) added the most that day
-  // across ALL teams, and count how many days each rep was the top mover
-  var MS_DAY = 86400000;
-  var dayBuckets = {}; // { dateKey: { repKey: totalAdded } }
+  // Build day buckets from dealObjs dates when available
+  var dayBuckets = {};
+  var hasDates = false;
 
   Object.entries(data.teams).forEach(function(e) {
     var teamName = e[0], team = e[1];
@@ -1393,6 +1392,7 @@ function computeMoverDays(data) {
       var k = rep.name + "|" + teamName;
       (rep.dealObjs || []).forEach(function(d) {
         if (!d.date) return;
+        hasDates = true;
         var dk = new Date(d.date); dk.setHours(0,0,0,0);
         var dayKey = dk.getTime();
         if (!dayBuckets[dayKey]) dayBuckets[dayKey] = {};
@@ -1401,23 +1401,44 @@ function computeMoverDays(data) {
     });
   });
 
-  // For each day find the max and award all tied winners
   var counts = {};
-  Object.values(dayBuckets).forEach(function(repAmts) {
-    var maxAmt = 0;
-    Object.values(repAmts).forEach(function(amt) { if (amt > maxAmt) maxAmt = amt; });
-    if (maxAmt === 0) return;
-    Object.entries(repAmts).forEach(function(re) {
-      if (re[1] === maxAmt) counts[re[0]] = (counts[re[0]] || 0) + 1;
+
+  if (hasDates) {
+    // Award top mover per day from date buckets
+    Object.values(dayBuckets).forEach(function(repAmts) {
+      var maxAmt = 0;
+      Object.values(repAmts).forEach(function(amt) { if (amt > maxAmt) maxAmt = amt; });
+      if (maxAmt === 0) return;
+      Object.entries(repAmts).forEach(function(re) {
+        if (re[1] === maxAmt) counts[re[0]] = (counts[re[0]] || 0) + 1;
+      });
     });
-  });
+  } else {
+    // No dates available — use todayTotal as a proxy: whoever has the highest todayTotal gets 1 mover day
+    var allMovers = [];
+    Object.entries(data.teams).forEach(function(e) {
+      var teamName = e[0], team = e[1];
+      team.reps.forEach(function(rep) {
+        if ((rep.todayTotal || 0) > 0) {
+          allMovers.push({ k: rep.name + "|" + teamName, amt: rep.todayTotal });
+        }
+      });
+    });
+    if (allMovers.length > 0) {
+      allMovers.sort(function(a,b){ return b.amt - a.amt; });
+      var maxAmt = allMovers[0].amt;
+      allMovers.forEach(function(m) {
+        if (m.amt === maxAmt) counts[m.k] = (counts[m.k] || 0) + 1;
+      });
+    }
+  }
   return counts;
 }
 
 function computeTitles(data) {
   var crownKey = null, crownAmt = 0;
   var rocketKeys = [], rocketDays = 0;
-  var fireKey = null, fireLevel = 0;
+  var fireKeys = [], fireLevel = 0;
 
   var moverCounts = computeMoverDays(data);
 
@@ -1430,10 +1451,11 @@ function computeTitles(data) {
       if (md > rocketDays) { rocketDays = md; rocketKeys = [k]; }
       else if (md === rocketDays && md > 0) { rocketKeys.push(k); }
       var sl = getStreakLevel(k);
-      if (sl > fireLevel) { fireLevel = sl; fireKey = k; }
+      if (sl > fireLevel) { fireLevel = sl; fireKeys = [k]; }
+      else if (sl === fireLevel && sl >= 2) { fireKeys.push(k); }
     });
   });
-  return { crownKey: crownKey, rocketKeys: rocketKeys, rocketDays: rocketDays, fireKey: fireKey, fireLevel: fireLevel };
+  return { crownKey: crownKey, rocketKeys: rocketKeys, rocketDays: rocketDays, fireKeys: fireKeys, fireLevel: fireLevel };
 }
 
 // ══ SPOTLIGHT ═══════════════════════════════════════════════════════════════════════
