@@ -18,7 +18,7 @@
     ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
 
     /* Clock */
-    #blitz-clock{font-family:"Orbitron",monospace;font-size:clamp(14px,2.5vw,22px);color:#475569;letter-spacing:3px;text-align:center;margin-bottom:16px}
+    #blitz-clock{font-family:"Orbitron",monospace;font-size:clamp(14px,2.5vw,22px);color:#475569;letter-spacing:3px;text-align:center;margin-bottom:0;position:sticky;top:0;z-index:200;background:#060B18;padding:10px 0 6px;border-bottom:1px solid rgba(255,255,255,0.04)}
     #blitz-clock span{color:#64748B}
 
     /* Hot streak */
@@ -91,10 +91,10 @@
     #total-display{font-family:"Orbitron",monospace;font-size:16px;color:#FFD700}
     #total-display span{color:#475569}
     #next-milestone{color:#64748B;font-size:12px}
-    #bar-track{position:relative;height:30px;background:rgba(255,255,255,0.06);border-radius:15px;overflow:visible}
+    #bar-track{position:relative;height:30px;background:rgba(255,255,255,0.06);border-radius:15px;overflow:visible;margin-top:32px}
     #bar-fill{position:absolute;top:0;left:0;height:100%;width:0%;background:linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF);border-radius:15px;transition:width 1.2s cubic-bezier(.4,0,.2,1);box-shadow:0 0 24px rgba(0,212,255,0.5)}
     #bar-pct{position:absolute;right:12px;top:0;bottom:0;display:flex;align-items:center;font-family:"Orbitron",monospace;font-size:11px;color:#fff;font-weight:700}
-    .milestone-tick{position:absolute;top:-10px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10}
+    .milestone-tick{position:absolute;top:-28px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10}
     .milestone-tick .tick-line{width:2px;height:50px;border-radius:2px}
     .milestone-tick .tick-icon{font-size:16px;margin-top:2px}
     #milestone-chips{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
@@ -280,7 +280,7 @@
   <!-- PROGRESS -->
   <div id="milestone-section">
     <div id="total-display">$0 <span>of $85.40M</span></div>
-    <div id="bar-wrap"><div id="bar-track"><div id="bar-fill"></div></div><div id="bar-pct">0%</div></div>
+    <div id="bar-wrap"><div id="bar-track"><div id="bar-fill"></div></div></div>
     <div id="milestone-chips"></div>
     <div id="next-milestone"></div>
   </div>
@@ -1077,7 +1077,7 @@ function render(){
     }else{nxt.textContent="";}}
   var bf=document.getElementById("bar-fill");
   if(bf){bf.style.width=Math.min(pct,100)+"%";bf.style.background=total>=goal?"linear-gradient(90deg,#00FF88,#00D4FF)":"linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF)";}
-  var bp=document.getElementById("bar-pct"); if(bp)bp.textContent=pct.toFixed(1)+"%";
+  
   // Next milestone text
   var next=MILESTONES.find(function(m){return total/goal<m.value;});
   var nxt=document.getElementById("next-milestone");
@@ -1111,7 +1111,10 @@ function render(){
     MILESTONES.filter(function(m){return m.value<=1;}).forEach(function(m){
       var reached=total/goal>=m.value,tick=document.createElement("div");
       tick.className="milestone-tick"; tick.style.left=(m.value*100)+"%";
-      tick.innerHTML='<div class="tick-line" style="background:'+(reached?m.color:"rgba(255,255,255,0.12)")+'"></div><span class="tick-icon" style="'+(reached?"":'filter:grayscale(1) opacity(0.25)')+'">'+m.icon+'</span>';
+      var labelColor=reached?m.color:"rgba(255,255,255,0.25)";
+      var lineColor=reached?m.color:"rgba(255,255,255,0.12)";
+      var iconStyle=reached?"":"filter:grayscale(1) opacity(0.25)";
+      tick.innerHTML='<span style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:'+labelColor+';margin-bottom:2px;white-space:nowrap">'+m.label+'</span>'+'<div class="tick-line" style="background:'+lineColor+'"></div>'+'<span class="tick-icon" style="'+iconStyle+'">'+m.icon+'</span>';
       track.appendChild(tick);
     });
   }
