@@ -264,13 +264,14 @@
     <span style="margin:0 8px;opacity:0.3">&middot;</span>
     <span id="clock-date">---</span>
   </div>
-  <div id="countdown-wrap" style="display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0 16px">
+  <div id="countdown-wrap" style="display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0 16px;flex-wrap:wrap">
     <svg id="countdown-svg" width="28" height="28" viewBox="0 0 36 36">
       <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
       <circle id="countdown-ring" cx="18" cy="18" r="15" fill="none" stroke="#00D4FF" stroke-width="3" stroke-dasharray="94.2 94.2" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 18 18)"/>
     </svg>
     <span id="countdown-label" style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px">NEXT SYNC IN</span>
     <span id="last-updated" style="font-family:Orbitron,monospace;font-size:9px;color:#1E293B"></span>
+    <span id="last-sync-text" style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:1px"></span>
   </div>
 
 
@@ -301,7 +302,7 @@
   <!-- TOP LEADERBOARDS -->
   <div id="top-leaderboards" style="display:none">
     <div class="leader-board">
-      <div class="leader-title">&#x1F525; TOP 5 LARGEST DEALS</div>
+      <div class="leader-title">&#x1F525; TOP 10 LARGEST DEALS</div>
       <div id="top5-list"></div>
     </div>
     <div class="leader-board" style="border-color:rgba(0,212,255,0.2)">
@@ -455,7 +456,7 @@ var firedBadges={};
 
 
 var SHEET_URL  = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
-var POLL_MS    = 10000;
+var POLL_MS    = 3600000;
 var ADMIN_PW   = "Mayday2015";
 var PALETTE    = ["#00D4FF","#00FF88","#FFD700","#FF6B35","#A855F7","#FF4EFF","#34D399","#F59E0B","#60A5FA","#FB7185"];
 var MILESTONES = [
@@ -513,8 +514,7 @@ function parseCsv(csv){
     var today=new Date(); today.setHours(0,0,0,0);
     for(var i=1;i<lines.length;i++){
       var cols=parseCsvLine(lines[i]).map(function(c){return c.replace(/^"|"$/g,"").trim();});
-      var store=cols[0],name=cols[1],scoreRaw=cols[2],dateRaw=cols[3]||"",cancelled=(cols[5]||"").trim().toLowerCase();
-      if(cancelled==="yes")continue; // skip cancelled rows
+      var store=cols[0],name=cols[1],scoreRaw=cols[2],dateRaw=cols[3]||"";
       if(!store||!name||!scoreRaw)continue;
       var val=parseFloat(scoreRaw.replace(/[^0-9.]/g,""))||0;
       // Parse date column — handles "Tue Jan 06 2026 00:00:00 GMT-0500..." and "6/1/2026"
@@ -575,7 +575,7 @@ var state={
   lastUpdated: null
 };
 var streakCounts = {}; // "Name|Team" -> number of deals (not syncs)
-var pollTimer=null,countdownTimer=null,secsLeft=10,CIRC=2*Math.PI*15;
+var pollTimer=null,countdownTimer=null,secsLeft=3600,CIRC=2*Math.PI*15;
 
 // \u2550\u2550 FETCH \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 var SETTINGS_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Settings";
@@ -637,10 +637,26 @@ function startPolling(){
 }
 
 // \u2550\u2550 COUNTDOWN \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-function resetCountdown(){clearInterval(countdownTimer);secsLeft=POLL_MS/1000;tickCountdown();countdownTimer=setInterval(tickCountdown,1000);}
+function resetCountdown(){
+  clearInterval(countdownTimer);
+  // Sync to top of next hour
+  var now=new Date();
+  secsLeft = 3600 - (now.getMinutes()*60 + now.getSeconds());
+  tickCountdown();
+  countdownTimer=setInterval(tickCountdown,1000);
+}
 function tickCountdown(){
   secsLeft=Math.max(0,secsLeft-1);
-  var pct=(POLL_MS/1000-secsLeft)/(POLL_MS/1000),offset=CIRC*pct,urgent=secsLeft<=3,color=urgent?"#FF4444":"#00D4FF";
+  var pct=(3600-secsLeft)/3600,offset=CIRC*pct,urgent=secsLeft<=60,color=urgent?"#FF4444":"#00D4FF";
+  // Update next sync and last sync hour labels
+  var now=new Date();
+  var nextHour=new Date(now); nextHour.setMinutes(0,0,0); nextHour.setHours(nextHour.getHours()+1);
+  var lastHour=new Date(nextHour); lastHour.setHours(lastHour.getHours()-1);
+  var fmt12=function(d){var h=d.getHours();var ampm=h>=12?"PM":"AM";h=h%12||12;return h+":00 "+ampm;};
+  var lbl=document.getElementById("countdown-label");
+  if(lbl)lbl.textContent="NEXT SYNC "+fmt12(nextHour);
+  var lst=document.getElementById("last-sync-text");
+  if(lst)lst.textContent="LAST SYNC "+fmt12(lastHour);
   var ring=document.getElementById("refresh-ring");
   if(ring){ring.style.strokeDashoffset=offset;ring.style.stroke=color;}
   var num=document.getElementById("refresh-num");
@@ -1727,6 +1743,9 @@ function toggleBigFont() {
     btn.classList.toggle('active', tvBigFont);
     btn.innerHTML = tvBigFont ? '&#x1F4FA; TV ON' : '&#x1F4FA; TV MODE';
   }
+  // Auto scroll in TV mode only
+  if (tvBigFont && !scrollActive) { scrollActive=true; runScroll(); }
+  else if (!tvBigFont && scrollActive) { scrollActive=false; clearTimeout(scrollTimer); }
 }
 
 // ══ DAY BREAKDOWN ═════════════════════════════════════════════════════════════
@@ -2752,12 +2771,12 @@ function createMenu(){
   panel += '<button class="menu-item" onclick="openBlitz();toggleMenu()" style="color:#FFD700">&#x2728; SPECIAL EVENT</button>';
   panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
   panel += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">DISPLAY</div>';
+  panel += '<button class="menu-item" onclick="startSpotlight();toggleMenu()">★ SPOTLIGHT</button>';
   panel += '<button class="menu-item" onclick="toggleFullscreen();toggleMenu()">&#x26F6; FULLSCREEN</button>';
   panel += '<button class="menu-item" id="bigfont-btn" onclick="toggleBigFont()">&#x1F4FA; TV MODE</button>';
-  panel += '<button class="menu-item" id="scroll-btn" onclick="toggleScroll()">&#x2B06;&#x2B07; AUTO SCROLL</button>';
   panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
   panel += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FILTER</div>';
-  panel += '<button class="menu-item" id="today-filter-btn" onclick="toggleTodayFilter()">&#x2600; TODAY ONLY</button>';
+
   panel += '<button class="menu-item" id="consolidated-btn" onclick="toggleConsolidated()">&#x1F5FA; CONSOLIDATED</button>';
   panel += '</div>';
 
