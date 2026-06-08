@@ -1000,7 +1000,10 @@ function render(){
   // Apply today filter if active
   var rawData = state.data;
   var data = rawData;
-  // Apply consolidated view
+  // Always merge Toronto 0914 (Central + Eastern GTA) first, then optional full consolidation
+  if (rawData && rawData.teams) {
+    data = mergeAlways(data);
+  }
   if (filterConsolidated && rawData && rawData.teams) {
     data = consolidateData(data);
   }
@@ -2048,7 +2051,53 @@ var CONSOLIDATE_COLORS = {
   "Georgia":      "#FF6B35",
   "Midwest North":"#00D4FF",
   "Midwest South":"#00FF88",
+  "Toronto 0914": "#A855F7",
 };
+
+// Always-on merges (regardless of Consolidate toggle)
+var ALWAYS_MERGE = {
+  "0914 - Central GTA":  { group: "Toronto 0914", color: "#A855F7" },
+  "0914 - Eastern GTA":  { group: "Toronto 0914", color: "#A855F7" },
+};
+
+function mergeAlways(rawData) {
+  var result = { total: 0, teams: {} };
+  Object.entries(rawData.teams).forEach(function(e) {
+    var storeName = e[0], team = e[1];
+    var mapping = ALWAYS_MERGE[storeName];
+    var groupName = mapping ? mapping.group : storeName;
+    var color     = mapping ? mapping.color  : team.color;
+    if (!result.teams[groupName]) {
+      result.teams[groupName] = { total: 0, reps: [], color: color };
+    }
+    var grp = result.teams[groupName];
+    grp.total += team.total;
+    result.total += team.total;
+    team.reps.forEach(function(rep) {
+      var existing = grp.reps.find(function(r){ return r.name === rep.name; });
+      if (existing) {
+        existing.amount    += rep.amount;
+        existing.deals      = existing.deals.concat(rep.deals || []);
+        existing.dealObjs   = existing.dealObjs.concat(rep.dealObjs || []);
+        existing.todayTotal = (existing.todayTotal||0) + (rep.todayTotal||0);
+        if (!existing.latestDate || (rep.latestDate && rep.latestDate > existing.latestDate))
+          existing.latestDate = rep.latestDate;
+      } else {
+        grp.reps.push({
+          name: rep.name, amount: rep.amount,
+          deals: [].concat(rep.deals||[rep.amount]),
+          dealObjs: [].concat(rep.dealObjs||[]),
+          todayTotal: rep.todayTotal||0,
+          latestDate: rep.latestDate||null
+        });
+      }
+    });
+  });
+  Object.values(result.teams).forEach(function(t){
+    t.reps.sort(function(a,b){return b.amount-a.amount;});
+  });
+  return result;
+}
 
 function consolidateData(rawData) {
   var result = { total: 0, teams: {} };
