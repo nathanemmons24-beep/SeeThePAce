@@ -159,10 +159,10 @@
     /* Team cards */
     #cards-grid{display:flex;flex-wrap:wrap;gap:16px}
     .team-card{background:rgba(15,23,42,0.75);border-radius:14px;overflow:hidden;backdrop-filter:blur(14px);min-width:240px;flex:1 1 260px}
-    .team-card-header{padding:12px 16px;text-align:center}
-    .team-card-num{font-size:10px;font-family:"Orbitron",monospace;letter-spacing:2px;margin-bottom:2px;opacity:0.6}
-    .team-card-name{font-family:"Orbitron",monospace;font-weight:900;font-size:14px;letter-spacing:1px}
-    .team-card-total{font-family:"Orbitron",monospace;font-size:20px;font-weight:700;color:#fff;margin-top:4px}
+    .team-card-header{padding:12px 16px;text-align:center;display:flex;flex-direction:column;align-items:center}
+    .team-card-num{font-size:10px;font-family:"Orbitron",monospace;letter-spacing:2px;margin-bottom:2px;opacity:0.6;display:block;width:100%}
+    .team-card-name{font-family:"Orbitron",monospace;font-weight:900;font-size:14px;letter-spacing:1px;display:block;width:100%}
+    .team-card-total{font-family:"Orbitron",monospace;font-size:20px;font-weight:700;color:#fff;margin-top:4px;display:block;width:100%}
     .team-card-reps{padding:10px 6px}
     .rep-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;margin-bottom:3px;border-left:3px solid transparent;transition:all 0.4s}
     .rep-row.rank1{background:linear-gradient(90deg,rgba(255,215,0,0.13),transparent);border-left-color:#FFD700}
@@ -192,6 +192,9 @@
       .menu-item{display:block;width:100%;padding:10px 14px;background:transparent;border:none;color:#CBD5E1;font-family:"Orbitron",monospace;font-size:11px;font-weight:700;cursor:pointer;text-align:left;border-radius:10px;letter-spacing:1px;transition:background 0.15s}
     .menu-item:hover{background:rgba(255,255,255,0.07);color:#fff}
     .menu-item.active{color:#00FF88;background:rgba(0,255,136,0.08)}
+    .blitz-menu-item{display:block;width:100%;padding:10px 14px;background:transparent;border:none;color:#CBD5E1;font-family:"Exo 2",sans-serif;font-size:12px;font-weight:600;cursor:pointer;text-align:left;border-radius:10px;letter-spacing:0.5px;transition:background 0.15s}
+    .blitz-menu-item:hover{background:rgba(255,165,0,0.12);color:#FFD700}
+    .blitz-menu-item.active{color:#FFD700;background:rgba(255,165,0,0.15)}
     #scroll-btn,#bigfont-btn{color:#475569}
     :fullscreen #scroll-btn,:fullscreen #bigfont-btn,:-webkit-full-screen #scroll-btn,:-webkit-full-screen #bigfont-btn{color:#CBD5E1}
   
@@ -247,12 +250,20 @@
     .blitz-bar-btn:hover{opacity:0.85;transform:scale(1.04)}
     .blitz-bar-btn.active{transform:scale(1.02)}
     /* Blitz TV mode */
-    .blitz-tv-on #blitz-board{font-size:130%!important}
+    .blitz-tv-on #blitz-board{font-size:150%!important}
     .blitz-tv-on .blitz-s-card{padding:20px 22px!important}
     .blitz-tv-on .blitz-s-rep{padding:10px 14px!important}
     .blitz-tv-on .blitz-s-badge{font-size:11px!important;padding:3px 8px!important}
     .blitz-tv-on .podium-block{font-size:30px!important}
     .blitz-tv-on .rookie-star{width:22px!important;height:22px!important;font-size:11px!important}
+    .blitz-tv-on #blitz-board .blitz-layout{gap:0!important}
+    /* TV mode prizes collapse */
+    .blitz-tv-on .blitz-prizes-panel{width:44px!important;overflow:hidden;transition:width 0.3s ease}
+    .blitz-tv-on .blitz-prizes-panel:hover{width:260px!important}
+    .blitz-tv-on .blitz-prizes-inner{opacity:0;transition:opacity 0.3s;pointer-events:none}
+    .blitz-tv-on .blitz-prizes-panel:hover .blitz-prizes-inner{opacity:1;pointer-events:auto}
+    .blitz-tv-on .blitz-prizes-panel::before{content:"🏆";font-size:22px;display:block;text-align:center;padding:12px 0}
+    .blitz-tv-on .blitz-prizes-panel:hover::before{display:none}
   </style>
 </head>
 <body onclick="unlockAudio()" onkeydown="unlockAudio()">
@@ -392,7 +403,7 @@
 <canvas id="confetti-canvas" style="position:fixed;inset:0;z-index:9997;pointer-events:none;display:none"></canvas>
 
 <!-- BLITZ SCOREBOARD OVERLAY -->
-<div id="blitz-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:linear-gradient(160deg,#FFF9E6 0%,#FFE0A0 20%,#FFD070 40%,#87CEEB 70%,#4DA8D8 100%);overflow-y:auto;flex-direction:column;align-items:center">
+<div id="blitz-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:#060B18;overflow-y:auto;flex-direction:column;align-items:center">
   <div id="blitz-auth" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px">
     <div style="font-family:Orbitron,monospace;font-size:28px;font-weight:900;color:#FFD700;letter-spacing:6px;text-shadow:0 0 30px #FFD70066">&#x2728; SPECIAL EVENT</div>
     <div style="font-family:Orbitron,monospace;font-size:13px;color:#00FF88;letter-spacing:3px;margin-bottom:8px">NOT READY YET &mdash; ADMINS ENTER PASSWORD</div>
@@ -401,19 +412,26 @@
     <div id="blitz-pw-err" style="color:#FF4444;font-family:Orbitron,monospace;font-size:10px;display:none">INCORRECT PASSWORD</div>
     <button onclick="closeBlitz()" style="margin-top:8px;padding:6px 20px;border-radius:16px;background:transparent;border:1px solid rgba(255,255,255,0.1);color:#475569;font-family:Orbitron,monospace;font-size:10px;cursor:pointer">CANCEL</button>
   </div>
-  <!-- Blitz Top Bar — must come BEFORE board so sticky top:0 works -->
-  <div id="blitz-menu-wrap" style="display:none;position:sticky;top:0;z-index:9500;width:100%;background:linear-gradient(135deg,rgba(255,252,235,0.96),rgba(255,240,200,0.94));backdrop-filter:blur(16px);border-bottom:2px solid rgba(255,160,0,0.45);box-shadow:0 3px 24px rgba(255,160,0,0.25)">
-    <div style="max-width:1400px;margin:0 auto;padding:8px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <button onclick="closeBlitz()" class="blitz-bar-btn" style="background:linear-gradient(135deg,#FF6B35,#FF4500);border-color:transparent;color:#fff;box-shadow:0 2px 8px rgba(255,80,0,0.4)">🏠 Main Board</button>
-      <button onclick="openBlitzAdmin()" class="blitz-bar-btn" style="background:linear-gradient(135deg,#4DA8D8,#1A6FAA);border-color:transparent;color:#fff;box-shadow:0 2px 8px rgba(29,100,180,0.35)">⚙️ Admin</button>
-      <div style="width:1px;height:28px;background:rgba(180,100,0,0.2);margin:0 2px"></div>
-      <button onclick="toggleBlitzFullscreen()" class="blitz-bar-btn" id="blitz-fs-btn" style="background:linear-gradient(135deg,rgba(255,215,0,0.25),rgba(255,165,0,0.2));border-color:rgba(255,165,0,0.6);color:#7A3F00">⛶ Fullscreen</button>
-      <button onclick="toggleBlitzTV()" class="blitz-bar-btn" id="blitz-tv-btn" style="background:linear-gradient(135deg,rgba(255,215,0,0.25),rgba(255,165,0,0.2));border-color:rgba(255,165,0,0.6);color:#7A3F00">📺 TV Mode</button>
-      <button onclick="toggleBlitzScroll()" class="blitz-bar-btn" id="blitz-scroll-btn" style="background:linear-gradient(135deg,rgba(100,200,120,0.2),rgba(50,160,80,0.15));border-color:rgba(50,160,80,0.5);color:#1A5C2A">↕ Auto Scroll</button>
-      <div style="width:1px;height:28px;background:rgba(180,100,0,0.2);margin:0 2px"></div>
-      <button onclick="toggleBlitzRookies()" class="blitz-bar-btn" id="blitz-rookie-btn" style="background:linear-gradient(135deg,rgba(255,215,0,0.3),rgba(255,180,0,0.2));border-color:rgba(255,180,0,0.7);color:#7A3F00">⭐ Rookies Only</button>
-      <div style="flex:1"></div>
-      <div style="font-family:Pacifico,Georgia,serif;font-size:13px;color:rgba(160,80,0,0.5)">☀️ The Blitz</div>
+  <!-- Blitz Sticky Clock -->
+  <div id="blitz-sticky-clock" style="display:none;position:sticky;top:0;z-index:9600;width:100%;background:#060B18;border-bottom:1px solid rgba(255,255,255,0.07);padding:8px 16px;align-items:center;justify-content:space-between">
+    <div style="font-family:'Orbitron',monospace;font-size:clamp(13px,2vw,20px);color:#FFD700;letter-spacing:3px" id="blitz-clock-display">--:--:--</div>
+    <div style="font-family:'Exo 2',sans-serif;font-size:12px;color:#64748B" id="blitz-clock-date">---</div>
+  </div>
+  <!-- Blitz Hamburger Menu -->
+  <div id="blitz-hamburger-wrap" style="display:none;position:fixed;bottom:20px;right:20px;z-index:9700;width:52px;height:52px">
+    <button id="blitz-menu-toggle" onclick="toggleBlitzMenu()" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#FF6B35,#FFD700);border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(255,107,53,0.5);display:flex;align-items:center;justify-content:center;position:relative;z-index:1">&#x2630;</button>
+    <div id="blitz-menu-panel" style="display:none;position:absolute;bottom:60px;right:0;background:rgba(6,11,24,0.97);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:8px;width:220px;box-shadow:0 8px 40px rgba(0,0,0,0.8);backdrop-filter:blur(20px)">
+      <div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:2px;padding:6px 12px 4px">NAVIGATION</div>
+      <button class="blitz-menu-item" onclick="closeBlitz();toggleBlitzMenuPanel()">🏠 Main Board</button>
+      <button class="blitz-menu-item" onclick="openBlitzAdmin();toggleBlitzMenuPanel()">⚙️ Admin</button>
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>
+      <div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:2px;padding:6px 12px 4px">DISPLAY</div>
+      <button class="blitz-menu-item" id="blitz-fs-btn-menu" onclick="toggleBlitzFullscreen()">⛶ Fullscreen</button>
+      <button class="blitz-menu-item" id="blitz-tv-btn-menu" onclick="toggleBlitzTV()">📺 TV Mode</button>
+      <button class="blitz-menu-item" id="blitz-scroll-btn-menu" onclick="toggleBlitzScroll()">↕ Auto Scroll</button>
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>
+      <div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:2px;padding:6px 12px 4px">FILTER</div>
+      <button class="blitz-menu-item" id="blitz-rookie-btn-menu" onclick="toggleBlitzRookies()">⭐ Rookies Only</button>
     </div>
   </div>
   <div id="blitz-board" style="display:none;width:100%;padding:0"></div>
@@ -2281,12 +2299,19 @@ function toggleScroll() {
   }
 }
 
+function getScrollEl() {
+  var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+  if (fsEl && fsEl !== document.documentElement && fsEl.scrollHeight > fsEl.clientHeight) return fsEl;
+  return null;
+}
+
 function runScroll() {
   if (!scrollActive) return;
   if (scrollPausing) { scrollTimer = setTimeout(runScroll, scrollInterval); return; }
 
-  var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-  var cur = window.scrollY;
+  var scEl = getScrollEl();
+  var maxScroll = scEl ? scEl.scrollHeight - scEl.clientHeight : document.documentElement.scrollHeight - window.innerHeight;
+  var cur = scEl ? scEl.scrollTop : window.scrollY;
 
   // Hit bottom — pause then reverse
   if (scrollDir === 1 && cur >= maxScroll - 2) {
@@ -2310,7 +2335,9 @@ function runScroll() {
     return;
   }
 
-  window.scrollBy(0, scrollDir * scrollSpeed);
+  var scEl2 = getScrollEl();
+  if (scEl2) scEl2.scrollTop += scrollDir * scrollSpeed;
+  else window.scrollBy(0, scrollDir * scrollSpeed);
   scrollTimer = setTimeout(runScroll, scrollInterval);
 }
 
@@ -2334,7 +2361,7 @@ var BLITZ_BRACKETS = {
     color: "#FFD700", accent: "#00FF88"
   },
   "Small Markets": {
-    stores: ["0914 - Central GTA","0790 - Knoxville","0792 - Chattanooga","0790 - Tri-Cities TN"],
+    stores: ["0914 - Central GTA","0914 - Eastern GTA","0790 - Knoxville","0792 - Chattanooga","0790 - Tri-Cities TN"],
     color: "#00D4FF", accent: "#FFD700"
   }
 };
@@ -2360,8 +2387,11 @@ function openBlitz() {
 
 function closeBlitz() {
   document.getElementById("blitz-overlay").style.display = "none";
-  var mw = document.getElementById("blitz-menu-wrap");
-  if (mw) mw.style.display = "none";
+  var sc = document.getElementById("blitz-sticky-clock");
+  if (sc) sc.style.display = "none";
+  var hw = document.getElementById("blitz-hamburger-wrap");
+  if (hw) hw.style.display = "none";
+  clearInterval(blitzClockTimer);
 }
 
 function checkBlitzPw() {
@@ -2383,8 +2413,11 @@ function checkBlitzPw() {
 function showBlitzBoard() {
   document.getElementById("blitz-auth").style.display = "none";
   document.getElementById("blitz-board").style.display = "block";
-  var mw = document.getElementById("blitz-menu-wrap");
-  if (mw) mw.style.display = "block";
+  var sc = document.getElementById("blitz-sticky-clock");
+  if (sc) sc.style.display = "flex";
+  var hw = document.getElementById("blitz-hamburger-wrap");
+  if (hw) hw.style.display = "block";
+  startBlitzClock();
   renderBlitz();
 }
 
@@ -2484,14 +2517,33 @@ function buildBlitzFromDemo() {
 
 
   var result = { total:0, brackets:{}, allReps:[] };
+  // Merge Toronto GTA stores first
+  var mergedTeams = {};
+  Object.entries(data.teams).forEach(function(e) {
+    var tName = e[0], team = e[1];
+    var groupName = (tName === '0914 - Central GTA' || tName === '0914 - Eastern GTA') ? 'Toronto 0914' : tName;
+    if (!mergedTeams[groupName]) mergedTeams[groupName] = { total:0, reps:[], color: tName.startsWith('0914') ? '#A855F7' : team.color };
+    mergedTeams[groupName].total += team.total;
+    team.reps.forEach(function(rep) {
+      var existing = mergedTeams[groupName].reps.find(function(r){return r.name===rep.name;});
+      if (existing) {
+        existing.amount += rep.amount;
+        existing.deals = (existing.deals||[]).concat(rep.deals||[]);
+        existing.dealObjs = (existing.dealObjs||[]).concat(rep.dealObjs||[]);
+      } else {
+        mergedTeams[groupName].reps.push(Object.assign({},rep));
+      }
+    });
+  });
   // Init brackets
   for (var b in BLITZ_BRACKETS) {
     result.brackets[b] = { total:0, teams:{}, color:BLITZ_BRACKETS[b].color, accent:BLITZ_BRACKETS[b].accent };
   }
-  Object.entries(data.teams).forEach(function(e) {
+  Object.entries(mergedTeams).forEach(function(e) {
     var tName=e[0], team=e[1];
-    var display=tName.includes(" - ")?tName.split(" - ").slice(1).join(" "):tName;
-    var bracket=getBracketForStore(tName);
+    var display = tName === 'Toronto 0914' ? 'Toronto GTA' : (tName.includes(" - ")?tName.split(" - ").slice(1).join(" "):tName);
+    var lookupName = tName === 'Toronto 0914' ? '0914 - Central GTA' : tName;
+    var bracket=getBracketForStore(lookupName);
     if (!bracket) return;
     var filteredReps=[];
     team.reps.forEach(function(rep) {
@@ -2554,21 +2606,12 @@ var blitzScrollActive = false;
 var blitzScrollTimer = null;
 function toggleBlitzRookies() {
   blitzShowRookiesOnly = !blitzShowRookiesOnly;
-  var btn = document.getElementById('blitz-rookie-btn');
-  if (btn) {
-    btn.style.background = blitzShowRookiesOnly ? 'rgba(255,215,0,0.4)' : 'rgba(255,215,0,0.15)';
-    btn.style.color = blitzShowRookiesOnly ? '#5A3A00' : '#7A5800';
-    btn.innerHTML = blitzShowRookiesOnly ? '&#x2B50; ALL REPS' : '&#x2B50; ROOKIES ONLY';
-  }
+  updateBlitzMenuStates();
   renderBlitz();
 }
 function toggleBlitzScroll() {
   blitzScrollActive = !blitzScrollActive;
-  var btn = document.getElementById('blitz-scroll-btn');
-  if (btn) {
-    btn.style.background = blitzScrollActive ? 'rgba(0,160,80,0.35)' : 'rgba(0,160,80,0.12)';
-    btn.innerHTML = blitzScrollActive ? '&#x23F9; STOP SCROLL' : '&#x2195; AUTO SCROLL';
-  }
+  updateBlitzMenuStates();
   if (blitzScrollActive) runBlitzScroll(); else clearTimeout(blitzScrollTimer);
 }
 function runBlitzScroll() {
@@ -2581,8 +2624,7 @@ function runBlitzScroll() {
 }
 document.addEventListener('fullscreenchange', function() {
   var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-  var fsBtn = document.getElementById('blitz-fs-btn');
-  if (fsBtn) fsBtn.innerHTML = isFs ? '&#x26F6; EXIT FULL' : '&#x26F6; FULLSCREEN';
+  updateBlitzMenuStates();
   if (isFs) {
     if (!blitzTVMode) toggleBlitzTV();
     if (!blitzScrollActive) toggleBlitzScroll();
@@ -2619,24 +2661,28 @@ function renderBlitz() {
     '@keyframes shimmerSun{0%{background-position:-200% center}100%{background-position:200% center}}'+
     '@keyframes podiumGlow{0%,100%{box-shadow:0 0 10px rgba(255,215,0,0.4)}50%{box-shadow:0 0 25px rgba(255,215,0,0.9),0 0 50px rgba(255,165,0,0.4)}}'+
     '@keyframes rookieStar{0%,100%{transform:scale(1) rotate(0deg)}50%{transform:scale(1.2) rotate(15deg)}}'+
-    '.blitz-s-card{background:rgba(255,255,255,0.65);backdrop-filter:blur(10px);border:1px solid rgba(255,165,0,0.3);border-radius:16px;padding:14px 16px;margin-bottom:12px;box-shadow:0 4px 20px rgba(255,140,0,0.1)}'+
-    '.blitz-s-rep{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid rgba(0,0,0,0.07);border-radius:8px}'+
+    '.blitz-s-card{background:rgba(15,23,42,0.85);backdrop-filter:blur(10px);border:1px solid rgba(255,165,0,0.25);border-radius:16px;padding:14px 16px;margin-bottom:12px;box-shadow:0 4px 20px rgba(255,140,0,0.08)}'+
+    '.blitz-s-rep{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.06);border-radius:8px}'+
     '.blitz-s-rep:last-child{border-bottom:none}'+
     '.blitz-s-badge{font-size:9px;padding:2px 6px;border-radius:8px;font-weight:700;display:inline-block;margin:1px;font-family:"Exo 2",sans-serif}'+
     '.blitz-bar-btn{padding:7px 14px;border-radius:22px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid;letter-spacing:0.3px;transition:all 0.2s;font-family:"Exo 2",sans-serif;position:relative}'+
     '.blitz-bar-btn:hover{opacity:0.9;transform:scale(1.06) translateY(-1px);box-shadow:0 4px 14px rgba(255,140,0,0.35)}'+
     '.rookie-star{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:50%;font-size:9px;font-weight:900;color:#5A3A00;margin-left:4px;border:1.5px solid #FFD700;animation:rookieStar 3s ease-in-out infinite;flex-shrink:0;vertical-align:middle}'+
-    '.prize-locked{background:rgba(255,255,255,0.3);border:1px solid rgba(0,0,0,0.12)}'+
-    '.prize-unlocked{background:linear-gradient(135deg,rgba(255,215,0,0.25),rgba(255,165,0,0.15));border:1.5px solid rgba(255,165,0,0.6);animation:unlockPop 0.5s ease both}'+
-    '.prize-next{background:rgba(255,255,255,0.5);border:2px dashed rgba(255,140,0,0.6)}'+
+    '.prize-locked{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1)}'+
+    '.prize-unlocked{background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,165,0,0.12));border:1.5px solid rgba(255,165,0,0.5);animation:unlockPop 0.5s ease both}'+
+    '.prize-next{background:rgba(255,255,255,0.07);border:2px dashed rgba(255,140,0,0.5)}'+
     '.podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:12px}'+
     '.podium-col{display:flex;flex-direction:column;align-items:center;gap:4px}'+
     '.podium-block{display:flex;align-items:center;justify-content:center;border-radius:6px 6px 0 0;font-family:Orbitron,monospace;font-size:14px;font-weight:900}'+
-    '.hunt-badge{background:linear-gradient(90deg,rgba(100,180,255,0.2),rgba(100,180,255,0.1));border:1px solid rgba(100,180,255,0.5);border-radius:8px;padding:5px 10px;margin-bottom:4px;font-size:11px;color:#1A3A8F}'+
+    '.hunt-badge{background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);border-radius:8px;padding:5px 10px;margin-bottom:4px;font-size:11px;color:#00D4FF}'+
+    '.blitz-prizes-panel{flex-shrink:0;position:sticky;top:80px;max-height:calc(100vh-100px);overflow-y:auto;scrollbar-width:none;transition:width 0.3s ease;background:rgba(15,23,42,0.7);border-radius:12px;border:1px solid rgba(255,165,0,0.2)}'+
+    '.blitz-prizes-inner{padding:4px}'+
+    '.blitz-layout{display:flex;gap:16px;align-items:flex-start;max-width:1400px;margin:0 auto;padding:0 16px 80px}'+
     '</style>'+
     renderBlitzTopProgress(totalToShow, goal)+
-    '<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:nowrap;max-width:1400px;margin:0 auto;padding:0 16px 20px">'+
-      '<div style="width:220px;flex-shrink:0;position:sticky;top:130px;max-height:calc(100vh - 145px);overflow-y:auto;scrollbar-width:none">'+renderBlitzPrizes(totalToShow, goal)+'</div>'+
+    renderBlitzDayBreakdown(filteredBd)+
+    '<div class="blitz-layout">'+
+      '<div class="blitz-prizes-panel" style="width:240px"><div class="blitz-prizes-inner">'+renderBlitzPrizes(totalToShow, goal)+'</div></div>'+
       '<div style="flex:1;min-width:0">'+
         renderBlitzBracketsNew(filteredBd)+
         renderBlitzLeaderboardNew(filteredBd)+
@@ -2669,29 +2715,29 @@ function filterBlitzRookies(bd) {
 function renderBlitzTopProgress(total, goal) {
   var pct = Math.min((total/goal)*100, 105);
   var millions = Math.floor(total/1000000);
-  return '<div style="background:linear-gradient(135deg,rgba(255,255,255,0.7),rgba(255,240,180,0.6));backdrop-filter:blur(12px);border-bottom:2px solid rgba(255,140,0,0.3);padding:16px 24px;position:sticky;top:44px;z-index:100">'+
+  return '<div style="background:rgba(15,23,42,0.95);backdrop-filter:blur(12px);border-bottom:2px solid rgba(255,165,0,0.3);padding:14px 24px;position:sticky;top:55px;z-index:100">'+
     '<div style="max-width:1400px;margin:0 auto">'+
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">'+
-        '<div style="font-family:Pacifico,Georgia,serif;font-size:clamp(22px,4vw,38px);color:#C84000;text-shadow:2px 2px 0 rgba(255,255,255,0.8)">'+
-          '&#x2600;&#xFE0F; The Summertime Blitz!</div>'+
+        '<div style="font-family:\'Exo 2\',sans-serif;font-weight:900;font-size:clamp(18px,3.5vw,30px);color:#FFD700;letter-spacing:2px">'+
+          '☀️ THE SUMMERTIME BLITZ</div>'+
         '<div style="text-align:right">'+
-          '<div style="font-family:Orbitron,monospace;font-size:clamp(20px,3.5vw,34px);font-weight:900;color:#1A3A8F">'+fmtB(total)+'</div>'+
-          '<div style="font-family:\'Exo 2\',sans-serif;font-size:11px;color:#8B5E00;font-weight:600">of '+fmtB(goal)+' goal · '+pct.toFixed(1)+'%</div>'+
+          '<div style="font-family:Orbitron,monospace;font-size:clamp(18px,3vw,30px);font-weight:900;color:#fff">'+fmtB(total)+'</div>'+
+          '<div style="font-family:\'Exo 2\',sans-serif;font-size:11px;color:#64748B;font-weight:600">of '+fmtB(goal)+' goal · '+pct.toFixed(1)+'%</div>'+
         '</div>'+
       '</div>'+
-      '<div style="height:22px;background:rgba(255,255,255,0.4);border-radius:11px;overflow:hidden;border:1px solid rgba(255,140,0,0.3);position:relative">'+
-        '<div style="height:100%;width:'+Math.min(pct,100)+'%;background:linear-gradient(90deg,#FF6B00,#FFD700,#FF8C00);border-radius:11px;box-shadow:0 0 16px rgba(255,165,0,0.6);transition:width 1.2s;position:relative">'+
-          '<div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(255,255,255,0.15) 8px,rgba(255,255,255,0.15) 16px);border-radius:11px"></div>'+
+      '<div style="height:22px;background:rgba(255,255,255,0.06);border-radius:11px;overflow:hidden;border:1px solid rgba(255,140,0,0.2);position:relative">'+
+        '<div style="height:100%;width:'+Math.min(pct,100)+'%;background:linear-gradient(90deg,#FF6B00,#FFD700,#00D4FF);border-radius:11px;box-shadow:0 0 16px rgba(255,165,0,0.4);transition:width 1.2s;position:relative">'+
+          '<div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(255,255,255,0.08) 8px,rgba(255,255,255,0.08) 16px);border-radius:11px"></div>'+
         '</div>'+
-        (pct >= 5 ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Orbitron,monospace;font-size:11px;font-weight:900;color:'+(pct>50?'#fff':'#8B5E00')+'">'+millions+'M / 17M</div>' : '')+
+        (pct >= 5 ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Orbitron,monospace;font-size:11px;font-weight:900;color:'+(pct>50?'#fff':'#FFD700')+'">'+millions+'M / 17M</div>' : '')+
       '</div>'+
       '<div style="display:flex;margin-top:4px">'+
         [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17].map(function(m){
           var unlocked = total >= m*1000000;
-          return '<div style="flex:1;height:6px;margin:0 1px;border-radius:3px;background:'+(unlocked?'rgba(255,140,0,0.7)':'rgba(0,0,0,0.1)')+'"></div>';
+          return '<div style="flex:1;height:6px;margin:0 1px;border-radius:3px;background:'+(unlocked?'rgba(255,140,0,0.6)':'rgba(255,255,255,0.06)')+'"></div>';
         }).join('')+
       '</div>'+
-      '<div style="display:flex;justify-content:space-between;font-family:\'Exo 2\',sans-serif;font-size:9px;color:rgba(0,0,0,0.35);margin-top:1px">'+
+      '<div style="display:flex;justify-content:space-between;font-family:\'Exo 2\',sans-serif;font-size:9px;color:rgba(255,255,255,0.2);margin-top:1px">'+
         '<span>$1M</span><span>$5M</span><span>$9M</span><span>$13M</span><span>$17M</span>'+
       '</div>'+
     '</div>'+
@@ -2731,27 +2777,27 @@ var PRIZE_COLORS = {
 
 function renderBlitzPrizes(total, goal) {
   var millions = total / 1000000;
-  var html = '<div style="font-family:Pacifico,Georgia,serif;font-size:15px;color:#C84000;text-align:center;margin-bottom:10px">🏆 Prize Unlock Track</div>';
+  var html = '<div style="font-family:\'Exo 2\',sans-serif;font-size:14px;font-weight:900;color:#FFD700;text-align:center;margin-bottom:10px;letter-spacing:1px">🏆 PRIZE TRACK</div>';
   BLITZ_PRIZES.forEach(function(prize, i) {
-    var milestone = i + 1; // unlock at $1M, $2M, ... $17M
+    var milestone = i + 1;
     var unlocked = millions >= milestone;
     var isNext = !unlocked && millions >= milestone - 1;
     var c = PRIZE_COLORS[prize.tier];
     var cls = unlocked ? 'prize-unlocked' : isNext ? 'prize-next' : 'prize-locked';
     html += '<div class="'+cls+'" style="border-radius:10px;padding:7px 10px;margin-bottom:5px;display:flex;align-items:center;gap:8px;'+
       (unlocked ? 'background:'+c.bg+';border:1.5px solid '+c.border+';' : '')+
-      (isNext ? 'box-shadow:0 0 12px rgba(255,140,0,0.3);' : '')+'">';
+      (isNext ? 'box-shadow:0 0 12px rgba(255,140,0,0.25);' : '')+'">';
     html += '<div style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;'+
-      'background:'+(unlocked?c.bg:'rgba(0,0,0,0.06)')+'border:1px solid '+(unlocked?c.border:'rgba(0,0,0,0.15)')+'">'+
+      'background:'+(unlocked?c.bg:'rgba(255,255,255,0.06)')+';border:1px solid '+(unlocked?c.border:'rgba(255,255,255,0.1)')+'">'+
       (unlocked ? '✓' : isNext ? '⟳' : milestone)+'</div>';
     html += '<div style="flex:1;min-width:0">'+
-      '<div style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:700;color:'+(unlocked?c.text:isNext?'#8B5E00':'#94A3B8')+'">'+prize.label+'</div>'+
-      '<div style="font-family:Orbitron,monospace;font-size:9px;color:'+(unlocked?c.text:'#CBD5E1')+';opacity:0.7">at $'+milestone+'M</div>'+
+      '<div style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:700;color:'+(unlocked?c.text:isNext?'#E2E8F0':'#475569')+'">'+prize.label+'</div>'+
+      '<div style="font-family:Orbitron,monospace;font-size:9px;color:'+(unlocked?c.text:'#334155')+';opacity:0.7">at $'+milestone+'M</div>'+
     '</div>';
     if (unlocked) html += '<span style="font-size:16px">'+prize.icon+'</span>';
     html += '</div>';
   });
-  return '<div class="blitz-s-card">'+html+'</div>';
+  return html;
 }
 
 function renderBlitzPodium(bracketReps, color, accent) {
@@ -2822,14 +2868,14 @@ function hexToRgb(hex) {
 function renderBlitzBracketsNew(bd) {
   var bracketOrder = ['Large Markets','Medium Markets','Small Markets'];
   var bracketBg = {
-    'Large Markets':  'linear-gradient(135deg,rgba(0,200,100,0.08),rgba(255,215,0,0.06))',
-    'Medium Markets': 'linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,165,0,0.06))',
-    'Small Markets':  'linear-gradient(135deg,rgba(100,180,255,0.1),rgba(0,212,255,0.06))',
+    'Large Markets':  'linear-gradient(135deg,rgba(0,200,100,0.07),rgba(255,215,0,0.05))',
+    'Medium Markets': 'linear-gradient(135deg,rgba(255,215,0,0.09),rgba(255,165,0,0.05))',
+    'Small Markets':  'linear-gradient(135deg,rgba(100,180,255,0.09),rgba(0,212,255,0.05))',
   };
   var bracketBorder = {
-    'Large Markets':  'rgba(0,160,60,0.3)',
-    'Medium Markets': 'rgba(255,165,0,0.4)',
-    'Small Markets':  'rgba(0,150,220,0.35)',
+    'Large Markets':  'rgba(0,200,100,0.25)',
+    'Medium Markets': 'rgba(255,165,0,0.3)',
+    'Small Markets':  'rgba(0,150,220,0.25)',
   };
   var bracketLabel = {
     'Large Markets':  '🌊 Large Markets',
@@ -2849,10 +2895,10 @@ function renderBlitzBracketsNew(bd) {
     bracketReps.sort(function(a,b){return b.amount-a.amount;});
     var maxT = sortedTeams[0] ? sortedTeams[0][1].total : 1;
 
-    return '<div style="background:'+bracketBg[bName]+';border:1.5px solid '+(bracketBorder[bName]||'rgba(0,0,0,0.1)')+';border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 20px rgba(0,0,0,0.06)">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(0,0,0,0.1)">'+
-        '<div style="font-family:Pacifico,Georgia,serif;font-size:16px;color:#1A3A8F">'+bracketLabel[bName]+'</div>'+
-        '<div style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:#C84000">'+fmtB(bracket.total)+'</div>'+
+    return '<div style="background:'+bracketBg[bName]+';border:1.5px solid '+(bracketBorder[bName]||'rgba(255,255,255,0.08)')+';border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 20px rgba(0,0,0,0.3)">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.08)">'+
+        '<div style="font-family:'Exo 2',sans-serif;font-size:16px;font-weight:900;color:#E2E8F0;letter-spacing:1px">'+bracketLabel[bName]+'</div>'+
+        '<div style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:#FFD700">'+fmtB(bracket.total)+'</div>'+
       '</div>'+
 
       // Podium
@@ -2865,13 +2911,13 @@ function renderBlitzBracketsNew(bd) {
           var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
           return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'+
             '<span style="font-size:'+(i<3?'14':'10')+'px;width:20px;text-align:center">'+
-              (medal||'<span style="font-family:Orbitron,monospace;font-size:9px;color:#94A3B8">#'+(i+1)+'</span>')+
+              (medal||'<span style="font-family:Orbitron,monospace;font-size:9px;color:#64748B">#'+(i+1)+'</span>')+
             '</span>'+
-            '<div style="width:100px;font-family:\'Exo 2\',sans-serif;font-size:11px;color:#374151;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.display+'</div>'+
-            '<div style="flex:1;height:14px;background:rgba(0,0,0,0.07);border-radius:7px;overflow:hidden">'+
-              '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#FF6B00,#FFD700);border-radius:7px;box-shadow:0 0 6px rgba(255,165,0,0.4);transition:width 1s"></div>'+
+            '<div style="width:100px;font-family:\'Exo 2\',sans-serif;font-size:11px;color:#CBD5E1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.display+'</div>'+
+            '<div style="flex:1;height:14px;background:rgba(255,255,255,0.06);border-radius:7px;overflow:hidden">'+
+              '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,'+color+','+color+'99);border-radius:7px;box-shadow:0 0 6px '+color+'55;transition:width 1s"></div>'+
             '</div>'+
-            '<div style="font-family:Orbitron,monospace;font-size:10px;color:#C84000;width:70px;text-align:right;font-weight:700">'+fmtB(t.total)+'</div>'+
+            '<div style="font-family:Orbitron,monospace;font-size:10px;color:#FFD700;width:70px;text-align:right;font-weight:700">'+fmtB(t.total)+'</div>'+
           '</div>';
         }).join('')+
       '</div>'+
@@ -2882,18 +2928,18 @@ function renderBlitzBracketsNew(bd) {
           var tName=te[0], t=te[1];
           var mostDealsRep=''; var mostDealsN=0;
           t.reps.forEach(function(r){var n=(r.deals||[r]).length;if(n>mostDealsN){mostDealsN=n;mostDealsRep=r.name;}});
-          return '<div style="background:rgba(255,255,255,0.55);border:1px solid rgba(0,0,0,0.1);border-radius:12px;overflow:hidden">'+
-            '<div style="padding:8px 12px;border-bottom:1px solid rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg,rgba(255,165,0,0.12),transparent)">'+
-              '<div style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:700;color:#374151">'+t.display+'</div>'+
-              '<div style="font-family:Orbitron,monospace;font-size:13px;font-weight:900;color:#C84000">'+fmtB(t.total)+'</div>'+
+          return '<div style="background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.09);border-radius:12px;overflow:hidden">'+
+            '<div style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg,rgba(255,165,0,0.08),transparent)">'+
+              '<div style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:700;color:#CBD5E1">'+t.display+'</div>'+
+              '<div style="font-family:Orbitron,monospace;font-size:13px;font-weight:900;color:#FFD700">'+fmtB(t.total)+'</div>'+
             '</div>'+
             t.reps.map(function(r,ri){
               var badgesHtml = blitzRepBadges(r, t.reps, ri===0, r.name===mostDealsRep&&mostDealsN>1, bracketReps);
-              var rankColor=ri===0?'#C84000':ri<=2?'#8B5E00':'#94A3B8';
+              var rankColor=ri===0?'#FFD700':ri<=2?color:'#64748B';
               return '<div class="blitz-s-rep">'+
                 '<span style="font-family:Orbitron,monospace;font-size:10px;color:'+rankColor+';width:16px;flex-shrink:0;font-weight:700">'+(ri+1)+'</span>'+
                 '<div style="flex:1;min-width:0">'+
-                  '<div style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:700;color:#1E293B;display:flex;align-items:center;flex-wrap:wrap;gap:2px">'+
+                  '<div style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:700;color:#E2E8F0;display:flex;align-items:center;flex-wrap:wrap;gap:2px">'+
                     r.name+badgesHtml+
                   '</div>'+
                 '</div>'+
@@ -2912,25 +2958,75 @@ function renderBlitzLeaderboardNew(bd) {
   var top10 = bd.allReps.slice(0,10);
   var medals = ['🥇','🥈','🥉'];
   return '<div class="blitz-s-card">'+
-    '<div style="font-family:Pacifico,Georgia,serif;font-size:15px;color:#C84000;margin-bottom:10px">🏖️ Top 10 Overall Blitzers</div>'+
+    '<div style="font-family:\'Exo 2\',sans-serif;font-size:15px;font-weight:900;color:#FFD700;margin-bottom:10px;letter-spacing:1px">🏆 TOP 10 OVERALL BLITZERS</div>'+
     top10.map(function(r,i){
       var isRookie = ROOKIE_NAMES.has(r.name);
       var indBadge = getBadge(r.amount);
-      return '<div class="blitz-s-rep" style="'+(i===0?'background:linear-gradient(90deg,rgba(255,215,0,0.15),transparent);':'')+'">' +
+      return '<div class="blitz-s-rep" style="'+(i===0?'background:linear-gradient(90deg,rgba(255,215,0,0.12),transparent);':'')+'">' +
         '<span style="width:24px;text-align:center;font-size:'+(i<3?'16':'11')+'px;flex-shrink:0">'+
-          (i<3?medals[i]:'<span style="font-family:Orbitron,monospace;font-size:9px;color:#94A3B8">#'+(i+1)+'</span>')+
+          (i<3?medals[i]:'<span style="font-family:Orbitron,monospace;font-size:9px;color:#64748B">#'+(i+1)+'</span>')+
         '</span>'+
         '<div style="flex:1;min-width:0">'+
-          '<div style="font-family:\'Exo 2\',sans-serif;font-size:13px;font-weight:700;color:#1E293B;display:flex;align-items:center;gap:4px;flex-wrap:wrap">'+
+          '<div style="font-family:\'Exo 2\',sans-serif;font-size:13px;font-weight:700;color:#E2E8F0;display:flex;align-items:center;gap:4px;flex-wrap:wrap">'+
             r.name+
             (isRookie?'<span class="rookie-star">R</span>':'')+
             (indBadge?'<span class="blitz-s-badge" style="background:rgba('+hexToRgb(indBadge.color)+',0.12);border:1px solid rgba('+hexToRgb(indBadge.color)+',0.4);color:'+indBadge.color+'">'+indBadge.icon+'</span>':'')+
           '</div>'+
-          '<div style="font-family:\'Exo 2\',sans-serif;font-size:10px;color:#8B5E00;font-weight:600">'+r.store+'</div>'+
+          '<div style="font-family:\'Exo 2\',sans-serif;font-size:10px;color:#64748B;font-weight:600">'+r.store+'</div>'+
         '</div>'+
-        '<div style="font-family:Orbitron,monospace;font-size:13px;font-weight:900;color:#C84000;flex-shrink:0">'+fmtB(r.amount)+'</div>'+
+        '<div style="font-family:Orbitron,monospace;font-size:13px;font-weight:900;color:#FFD700;flex-shrink:0">'+fmtB(r.amount)+'</div>'+
       '</div>';
     }).join('')+
+  '</div>';
+}
+
+function renderBlitzDayBreakdown(bd) {
+  var dayTotals = {};
+  var today = new Date(); today.setHours(0,0,0,0);
+  Object.values(bd.brackets||{}).forEach(function(bracket) {
+    Object.values(bracket.teams||{}).forEach(function(team) {
+      (team.reps||[]).forEach(function(rep) {
+        (rep.deals||[]).forEach(function(dealObj) {
+          var date = dealObj && dealObj.date ? dealObj.date : null;
+          if (!date) return;
+          var d = new Date(date); d.setHours(0,0,0,0);
+          var key = d.toISOString().split('T')[0];
+          if (!dayTotals[key]) {
+            var diff = Math.round((today - d) / 86400000);
+            var label = diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : formatShortDate(d);
+            dayTotals[key] = { total:0, deals:0, label:label, date:d };
+          }
+          dayTotals[key].total += (dealObj.amount||0);
+          dayTotals[key].deals++;
+        });
+      });
+    });
+  });
+  // Also check allReps which has amounts directly
+  // Fall back: use bd.allReps amounts as a lump if no dates
+  var days = Object.entries(dayTotals).sort(function(a,b){ return new Date(a[0])-new Date(b[0]); });
+  if (days.length === 0) return '';
+
+  var maxVal = Math.max.apply(null, days.map(function(d){ return d[1].total; }));
+  if (maxVal === 0) return '';
+
+  var barColors = ['#00D4FF','#00FF88','#FFD700','#FF6B35','#A855F7','#FF4EFF'];
+  var barsHtml = '<div style="display:flex;align-items:flex-end;gap:8px;height:80px;padding:0 8px">';
+  days.forEach(function(entry, i) {
+    var day = entry[1];
+    var h = Math.max(6, Math.round((day.total / maxVal) * 72));
+    var color = barColors[i % barColors.length];
+    barsHtml += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'+
+      '<div style="font-family:Orbitron,monospace;font-size:8px;color:#94A3B8">'+fmtB(day.total)+'</div>'+
+      '<div style="width:100%;height:'+h+'px;background:linear-gradient(180deg,'+color+','+color+'55);border-radius:4px 4px 0 0;box-shadow:0 0 8px '+color+'44;transition:height 0.5s"></div>'+
+      '<div style="font-family:Orbitron,monospace;font-size:8px;color:'+color+';text-align:center;white-space:nowrap">'+day.label+'</div>'+
+    '</div>';
+  });
+  barsHtml += '</div>';
+
+  return '<div style="background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:14px 16px;backdrop-filter:blur(14px);margin:8px 16px 0;max-width:1400px;margin-left:auto;margin-right:auto">'+
+    '<div style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:2px;margin-bottom:10px">📅 DAY BY DAY</div>'+
+    barsHtml+
   '</div>';
 }
 
@@ -2939,21 +3035,17 @@ document.addEventListener("keydown", function(e){ if(e.key==="Escape" && documen
 
 
 
-function toggleBlitzMenu() { /* replaced by top bar */ }
 
 var blitzTVMode = false;
 function toggleBlitzTV() {
   blitzTVMode = !blitzTVMode;
   var board = document.getElementById('blitz-board');
-  if (board) board.style.fontSize = blitzTVMode ? '128%' : '';
-  // Scale up the sticky progress bar too
+  if (board) {
+    board.style.fontSize = blitzTVMode ? '' : '';
+  }
   var overlay = document.getElementById('blitz-overlay');
   if (overlay) overlay.classList.toggle('blitz-tv-on', blitzTVMode);
-  var btn = document.getElementById('blitz-tv-btn');
-  if (btn) {
-    btn.innerHTML = blitzTVMode ? '&#x1F4FA; TV ON' : '&#x1F4FA; TV MODE';
-    btn.style.background = blitzTVMode ? 'rgba(255,165,0,0.4)' : 'rgba(255,165,0,0.15)';
-  }
+  updateBlitzMenuStates();
 }
 
 function toggleBlitzFullscreen() {
@@ -2972,6 +3064,58 @@ function openBlitzAdmin() {
 }
 
 // blitz menu click handler removed
+
+var blitzMenuOpen = false;
+var blitzClockTimer = null;
+
+function toggleBlitzMenu() {
+  blitzMenuOpen = !blitzMenuOpen;
+  var panel = document.getElementById('blitz-menu-panel');
+  var btn = document.getElementById('blitz-menu-toggle');
+  if (!panel) return;
+  panel.style.display = blitzMenuOpen ? 'block' : 'none';
+  if (btn) {
+    btn.innerHTML = blitzMenuOpen ? '&#x2715;' : '&#x2630;';
+    btn.style.transform = blitzMenuOpen ? 'rotate(90deg)' : 'rotate(0deg)';
+  }
+}
+function toggleBlitzMenuPanel() { toggleBlitzMenu(); }
+
+document.addEventListener('click', function(e) {
+  var wrap = document.getElementById('blitz-hamburger-wrap');
+  if (blitzMenuOpen && wrap && !wrap.contains(e.target)) toggleBlitzMenu();
+});
+
+function startBlitzClock() {
+  clearInterval(blitzClockTimer);
+  updateBlitzClock();
+  blitzClockTimer = setInterval(updateBlitzClock, 1000);
+}
+
+function updateBlitzClock() {
+  var now = new Date();
+  var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+  var ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
+  var pad = function(n){ return n < 10 ? '0'+n : n; };
+  var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var clk = document.getElementById('blitz-clock-display');
+  var dt  = document.getElementById('blitz-clock-date');
+  if (clk) clk.textContent = pad(h)+':'+pad(m)+':'+pad(s)+' '+ampm;
+  if (dt)  dt.textContent  = days[now.getDay()]+', '+months[now.getMonth()]+' '+now.getDate();
+}
+
+function updateBlitzMenuStates() {
+  var fs = document.getElementById('blitz-fs-btn-menu');
+  var tv = document.getElementById('blitz-tv-btn-menu');
+  var sc = document.getElementById('blitz-scroll-btn-menu');
+  var rk = document.getElementById('blitz-rookie-btn-menu');
+  var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  if (fs) { fs.classList.toggle('active', isFs); fs.innerHTML = (isFs ? '⛶ Exit Full' : '⛶ Fullscreen'); }
+  if (tv) { tv.classList.toggle('active', blitzTVMode); tv.innerHTML = (blitzTVMode ? '📺 TV ON' : '📺 TV Mode'); }
+  if (sc) { sc.classList.toggle('active', blitzScrollActive); sc.innerHTML = (blitzScrollActive ? '⏹ Stop Scroll' : '↕ Auto Scroll'); }
+  if (rk) { rk.classList.toggle('active', blitzShowRookiesOnly); rk.innerHTML = (blitzShowRookiesOnly ? '⭐ All Reps' : '⭐ Rookies Only'); }
+}
 
 
 // ── CREATE MENU VIA JS ───────────────────────────────────────────────────────
