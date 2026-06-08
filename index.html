@@ -1743,9 +1743,7 @@ function toggleBigFont() {
     btn.classList.toggle('active', tvBigFont);
     btn.innerHTML = tvBigFont ? '&#x1F4FA; TV ON' : '&#x1F4FA; TV MODE';
   }
-  // Auto scroll in TV mode only
-  if (tvBigFont && !scrollActive) { scrollActive=true; runScroll(); }
-  else if (!tvBigFont && scrollActive) { scrollActive=false; clearTimeout(scrollTimer); }
+  // Scroll is controlled by fullscreen only, not TV mode button
 }
 
 // ══ DAY BREAKDOWN ═════════════════════════════════════════════════════════════
@@ -2166,9 +2164,15 @@ function updateFsBtn() {
   var btn = document.querySelector('.tv-btn-fs');
   if (!btn) return;
   var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-  btn.textContent = isFs ? '⛶ EXIT FULL' : '⛶ FULLSCREEN';
-  if (!isFs) {
-    if (typeof tvBigFont !== 'undefined' && tvBigFont) toggleBigFont();
+  btn.textContent = isFs ? '\u26f6 EXIT FULL' : '\u26f6 FULLSCREEN';
+  if (isFs) {
+    // Entering fullscreen: enable TV mode and auto scroll
+    if (!tvBigFont) toggleBigFont();
+    if (!scrollActive) { scrollActive = true; runScroll(); }
+  } else {
+    // Exiting fullscreen: disable TV mode and stop scroll
+    if (tvBigFont) toggleBigFont();
+    if (scrollActive) { scrollActive = false; clearTimeout(scrollTimer); }
   }
 }
 
