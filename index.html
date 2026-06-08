@@ -239,6 +239,11 @@
     #badge-legend-fixed .bl-info{flex:1}
     #badge-legend-fixed .bl-name{font-size:14px;font-weight:700;display:block;line-height:1.3}
     #badge-legend-fixed .bl-amt{font-family:Orbitron,monospace;font-size:11px;color:#475569;display:block}
+
+    /* Blitz top bar button */
+    .blitz-bar-btn{padding:6px 13px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid;letter-spacing:0.5px;transition:all 0.2s;font-family:"Exo 2",sans-serif}
+    .blitz-bar-btn:hover{opacity:0.85;transform:scale(1.04)}
+    .blitz-bar-btn.active{transform:scale(1.02)}
   </style>
 </head>
 <body onclick="unlockAudio()" onkeydown="unlockAudio()">
@@ -378,7 +383,7 @@
 <canvas id="confetti-canvas" style="position:fixed;inset:0;z-index:9997;pointer-events:none;display:none"></canvas>
 
 <!-- BLITZ SCOREBOARD OVERLAY -->
-<div id="blitz-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,5,2,0.99);backdrop-filter:blur(8px);overflow-y:auto;flex-direction:column;align-items:center">
+<div id="blitz-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:linear-gradient(160deg,#FFF9E6 0%,#FFE0A0 20%,#FFD070 40%,#87CEEB 70%,#4DA8D8 100%);overflow-y:auto;flex-direction:column;align-items:center">
   <div id="blitz-auth" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px">
     <div style="font-family:Orbitron,monospace;font-size:28px;font-weight:900;color:#FFD700;letter-spacing:6px;text-shadow:0 0 30px #FFD70066">&#x2728; SPECIAL EVENT</div>
     <div style="font-family:Orbitron,monospace;font-size:13px;color:#00FF88;letter-spacing:3px;margin-bottom:8px">NOT READY YET &mdash; ADMINS ENTER PASSWORD</div>
@@ -388,16 +393,19 @@
     <button onclick="closeBlitz()" style="margin-top:8px;padding:6px 20px;border-radius:16px;background:transparent;border:1px solid rgba(255,255,255,0.1);color:#475569;font-family:Orbitron,monospace;font-size:10px;cursor:pointer">CANCEL</button>
   </div>
   <div id="blitz-board" style="display:none;width:100%;max-width:1200px;padding:20px 16px;margin:0 auto"></div>
-  <!-- Blitz Menu Button -->
-  <div id="blitz-menu-wrap" style="display:none;position:sticky;bottom:20px;float:right;margin-right:16px;z-index:9500;clear:both">
-    <button onclick="toggleBlitzMenu()" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#00FF88,#FFD700);border:none;color:#000;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(0,255,136,0.5);display:flex;align-items:center;justify-content:center">&#x2630;</button>
-    <div id="blitz-menu-panel" style="display:none;position:absolute;bottom:60px;right:0;background:rgba(0,8,4,0.97);border:1px solid rgba(0,255,136,0.2);border-radius:16px;padding:8px;width:200px;box-shadow:0 8px 40px rgba(0,0,0,0.8);backdrop-filter:blur(20px)">
-      <div style="font-family:Orbitron,monospace;font-size:9px;color:#1E293B;letter-spacing:2px;padding:6px 12px 4px">BLITZ CONTROLS</div>
-      <button class="blitz-menu-item" onclick="closeBlitz();toggleBlitzMenu()">&#x1F3E0; MAIN BOARD</button>
-      <button class="blitz-menu-item" onclick="openBlitzAdmin();toggleBlitzMenu()">&#x2699; ADMIN</button>
-      <div style="height:1px;background:rgba(0,255,136,0.1);margin:6px 4px"></div>
-      <button class="blitz-menu-item" onclick="toggleBlitzFullscreen();toggleBlitzMenu()">&#x26F6; FULLSCREEN</button>
-      <button class="blitz-menu-item" id="blitz-tv-btn" onclick="toggleBlitzTV()">&#x1F4FA; TV MODE</button>
+  <!-- Blitz Top Bar -->
+  <div id="blitz-menu-wrap" style="display:none;position:sticky;top:0;z-index:9500;width:100%;background:rgba(255,255,255,0.18);backdrop-filter:blur(12px);border-bottom:2px solid rgba(255,140,0,0.35);box-shadow:0 2px 20px rgba(255,165,0,0.2)">
+    <div style="max-width:1400px;margin:0 auto;padding:8px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <button onclick="closeBlitz()" class="blitz-bar-btn" style="background:rgba(255,80,0,0.15);border-color:rgba(255,80,0,0.5);color:#C84000">&#x1F3E0; MAIN BOARD</button>
+      <button onclick="openBlitzAdmin()" class="blitz-bar-btn" style="background:rgba(0,0,80,0.1);border-color:rgba(0,0,160,0.4);color:#1A3A8F">&#x2699; ADMIN</button>
+      <div style="width:1px;height:28px;background:rgba(0,0,0,0.15);margin:0 4px"></div>
+      <button onclick="toggleBlitzFullscreen()" class="blitz-bar-btn" id="blitz-fs-btn" style="background:rgba(255,165,0,0.15);border-color:rgba(255,165,0,0.5);color:#8B5E00">&#x26F6; FULLSCREEN</button>
+      <button onclick="toggleBlitzTV()" class="blitz-bar-btn" id="blitz-tv-btn" style="background:rgba(255,165,0,0.15);border-color:rgba(255,165,0,0.5);color:#8B5E00">&#x1F4FA; TV MODE</button>
+      <button onclick="toggleBlitzScroll()" class="blitz-bar-btn" id="blitz-scroll-btn" style="background:rgba(0,160,80,0.12);border-color:rgba(0,160,80,0.4);color:#005A2B">&#x2195; AUTO SCROLL</button>
+      <div style="width:1px;height:28px;background:rgba(0,0,0,0.15);margin:0 4px"></div>
+      <button onclick="toggleBlitzRookies()" class="blitz-bar-btn" id="blitz-rookie-btn" style="background:rgba(255,215,0,0.15);border-color:rgba(255,215,0,0.6);color:#7A5800">&#x2B50; ROOKIES ONLY</button>
+      <div style="flex:1"></div>
+      <div style="font-family:Georgia,serif;font-size:11px;font-style:italic;color:rgba(0,0,0,0.4);font-weight:600">THE SUMMERTIME BLITZ</div>
     </div>
   </div>
 </div>
@@ -2285,7 +2293,7 @@ function runScroll() {
 
 // ══ BLITZ SCOREBOARD ══════════════════════════════════════════════════════════
 var BLITZ_PW = "Mayday2015";
-var BLITZ_GOAL = 18000000;
+var BLITZ_GOAL = 17000000;
 var BLITZ_START = new Date(2026, 5, 18); // June 18
 var BLITZ_END   = new Date(2026, 5, 20, 23, 59, 59); // June 20 end
 var blitzUnlocked = false;
@@ -2503,255 +2511,367 @@ var BLITZ_MILESTONES = [
   {pct:1.00, label:"BLACKOUT", prize:"STRETCH — Sales Excellence Trip + $5K", icon:"👑"},
 ];
 
+var ROOKIE_NAMES = new Set([
+  "Matt Davis","Alishia Sunshine Richards","Brice Blocker","Daniel Fordham","Grady Flowers","Joe Powers","Julia Padgett","Len Konecny","Monty White","Robert Caruso","Tamara Thompson",
+  "Alec Dietz","Justin Stillson","Kyle Spence","Joseph Varrone","Whitney Kent","Gage Afanasiew","Gerasimos Vangelatos","Jean Jourdain","Michael Hill","William Hawrey",
+  "Dana Zadah","John Hanifin","Nick Quinn","Adhem Sharkawy","Barry Gasmer","Christopher Patkochis","Matthew Jones","Roberto Rios","Stanislav Faynerman",
+  "Andrea O'Campo","Omar Mhamdi","Alexander Victoria","Blake Gallick","Sergio Velez","Chris Andrews","Rasim Samardzic","Chris Bovell","Terry Harvey","Ryan Slavin",
+  "Andrew Haubner","Ben Laney","Ethan Young","Will Ray","Amber Gravely","Austin Davis","Jeff DeRosa","Jesse Hamadi","Stephane Alexandre","Wes Eigenauer",
+  "Corey Landon","Dan Silvernail","Kris Woodward","Travis Bruner","Daniel Blood","David Russell","Jameson Evans","Matthew Tipton","Wes Milstead","Daniel Hersey",
+  "Onelio Veloz","Michael Osheroff","Nathan McIntyre","Kimberley Prasad","Marcus Staples","Stephanie VanBenschoten","Adel Awad","Aftan Marie Burnett","Dorian Altamirano","Hunter Sikes","John Evans","Sarah Prentice","Tiffany Chan",
+  "Eric Good","George Mars","Jerry Eck","Renata Vaughn","Elizabeth Kennedy","Frank Al Taweel","James Ringler","John Ball","Vicky Bhardwaj",
+  "Larry Strunk","Matthew Dicks","Brian Bonner","Daniel Emmons","Jennifer Townsend","Jimmy Outler","Krystal Wilbanks","Maria Duarte","Mark Hall","Traci Kubach","Zachary Deal","Zachary King",
+  "Jose Gonzalez","Andrew Lane","Cody Clearman","Kevin Upton","Paul Guetter","Peter Nantista","Rand Strollo Jr.","Jason Lee","Mitchell Clark","Ryan Parr",
+  "Adrian Greenidge Jr.","Bryan Kleppe","Femi Adedoyin","Linda Campanelli","Mac McDavis Isibor","Mike Manashirov","Mo Elshafie","Chad Dulin",
+  "Marcus Santos","Randy Niswonger","Sina Faridnia","Tacoma Vaught","Richard Horancia","Ibrahim Kladnjak","Lee Jackson","Sheefat Kazi"
+]);
+var blitzShowRookiesOnly = false;
+var blitzScrollActive = false;
+var blitzScrollTimer = null;
+function toggleBlitzRookies() {
+  blitzShowRookiesOnly = !blitzShowRookiesOnly;
+  var btn = document.getElementById('blitz-rookie-btn');
+  if (btn) {
+    btn.style.background = blitzShowRookiesOnly ? 'rgba(255,215,0,0.4)' : 'rgba(255,215,0,0.15)';
+    btn.style.color = blitzShowRookiesOnly ? '#5A3A00' : '#7A5800';
+    btn.innerHTML = blitzShowRookiesOnly ? '&#x2B50; ALL REPS' : '&#x2B50; ROOKIES ONLY';
+  }
+  renderBlitz();
+}
+function toggleBlitzScroll() {
+  blitzScrollActive = !blitzScrollActive;
+  var btn = document.getElementById('blitz-scroll-btn');
+  if (btn) {
+    btn.style.background = blitzScrollActive ? 'rgba(0,160,80,0.35)' : 'rgba(0,160,80,0.12)';
+    btn.innerHTML = blitzScrollActive ? '&#x23F9; STOP SCROLL' : '&#x2195; AUTO SCROLL';
+  }
+  if (blitzScrollActive) runBlitzScroll(); else clearTimeout(blitzScrollTimer);
+}
+function runBlitzScroll() {
+  if (!blitzScrollActive) return;
+  var overlay = document.getElementById('blitz-overlay');
+  if (!overlay) return;
+  var atBottom = overlay.scrollTop + overlay.clientHeight >= overlay.scrollHeight - 4;
+  if (atBottom) { overlay.scrollTop = 0; blitzScrollTimer = setTimeout(runBlitzScroll, 2500); }
+  else { overlay.scrollTop += 1.2; blitzScrollTimer = setTimeout(runBlitzScroll, 16); }
+}
+document.addEventListener('fullscreenchange', function() {
+  var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  var fsBtn = document.getElementById('blitz-fs-btn');
+  if (fsBtn) fsBtn.innerHTML = isFs ? '&#x26F6; EXIT FULL' : '&#x26F6; FULLSCREEN';
+  if (isFs) {
+    if (!blitzTVMode) toggleBlitzTV();
+    if (!blitzScrollActive) toggleBlitzScroll();
+  } else {
+    if (blitzTVMode) toggleBlitzTV();
+    if (blitzScrollActive) toggleBlitzScroll();
+  }
+});
 var blitzMilestoneSeeded = false;
 var blitzMilestoneReached = {};
 
 function renderBlitz() {
   var bd = getBlitzData();
   if (!bd) {
-    document.getElementById("blitz-board").innerHTML = '<div style="text-align:center;padding:40px;color:#475569;font-family:Orbitron,monospace">NO DATA AVAILABLE</div>';
+    document.getElementById("blitz-board").innerHTML = '<div style="text-align:center;padding:40px;color:#8B5E00;font-family:Georgia,serif;font-size:18px">No data available</div>';
     return;
   }
-
   var board = document.getElementById("blitz-board");
-  var goal17 = 17000000;
-  var goal18 = BLITZ_GOAL; // 18M stretch
-  var pct17 = Math.min((bd.total/goal17)*100,110).toFixed(1);
-  var pct18 = Math.min((bd.total/goal18)*100,110).toFixed(1);
+  var goal = BLITZ_GOAL; // 17M
+  var totalToShow = bd.total;
 
-  // Check milestone progress for glow
-  var reached = [];
-  BLITZ_MILESTONES.forEach(function(m,i){
-    if(bd.total >= m.pct * goal18) reached.push(i);
-  });
+  // Filter rookies if toggle on
+  var filteredBd = bd;
+  if (blitzShowRookiesOnly) {
+    filteredBd = filterBlitzRookies(bd);
+  }
 
   board.innerHTML =
-    // ── TITLE ──────────────────────────────────────────────────────────
     '<style>'+
-    '@keyframes blitz-glow{0%,100%{text-shadow:0 0 20px #00FF88,0 0 40px #00FF8866}50%{text-shadow:0 0 40px #FFD700,0 0 80px #FFD70066}}'+
-    '@keyframes blitz-arc{0%{opacity:0.3;transform:scaleX(0.8)}50%{opacity:1;transform:scaleX(1)}100%{opacity:0.3;transform:scaleX(0.8)}}'+
-    '@keyframes blitz-pulse{0%,100%{box-shadow:0 0 10px #00FF8833}50%{box-shadow:0 0 30px #00FF88,0 0 60px #00FF8844}}'+
-    '@keyframes prize-glow{0%,100%{box-shadow:0 0 8px #FFD70033,inset 0 0 8px #FFD70011}50%{box-shadow:0 0 20px #FFD700,0 0 40px #FFD70066,inset 0 0 16px #FFD70022}}'+
-    '@keyframes electric{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}'+
-    '.blitz-card{background:rgba(0,15,8,0.85);border:1px solid rgba(0,255,136,0.15);border-radius:14px;padding:14px 16px;margin-bottom:12px}'+
-    '.blitz-rep-row{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(0,255,136,0.06)}'+
-    '.blitz-rep-row:last-child{border-bottom:none}'+
-    '.blitz-badge{font-size:9px;padding:1px 6px;border-radius:8px;font-family:Orbitron,monospace;font-weight:700;display:inline-block;margin:1px}'+
+    '@import url("https://fonts.googleapis.com/css2?family=Pacifico&family=Exo+2:wght@300;400;600;700;900&display=swap");'+
+    '@keyframes sunRay{0%,100%{opacity:0.5;transform:rotate(0deg) scaleX(1)}50%{opacity:0.9;transform:rotate(1deg) scaleX(1.03)}}'+
+    '@keyframes wave{0%,100%{transform:translateX(0)}50%{transform:translateX(-8px)}}'+
+    '@keyframes unlockPop{0%{transform:scale(0.8);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}'+
+    '@keyframes shimmerSun{0%{background-position:-200% center}100%{background-position:200% center}}'+
+    '@keyframes podiumGlow{0%,100%{box-shadow:0 0 10px rgba(255,215,0,0.4)}50%{box-shadow:0 0 25px rgba(255,215,0,0.9),0 0 50px rgba(255,165,0,0.4)}}'+
+    '@keyframes rookieStar{0%,100%{transform:scale(1) rotate(0deg)}50%{transform:scale(1.2) rotate(15deg)}}'+
+    '.blitz-s-card{background:rgba(255,255,255,0.65);backdrop-filter:blur(10px);border:1px solid rgba(255,165,0,0.3);border-radius:16px;padding:14px 16px;margin-bottom:12px;box-shadow:0 4px 20px rgba(255,140,0,0.1)}'+
+    '.blitz-s-rep{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid rgba(0,0,0,0.07);border-radius:8px}'+
+    '.blitz-s-rep:last-child{border-bottom:none}'+
+    '.blitz-s-badge{font-size:9px;padding:2px 6px;border-radius:8px;font-weight:700;display:inline-block;margin:1px;font-family:"Exo 2",sans-serif}'+
+    '.blitz-bar-btn{padding:6px 13px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid;letter-spacing:0.5px;transition:all 0.2s;font-family:"Exo 2",sans-serif}'+
+    '.blitz-bar-btn:hover{transform:scale(1.05)}'+
+    '.rookie-star{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:50%;font-size:9px;font-weight:900;color:#5A3A00;margin-left:4px;border:1.5px solid #FFD700;animation:rookieStar 3s ease-in-out infinite;flex-shrink:0;vertical-align:middle}'+
+    '.prize-locked{background:rgba(255,255,255,0.3);border:1px solid rgba(0,0,0,0.12)}'+
+    '.prize-unlocked{background:linear-gradient(135deg,rgba(255,215,0,0.25),rgba(255,165,0,0.15));border:1.5px solid rgba(255,165,0,0.6);animation:unlockPop 0.5s ease both}'+
+    '.prize-next{background:rgba(255,255,255,0.5);border:2px dashed rgba(255,140,0,0.6)}'+
+    '.podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:12px}'+
+    '.podium-col{display:flex;flex-direction:column;align-items:center;gap:4px}'+
+    '.podium-block{display:flex;align-items:center;justify-content:center;border-radius:6px 6px 0 0;font-family:Orbitron,monospace;font-size:14px;font-weight:900}'+
+    '.hunt-badge{background:linear-gradient(90deg,rgba(100,180,255,0.2),rgba(100,180,255,0.1));border:1px solid rgba(100,180,255,0.5);border-radius:8px;padding:5px 10px;margin-bottom:4px;font-size:11px;color:#1A3A8F}'+
     '</style>'+
-
-    '<div style="text-align:center;margin-bottom:20px;position:relative">'+
-      '<div style="font-family:Orbitron,monospace;font-size:clamp(28px,5vw,52px);font-weight:900;color:#00FF88;letter-spacing:8px;animation:blitz-glow 2s ease-in-out infinite">⚡ BLITZ</div>'+
-      '<div style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:4px;margin-top:4px">JUNE 18–20 · SPECIAL EVENT</div>'+
-      '<div style="height:2px;background:linear-gradient(90deg,transparent,#00FF88,#FFD700,#00FF88,transparent);margin:12px 0;animation:blitz-arc 2s ease-in-out infinite"></div>'+
-    '</div>'+
-
-    // ── TWO COLUMN LAYOUT: milestones left, board right ───────────────
-    '<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">'+
-
-      // ── LEFT: Milestone tracker ──────────────────────────────────────
-      '<div style="width:260px;flex-shrink:0">'+
-        '<div style="font-family:Orbitron,monospace;font-size:10px;color:#00FF88;letter-spacing:2px;margin-bottom:10px;text-align:center">🏆 MILESTONE PRIZES</div>'+
-        renderBlitzMilestones(bd.total, goal18, reached)+
-      '</div>'+
-
-      // ── RIGHT: Main board ────────────────────────────────────────────
+    renderBlitzTopProgress(totalToShow, goal)+
+    '<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;max-width:1400px;margin:0 auto;padding:0 16px 20px">'+
+      '<div style="width:240px;flex-shrink:0">'+renderBlitzPrizes(totalToShow, goal)+'</div>'+
       '<div style="flex:1;min-width:300px">'+
-        // Progress bars
-        '<div class="blitz-card" style="border-color:rgba(0,255,136,0.3);animation:blitz-pulse 3s ease-in-out infinite;margin-bottom:14px">'+
-          '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">'+
-            '<div style="font-family:Orbitron,monospace;font-size:24px;font-weight:900;color:#00FF88">'+fmtB(bd.total)+'</div>'+
-            '<div style="font-size:11px;color:#475569;font-family:Orbitron,monospace">BLITZ TOTAL</div>'+
-          '</div>'+
-          '<div style="font-family:Orbitron,monospace;font-size:10px;color:#475569;margin-bottom:4px">MAIN GOAL — '+fmtB(goal17)+' ('+pct17+'%)</div>'+
-          '<div style="height:14px;background:rgba(255,255,255,0.05);border-radius:7px;overflow:hidden;margin-bottom:8px">'+
-            '<div style="height:100%;width:'+Math.min(pct17,100)+'%;background:linear-gradient(90deg,#00FF88,#FFD700);border-radius:7px;box-shadow:0 0 12px #00FF8866;animation:electric 3s ease infinite;background-size:200% 200%"></div>'+
-          '</div>'+
-          '<div style="font-family:Orbitron,monospace;font-size:10px;color:#FFD700;margin-bottom:4px">STRETCH GOAL — '+fmtB(goal18)+' ('+pct18+'%)</div>'+
-          '<div style="height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden">'+
-            '<div style="height:100%;width:'+Math.min(pct18,100)+'%;background:linear-gradient(90deg,#FFD700,#FF6B35);border-radius:4px;box-shadow:0 0 8px #FFD70066"></div>'+
-          '</div>'+
-        '</div>'+
-
-        // Day by day + Biggest Daily Blitzer
-        renderBlitzDayByDay(bd)+
-        renderBiggestDailyBlitzer(bd)+
-
-        // Top 10
-        '<div class="blitz-card" style="margin-bottom:14px">'+
-          '<div style="font-family:Orbitron,monospace;font-size:10px;color:#FFD700;letter-spacing:2px;margin-bottom:10px">🏆 TOP 10 OVERALL</div>'+
-          renderBlitzLeaderboard(bd.allReps.slice(0,10))+
-        '</div>'+
-
-        // Brackets
-        renderBlitzBrackets(bd)+
+        renderBlitzBracketsNew(filteredBd)+
+        renderBlitzLeaderboardNew(filteredBd)+
       '</div>'+
-    '</div>'+
-
-    '<div style="text-align:center;padding:20px 0">'+
-      '<button onclick="closeBlitz()" style="padding:8px 28px;border-radius:20px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:#00FF88;font-family:Orbitron,monospace;font-size:11px;cursor:pointer;letter-spacing:2px">✕ CLOSE</button>'+
     '</div>';
 }
 
-function renderBlitzMilestones(total, goal, reached) {
-  return BLITZ_MILESTONES.map(function(m,i){
-    var isReached = total >= m.pct * goal;
-    var isCurrent = !isReached && (i===0 || total >= BLITZ_MILESTONES[i-1].pct*goal);
-    var target = fmtB(m.pct * goal);
-    var glow = isReached ? 'animation:prize-glow 2s ease-in-out infinite;' : '';
-    var bg = isReached ? 'background:rgba(0,255,136,0.1);border-color:rgba(0,255,136,0.4);' :
-             isCurrent ? 'background:rgba(255,215,0,0.06);border-color:rgba(255,215,0,0.3);' :
-             'background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.07);';
-    return '<div style="border:1px solid;border-radius:12px;padding:10px 12px;margin-bottom:8px;'+bg+glow+'">'+
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'+
-        '<span style="font-size:'+(isReached?'18':'14')+'px">'+m.icon+'</span>'+
-        '<div>'+
-          '<div style="font-family:Orbitron,monospace;font-size:10px;font-weight:700;color:'+(isReached?'#00FF88':isCurrent?'#FFD700':'#334155')+'">'+m.label+'</div>'+
-          '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155">'+target+'</div>'+
-        '</div>'+
-        (isReached?'<span style="margin-left:auto;color:#00FF88;font-size:14px">✓</span>':'')+
-      '</div>'+
-      '<div style="font-size:11px;color:'+(isReached?'#FFD700':isCurrent?'#94A3B8':'#1E293B')+'">'+m.prize+'</div>'+
-    '</div>';
-  }).join('');
-}
-
-function renderBlitzDayByDay(bd) {
-  // Group demo reps by day — use deal dates when available
-  var days = {"Jun 18":0,"Jun 19":0,"Jun 20":0};
-  // For demo, distribute total across days
-  if (bd.total === BLITZ_DEMO.total) {
-    days["Jun 18"] = bd.total * 0.28;
-    days["Jun 19"] = bd.total * 0.45;
-    days["Jun 20"] = bd.total * 0.27;
-  } else {
-    Object.values(bd.brackets).forEach(function(b){
-      Object.values(b.teams).forEach(function(t){
-        t.reps.forEach(function(r){
-          (r.deals||[]).forEach(function(d){
-            if(!d.date) return;
-            var dd = new Date(d.date);
-            var key = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][dd.getMonth()]+' '+dd.getDate();
-            days[key] = (days[key]||0) + d.amount;
-          });
-        });
-      });
+function filterBlitzRookies(bd) {
+  var result = { total: 0, brackets: {}, allReps: [] };
+  Object.entries(bd.brackets).forEach(function(e) {
+    var bName = e[0], bracket = e[1];
+    var newBracket = { total: 0, teams: {}, color: bracket.color, accent: bracket.accent };
+    Object.entries(bracket.teams).forEach(function(te) {
+      var tName = te[0], team = te[1];
+      var rookieReps = team.reps.filter(function(r){ return ROOKIE_NAMES.has(r.name); });
+      if (rookieReps.length > 0) {
+        var tt = rookieReps.reduce(function(s,r){return s+r.amount;},0);
+        newBracket.teams[tName] = { total: tt, display: team.display, color: team.color, reps: rookieReps };
+        newBracket.total += tt;
+        result.total += tt;
+        rookieReps.forEach(function(r){ result.allReps.push({name:r.name,amount:r.amount,store:team.display,color:team.color,bracket:bName}); });
+      }
     });
-  }
-  var entries = Object.entries(days).filter(function(e){return e[1]>0;});
-  if (!entries.length) return '';
-  var maxVal = Math.max.apply(null, entries.map(function(e){return e[1];}));
-  var bars = entries.map(function(e){
-    var pct = Math.max(8,(e[1]/maxVal)*100);
-    return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:4px">'+
-      '<div style="font-family:Orbitron,monospace;font-size:9px;color:#00FF88">'+fmtB(e[1])+'</div>'+
-      '<div style="width:100%;height:60px;display:flex;align-items:flex-end">'+
-        '<div style="width:100%;height:'+pct+'%;background:linear-gradient(180deg,#FFD700,#00FF88);border-radius:4px 4px 0 0;box-shadow:0 0 8px #00FF8866;min-height:6px"></div>'+
-      '</div>'+
-      '<div style="font-family:Orbitron,monospace;font-size:9px;color:#475569">'+e[0]+'</div>'+
-    '</div>';
-  }).join('');
-  return '<div class="blitz-card" style="margin-bottom:14px">'+
-    '<div style="font-family:Orbitron,monospace;font-size:10px;color:#00FF88;letter-spacing:2px;margin-bottom:10px">📅 DAY BY DAY</div>'+
-    '<div style="display:flex;gap:8px;align-items:flex-end;height:90px">'+bars+'</div>'+
-  '</div>';
+    if (Object.keys(newBracket.teams).length > 0) result.brackets[bName] = newBracket;
+  });
+  result.allReps.sort(function(a,b){return b.amount-a.amount;});
+  return result;
 }
 
-function renderBiggestDailyBlitzer(bd) {
-  // Find top rep by single-day performance (use total for demo)
-  var topRep = bd.allReps[0];
-  if (!topRep) return '';
-  return '<div class="blitz-card" style="border-color:rgba(255,215,0,0.2);margin-bottom:14px;animation:prize-glow 3s ease-in-out infinite">'+
-    '<div style="font-family:Orbitron,monospace;font-size:10px;color:#FFD700;letter-spacing:2px;margin-bottom:10px">⚡ BIGGEST DAILY BLITZER</div>'+
-    '<div style="display:flex;align-items:center;gap:12px">'+
-      '<div style="font-size:32px">🥇</div>'+
-      '<div>'+
-        '<div style="font-size:16px;font-weight:700;color:#E2E8F0">'+topRep.name+'</div>'+
-        '<div style="font-family:Orbitron,monospace;font-size:10px;color:#00FF88">'+topRep.store+'</div>'+
+function renderBlitzTopProgress(total, goal) {
+  var pct = Math.min((total/goal)*100, 105);
+  var millions = Math.floor(total/1000000);
+  return '<div style="background:linear-gradient(135deg,rgba(255,255,255,0.7),rgba(255,240,180,0.6));backdrop-filter:blur(12px);border-bottom:2px solid rgba(255,140,0,0.3);padding:16px 24px;position:sticky;top:52px;z-index:100">'+
+    '<div style="max-width:1400px;margin:0 auto">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">'+
+        '<div style="font-family:Pacifico,Georgia,serif;font-size:clamp(22px,4vw,38px);color:#C84000;text-shadow:2px 2px 0 rgba(255,255,255,0.8)">'+
+          '&#x2600;&#xFE0F; The Summertime Blitz!</div>'+
+        '<div style="text-align:right">'+
+          '<div style="font-family:Orbitron,monospace;font-size:clamp(20px,3.5vw,34px);font-weight:900;color:#1A3A8F">'+fmtB(total)+'</div>'+
+          '<div style="font-family:\'Exo 2\',sans-serif;font-size:11px;color:#8B5E00;font-weight:600">of '+fmtB(goal)+' goal · '+pct.toFixed(1)+'%</div>'+
+        '</div>'+
       '</div>'+
-      '<div style="margin-left:auto;font-family:Orbitron,monospace;font-size:22px;font-weight:900;color:#FFD700">'+fmtB(topRep.amount)+'</div>'+
+      '<div style="height:22px;background:rgba(255,255,255,0.4);border-radius:11px;overflow:hidden;border:1px solid rgba(255,140,0,0.3);position:relative">'+
+        '<div style="height:100%;width:'+Math.min(pct,100)+'%;background:linear-gradient(90deg,#FF6B00,#FFD700,#FF8C00);border-radius:11px;box-shadow:0 0 16px rgba(255,165,0,0.6);transition:width 1.2s;position:relative">'+
+          '<div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(255,255,255,0.15) 8px,rgba(255,255,255,0.15) 16px);border-radius:11px"></div>'+
+        '</div>'+
+        (pct >= 5 ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Orbitron,monospace;font-size:11px;font-weight:900;color:'+(pct>50?'#fff':'#8B5E00')+'">'+millions+'M / 17M</div>' : '')+
+      '</div>'+
+      '<div style="display:flex;margin-top:4px">'+
+        [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17].map(function(m){
+          var unlocked = total >= m*1000000;
+          return '<div style="flex:1;height:6px;margin:0 1px;border-radius:3px;background:'+(unlocked?'rgba(255,140,0,0.7)':'rgba(0,0,0,0.1)')+'"></div>';
+        }).join('')+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;font-family:\'Exo 2\',sans-serif;font-size:9px;color:rgba(0,0,0,0.35);margin-top:1px">'+
+        '<span>$1M</span><span>$5M</span><span>$9M</span><span>$13M</span><span>$17M</span>'+
+      '</div>'+
     '</div>'+
   '</div>';
 }
 
-function renderBlitzLeaderboard(reps) {
-  var medals=["🥇","🥈","🥉"];
-  return reps.map(function(r,i){
-    return '<div class="blitz-rep-row">'+
-      '<span style="width:22px;text-align:center;font-size:'+(i<3?'15':'10')+'px;flex-shrink:0">'+
-        (i<3?medals[i]:'<span style="font-family:Orbitron,monospace;color:#1E293B">#'+(i+1)+'</span>')+
-      '</span>'+
-      '<div style="flex:1">'+
-        '<div style="font-size:12px;font-weight:700;color:#E2E8F0">'+r.name+'</div>'+
-        '<div style="font-size:9px;color:'+(r.color||'#00FF88')+';font-family:Orbitron,monospace">'+r.store+'</div>'+
-      '</div>'+
-      '<div style="font-family:Orbitron,monospace;font-size:12px;font-weight:700;color:#FFD700">'+fmtB(r.amount)+'</div>'+
+var BLITZ_PRIZES = [
+  {label:"$500 Cash",          icon:"💵", tier:"cash"},
+  {label:"$500 Cash",          icon:"💵", tier:"cash"},
+  {label:"$500 Cash",          icon:"💵", tier:"cash"},
+  {label:"$500 Cash",          icon:"💵", tier:"cash"},
+  {label:"$500 Cash",          icon:"💵", tier:"cash"},
+  {label:"Concert Tickets 🎸", icon:"🎵", tier:"concert"},
+  {label:"Concert Tickets 🎸", icon:"🎵", tier:"concert"},
+  {label:"Concert Tickets 🎸", icon:"🎵", tier:"concert"},
+  {label:"Event Tickets 🎟️",  icon:"🎟", tier:"event"},
+  {label:"Event Tickets 🎟️",  icon:"🎟", tier:"event"},
+  {label:"$1,000 Cash",        icon:"💰", tier:"grand"},
+  {label:"$1,000 Cash",        icon:"💰", tier:"grand"},
+  {label:"$1,000 Cash",        icon:"💰", tier:"grand"},
+  {label:"New iPad 📱",         icon:"📱", tier:"tech"},
+  {label:"New Set of Tires 🚗",icon:"🚗", tier:"wheels"},
+  {label:"Big Green Egg 🍖",   icon:"🍖", tier:"grill"},
+  {label:"Trip for Two! ✈️",   icon:"✈️", tier:"trip"},
+];
+
+var PRIZE_COLORS = {
+  cash:    {bg:"rgba(0,160,60,0.15)",  border:"rgba(0,160,60,0.5)",   text:"#005A2B"},
+  concert: {bg:"rgba(168,85,247,0.15)",border:"rgba(168,85,247,0.5)", text:"#5B21B6"},
+  event:   {bg:"rgba(59,130,246,0.15)",border:"rgba(59,130,246,0.5)", text:"#1E40AF"},
+  grand:   {bg:"rgba(255,165,0,0.15)", border:"rgba(255,165,0,0.6)",  text:"#8B5E00"},
+  tech:    {bg:"rgba(0,180,200,0.15)", border:"rgba(0,180,200,0.5)",  text:"#0E5E6F"},
+  wheels:  {bg:"rgba(100,100,100,0.15)",border:"rgba(100,100,100,0.5)",text:"#374151"},
+  grill:   {bg:"rgba(220,80,0,0.15)",  border:"rgba(220,80,0,0.5)",   text:"#7C2D12"},
+  trip:    {bg:"rgba(255,80,120,0.15)",border:"rgba(255,80,120,0.6)", text:"#881337"},
+};
+
+function renderBlitzPrizes(total, goal) {
+  var millions = total / 1000000;
+  var html = '<div style="font-family:Pacifico,Georgia,serif;font-size:15px;color:#C84000;text-align:center;margin-bottom:10px">🏆 Prize Unlock Track</div>';
+  BLITZ_PRIZES.forEach(function(prize, i) {
+    var milestone = i + 1; // unlock at $1M, $2M, ... $17M
+    var unlocked = millions >= milestone;
+    var isNext = !unlocked && millions >= milestone - 1;
+    var c = PRIZE_COLORS[prize.tier];
+    var cls = unlocked ? 'prize-unlocked' : isNext ? 'prize-next' : 'prize-locked';
+    html += '<div class="'+cls+'" style="border-radius:10px;padding:7px 10px;margin-bottom:5px;display:flex;align-items:center;gap:8px;'+
+      (unlocked ? 'background:'+c.bg+';border:1.5px solid '+c.border+';' : '')+
+      (isNext ? 'box-shadow:0 0 12px rgba(255,140,0,0.3);' : '')+'">';
+    html += '<div style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;'+
+      'background:'+(unlocked?c.bg:'rgba(0,0,0,0.06)')+'border:1px solid '+(unlocked?c.border:'rgba(0,0,0,0.15)')+'">'+
+      (unlocked ? '✓' : isNext ? '⟳' : milestone)+'</div>';
+    html += '<div style="flex:1;min-width:0">'+
+      '<div style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:700;color:'+(unlocked?c.text:isNext?'#8B5E00':'#94A3B8')+'">'+prize.label+'</div>'+
+      '<div style="font-family:Orbitron,monospace;font-size:9px;color:'+(unlocked?c.text:'#CBD5E1')+';opacity:0.7">at $'+milestone+'M</div>'+
     '</div>';
-  }).join('');
+    if (unlocked) html += '<span style="font-size:16px">'+prize.icon+'</span>';
+    html += '</div>';
+  });
+  return '<div class="blitz-s-card">'+html+'</div>';
 }
 
-function renderBlitzBrackets(bd) {
-  return Object.entries(bd.brackets).map(function(e){
-    var bName=e[0], bracket=e[1];
-    if(!bracket.total) return '';
-    var color=bracket.color, accent=bracket.accent;
-    var sortedTeams=Object.entries(bracket.teams).sort(function(a,b){return b[1].total-a[1].total;});
-    var bracketReps=[];
+function renderBlitzPodium(bracketReps, color, accent) {
+  // top 3 podium + 2 "in the hunt"
+  var top = bracketReps.slice(0, 5);
+  if (top.length === 0) return '';
+  var podiumOrder = top.length >= 3 ? [top[1], top[0], top[2]] : top.length === 2 ? [top[0], top[1]] : [top[0]];
+  var heights = [70, 95, 55]; // silver, gold, bronze heights
+  var podColors = ['#C0C0C0','#FFD700','#CD7F32'];
+  var podLabels = ['🥈','🥇','🥉'];
+  var centerIdx = top.length >= 2 ? 1 : 0;
+  
+  var podHtml = '<div class="podium-wrap">';
+  podiumOrder.forEach(function(rep, pi) {
+    if (!rep) return;
+    var h = heights[pi] || 55;
+    var pc = podColors[pi] || '#94A3B8';
+    var pl = podLabels[pi] || '#'+(pi+3);
+    var isRookie = ROOKIE_NAMES.has(rep.name);
+    podHtml += '<div class="podium-col">'+
+      '<div style="font-size:9px;font-family:\'Exo 2\',sans-serif;font-weight:700;color:#374151;text-align:center;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+
+        rep.name+(isRookie?'<span class="rookie-star" style="animation:none;display:inline-flex;width:14px;height:14px;font-size:7px;margin-left:2px">R</span>':'')+
+      '</div>'+
+      '<div style="font-family:Orbitron,monospace;font-size:10px;font-weight:900;color:'+pc+';text-align:center">'+fmtB(rep.amount)+'</div>'+
+      '<div class="podium-block" style="width:80px;height:'+h+'px;background:linear-gradient(180deg,'+pc+'40,'+pc+'20);border:2px solid '+pc+';'+(pi===centerIdx?'animation:podiumGlow 2s ease-in-out infinite;':'')+'">'+
+        '<span style="font-size:'+(pi===centerIdx?'24':'18')+'px">'+pl+'</span>'+
+      '</div>'+
+    '</div>';
+  });
+  podHtml += '</div>';
+
+  // "In the Hunt" 4th and 5th
+  if (top.length >= 4) {
+    podHtml += '<div style="margin-bottom:6px">';
+    top.slice(3, 5).forEach(function(rep, i) {
+      var isRookie = ROOKIE_NAMES.has(rep.name);
+      podHtml += '<div class="hunt-badge" style="display:flex;align-items:center;gap:6px">'+
+        '<span style="font-size:12px">🎯</span>'+
+        '<span style="font-family:\'Exo 2\',sans-serif;font-size:11px;font-weight:700;color:#1A3A8F">'+rep.name+(isRookie?'<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px">R</span>':'')+'</span>'+
+        '<span style="margin-left:auto;font-family:Orbitron,monospace;font-size:10px;font-weight:700;color:#1A3A8F">'+fmtB(rep.amount)+'</span>'+
+        '<span style="font-size:9px;color:#6B9ED4;font-weight:700;font-family:\'Exo 2\',sans-serif">IN THE HUNT</span>'+
+      '</div>';
+    });
+    podHtml += '</div>';
+  }
+  return podHtml;
+}
+
+function blitzRepBadges(rep, teamReps, isTeamLeader, isMostDeals, bracketReps) {
+  var badges = [];
+  var isRookie = ROOKIE_NAMES.has(rep.name);
+  // Individual amount badge (same thresholds as main board)
+  var indBadge = getBadge(rep.amount);
+  if (indBadge) badges.push('<span class="blitz-s-badge" style="background:rgba('+hexToRgb(indBadge.color)+',0.15);border:1px solid rgba('+hexToRgb(indBadge.color)+',0.5);color:'+indBadge.color+'">'+indBadge.icon+' '+indBadge.label+'</span>');
+  if (isTeamLeader) badges.push('<span class="blitz-s-badge" style="background:rgba(255,165,0,0.15);border:1px solid rgba(255,165,0,0.5);color:#8B5E00">⚡ LEADER</span>');
+  if (isMostDeals) badges.push('<span class="blitz-s-badge" style="background:rgba(255,80,0,0.12);border:1px solid rgba(255,80,0,0.4);color:#C84000">🔥 MOST DEALS</span>');
+  // bracket rank badge
+  var bRank = bracketReps.findIndex(function(r){return r.name===rep.name;});
+  if (bRank === 0) badges.push('<span class="blitz-s-badge" style="background:rgba(255,215,0,0.2);border:1px solid rgba(255,215,0,0.6);color:#7A5800">🏅 BRACKET #1</span>');
+  return badges.join('') + (isRookie ? '<span class="rookie-star">R</span>' : '');
+}
+
+function hexToRgb(hex) {
+  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return r+','+g+','+b;
+}
+
+function renderBlitzBracketsNew(bd) {
+  var bracketOrder = ['Large Markets','Medium Markets','Small Markets'];
+  var bracketBg = {
+    'Large Markets':  'linear-gradient(135deg,rgba(0,200,100,0.08),rgba(255,215,0,0.06))',
+    'Medium Markets': 'linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,165,0,0.06))',
+    'Small Markets':  'linear-gradient(135deg,rgba(100,180,255,0.1),rgba(0,212,255,0.06))',
+  };
+  var bracketBorder = {
+    'Large Markets':  'rgba(0,160,60,0.3)',
+    'Medium Markets': 'rgba(255,165,0,0.4)',
+    'Small Markets':  'rgba(0,150,220,0.35)',
+  };
+  var bracketLabel = {
+    'Large Markets':  '🌊 Large Markets',
+    'Medium Markets': '☀️ Medium Markets',
+    'Small Markets':  '🌴 Small Markets',
+  };
+
+  return bracketOrder.map(function(bName) {
+    var bracket = bd.brackets[bName];
+    if (!bracket || !bracket.total) return '';
+    var color = bracket.color, accent = bracket.accent;
+    var sortedTeams = Object.entries(bracket.teams).sort(function(a,b){return b[1].total-a[1].total;});
+    var bracketReps = [];
     sortedTeams.forEach(function(te){
-      var t=te[1];
-      t.reps.forEach(function(r){bracketReps.push({name:r.name,amount:r.amount,store:t.display,color:t.color||color});});
+      te[1].reps.forEach(function(r){bracketReps.push({name:r.name,amount:r.amount,store:te[1].display,color:te[1].color||color});});
     });
     bracketReps.sort(function(a,b){return b.amount-a.amount;});
-    var maxT = sortedTeams[0]?sortedTeams[0][1].total:1;
+    var maxT = sortedTeams[0] ? sortedTeams[0][1].total : 1;
 
-    return '<div class="blitz-card" style="border-color:'+color+'33;margin-bottom:14px">'+
-      // Bracket header
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid '+color+'22">'+
-        '<div style="font-family:Orbitron,monospace;font-size:12px;font-weight:900;color:'+color+';letter-spacing:2px;text-shadow:0 0 12px '+color+'66">'+bName.toUpperCase()+'</div>'+
-        '<div style="font-family:Orbitron,monospace;font-size:16px;font-weight:700;color:'+accent+'">'+fmtB(bracket.total)+'</div>'+
+    return '<div style="background:'+bracketBg[bName]+';border:1.5px solid '+(bracketBorder[bName]||'rgba(0,0,0,0.1)')+';border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 20px rgba(0,0,0,0.06)">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(0,0,0,0.1)">'+
+        '<div style="font-family:Pacifico,Georgia,serif;font-size:16px;color:#1A3A8F">'+bracketLabel[bName]+'</div>'+
+        '<div style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:#C84000">'+fmtB(bracket.total)+'</div>'+
       '</div>'+
 
-      // Team bar chart
+      // Podium
+      renderBlitzPodium(bracketReps, color, accent)+
+
+      // Market bar chart
       '<div style="margin-bottom:12px">'+
         sortedTeams.map(function(te,i){
           var t=te[1], pct=Math.max(4,(t.total/maxT)*100);
           var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-          return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
+          return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'+
             '<span style="font-size:'+(i<3?'14':'10')+'px;width:20px;text-align:center">'+
-              (medal||'<span style="font-family:Orbitron,monospace;font-size:9px;color:#1E293B">#'+(i+1)+'</span>')+
+              (medal||'<span style="font-family:Orbitron,monospace;font-size:9px;color:#94A3B8">#'+(i+1)+'</span>')+
             '</span>'+
-            '<div style="width:110px;font-size:11px;color:#CBD5E1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.display+'</div>'+
-            '<div style="flex:1;height:16px;background:rgba(255,255,255,0.04);border-radius:8px;overflow:hidden">'+
-              '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,'+color+','+color+'88);border-radius:8px;box-shadow:0 0 6px '+color+'44;transition:width 1s"></div>'+
+            '<div style="width:100px;font-family:\'Exo 2\',sans-serif;font-size:11px;color:#374151;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.display+'</div>'+
+            '<div style="flex:1;height:14px;background:rgba(0,0,0,0.07);border-radius:7px;overflow:hidden">'+
+              '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#FF6B00,#FFD700);border-radius:7px;box-shadow:0 0 6px rgba(255,165,0,0.4);transition:width 1s"></div>'+
             '</div>'+
-            '<div style="font-family:Orbitron,monospace;font-size:10px;color:'+color+';width:72px;text-align:right;font-weight:700">'+fmtB(t.total)+'</div>'+
+            '<div style="font-family:Orbitron,monospace;font-size:10px;color:#C84000;width:70px;text-align:right;font-weight:700">'+fmtB(t.total)+'</div>'+
           '</div>';
         }).join('')+
       '</div>'+
 
-      // Team cards with reps + badges
-      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">'+
+      // Team detail cards
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px">'+
         sortedTeams.map(function(te){
           var tName=te[0], t=te[1];
-          var teamBigDeal=t.reps[0]?t.reps[0].name:'';
-          var teamBigAmt=t.reps[0]?t.reps[0].amount:0;
           var mostDealsRep=''; var mostDealsN=0;
           t.reps.forEach(function(r){var n=(r.deals||[r]).length;if(n>mostDealsN){mostDealsN=n;mostDealsRep=r.name;}});
-          return '<div style="background:rgba(0,0,0,0.3);border:1px solid '+t.color+'22;border-radius:12px;overflow:hidden">'+
-            '<div style="padding:8px 12px;border-bottom:1px solid '+t.color+'15;display:flex;justify-content:space-between;align-items:center">'+
-              '<div style="font-family:Orbitron,monospace;font-size:11px;font-weight:700;color:'+t.color+'">'+t.display+'</div>'+
-              '<div style="font-family:Orbitron,monospace;font-size:13px;font-weight:900;color:#FFD700">'+fmtB(t.total)+'</div>'+
+          return '<div style="background:rgba(255,255,255,0.55);border:1px solid rgba(0,0,0,0.1);border-radius:12px;overflow:hidden">'+
+            '<div style="padding:8px 12px;border-bottom:1px solid rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg,rgba(255,165,0,0.12),transparent)">'+
+              '<div style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:700;color:#374151">'+t.display+'</div>'+
+              '<div style="font-family:Orbitron,monospace;font-size:13px;font-weight:900;color:#C84000">'+fmtB(t.total)+'</div>'+
             '</div>'+
             t.reps.map(function(r,ri){
-              var badges=[];
-              if(ri===0) badges.push('<span class="blitz-badge" style="color:#FFD700;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.35)">⚡ LEADER</span>');
-              if(r.name===teamBigDeal&&t.reps.length>1) badges.push('<span class="blitz-badge" style="color:#00FF88;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3)">💰 BIG DEAL</span>');
-              if(r.name===mostDealsRep&&mostDealsN>1) badges.push('<span class="blitz-badge" style="color:#00D4FF;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25)">🔥 MOST DEALS</span>');
-              var rankColor=ri===0?'#FFD700':ri<=2?t.color:'#334155';
-              return '<div class="blitz-rep-row">'+
-                '<span style="font-family:Orbitron,monospace;font-size:10px;color:'+rankColor+';width:16px;flex-shrink:0">'+(ri+1)+'</span>'+
+              var badgesHtml = blitzRepBadges(r, t.reps, ri===0, r.name===mostDealsRep&&mostDealsN>1, bracketReps);
+              var rankColor=ri===0?'#C84000':ri<=2?'#8B5E00':'#94A3B8';
+              return '<div class="blitz-s-rep">'+
+                '<span style="font-family:Orbitron,monospace;font-size:10px;color:'+rankColor+';width:16px;flex-shrink:0;font-weight:700">'+(ri+1)+'</span>'+
                 '<div style="flex:1;min-width:0">'+
-                  '<div style="font-size:12px;font-weight:700;color:#E2E8F0">'+r.name+'</div>'+
-                  (badges.length?'<div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:2px">'+badges.join('')+'</div>':'')+
+                  '<div style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:700;color:#1E293B;display:flex;align-items:center;flex-wrap:wrap;gap:2px">'+
+                    r.name+badgesHtml+
+                  '</div>'+
                 '</div>'+
                 '<div style="font-family:Orbitron,monospace;font-size:11px;font-weight:700;color:'+rankColor+';flex-shrink:0">'+fmtB(r.amount)+'</div>'+
               '</div>';
@@ -2763,27 +2883,50 @@ function renderBlitzBrackets(bd) {
   }).join('');
 }
 
+function renderBlitzLeaderboardNew(bd) {
+  if (!bd.allReps || bd.allReps.length === 0) return '';
+  var top10 = bd.allReps.slice(0,10);
+  var medals = ['🥇','🥈','🥉'];
+  return '<div class="blitz-s-card">'+
+    '<div style="font-family:Pacifico,Georgia,serif;font-size:15px;color:#C84000;margin-bottom:10px">🏖️ Top 10 Overall Blitzers</div>'+
+    top10.map(function(r,i){
+      var isRookie = ROOKIE_NAMES.has(r.name);
+      var indBadge = getBadge(r.amount);
+      return '<div class="blitz-s-rep" style="'+(i===0?'background:linear-gradient(90deg,rgba(255,215,0,0.15),transparent);':'')+'">' +
+        '<span style="width:24px;text-align:center;font-size:'+(i<3?'16':'11')+'px;flex-shrink:0">'+
+          (i<3?medals[i]:'<span style="font-family:Orbitron,monospace;font-size:9px;color:#94A3B8">#'+(i+1)+'</span>')+
+        '</span>'+
+        '<div style="flex:1;min-width:0">'+
+          '<div style="font-family:\'Exo 2\',sans-serif;font-size:13px;font-weight:700;color:#1E293B;display:flex;align-items:center;gap:4px;flex-wrap:wrap">'+
+            r.name+
+            (isRookie?'<span class="rookie-star">R</span>':'')+
+            (indBadge?'<span class="blitz-s-badge" style="background:rgba('+hexToRgb(indBadge.color)+',0.12);border:1px solid rgba('+hexToRgb(indBadge.color)+',0.4);color:'+indBadge.color+'">'+indBadge.icon+'</span>':'')+
+          '</div>'+
+          '<div style="font-family:\'Exo 2\',sans-serif;font-size:10px;color:#8B5E00;font-weight:600">'+r.store+'</div>'+
+        '</div>'+
+        '<div style="font-family:Orbitron,monospace;font-size:13px;font-weight:900;color:#C84000;flex-shrink:0">'+fmtB(r.amount)+'</div>'+
+      '</div>';
+    }).join('')+
+  '</div>';
+}
+
 document.addEventListener("keydown", function(e){ if(e.key==="Escape" && document.getElementById("blitz-overlay").style.display!=="none") closeBlitz(); });
 
 
 
 
-function toggleBlitzMenu() {
-  var panel = document.getElementById('blitz-menu-panel');
-  if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-}
+function toggleBlitzMenu() { /* replaced by top bar */ }
 
 var blitzTVMode = false;
 function toggleBlitzTV() {
   blitzTVMode = !blitzTVMode;
-  document.body.classList.toggle('blitz-tv', blitzTVMode);
-  // Also scale the blitz overlay text
-  var board = document.getElementById('blitz-board');
-  if (board) board.style.fontSize = blitzTVMode ? '120%' : '';
+  var overlay = document.getElementById('blitz-overlay');
+  if (overlay) overlay.style.fontSize = blitzTVMode ? '125%' : '';
   var btn = document.getElementById('blitz-tv-btn');
-  if (btn) { btn.innerHTML = blitzTVMode ? '&#x1F4FA; TV ON' : '&#x1F4FA; TV MODE'; btn.style.color = blitzTVMode ? '#00FF88' : ''; }
-  var panel = document.getElementById('blitz-menu-panel');
-  if (panel) panel.style.display = 'none';
+  if (btn) {
+    btn.innerHTML = blitzTVMode ? '&#x1F4FA; TV ON' : '&#x1F4FA; TV MODE';
+    btn.style.background = blitzTVMode ? 'rgba(255,165,0,0.4)' : 'rgba(255,165,0,0.15)';
+  }
 }
 
 function toggleBlitzFullscreen() {
@@ -2801,14 +2944,7 @@ function openBlitzAdmin() {
   setTimeout(function(){ openAdmin(); }, 200);
 }
 
-// Close blitz menu on outside click
-document.addEventListener('click', function(ev){
-  var wrap = document.getElementById('blitz-menu-wrap');
-  if (wrap && !wrap.contains(ev.target)) {
-    var panel = document.getElementById('blitz-menu-panel');
-    if (panel) panel.style.display = 'none';
-  }
-});
+// blitz menu click handler removed
 
 
 // ── CREATE MENU VIA JS ───────────────────────────────────────────────────────
