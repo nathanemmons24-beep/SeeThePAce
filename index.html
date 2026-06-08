@@ -2168,7 +2168,6 @@ function updateFsBtn() {
   var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
   btn.textContent = isFs ? '⛶ EXIT FULL' : '⛶ FULLSCREEN';
   if (!isFs) {
-    if (typeof scrollActive !== 'undefined' && scrollActive) toggleScroll();
     if (typeof tvBigFont !== 'undefined' && tvBigFont) toggleBigFont();
   }
 }
