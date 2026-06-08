@@ -548,10 +548,16 @@ function parseCsv(csv){
     var data={total:0,teams:{}},ci=0;
     var today=new Date(); today.setHours(0,0,0,0);
     for(var i=1;i<lines.length;i++){
+      // Skip completely blank lines (e.g. trailing rows from Daily Sales Dashboard report)
+      if(!lines[i].replace(/,/g,"").trim())continue;
       var cols=parseCsvLine(lines[i]).map(function(c){return c.replace(/^"|"$/g,"").trim();});
-      var store=cols[0],name=cols[1],scoreRaw=cols[2],dateRaw=cols[3]||"";
+      var store=cols[0],name=cols[1],scoreRaw=cols[2],dateRaw=cols[3]||"",cancelled=cols[5]||"";
       if(!store||!name||!scoreRaw)continue;
+      // Skip cancelled rows
+      if(cancelled.toLowerCase()==='yes')continue;
       var val=parseFloat(scoreRaw.replace(/[^0-9.]/g,""))||0;
+      // Skip rows with genuinely no score (but allow $0 deals to not crash — just skip)
+      if(!scoreRaw.trim()||isNaN(parseFloat(scoreRaw.replace(/[^0-9.]/g,""))))continue;
       // Parse date column — handles "Tue Jan 06 2026 00:00:00 GMT-0500..." and "6/1/2026"
       var dealDate=null,isToday=false;
       if(dateRaw){
