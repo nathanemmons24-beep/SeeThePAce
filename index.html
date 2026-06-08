@@ -657,18 +657,37 @@ async function fetchSettings() {
 
 async function fetchData(){
   var DATA_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
-  var res = await fetch(DATA_URL, {cache:"no-store", redirect:"follow"});
-  var csv = await res.text();
-  var parsed = parseCsv(csv);
-  if(parsed){
-    if(!firstFetch){ firstFetch=true; seedBadgeState(parsed); }
-    else if(!BQR){ checkBadgeUpgrades(parsed); }
-    else{ seedBadgeState(parsed); }
-    updateStreaks(parsed);
-    state.data=parsed; state.status="live"; state.lastUpdated=new Date().toLocaleTimeString();
-    var lo=document.getElementById("loading-overlay");
-    if(lo&&lo.style.display!=="none"){lo.style.opacity="0";setTimeout(function(){lo.style.display="none";},600);}
-    render(); resetCountdown();
+  try {
+    var res = await fetch(DATA_URL, {cache:"no-store", redirect:"follow"});
+    if (!res.ok) {
+      console.warn("fetchData: HTTP " + res.status + " " + res.statusText);
+      state.status = "error: HTTP " + res.status;
+      return;
+    }
+    var csv = await res.text();
+    if (!csv || csv.trim().startsWith("<") || csv.includes("Host not in allowlist") || csv.includes("Authorization")) {
+      console.warn("fetchData: got non-CSV response:", csv.substring(0, 200));
+      state.status = "error: bad response from server";
+      return;
+    }
+    console.log("fetchData: got " + csv.split("\n").length + " lines, first: " + csv.substring(0, 80));
+    var parsed = parseCsv(csv);
+    if (parsed) {
+      if(!firstFetch){ firstFetch=true; seedBadgeState(parsed); }
+      else if(!BQR){ checkBadgeUpgrades(parsed); }
+      else{ seedBadgeState(parsed); }
+      updateStreaks(parsed);
+      state.data=parsed; state.status="live"; state.lastUpdated=new Date().toLocaleTimeString();
+      var lo=document.getElementById("loading-overlay");
+      if(lo&&lo.style.display!=="none"){lo.style.opacity="0";setTimeout(function(){lo.style.display="none";},600);}
+      render(); resetCountdown();
+    } else {
+      console.warn("fetchData: parseCsv returned null. Raw CSV sample:\n" + csv.substring(0, 500));
+      state.status = "error: could not parse data";
+    }
+  } catch(err) {
+    console.error("fetchData error:", err);
+    state.status = "error: " + err.message;
   }
 }
 function startPolling(){
@@ -1126,7 +1145,11 @@ function render(){
   var dot=document.getElementById("status-dot");
   var isLoading=(state.status==="demo");
   if(state.status==="live"){dot.textContent="\u25CF LIVE";dot.className="live";}
-  else if(state.status==="error"){dot.textContent="\u25CF SYNC ERROR";dot.className="error";}
+  else if(state.status && state.status.startsWith("error")){
+    dot.textContent="\u25CF ERROR: "+state.status.replace(/^error:\s*/i,"");
+    dot.className="error";
+    dot.title=state.status;
+  }
   else{dot.textContent="\u25CF LOADING...";dot.className="loading";}
   // Hide all board content while loading
   ["top-leaderboards","store-rankings","cards-grid","day-breakdown","biggest-mover",
@@ -2903,7 +2926,7 @@ function renderBlitzBracketsNew(bd) {
 
     return '<div style="background:'+bracketBg[bName]+';border:1.5px solid '+(bracketBorder[bName]||'rgba(255,255,255,0.08)')+';border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 20px rgba(0,0,0,0.3)">'+
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.08)">'+
-        '<div style="font-family:'Exo 2',sans-serif;font-size:16px;font-weight:900;color:#E2E8F0;letter-spacing:1px">'+bracketLabel[bName]+'</div>'+
+        '<div style="font-family:\'Exo 2\',sans-serif;font-size:16px;font-weight:900;color:#E2E8F0;letter-spacing:1px">'+bracketLabel[bName]+'</div>'+
         '<div style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:#FFD700">'+fmtB(bracket.total)+'</div>'+
       '</div>'+
 
