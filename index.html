@@ -513,14 +513,9 @@ function parseCsv(csv){
     var today=new Date(); today.setHours(0,0,0,0);
     for(var i=1;i<lines.length;i++){
       var cols=parseCsvLine(lines[i]).map(function(c){return c.replace(/^"|"$/g,"").trim();});
-      var store=cols[0],name=cols[1],scoreRaw=cols[2],dateRaw=cols[3]||"";
+      var store=cols[0],name=cols[1],scoreRaw=cols[2],dateRaw=cols[3]||"",cancelled=(cols[5]||"").trim().toLowerCase();
+      if(cancelled==="yes")continue; // skip cancelled rows
       if(!store||!name||!scoreRaw)continue;
-      // Normalize market names
-      if(store==='0790 - Tri-Cities TN') store='0790 - Knoxville';
-      if(store==='0930 - Eastern GA'||store==='0930 - Southern GA') store='0930 - Georgia';
-      if(store==='0930 - Atlanta') store='0930 - Georgia';
-      if(store==='0535 - Central Northern NJ') store='0535 - New Jersey';
-      if(store==='0868 - So Bend') store='0868 - South Bend';
       var val=parseFloat(scoreRaw.replace(/[^0-9.]/g,""))||0;
       // Parse date column — handles "Tue Jan 06 2026 00:00:00 GMT-0500..." and "6/1/2026"
       var dealDate=null,isToday=false;
