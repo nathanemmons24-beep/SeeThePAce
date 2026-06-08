@@ -244,6 +244,13 @@
     .blitz-bar-btn{padding:6px 13px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid;letter-spacing:0.5px;transition:all 0.2s;font-family:"Exo 2",sans-serif}
     .blitz-bar-btn:hover{opacity:0.85;transform:scale(1.04)}
     .blitz-bar-btn.active{transform:scale(1.02)}
+    /* Blitz TV mode */
+    .blitz-tv-on #blitz-board{font-size:130%!important}
+    .blitz-tv-on .blitz-s-card{padding:20px 22px!important}
+    .blitz-tv-on .blitz-s-rep{padding:10px 14px!important}
+    .blitz-tv-on .blitz-s-badge{font-size:11px!important;padding:3px 8px!important}
+    .blitz-tv-on .podium-block{font-size:30px!important}
+    .blitz-tv-on .rookie-star{width:22px!important;height:22px!important;font-size:11px!important}
   </style>
 </head>
 <body onclick="unlockAudio()" onkeydown="unlockAudio()">
@@ -392,9 +399,8 @@
     <div id="blitz-pw-err" style="color:#FF4444;font-family:Orbitron,monospace;font-size:10px;display:none">INCORRECT PASSWORD</div>
     <button onclick="closeBlitz()" style="margin-top:8px;padding:6px 20px;border-radius:16px;background:transparent;border:1px solid rgba(255,255,255,0.1);color:#475569;font-family:Orbitron,monospace;font-size:10px;cursor:pointer">CANCEL</button>
   </div>
-  <div id="blitz-board" style="display:none;width:100%;max-width:1200px;padding:20px 16px;margin:0 auto"></div>
-  <!-- Blitz Top Bar -->
-  <div id="blitz-menu-wrap" style="display:none;position:sticky;top:0;z-index:9500;width:100%;background:rgba(255,255,255,0.18);backdrop-filter:blur(12px);border-bottom:2px solid rgba(255,140,0,0.35);box-shadow:0 2px 20px rgba(255,165,0,0.2)">
+  <!-- Blitz Top Bar — must come BEFORE board so sticky top:0 works -->
+  <div id="blitz-menu-wrap" style="display:none;position:sticky;top:0;z-index:9500;width:100%;background:rgba(255,255,255,0.82);backdrop-filter:blur(14px);border-bottom:2px solid rgba(255,140,0,0.35);box-shadow:0 2px 20px rgba(255,165,0,0.2)">
     <div style="max-width:1400px;margin:0 auto;padding:8px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <button onclick="closeBlitz()" class="blitz-bar-btn" style="background:rgba(255,80,0,0.15);border-color:rgba(255,80,0,0.5);color:#C84000">&#x1F3E0; MAIN BOARD</button>
       <button onclick="openBlitzAdmin()" class="blitz-bar-btn" style="background:rgba(0,0,80,0.1);border-color:rgba(0,0,160,0.4);color:#1A3A8F">&#x2699; ADMIN</button>
@@ -408,6 +414,7 @@
       <div style="font-family:Georgia,serif;font-size:11px;font-style:italic;color:rgba(0,0,0,0.4);font-weight:600">THE SUMMERTIME BLITZ</div>
     </div>
   </div>
+  <div id="blitz-board" style="display:none;width:100%;padding:0"></div>
 </div>
 
 <script>
@@ -2645,7 +2652,7 @@ function filterBlitzRookies(bd) {
 function renderBlitzTopProgress(total, goal) {
   var pct = Math.min((total/goal)*100, 105);
   var millions = Math.floor(total/1000000);
-  return '<div style="background:linear-gradient(135deg,rgba(255,255,255,0.7),rgba(255,240,180,0.6));backdrop-filter:blur(12px);border-bottom:2px solid rgba(255,140,0,0.3);padding:16px 24px;position:sticky;top:52px;z-index:100">'+
+  return '<div style="background:linear-gradient(135deg,rgba(255,255,255,0.7),rgba(255,240,180,0.6));backdrop-filter:blur(12px);border-bottom:2px solid rgba(255,140,0,0.3);padding:16px 24px;position:sticky;top:44px;z-index:100">'+
     '<div style="max-width:1400px;margin:0 auto">'+
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">'+
         '<div style="font-family:Pacifico,Georgia,serif;font-size:clamp(22px,4vw,38px);color:#C84000;text-shadow:2px 2px 0 rgba(255,255,255,0.8)">'+
@@ -2920,8 +2927,11 @@ function toggleBlitzMenu() { /* replaced by top bar */ }
 var blitzTVMode = false;
 function toggleBlitzTV() {
   blitzTVMode = !blitzTVMode;
+  var board = document.getElementById('blitz-board');
+  if (board) board.style.fontSize = blitzTVMode ? '128%' : '';
+  // Scale up the sticky progress bar too
   var overlay = document.getElementById('blitz-overlay');
-  if (overlay) overlay.style.fontSize = blitzTVMode ? '125%' : '';
+  if (overlay) overlay.classList.toggle('blitz-tv-on', blitzTVMode);
   var btn = document.getElementById('blitz-tv-btn');
   if (btn) {
     btn.innerHTML = blitzTVMode ? '&#x1F4FA; TV ON' : '&#x1F4FA; TV MODE';
