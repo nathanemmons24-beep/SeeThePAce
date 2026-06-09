@@ -492,11 +492,9 @@
 </div>
 
 <script>
-
-
-
-
-
+// Hoisted early so render() can safely reference them before their full declaration
+var activeMarketFilters = new Set();
+var ROOKIE_NAMES = new Set();
 
 
 
@@ -1493,7 +1491,7 @@ function render(){
       var rname=e[0],t=e[1],_rm=rname.match(/^(.+?)\s+(\d{4})$/);
       var display=rname.includes(" - ")?rname.split(" - ").slice(1).join(" ").trim():(_rm?_rm[1].trim():rname);
       var pct=Math.max(8,(t.total/maxTotal)*100);
-      var isActive = activeMarketFilters.has(rname);
+      var isActive = activeMarketFilters ? activeMarketFilters.has(rname) : false;
       var row=document.createElement("div");
       row.style.cssText="display:flex;align-items:center;gap:10px;margin-bottom:8px;cursor:pointer;border-radius:10px;padding:2px 4px;transition:background 0.15s;border:1px solid "+(isActive?"rgba(124,58,237,0.5)":"transparent")+";background:"+(isActive?"rgba(124,58,237,0.1)":"transparent");
       row.title = isActive ? "Click to clear filter" : "Click to filter by "+display;
@@ -2625,7 +2623,8 @@ var BLITZ_MILESTONES = [
   {pct:1.00, label:"BLACKOUT", prize:"STRETCH — Sales Excellence Trip + $5K", icon:"👑"},
 ];
 
-var ROOKIE_NAMES = new Set([
+// Populate ROOKIE_NAMES (declared at top of script)
+ROOKIE_NAMES = new Set([
   "Matt Davis","Alishia Sunshine Richards","Brice Blocker","Daniel Fordham","Grady Flowers","Joe Powers","Julia Padgett","Len Konecny","Monty White","Robert Caruso","Tamara Thompson",
   "Alec Dietz","Justin Stillson","Kyle Spence","Joseph Varrone","Whitney Kent","Gage Afanasiew","Gerasimos Vangelatos","Jean Jourdain","Michael Hill","William Hawrey",
   "Dana Zadah","John Hanifin","Nick Quinn","Adhem Sharkawy","Barry Gasmer","Christopher Patkochis","Matthew Jones","Roberto Rios","Stanislav Faynerman",
@@ -3294,7 +3293,7 @@ function createMenu(){
 }
 
 // ── MARKET FILTER ─────────────────────────────────────────────────────────────
-var activeMarketFilters = new Set(); // empty = show all
+// (activeMarketFilters declared at top of script)
 
 function buildMarketFilterList() {
   var list = document.getElementById('market-filter-list');
