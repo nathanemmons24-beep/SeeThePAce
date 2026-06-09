@@ -270,10 +270,12 @@
     #prize-popup-icon.bounce{animation:prizeIconBounce 0.8s ease 0.5s 3}
     @keyframes topRookiePulse{0%,100%{box-shadow:0 0 6px 2px rgba(255,255,255,0.8),0 0 12px 4px rgba(168,85,247,0.6);background:rgba(255,255,255,0.95)}50%{box-shadow:0 0 12px 5px rgba(255,255,255,1),0 0 24px 8px rgba(168,85,247,0.9);background:#fff}}
     .top-rookie-badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;font-family:Orbitron,monospace;font-size:9px;font-weight:900;color:#1A0840;animation:topRookiePulse 1.4s ease-in-out infinite;flex-shrink:0}
-    .blitzer-badge-1{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:4px;font-family:Orbitron,monospace;font-size:8px;font-weight:900;color:#1A0820;background:linear-gradient(135deg,#FFD700,#FFA500);box-shadow:0 0 8px rgba(255,215,0,0.6);flex-shrink:0}
-    .blitzer-badge-2{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:4px;font-family:Orbitron,monospace;font-size:8px;font-weight:900;color:#0A0A0A;background:linear-gradient(135deg,#C0C0C0,#A8A8A8);flex-shrink:0}
-    .blitzer-badge-3{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:4px;font-family:Orbitron,monospace;font-size:8px;font-weight:900;color:#0A0A0A;background:linear-gradient(135deg,#CD7F32,#B06A20);flex-shrink:0}
-    .hunt-badge{display:inline-flex;align-items:center;justify-content:center;padding:0 5px;height:18px;border-radius:4px;font-family:Orbitron,monospace;font-size:7px;font-weight:700;color:#00D4FF;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.35);flex-shrink:0;white-space:nowrap}
+    @keyframes zapPulse{0%,100%{box-shadow:0 0 4px 1px rgba(124,58,237,0.9),0 0 10px 3px rgba(0,212,255,0.6);opacity:1}50%{box-shadow:0 0 8px 3px rgba(168,85,247,1),0 0 20px 6px rgba(0,212,255,0.9);opacity:0.85}}
+    @keyframes zapFlicker{0%,100%{transform:scale(1)}25%{transform:scale(1.05) rotate(-2deg)}75%{transform:scale(0.97) rotate(1deg)}}
+    .blitzer-badge-1{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:18px;border-radius:5px;font-family:Orbitron,monospace;font-size:9px;font-weight:900;color:#fff;background:linear-gradient(135deg,#4C00CC,#7C3AED,#00D4FF);box-shadow:0 0 8px rgba(124,58,237,0.9),0 0 16px rgba(0,212,255,0.6);flex-shrink:0;padding:0 4px;animation:zapPulse 1.2s ease-in-out infinite,zapFlicker 0.4s ease-in-out infinite;border:1px solid rgba(0,212,255,0.5)}
+    .blitzer-badge-2{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:18px;border-radius:5px;font-family:Orbitron,monospace;font-size:9px;font-weight:900;color:#fff;background:linear-gradient(135deg,#3B0099,#6D28D9,#00A8CC);box-shadow:0 0 6px rgba(109,40,217,0.8),0 0 12px rgba(0,168,204,0.5);flex-shrink:0;padding:0 4px;animation:zapPulse 1.5s ease-in-out infinite 0.2s;border:1px solid rgba(0,168,204,0.4)}
+    .blitzer-badge-3{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:18px;border-radius:5px;font-family:Orbitron,monospace;font-size:9px;font-weight:900;color:#C4B5FD;background:linear-gradient(135deg,#2E0073,#5B21B6,#0E7490);box-shadow:0 0 5px rgba(91,33,182,0.7),0 0 10px rgba(14,116,144,0.4);flex-shrink:0;padding:0 4px;animation:zapPulse 1.8s ease-in-out infinite 0.4s;border:1px solid rgba(91,33,182,0.4)}
+    .hunt-badge{display:inline-flex;align-items:center;justify-content:center;padding:0 5px;height:18px;border-radius:5px;font-family:Orbitron,monospace;font-size:7px;font-weight:700;color:#A78BFA;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.35);flex-shrink:0;white-space:nowrap;letter-spacing:0.5px}
     #blitz-panels-row{display:none;gap:12px;margin-bottom:16px}
     body.blitz-active #blitz-panels-row{display:flex}
     .blitz-panel{flex:1;background:rgba(10,15,30,0.85);border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:12px;backdrop-filter:blur(14px);min-width:0}
@@ -1210,8 +1212,6 @@ function render(){
       if (bs) bs.style.display = 'none';
       var pp = document.getElementById('blitz-prize-panel');
       if (pp) pp.style.display = 'none';
-      var pr = document.getElementById('blitz-panels-row');
-      if (pr) pr.style.display = 'none';
       return;
     }
     var bd = getBlitzData();
@@ -1345,9 +1345,25 @@ function render(){
       });
       bd2.allReps.sort(function(a,b){return b.amount-a.amount;});
       bracketSection.innerHTML = renderBlitzBracketsNew(bd2);
-      // Render Top Rookie + Top Blitzer panels
-      renderBlitzPanels(bd2);
     }
+    // Always render panels when blitz active (regardless of bracketSection)
+    (function() {
+      var bd3 = { total: data.total, brackets: {}, allReps: [] };
+      for (var bk2 in BLITZ_BRACKETS) {
+        bd3.brackets[bk2] = { total:0, teams:{}, color:BLITZ_BRACKETS[bk2].color, accent:BLITZ_BRACKETS[bk2].accent };
+      }
+      Object.entries(data.teams).forEach(function(e){
+        var tName=e[0], team=e[1];
+        var bracket=getBracketForStore(tName);
+        if (!bracket) return;
+        if (!bd3.brackets[bracket]) bd3.brackets[bracket]={total:0,teams:{}};
+        bd3.brackets[bracket].teams[tName]=Object.assign({},team);
+        bd3.brackets[bracket].total+=team.total;
+        (team.reps||[]).forEach(function(r){ bd3.allReps.push({name:r.name,amount:r.amount,color:team.color}); });
+      });
+      bd3.allReps.sort(function(a,b){return b.amount-a.amount;});
+      renderBlitzPanels(bd3);
+    })();
   }
   if (filterConsolidated && data && data.teams) {
     data = consolidateData(data);
@@ -2633,10 +2649,25 @@ function getBlitzTopsByBracket(blitzData) {
   return result;
 }
 
+// Global maps updated by renderBlitzPanels, used by card rendering
+var blitzTopRookieMap = {};  // repName -> bracket name (top rookie per bracket)
+var blitzTopBlitzerMap = {}; // repName -> '1'|'2'|'3'|'hunt'
+
 function renderBlitzPanels(blitzData) {
   if (!blitzUnlocked || !blitzData || !blitzData.brackets) return;
 
   var tops = getBlitzTopsByBracket(blitzData);
+
+  // Populate global badge maps
+  blitzTopRookieMap = {};
+  blitzTopBlitzerMap = {};
+  BRACKET_ORDER.forEach(function(bName) {
+    var rookies = tops[bName].rookies;
+    if (rookies.length > 0) blitzTopRookieMap[rookies[0].name] = bName;
+    tops[bName].all.slice(0,5).forEach(function(rep, i) {
+      blitzTopBlitzerMap[rep.name] = i < 3 ? String(i+1) : 'hunt';
+    });
+  });
 
   // ── TOP ROOKIE PANEL ─────────────────────────────────────────────────────
   var rookieEl = document.getElementById('blitz-rookie-panel-content');
@@ -2676,10 +2707,10 @@ function renderBlitzPanels(blitzData) {
       all.forEach(function(rep, i) {
         var gap = i > 0 ? ' -' + fmt(all[0].amount - rep.amount) : '';
         bhtml += '<div class="blitz-rep-row">';
-        if (i === 0) bhtml += '<span class="blitzer-badge-1">1</span>';
-        else if (i === 1) bhtml += '<span class="blitzer-badge-2">2</span>';
-        else if (i === 2) bhtml += '<span class="blitzer-badge-3">3</span>';
-        else bhtml += '<span class="hunt-badge">HUNT</span>';
+        if (i === 0) bhtml += '<span class="blitzer-badge-1">⚡1</span>';
+        else if (i === 1) bhtml += '<span class="blitzer-badge-2">⚡2</span>';
+        else if (i === 2) bhtml += '<span class="blitzer-badge-3">⚡3</span>';
+        else bhtml += '<span class="hunt-badge">⚡ HUNT</span>';
         bhtml += '<span class="blitz-rep-name">'+rep.name+'</span>';
         bhtml += '<span class="blitz-rep-amt">'+fmt(rep.amount)+'</span>';
         if (gap) bhtml += '<span class="blitz-gap">'+gap+'</span>';
@@ -3293,10 +3324,20 @@ function renderBlitzBracketsNew(bd) {
       html += '</div>';
       t.reps.forEach(function(r, ri) {
         var isRookie = ROOKIE_NAMES.has(r.name);
+        var isTopRookie = blitzUnlocked && blitzTopRookieMap[r.name];
+        var blitzerRank = blitzUnlocked ? blitzTopBlitzerMap[r.name] : null;
         var rankColor = ri===0 ? color : ri<=2 ? '#CBD5E1' : '#475569';
         html += '<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,0.04)">';
         html += '<span style="font-family:Orbitron,monospace;font-size:9px;color:'+rankColor+';width:14px;flex-shrink:0">'+(ri+1)+'</span>';
-        html += '<div style="flex:1;font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:600;color:#E2E8F0;display:flex;align-items:center;gap:4px">'+r.name+(isRookie?'<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px">R</span>':'')+'</div>';
+        // Blitzer badge
+        if (blitzerRank === '1') html += '<span class="blitzer-badge-1">⚡</span>';
+        else if (blitzerRank === '2') html += '<span class="blitzer-badge-2">⚡</span>';
+        else if (blitzerRank === '3') html += '<span class="blitzer-badge-3">⚡</span>';
+        else if (blitzerRank === 'hunt') html += '<span class="hunt-badge">HUNT</span>';
+        // Rookie badge
+        if (isTopRookie) html += '<span class="top-rookie-badge">R</span>';
+        else if (isRookie) html += '<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px">R</span>';
+        html += '<div style="flex:1;font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:600;color:#E2E8F0">'+r.name+'</div>';
         html += '<div style="font-family:Orbitron,monospace;font-size:11px;font-weight:700;color:'+rankColor+';flex-shrink:0">'+fmtB(r.amount)+'</div>';
         html += '</div>';
       });
