@@ -2165,8 +2165,10 @@ var CONSOLIDATE_COLORS = {
 
 // Always-on merges (regardless of Consolidate toggle)
 var ALWAYS_MERGE = {
-  "0914 - Central GTA":  { group: "Toronto 0914", color: "#A855F7" },
-  "0914 - Eastern GTA":  { group: "Toronto 0914", color: "#A855F7" },
+  "0914 - Central GTA":       { group: "Toronto 0914",   color: "#A855F7" },
+  "0914 - Eastern GTA":       { group: "Toronto 0914",   color: "#A855F7" },
+  "0535 - Central Northern NJ": { group: "0535 - New Jersey", color: "#00FF88" },
+  "0535 - New Jersey":          { group: "0535 - New Jersey", color: "#00FF88" },
 };
 
 function mergeAlways(rawData) {
@@ -2411,7 +2413,7 @@ var blitzUnlocked = false;
 var BLITZ_BRACKETS = {
   "Large Markets": {
     stores: ["0930 - Atlanta","0930 - Eastern GA","0930 - Southern GA",
-             "0535 - Central Northern NJ","0800 - Long Island",
+             "0535 - Central Northern NJ","0535 - New Jersey","0800 - Long Island",
              "0890 - San Francisco","0576 - Cincinnati"],
     color: "#00FF88", accent: "#FFD700"
   },
