@@ -2292,7 +2292,16 @@ function getBlitzData() {
     var bracket = getBracketForStore(tName);
     if (!bracket) return;
 
-    var reps = team.reps.filter(function(r){ return r.amount > 0; });
+    var reps = team.reps.map(function(rep) {
+      var blitzDeals = (rep.dealObjs||[]).filter(function(d) {
+        if (!d.date) return false;
+        var dd = new Date(d.date); dd.setHours(0,0,0,0);
+        return dd >= BLITZ_START && dd <= BLITZ_END;
+      });
+      if (blitzDeals.length === 0) return null;
+      var amt = blitzDeals.reduce(function(s,d){ return s + (d.amount||0); }, 0);
+      return Object.assign({}, rep, { amount: amt, dealObjs: blitzDeals });
+    }).filter(Boolean);
     if (reps.length === 0) return;
 
     reps.sort(function(a,b){ return b.amount - a.amount; });
