@@ -1043,7 +1043,7 @@ function renderLeaderboards(data){
   var allDeals=[];
   Object.entries(data.teams).forEach(function(e){
     var teamName=e[0],team=e[1];
-    var display=teamName.includes(" - ")?teamName.split(" - ").slice(1).join(" "):teamName;
+    var display=teamName.includes(" - ")?teamName.split(" - ").slice(1).join(" ").trim():(function(){var _m=teamName.match(/^(.+?)\s+(\d{4})$/);return _m?_m[1].trim():teamName;})();
     var topAmt=team.reps.length>0?Math.max.apply(null,team.reps.map(function(r){return r.amount;})):0;
     team.reps.forEach(function(rep){
       allReps.push({name:rep.name,amount:rep.amount,store:display,color:team.color,isTopMarket:rep.amount===topAmt&&topAmt>0});
@@ -1219,7 +1219,8 @@ function render(){
     var maxTotal=sorted.length>0?sorted[0][1].total:1;
     var rmedals=["&#x1F947;","&#x1F948;","&#x1F949;"];
     sorted.forEach(function(e,i){
-      var rname=e[0],t=e[1],display=rname.includes(" - ")?rname.split(" - ").slice(1).join(" "):rname;
+      var rname=e[0],t=e[1],_rm=rname.match(/^(.+?)\s+(\d{4})$/);
+      var display=rname.includes(" - ")?rname.split(" - ").slice(1).join(" ").trim():(_rm?_rm[1].trim():rname);
       var pct=Math.max(8,(t.total/maxTotal)*100);
       var row=document.createElement("div");
       row.style.cssText="display:flex;align-items:center;gap:10px;margin-bottom:8px;";
@@ -1642,7 +1643,7 @@ function buildSpotlightDots() {
   spTeams.forEach(function(entry, i) {
     var d = document.createElement("div");
     d.className = "sp-dot" + (i === spIdx ? " active" : "");
-    d.title = (entry[0].includes(" - ") ? entry[0].split(" - ").slice(1).join(" ") : entry[0]);
+    d.title = (entry[0].includes(" - ") ? entry[0].split(" - ").slice(1).join(" ").trim() : (function(){var _m=entry[0].match(/^(.+?)\s+(\d{4})$/);return _m?_m[1].trim():entry[0];})());
     d.onclick = (function(idx){ return function(){ clearTimeout(spTimer); spIdx=idx; showSpotlightCard(idx); }; })(i);
     dots.appendChild(d);
   });
@@ -1653,8 +1654,8 @@ function showSpotlightCard(idx) {
   var entry = spTeams[idx];
   if (!entry) return;
   var name = entry[0], team = entry[1];
-  var display = name.includes(" - ") ? name.split(" - ").slice(1).join(" ") : name;
-  var num = name.split(" - ")[0];
+  var display = name.includes(" - ") ? name.split(" - ").slice(1).join(" ").trim() : (function(){var _m=name.match(/^(.+?)\s+(\d{4})$/);return _m?_m[1].trim():name;})();
+  var num = name.includes(" - ") ? name.split(" - ")[0].trim() : (function(){var _m=name.match(/^(.+?)\s+(\d{4})$/);return _m?_m[2].trim():"";})();
   var color = team.color;
   var reps = [].concat(team.reps).sort(function(a,b){ return b.amount-a.amount; });
 
