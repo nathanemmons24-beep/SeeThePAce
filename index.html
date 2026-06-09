@@ -1166,7 +1166,7 @@ function renderLeaderboards(data){
 
 // \u2550\u2550 RENDER \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function render(){
-  // Update blitz bar + prize panel + apply date filter when blitz is active
+  // ── Blitz bar (runs before data is set) ─────────────────────────────────
   (function() {
     var strip = document.getElementById('blitz-bar-strip');
     if (!strip) return;
@@ -1185,7 +1185,7 @@ function render(){
     document.getElementById('blitz-bar-goal').textContent = 'of ' + fmtB(BLITZ_GOAL) + ' \u00b7 ' + pct.toFixed(1) + '%';
     document.getElementById('blitz-bar-fill').style.width = pct + '%';
 
-    // Milestone ticks (17 marks, one per $1M)
+    // Milestone ticks
     var ticks = document.getElementById('blitz-milestone-ticks');
     if (ticks) {
       var html = '';
@@ -1200,43 +1200,22 @@ function render(){
       ticks.innerHTML = html;
     }
 
-    // Bracket breakdown
-    var bracketSection = document.getElementById('blitz-bracket-section');
-    if (bracketSection) {
-      bracketSection.style.display = 'block';
-      var blitzBd = getBlitzData();
-      // Build bd object with team data from the blitz data variable
-      blitzBd.brackets = {};
-      for (var b in BLITZ_BRACKETS) {
-        blitzBd.brackets[b] = { total:0, teams:{}, color:BLITZ_BRACKETS[b].color, accent:BLITZ_BRACKETS[b].accent };
-      }
-      if (bd && bd.total > 0) {
-        // Use the same data object to build brackets
-        Object.entries(data.teams || {}).forEach(function(e){
-          var tName = e[0], team = e[1];
-          var bracket = getBracketForStore(tName);
-          if (!bracket) return;
-          var display = tName.includes(' - ') ? tName.split(' - ').slice(1).join(' ').trim()
-                      : (function(){ var m=tName.match(/^(.+?)\s+(\d{4})$/); return m?m[1].trim():tName; })();
-          blitzBd.brackets[bracket].teams[tName] = Object.assign({}, team, { display: display });
-          blitzBd.brackets[bracket].total += team.total;
-        });
-        blitzBd.allReps = [];
-        Object.values(data.teams || {}).forEach(function(t){
-          t.reps.forEach(function(r){ blitzBd.allReps.push({name:r.name,amount:r.amount,store:t.display||'',color:t.color}); });
-        });
-        blitzBd.allReps.sort(function(a,b){return b.amount-a.amount;});
-      }
-      bracketSection.innerHTML = renderBlitzBracketsNew(blitzBd);
-    }
-
     // Prize panel
     renderBlitzPrizePanel(bd.total);
     // Milestone unlock check
     checkBlitzMilestones(bd.total);
   })();
 
-  // Apply today filter if active
+  // ── Hide/show MTD bar based on blitz state ───────────────────────────────
+  var milestoneEl = document.getElementById('milestone-section');
+  var totalDisplayEl = document.getElementById('total-display');
+  if (blitzUnlocked) {
+    if (milestoneEl) milestoneEl.style.display = 'none';
+    if (totalDisplayEl) totalDisplayEl.style.display = 'none';
+  } else {
+    if (milestoneEl) milestoneEl.style.display = '';
+    if (totalDisplayEl) totalDisplayEl.style.display = '';
+  }
   var rawData = state.data;
   var data = rawData;
   // Always merge first
@@ -1310,6 +1289,30 @@ function render(){
       t.total = t.reps.reduce(function(s,r){return s+r.amount;},0);
       data.total += t.total;
     });
+
+    // ── Bracket breakdown (built from the static blitz data) ──────────────
+    var bracketSection = document.getElementById('blitz-bracket-section');
+    if (bracketSection) {
+      bracketSection.style.display = 'block';
+      var bd2 = { total: data.total, brackets: {}, allReps: [] };
+      for (var bk in BLITZ_BRACKETS) {
+        bd2.brackets[bk] = { total:0, teams:{}, color:BLITZ_BRACKETS[bk].color, accent:BLITZ_BRACKETS[bk].accent };
+      }
+      Object.entries(data.teams).forEach(function(e){
+        var tName = e[0], team = e[1];
+        var bracket = getBracketForStore(tName);
+        if (!bracket) return;
+        var display = tName.includes(' - ') ? tName.split(' - ').slice(1).join(' ').trim()
+                    : (function(){ var mm=tName.match(/^(.+?)\s+(\d{4})$/); return mm?mm[1].trim():tName; })();
+        bd2.brackets[bracket].teams[tName] = Object.assign({}, team, { display: display });
+        bd2.brackets[bracket].total += team.total;
+      });
+      Object.values(data.teams).forEach(function(t){
+        (t.reps||[]).forEach(function(r){ bd2.allReps.push({name:r.name,amount:r.amount,store:t.display||'',color:t.color}); });
+      });
+      bd2.allReps.sort(function(a,b){return b.amount-a.amount;});
+      bracketSection.innerHTML = renderBlitzBracketsNew(bd2);
+    }
   }
   if (filterConsolidated && data && data.teams) {
     data = consolidateData(data);
