@@ -1486,7 +1486,7 @@ function render(){
   if(bf){bf.style.width=mtdPct+"%";bf.style.background=mtdTotal>=state.goal?"linear-gradient(90deg,#00FF88,#00D4FF)":"linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF)";}
 
   var dot=document.getElementById("status-dot");
-  var isLoading=(state.status==="demo") && !blitzUnlocked;
+  var isLoading = (!data || !data.teams || Object.keys(data.teams).length === 0) && !blitzUnlocked;
   if(state.status==="live"){dot.textContent="\u25CF LIVE";dot.className="live";}
   else if(state.status && state.status.startsWith("error")){
     dot.textContent="\u25CF ERROR: "+state.status.replace(/^error:\s*/i,"");
