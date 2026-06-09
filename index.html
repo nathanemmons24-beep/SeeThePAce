@@ -175,7 +175,7 @@
     .rep-row.rank1 .rep-name,.rep-row.rank2 .rep-name,.rep-row.rank3 .rep-name{font-weight:600}
 
     /* Deal tooltip */
-    .deal-tooltip{display:none;position:absolute;left:0;top:100%;z-index:1000;background:rgba(10,18,35,0.98);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 14px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.5);white-space:nowrap;pointer-events:none}
+    .deal-tooltip{display:none;position:absolute;left:0;top:100%;z-index:1000;background:rgba(10,18,35,0.98);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 14px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,0.6);white-space:nowrap;pointer-events:none;margin-top:4px}
     .rep-name:hover .deal-tooltip{display:block}
     .deal-tooltip-row{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:12px;color:#CBD5E1;border-bottom:1px solid rgba(255,255,255,0.05)}
     .deal-tooltip-row:last-child{border-bottom:none}
@@ -1342,7 +1342,6 @@ function render(){
           '<span class="rep-name" style="position:relative;cursor:help;display:flex;flex-direction:column;gap:1px">'+
             '<span style="display:flex;align-items:center;gap:4px">'+rep.name+multi+(ROOKIE_NAMES.has(rep.name)?'<span class="rookie-star" style="animation:none;width:16px;height:16px;font-size:8px">R</span>':'')+'</span>'+
             badgesHTML+tooltipHTML+
-          '</span>'+
           '</span>'+
           '<span class="rep-amt" style="color:'+amtColor+'">'+fmt(rep.amount)+'</span></div>';
       });
