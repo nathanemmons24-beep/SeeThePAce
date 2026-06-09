@@ -258,7 +258,6 @@
     }
     #blitz-bar-strip{border:1px solid rgba(168,85,247,0.4) !important;}
     body.blitz-active #milestone-section{display:none !important}
-    body.blitz-active #mtd-bar-section{display:none !important}
     @keyframes prizeRingPulse{0%,100%{transform:scale(1);opacity:0.8}50%{transform:scale(1.3);opacity:1}}
     @keyframes prizeCardIn{0%{transform:scale(0.3) rotate(-8deg);opacity:0}60%{transform:scale(1.08) rotate(1deg);opacity:1}80%{transform:scale(0.97) rotate(0deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
     @keyframes prizeBgIn{0%{opacity:0}100%{opacity:1}}
@@ -404,8 +403,8 @@
 
 
 
-  <!-- MTD PROGRESS BAR — always visible, hidden only by blitz CSS -->
-  <div id="mtd-bar-section" style="margin-bottom:20px">
+  <!-- MTD PROGRESS BAR -->
+  <div id="milestone-section">
     <div id="total-display">$0 <span>of $85.40M</span></div>
     <div id="bar-wrap">
       <div id="bar-track">
@@ -1510,7 +1509,7 @@ function render(){
   var gridEl=document.getElementById("cards-grid");
   if(gridEl) gridEl.style.display = isLoading ? 'none' : 'flex';
   // MTD bar: only hidden when blitz is active
-  var mtdEl=document.getElementById("mtd-bar-section");
+  var mtdEl=document.getElementById("milestone-section");
   if(mtdEl) mtdEl.style.display = blitzUnlocked ? 'none' : 'block';
   if(isLoading) return;
   var lu=document.getElementById("last-updated");
