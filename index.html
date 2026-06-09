@@ -1191,7 +1191,7 @@ function render(){
     });
     data = blitzFiltered;
   }
-  if (filterConsolidated && rawData && rawData.teams) {
+  if (filterConsolidated && data && data.teams) {
     data = consolidateData(data);
   }
 
@@ -2272,29 +2272,33 @@ function getBracketForStore(storeName) {
   return null;
 }
 
-function openBlitz() {
-  var overlay = document.getElementById("blitz-overlay");
-  overlay.style.display = "flex";
+function toggleBlitzEvent() {
   if (blitzUnlocked) {
-    document.getElementById("blitz-auth").style.display = "none";
-    setTimeout(function(){ var i=document.getElementById("blitz-pw-input"); if(i) i.focus(); }, 100);
+    closeBlitz();
   } else {
-    document.getElementById("blitz-auth").style.display = "flex";
-    document.getElementById("blitz-board").style.display = "none";
-    setTimeout(function(){ var i=document.getElementById("blitz-pw-input"); if(i) i.focus(); }, 100);
+    openBlitz();
   }
 }
 
+function openBlitz() {
+  var overlay = document.getElementById("blitz-overlay");
+  overlay.style.display = "flex";
+  document.getElementById("blitz-auth").style.display = "flex";
+  document.getElementById("blitz-board").style.display = "none";
+  setTimeout(function(){ var i=document.getElementById("blitz-pw-input"); if(i) i.focus(); }, 100);
+}
+
 function closeBlitz() {
-  // Close auth overlay if open
   var overlay = document.getElementById("blitz-overlay");
   if (overlay) overlay.style.display = "none";
-  // Remove blitz filter from main board
   blitzUnlocked = false;
   var strip = document.getElementById("blitz-bar-strip");
   if (strip) strip.style.display = "none";
   var panel = document.getElementById("blitz-prize-panel");
   if (panel) panel.style.display = "none";
+  // Update menu button
+  var btn = document.getElementById("blitz-event-btn");
+  if (btn) btn.style.color = "#FFD700";
   updateMenuStates();
   render();
 }
@@ -2307,7 +2311,6 @@ function checkBlitzPw() {
     blitzUnlocked = true;
     err.style.display = "none";
     inp.value = "";
-    // Close overlay and apply blitz filter to main board
     var overlay = document.getElementById("blitz-overlay");
     if (overlay) overlay.style.display = "none";
     activateBlitzFilter();
@@ -2319,19 +2322,17 @@ function checkBlitzPw() {
 }
 
 function activateBlitzFilter() {
-  // Show blitz UI on main board
   var strip = document.getElementById("blitz-bar-strip");
   if (strip) strip.style.display = "block";
   var panel = document.getElementById("blitz-prize-panel");
   if (panel) panel.style.display = "block";
+  var btn = document.getElementById("blitz-event-btn");
+  if (btn) btn.style.color = "#00FF88";
   updateMenuStates();
   render();
 }
 
-function showBlitzBoard() {
-  // Legacy — now just activates the filter
-  activateBlitzFilter();
-}
+function showBlitzBoard() { activateBlitzFilter(); }
 
 // Prize panel toggle
 var prizePanelOpen = false;
@@ -2351,16 +2352,17 @@ function renderBlitzPrizePanel(total) {
   BLITZ_PRIZES.forEach(function(prize, i) {
     var milestone = i + 1;
     var unlocked = millions >= milestone;
+    var c = PRIZE_COLORS[prize.tier];
     if (unlocked) {
-      html += '<div style="display:flex;align-items:center;gap:6px;padding:5px 4px;border-radius:6px;margin-bottom:2px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.35)">';
-      html += '<span style="font-size:14px">' + prize.icon + '</span>';
-      html += '<div style="flex:1"><div style="font-family:\'Exo 2\',sans-serif;font-size:11px;font-weight:700;color:#E2E8F0">' + prize.label + '</div>';
-      html += '<div style="font-family:Orbitron,monospace;font-size:8px;color:#7C3AED">$' + milestone + 'M &#x2713;</div></div>';
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:8px;margin-bottom:3px;background:' + c.bg + ';border:1.5px solid ' + c.border + '">';
+      html += '<span style="font-size:16px">' + prize.icon + '</span>';
+      html += '<div style="flex:1"><div style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:700;color:#E2E8F0">' + prize.label + '</div>';
+      html += '<div style="font-family:Orbitron,monospace;font-size:8px;color:#A855F7">$' + milestone + 'M &#x2713; UNLOCKED</div></div>';
       html += '</div>';
     } else {
-      html += '<div style="display:flex;align-items:center;gap:6px;padding:5px 4px;border-radius:6px;margin-bottom:2px;background:transparent;border:1px solid rgba(255,255,255,0.05)">';
-      html += '<span style="font-size:14px;opacity:0.25">' + prize.icon + '</span>';
-      html += '<div style="flex:1"><div style="font-family:\'Exo 2\',sans-serif;font-size:11px;font-weight:600;color:#334155">' + prize.label + '</div>';
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:8px;margin-bottom:3px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05)">';
+      html += '<span style="font-size:16px;opacity:0.2">' + prize.icon + '</span>';
+      html += '<div style="flex:1"><div style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:600;color:#334155">' + prize.label + '</div>';
       html += '<div style="font-family:Orbitron,monospace;font-size:8px;color:#1E293B">$' + milestone + 'M</div></div>';
       html += '</div>';
     }
@@ -3030,7 +3032,7 @@ function createMenu(){
   // — CONTROLS —
   panel += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">CONTROLS</div>';
   panel += '<button class="menu-item" onclick="openAdmin();toggleMenu()">&#x2699; ADMIN</button>';
-  panel += '<button class="menu-item" onclick="openBlitz();toggleMenu()" style="color:#FFD700">&#x2728; SPECIAL EVENT</button>';
+  panel += '<button class="menu-item" id="blitz-event-btn" onclick="toggleBlitzEvent();toggleMenu()" style="color:#FFD700">&#x2728; SPECIAL EVENT</button>';
   panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
 
   // — DISPLAY —
