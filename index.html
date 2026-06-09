@@ -2009,7 +2009,7 @@ function updateMenuStates() {
   var tBtn = document.getElementById('today-filter-btn-menu');
   var rBtn = document.getElementById('rookie-filter-btn');
   var cBtn = document.getElementById('consolidated-btn');
-  if (sBtn) sBtn.classList.toggle('active', scrollActive);
+  if (sBtn) { sBtn.classList.toggle('active', scrollActive); sBtn.innerHTML = scrollActive ? '&#x23F9; STOP SCROLL' : '&#x21C5; AUTO SCROLL'; }
   if (fBtn) fBtn.classList.toggle('active', tvBigFont);
   if (tBtn) { tBtn.classList.toggle('active', filterToday); tBtn.innerHTML = filterToday ? '&#x1F4C5; TODAY ONLY &#x2713;' : '&#x1F4C5; TODAY ONLY'; }
   if (rBtn) { rBtn.classList.toggle('active', filterRookies); rBtn.innerHTML = filterRookies ? '&#x2B50; ROOKIES ONLY &#x2713;' : '&#x2B50; ROOKIES ONLY'; }
@@ -2033,86 +2033,52 @@ document.addEventListener('fullscreenchange',       updateFsBtn);
 document.addEventListener('webkitfullscreenchange', updateFsBtn);
 function updateFsBtn() {
   var btn = document.querySelector('.tv-btn-fs');
-  if (!btn) return;
+  if (btn) btn.textContent = (document.fullscreenElement || document.webkitFullscreenElement) ? '\u26f6 EXIT FULL' : '\u26f6 FULLSCREEN';
   var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-  btn.textContent = isFs ? '\u26f6 EXIT FULL' : '\u26f6 FULLSCREEN';
   if (isFs) {
-    // Entering fullscreen: enable TV mode and auto scroll
     if (!tvBigFont) toggleBigFont();
-    if (!scrollActive) { scrollActive = true; runScroll(); }
+    if (!scrollActive) toggleScroll();
   } else {
-    // Exiting fullscreen: disable TV mode and stop scroll
     if (tvBigFont) toggleBigFont();
-    if (scrollActive) { scrollActive = false; clearTimeout(scrollTimer); }
+    if (scrollActive) toggleScroll();
   }
 }
 
 // ══ AUTO SCROLL ════════════════════════════════════════════════════════════════
-var scrollTimer    = null;
-var scrollActive   = false;
-var scrollDir      = 1;       // 1 = down, -1 = up
-var scrollSpeed    = 1.2;     // px per tick
-var scrollPause    = 2500;    // ms to pause at top/bottom
-var scrollInterval = 16;      // ms per tick (~60fps)
-var scrollPausing  = false;
+var scrollActive  = false;
+var scrollTimer   = null;
+var scrollDir     = 1;
 
 function toggleScroll() {
   scrollActive = !scrollActive;
   updateMenuStates();
-  var btn = document.getElementById('scroll-btn');
   if (scrollActive) {
-    btn.classList.add('active');
-    btn.textContent = '⏹ STOP SCROLL';
-    runScroll();
+    scrollDir = 1;
+    scrollTimer = setInterval(function() {
+      var atBottom = (window.innerHeight + window.scrollY) >= document.body.scrollHeight - 4;
+      var atTop    = window.scrollY <= 2;
+      if (scrollDir === 1 && atBottom) {
+        clearInterval(scrollTimer);
+        setTimeout(function() {
+          scrollDir = -1;
+          scrollTimer = setInterval(arguments.callee, 16);
+        }, 2500);
+        return;
+      }
+      if (scrollDir === -1 && atTop) {
+        clearInterval(scrollTimer);
+        setTimeout(function() {
+          scrollDir = 1;
+          scrollTimer = setInterval(arguments.callee, 16);
+        }, 2500);
+        return;
+      }
+      window.scrollBy(0, scrollDir * 1.5);
+    }, 16);
   } else {
-    btn.classList.remove('active');
-    btn.textContent = '⬆⬇ AUTO SCROLL';
-    clearTimeout(scrollTimer);
+    clearInterval(scrollTimer);
+    scrollTimer = null;
   }
-}
-
-function getScrollEl() {
-  // document.documentElement is the correct scroll target in Chrome
-  // both in normal mode and fullscreen (documentElement.requestFullscreen)
-  return document.documentElement;
-}
-
-function runScroll() {
-  if (!scrollActive) return;
-  if (scrollPausing) { scrollTimer = setTimeout(runScroll, scrollInterval); return; }
-
-  var el = document.documentElement;
-  var maxScroll = el.scrollHeight - el.clientHeight;
-  var cur = el.scrollTop;
-
-  console.log('runScroll: scrollTop='+cur+' max='+maxScroll+' dir='+scrollDir);
-
-  if (maxScroll <= 0) {
-    // Nothing to scroll — try again after a second in case content hasn't loaded
-    scrollTimer = setTimeout(runScroll, 1000);
-    return;
-  }
-
-  // Hit bottom — pause then reverse
-  if (scrollDir === 1 && cur >= maxScroll - 2) {
-    scrollPausing = true;
-    scrollTimer = setTimeout(function() {
-      scrollDir = -1; scrollPausing = false; runScroll();
-    }, scrollPause);
-    return;
-  }
-
-  // Hit top — pause then reverse
-  if (scrollDir === -1 && cur <= 2) {
-    scrollPausing = true;
-    scrollTimer = setTimeout(function() {
-      scrollDir = 1; scrollPausing = false; runScroll();
-    }, scrollPause);
-    return;
-  }
-
-  el.scrollTop += scrollDir * scrollSpeed;
-  scrollTimer = setTimeout(runScroll, scrollInterval);
 }
 
 
@@ -2907,6 +2873,7 @@ function createMenu(){
   panel += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">DISPLAY</div>';
   panel += '<button class="menu-item" onclick="toggleFullscreen();toggleMenu()">&#x26F6; FULLSCREEN</button>';
   panel += '<button class="menu-item" id="bigfont-btn" onclick="toggleBigFont()">&#x1F4FA; TV MODE</button>';
+  panel += '<button class="menu-item" id="scroll-btn" onclick="toggleScroll()">&#x21C5; AUTO SCROLL</button>';
   panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
 
   // — FILTERS —
