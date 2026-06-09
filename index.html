@@ -1377,7 +1377,7 @@ function render(){
     var rookieFiltered = { total: 0, teams: {} };
     Object.entries(data.teams).forEach(function(e) {
       var tName = e[0], team = e[1];
-      var rookieReps = team.reps.filter(function(r){ return ROOKIE_NAMES.has(r.name); });
+      var rookieReps = team.reps.filter(function(r){ return ROOKIE_NAMES && ROOKIE_NAMES.has(r.name); });
       if (rookieReps.length > 0) {
         var tt = rookieReps.reduce(function(s,r){ return s+r.amount; }, 0);
         rookieFiltered.teams[tName] = { total: tt, reps: rookieReps, color: team.color };
@@ -1386,7 +1386,7 @@ function render(){
     });
     data = rookieFiltered;
   }
-  if (activeMarketFilters.size > 0 && data && data.teams) {
+  if (activeMarketFilters && activeMarketFilters.size > 0 && data && data.teams) {
     var mf = { total: 0, teams: {} };
     Object.entries(data.teams).forEach(function(e) {
       if (activeMarketFilters.has(e[0])) {
