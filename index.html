@@ -44,20 +44,6 @@
     .streaker-badge-anim{animation:streakBadgeGlow 1.4s ease-in-out infinite,streakTextShimmer 1.4s ease-in-out infinite}
 
     /* Spotlight */
-    #spotlight-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.92);backdrop-filter:blur(6px);align-items:center;justify-content:center;flex-direction:column;pointer-events:auto}
-    #spotlight-overlay.active{display:flex}
-    #spotlight-card{width:min(520px,90vw);background:rgba(15,23,42,0.97);border-radius:20px;overflow:hidden;box-shadow:0 0 80px var(--sp-color,#00D4FF),0 0 160px rgba(0,212,255,0.2);border:2px solid var(--sp-color,#00D4FF);animation:spCardIn 0.3s ease both}
-    #spotlight-header{padding:20px 24px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08)}
-    #spotlight-num{font-size:11px;font-family:"Orbitron",monospace;letter-spacing:3px;opacity:0.6}
-    #spotlight-name{font-family:"Orbitron",monospace;font-weight:900;font-size:26px;letter-spacing:2px;margin-top:4px}
-    #spotlight-total{font-family:"Orbitron",monospace;font-size:32px;font-weight:700;color:#fff;margin-top:6px}
-    #spotlight-reps{padding:12px 8px;max-height:55vh;overflow-y:auto}
-    #spotlight-nav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid rgba(255,255,255,0.06);font-family:"Orbitron",monospace;font-size:11px;color:#334155}
-    #spotlight-dots{display:flex;gap:6px}
-    .sp-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15);transition:background 0.3s;cursor:pointer}
-    .sp-dot.active{background:var(--sp-color,#00D4FF);box-shadow:0 0 6px var(--sp-color,#00D4FF)}
-    #spotlight-timer-bar{height:3px;background:rgba(255,255,255,0.06)}
-    #spotlight-timer-fill{height:100%;width:100%;background:var(--sp-color,#00D4FF);transition:width linear}
 
     /* TV bar */
     #tv-bar{position:fixed;bottom:16px;right:16px;display:flex;gap:8px;z-index:500}
@@ -387,19 +373,7 @@
 </div>
 
 <!-- SPOTLIGHT -->
-<div id="spotlight-overlay" style="display:none">
-  <div id="spotlight-card"></div>
-  <div id="spotlight-stats"></div>
-  <div id="spotlight-controls">
-    <div id="spotlight-timer-bar"><div id="spotlight-timer-fill"></div></div>
-    <div id="spotlight-nav">
-      <button onclick="spotlightPrev()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:18px">&#8592;</button>
-      <div id="spotlight-dots"></div>
-      <button onclick="spotlightNext()" style="background:transparent;border:none;color:#475569;cursor:pointer;font-size:18px">&#8594;</button>
-    </div>
-  </div>
-  <button onclick="stopSpotlight()" style="margin-top:20px;padding:8px 24px;border-radius:20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#94A3B8;font-family:Orbitron,monospace;font-size:11px;cursor:pointer;letter-spacing:1px">&#x2715; CLOSE SPOTLIGHT</button>
-</div>
+
 
 <!-- BIGGEST MOVER (legacy, hidden) -->
 <div id="biggest-mover" style="display:none"><div id="mover-content"></div></div>
@@ -1567,281 +1541,6 @@ function computeTitles(data) {
 }
 
 // ══ SPOTLIGHT ═══════════════════════════════════════════════════════════════════════
-var spTimer = null, spIdx = 0, spTeams = [], spActive = false, spPaused = false;
-var SP_DURATION = 5000;
-var spClockTimer = null;
-
-function startSpotlight() {
-  spTeams = Object.entries(state.data.teams).sort(function(a,b){ return b[1].total - a[1].total; });
-  if (spTeams.length === 0) return;
-  spIdx = 0; spActive = true;
-  document.getElementById("spotlight-overlay").classList.add("active");
-  // Scroll overlay to top
-  document.getElementById("spotlight-overlay").scrollTop = 0;
-  updateSpTopBar();
-  buildSpotlightDots();
-  showSpotlightCard(spIdx);
-  // Tick clock inside spotlight
-  spClockTimer = setInterval(updateSpTopBar, 1000);
-}
-
-function stopSpotlight() {
-  spActive = false;
-  spPaused = false;
-  clearTimeout(spTimer);
-  clearInterval(spClockTimer);
-  document.getElementById("spotlight-overlay").classList.remove("active");
-}
-
-function toggleSpotlightPause() {
-  spPaused = !spPaused;
-  var btn = document.getElementById("sp-pause-btn");
-  if (btn) btn.innerHTML = spPaused ? "&#x25B6; RESUME" : "&#x23F8; PAUSE";
-  if (!spPaused) {
-    // Resume auto-advance from current card
-    clearTimeout(spTimer);
-    var fill = document.getElementById("spotlight-timer-fill");
-    if (fill) {
-      fill.style.transition = "none";
-      fill.style.width = "100%";
-      setTimeout(function() {
-        fill.style.transition = "width " + SP_DURATION + "ms linear";
-        fill.style.width = "0%";
-      }, 50);
-    }
-    spTimer = setTimeout(function() {
-      spIdx = (spIdx + 1) % spTeams.length;
-      showSpotlightCard(spIdx);
-    }, SP_DURATION);
-  } else {
-    clearTimeout(spTimer);
-    var fill2 = document.getElementById("spotlight-timer-fill");
-    if (fill2) fill2.style.transition = "none";
-  }
-}
-
-function updateSpTopBar() {
-  // Clock
-  var now = new Date();
-  var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
-  var ampm = h >= 12 ? "PM" : "AM"; h = h % 12 || 12;
-  var pad = function(n){ return n<10?"0"+n:n; };
-  var clk = document.getElementById("sp-clock");
-  if (clk) clk.textContent = pad(h)+":"+pad(m)+":"+pad(s)+" "+ampm;
-  // Global progress
-  var total = state.data.total, goal = state.goal;
-  var pct = Math.min((total/goal)*100, 100).toFixed(1);
-  var fill = document.getElementById("sp-global-fill");
-  var amt  = document.getElementById("sp-global-amt");
-  if (fill) fill.style.width = pct + "%";
-  if (amt)  amt.textContent  = fmt(total) + " of " + fmt(goal) + " (" + pct + "%)";
-}
-
-function spotlightNext() {
-  clearTimeout(spTimer);
-  spIdx = (spIdx + 1) % spTeams.length;
-  showSpotlightCard(spIdx);
-}
-function spotlightPrev() {
-  clearTimeout(spTimer);
-  spIdx = (spIdx - 1 + spTeams.length) % spTeams.length;
-  showSpotlightCard(spIdx);
-}
-
-function buildSpotlightDots() {
-  var dots = document.getElementById("spotlight-dots");
-  if (!dots) return;
-  dots.innerHTML = "";
-  spTeams.forEach(function(entry, i) {
-    var d = document.createElement("div");
-    d.className = "sp-dot" + (i === spIdx ? " active" : "");
-    d.title = (entry[0].includes(" - ") ? entry[0].split(" - ").slice(1).join(" ").trim() : (function(){var _m=entry[0].match(/^(.+?)\s+(\d{4})$/);return _m?_m[1].trim():entry[0];})());
-    d.onclick = (function(idx){ return function(){ clearTimeout(spTimer); spIdx=idx; showSpotlightCard(idx); }; })(i);
-    dots.appendChild(d);
-  });
-}
-
-function showSpotlightCard(idx) {
-  if (!spActive) return;
-  var entry = spTeams[idx];
-  if (!entry) return;
-  var name = entry[0], team = entry[1];
-  var display = name.includes(" - ") ? name.split(" - ").slice(1).join(" ").trim() : (function(){var _m=name.match(/^(.+?)\s+(\d{4})$/);return _m?_m[1].trim():name;})();
-  var num = name.includes(" - ") ? name.split(" - ")[0].trim() : (function(){var _m=name.match(/^(.+?)\s+(\d{4})$/);return _m?_m[2].trim():"";})();
-  var color = team.color;
-  var reps = [].concat(team.reps).sort(function(a,b){ return b.amount-a.amount; });
-
-  // ── Header ────────────────────────────────────────────────────────────────
-  document.getElementById("spotlight-card").style.setProperty("--sp-color", color);
-  document.getElementById("spotlight-card").style.borderColor = color;
-  document.getElementById("spotlight-card").style.boxShadow = "0 0 60px "+color+"66, 0 0 120px "+color+"22";
-
-  var numEl = document.getElementById("spotlight-num");
-  numEl.textContent = num; numEl.style.color = color;
-
-  var nameEl = document.getElementById("spotlight-name");
-  nameEl.textContent = display.toUpperCase();
-  nameEl.style.color = color;
-  nameEl.style.textShadow = "0 0 30px " + color;
-
-  document.getElementById("spotlight-total").textContent = fmt(team.total);
-
-  // Store rank badge
-  var rankNum = idx + 1;
-  var rankLabel = rankNum===1?"#1 OVERALL":rankNum===2?"#2 OVERALL":"#"+rankNum+" OVERALL";
-  var rankColor = rankNum===1?"#FFD700":rankNum===2?"#C0C0C0":"#CD7F32";
-  var rb = document.getElementById("spotlight-rank-badge");
-  rb.textContent = rankLabel;
-  rb.style.cssText = "display:inline-block;margin-top:8px;padding:4px 14px;border-radius:20px;font-family:Orbitron,monospace;font-size:11px;font-weight:700;letter-spacing:1px;background:"+rankColor+"22;border:1px solid "+rankColor+"66;color:"+rankColor;
-
-  // ── Stats Grid ────────────────────────────────────────────────────────────
-  var totalDeals  = reps.reduce(function(s,r){ return s+(r.deals?r.deals.length:1); }, 0);
-  var avgDeal     = totalDeals > 0 ? team.total / totalDeals : 0;
-  var biggestDeal = 0, biggestRep = "-";
-  var mostDealsN  = 0, mostDealsRep = "-";
-  var topRep      = reps.length > 0 ? reps[0] : null;
-
-  reps.forEach(function(r) {
-    var deals = r.deals || [r.amount];
-    var maxD = Math.max.apply(null, deals);
-    if (maxD > biggestDeal) { biggestDeal = maxD; biggestRep = r.name; }
-    if (deals.length > mostDealsN) { mostDealsN = deals.length; mostDealsRep = r.name; }
-  });
-
-
-  // Collect ALL deal objects across reps, sorted newest first
-  var allDealObjs = [];
-  reps.forEach(function(r) {
-    (r.dealObjs||[{amount:r.amount,date:null}]).forEach(function(obj){
-      allDealObjs.push({name:r.name,amount:obj.amount,date:obj.date});
-    });
-  });
-  allDealObjs.sort(function(a,b){
-    if(a.date&&b.date) return b.date-a.date;
-    return b.amount-a.amount;
-  });
-  var last10      = allDealObjs.slice(0,10);
-  var last10Total = last10.reduce(function(s,d){return s+d.amount;},0);
-  var last10Avg   = last10.length>0?Math.round(last10Total/last10.length):0;
-
-  // Extra metrics
-  var latestDate=null,latestRep="-",latestAmt=0,todayTotal2=0,todayDeals2=0;
-  reps.forEach(function(r){
-    if(r.latestDate&&(!latestDate||r.latestDate>latestDate)){
-      latestDate=r.latestDate;latestRep=r.name;
-      var obj=(r.dealObjs||[]).find(function(o){return o.date&&o.date.getTime()===r.latestDate.getTime();});
-      latestAmt=obj?obj.amount:0;
-    }
-    todayTotal2+=(r.todayTotal||0);
-    if(r.todayTotal>0) todayDeals2+=(r.dealObjs||[]).filter(function(o){return o.isToday;}).length;
-  });
-  var stats = [
-    { icon:"#", label:"TOTAL DEALS",  value: totalDeals,                sub: totalDeals===1?"deal":"deals" },
-    { icon:"$", label:"AVG DEAL",      value: fmt(Math.round(avgDeal)),  sub: "per deal" },
-    { icon:"*", label:"LARGEST DEAL",  value: fmt(biggestDeal),          sub: biggestRep },
-    { icon:"!", label:"MOST ACTIVE",   value: mostDealsN+" deals",       sub: mostDealsRep },
-    { icon:"@", label:"MOST RECENT",   value: latestDate?formatShortDate(latestDate):"-", sub: latestRep+(latestAmt?" - "+fmt(latestAmt):"") },
-    { icon:"~", label:"TODAY",         value: todayDeals2>0?fmt(todayTotal2):"--", sub: todayDeals2>0?todayDeals2+" deal"+(todayDeals2>1?"s":"")+" today":"no deals today" },
-    { icon:"10", label:"LAST 10 SALES", value: last10.length>0?fmt(last10Total):"--", sub: last10.length+" deals - avg "+fmt(last10Avg) },
-    { icon:"+", label:"TOP REP",        value: topRep?fmt(topRep.amount):"-", sub: topRep?topRep.name:"" },
-    { icon:"^", label:"ACTIVE REPS",   value: reps.length,               sub: "on the board" },
-  ];
-
-  // Build last 10 mini list HTML (appended after stats)
-  var last10HTML = "";
-  if (last10.length > 0) {
-    last10HTML = '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07)">' +
-      '<div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:2px;margin-bottom:8px">LAST '+last10.length+' SALES</div>';
-    last10.forEach(function(d, i) {
-      var db = getBadge(d.amount);
-      last10HTML += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)">' +
-        '<span style="font-size:10px;color:#334155;width:16px;text-align:center;font-family:Orbitron,monospace">'+(i+1)+'</span>' +
-        '<span style="flex:1;font-size:12px;color:#94A3B8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+d.name+'</span>' +
-        (d.date?'<span style="font-size:10px;color:#334155">'+formatShortDate(d.date)+'</span>':'') +
-        (db?'<span style="font-size:12px">'+db.icon+'</span>':'') +
-        '<span style="font-family:Orbitron,monospace;font-size:12px;font-weight:700;color:'+color+'">'+fmt(d.amount)+'</span>' +
-        '</div>';
-    });
-    last10HTML += '</div>';
-  }
-
-  var statsEl = document.getElementById("sp-stats");
-  statsEl.innerHTML = "";
-  stats.forEach(function(s) {
-    var el = document.createElement("div");
-    el.className = "sp-stat";
-    el.innerHTML =
-      '<span style="font-size:22px;flex-shrink:0">'+s.icon+'</span>'+
-      '<div style="flex:1;min-width:0">'+
-        '<div class="sp-stat-label">'+s.label+'</div>'+
-        '<div class="sp-stat-value" style="color:'+color+'">'+s.value+'</div>'+
-        (s.sub?'<div class="sp-stat-sub">'+s.sub+'</div>':'')+
-      '</div>';
-    statsEl.appendChild(el);
-  });
-  if (last10HTML) statsEl.insertAdjacentHTML('beforeend', last10HTML);
-
-  // ── Rep Leaderboard ───────────────────────────────────────────────────────
-  var repsEl = document.getElementById("spotlight-reps");
-  repsEl.innerHTML = '<div style="font-family:Orbitron,monospace;font-size:10px;color:#334155;letter-spacing:2px;padding:8px 14px 4px">REP LEADERBOARD</div>';
-
-  reps.forEach(function(rep, i) {
-    var rank = i+1;
-    var rankColor = rank===1?"#FFD700":rank===2?"#C0C0C0":rank===3?"#CD7F32":color;
-    var badge = getBadge(rep.amount);
-    var key = rep.name+"|"+name;
-    var sl = getStreakLevel(key);
-    var deals = rep.deals || [rep.amount];
-    var rc = rank===1?"rank1":rank===2?"rank2":rank===3?"rank3":"";
-
-    // Highlight badges for this rep
-    var highlights = [];
-    if (rep === reps[0]) highlights.push('<span class="sp-highlight-badge" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);color:#FFD700">&#x2B50; TEAM LEADER</span>');
-    if (rep.amount === biggestDeal) highlights.push('<span class="sp-highlight-badge" style="background:#FFD70022;border:1px solid #FFD70066;color:#FFD700">&#x1F4B0; BIGGEST DEAL</span>');
-    if (deals.length === mostDealsN && mostDealsN > 1) highlights.push('<span class="sp-highlight-badge" style="background:#00FF8822;border:1px solid #00FF8866;color:#00FF88">&#x1F4CA; MOST DEALS</span>');
-    if (sl >= 10) highlights.push(streakBadgeHTML(sl));
-
-    var row = document.createElement("div");
-    row.className = "sp-rep-row "+rc;
-    if (rank===2) row.style.borderLeftColor = "#C0C0C0";
-    if (rank===3) row.style.borderLeftColor = "#CD7F32";
-    row.innerHTML =
-      '<span class="sp-rep-rank" style="color:'+rankColor+'">'+rank+'</span>'+
-      '<div style="flex:1;min-width:0">'+
-        '<div class="sp-rep-name">'+rep.name+
-          (deals.length>1?'<span class="sp-rep-deals">('+deals.length+' deals)</span>':'')+'</div>'+
-        (highlights.length?'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">'+highlights.join("")+'</div>':'')+'</div>'+
-      (badge?'<span style="font-size:18px;flex-shrink:0">'+badge.icon+'</span>':'')+
-      '<span class="sp-rep-amt" style="color:'+(rank===1?"#FFD700":rankColor)+'">'+fmt(rep.amount)+'</span>';
-    repsEl.appendChild(row);
-  });
-
-  // ── Dots + Timer ──────────────────────────────────────────────────────────
-  document.querySelectorAll(".sp-dot").forEach(function(d,i){ d.classList.toggle("active", i===idx); });
-
-  var fill = document.getElementById("spotlight-timer-fill");
-  if (fill) {
-    fill.style.transition = "none"; fill.style.width = "100%";
-    fill.style.background = color;
-    setTimeout(function() {
-      fill.style.transition = "width " + SP_DURATION + "ms linear";
-      fill.style.width = "0%";
-    }, 50);
-  }
-
-  // Scroll card into view
-  var inner = document.getElementById("spotlight-inner");
-  if (inner) inner.scrollTop = 0;
-
-  // Auto-advance (only if not paused)
-  if (!spPaused) {
-    spTimer = setTimeout(function() {
-      spIdx = (spIdx + 1) % spTeams.length;
-      showSpotlightCard(spIdx);
-    }, SP_DURATION);
-  }
-}
-
 // ══ TV BIG FONT MODE ══════════════════════════════════════════════════════════
 var tvBigFont = false;
 function toggleBigFont() {
@@ -2372,13 +2071,19 @@ function toggleScroll() {
 }
 
 function getScrollEl() {
+  // In fullscreen, try the fullscreen element first, then body, then documentElement
   var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
-  // Any fullscreen element with scrollable content — including documentElement
-  if (fsEl && fsEl.scrollHeight > fsEl.clientHeight) return fsEl;
-  // Not in fullscreen — scroll the page normally
-  return document.documentElement.scrollHeight > document.documentElement.clientHeight
-    ? document.documentElement
-    : null;
+  if (fsEl) {
+    // Walk up from body to find which ancestor is actually scrolling
+    var candidates = [document.body, document.documentElement, fsEl];
+    for (var i = 0; i < candidates.length; i++) {
+      var el = candidates[i];
+      if (el && el.scrollHeight > el.clientHeight + 2) return el;
+    }
+  }
+  // Not fullscreen — body or documentElement
+  if (document.body.scrollHeight > document.body.clientHeight + 2) return document.body;
+  return document.documentElement;
 }
 
 function runScroll() {
@@ -3207,7 +2912,6 @@ function createMenu(){
 
   // — DISPLAY —
   panel += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">DISPLAY</div>';
-  panel += '<button class="menu-item" onclick="startSpotlight();toggleMenu()">&#x2605; SPOTLIGHT</button>';
   panel += '<button class="menu-item" onclick="toggleFullscreen();toggleMenu()">&#x26F6; FULLSCREEN</button>';
   panel += '<button class="menu-item" id="bigfont-btn" onclick="toggleBigFont()">&#x1F4FA; TV MODE</button>';
   panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
