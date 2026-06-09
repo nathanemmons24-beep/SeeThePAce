@@ -1075,7 +1075,7 @@ function render(){
     var strip = document.getElementById('blitz-bar-strip');
     if (!strip) return;
     var bd = getBlitzData();
-    if (bd && bd.total > 0) {
+    if (bd && bd.total > 0 && blitzUnlocked) {
       strip.style.display = 'block';
       var pct = Math.min((bd.total / BLITZ_GOAL) * 100, 100);
       document.getElementById('blitz-bar-total').textContent = fmtB(bd.total);
