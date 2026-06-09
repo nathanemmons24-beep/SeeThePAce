@@ -19,7 +19,7 @@
     ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
 
     /* Clock */
-    #blitz-clock{font-family:"Orbitron",monospace;font-size:clamp(14px,2.5vw,22px);color:#475569;letter-spacing:3px;text-align:center;margin-bottom:0;position:sticky;top:0;z-index:200;background:#060B18;padding:10px 0 6px;border-bottom:1px solid rgba(255,255,255,0.04)}
+    #blitz-clock{font-family:"Orbitron",monospace;font-size:clamp(14px,2.5vw,22px);color:#475569;letter-spacing:3px;text-align:center;position:fixed;top:0;left:0;right:0;z-index:200;background:#060B18;padding:10px 0 6px;border-bottom:1px solid rgba(255,255,255,0.06)}
     #blitz-clock span{color:#64748B}
 
     /* Hot streak */
@@ -55,8 +55,8 @@
     .tv-btn-scroll.active{background:rgba(0,255,136,0.25);box-shadow:0 0 12px rgba(0,255,136,0.4)}
 
     /* App layout */
-    #app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px 16px}
-    #header{text-align:center;margin-bottom:20px}
+    #app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px 16px;padding-top:130px}
+    #header{text-align:center;margin-bottom:20px;position:fixed;top:46px;left:0;right:0;z-index:199;background:#060B18;padding:10px 16px 8px;border-bottom:1px solid rgba(255,255,255,0.05)}
     #blitz-title{font-family:"Orbitron",monospace;font-weight:900;font-size:clamp(24px,5vw,44px);letter-spacing:4px;background:linear-gradient(135deg,#00D4FF,#00FF88,#FFD700);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite;margin-bottom:6px}
     #subtitle{font-size:12px;color:#334155;font-family:"Orbitron",monospace;letter-spacing:3px}
     #status-dot{margin-left:12px}
