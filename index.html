@@ -396,17 +396,8 @@
   <!-- BLITZ BRACKET BREAKDOWN — visible when blitz filter active -->
   <div id="blitz-bracket-section" style="display:none;margin-bottom:16px"></div>
 
-  <!-- TOP ROOKIE + TOP BLITZER PANELS -->
-  <div id="blitz-panels-row" style="display:none">
-    <div class="blitz-panel">
-      <div class="blitz-panel-title">⭐ TOP ROOKIES</div>
-      <div id="blitz-rookie-panel-content"></div>
-    </div>
-    <div class="blitz-panel">
-      <div class="blitz-panel-title">🔥 TOP BLITZERS</div>
-      <div id="blitz-blitzer-panel-content"></div>
-    </div>
-  </div>
+  <!-- BLITZ BRACKET LEADERBOARDS — 3 cards side by side -->
+  <div id="blitz-panels-row" style="display:none"></div>
 
 
 
@@ -2681,58 +2672,65 @@ function renderBlitzPanels(blitzData) {
     });
   });
 
-  // ── TOP ROOKIE PANEL ─────────────────────────────────────────────────────
-  var rookieEl = document.getElementById('blitz-rookie-panel-content');
-  if (rookieEl) {
-    var rhtml = '';
-    BRACKET_ORDER.forEach(function(bName) {
-      var rookies = tops[bName].rookies.slice(0, 3);
-      if (rookies.length === 0) return;
-      var bColor = BRACKET_COLORS[bName];
-      rhtml += '<div class="blitz-group-label" style="color:'+bColor+';background:'+bColor+'18;border:1px solid '+bColor+'40">' + bName.replace(' Markets','') + '</div>';
+  var panelsRow = document.getElementById('blitz-panels-row');
+  if (!panelsRow) return;
+
+  var html = '<div style="display:flex;gap:12px;width:100%">';
+  BRACKET_ORDER.forEach(function(bName) {
+    var bColor = BRACKET_COLORS[bName];
+    var blitzers = tops[bName].all.slice(0, 5);
+    var rookies  = tops[bName].rookies.slice(0, 3);
+    var bracketTotal = blitzData.brackets[bName] ? blitzData.brackets[bName].total : 0;
+    if (blitzers.length === 0) return;
+
+    html += '<div style="flex:1;min-width:0;background:rgba(10,15,30,0.85);border:1px solid '+bColor+'40;border-top:2px solid '+bColor+';border-radius:12px;padding:14px;backdrop-filter:blur(14px)">';
+
+    // Card header
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06)">';
+    html += '<span style="font-family:Orbitron,monospace;font-size:10px;font-weight:700;color:'+bColor+';letter-spacing:1px">'+bName.replace(' Markets','').toUpperCase()+'</span>';
+    html += '<span style="font-family:Orbitron,monospace;font-size:11px;font-weight:900;color:#E2E8F0">'+fmtB(bracketTotal)+'</span>';
+    html += '</div>';
+
+    // TOP BLITZERS section
+    html += '<div style="font-family:Orbitron,monospace;font-size:8px;letter-spacing:2px;color:#475569;margin-bottom:6px">\uD83D\uDD25 TOP BLITZERS</div>';
+    blitzers.forEach(function(rep, i) {
+      var gap = i > 0 ? '-'+fmtB(blitzers[0].amount - rep.amount) : '';
+      var isRookie = ROOKIE_NAMES && ROOKIE_NAMES.has(rep.name);
+      var isTopRookie = blitzTopRookieMap[rep.name];
+      html += '<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03)">';
+      if (i===0) html += '<span class="blitzer-badge-1">\u26A11</span>';
+      else if (i===1) html += '<span class="blitzer-badge-2">\u26A12</span>';
+      else if (i===2) html += '<span class="blitzer-badge-3">\u26A13</span>';
+      else html += '<span class="hunt-badge">\u26A1 HUNT</span>';
+      if (isTopRookie) html += '<span class="top-rookie-badge">R</span>';
+      else if (isRookie) html += '<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px">R</span>';
+      html += '<span style="flex:1;font-family:\'Exo 2\',sans-serif;font-size:12px;color:#CBD5E1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+rep.name+'</span>';
+      html += '<span style="font-family:Orbitron,monospace;font-size:10px;color:#E2E8F0;flex-shrink:0">'+fmtB(rep.amount)+'</span>';
+      if (gap) html += '<span style="font-family:Orbitron,monospace;font-size:8px;color:#475569;flex-shrink:0;min-width:52px;text-align:right">'+gap+'</span>';
+      html += '</div>';
+    });
+
+    // TOP ROOKIE section
+    if (rookies.length > 0) {
+      html += '<div style="font-family:Orbitron,monospace;font-size:8px;letter-spacing:2px;color:#475569;margin:10px 0 6px">\u2B50 TOP ROOKIE</div>';
       rookies.forEach(function(rep, i) {
-        var gap = i > 0 ? ' -' + fmt(rookies[0].amount - rep.amount) : '';
-        rhtml += '<div class="blitz-rep-row">';
-        if (i === 0) {
-          rhtml += '<span class="top-rookie-badge">R</span>';
-        } else {
-          rhtml += '<span class="rookie-star" style="animation:none;width:16px;height:16px;font-size:8px;opacity:0.6">R</span>';
-        }
-        rhtml += '<span class="blitz-rep-name">'+rep.name+'</span>';
-        rhtml += '<span class="blitz-rep-amt">'+fmt(rep.amount)+'</span>';
-        if (gap) rhtml += '<span class="blitz-gap">'+gap+'</span>';
-        rhtml += '</div>';
+        var gap = i > 0 ? '-'+fmtB(rookies[0].amount - rep.amount) : '';
+        html += '<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03)">';
+        if (i===0) html += '<span class="top-rookie-badge">R</span>';
+        else html += '<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px;opacity:0.6">R</span>';
+        html += '<span style="flex:1;font-family:\'Exo 2\',sans-serif;font-size:12px;color:#CBD5E1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+rep.name+'</span>';
+        html += '<span style="font-family:Orbitron,monospace;font-size:10px;color:#E2E8F0;flex-shrink:0">'+fmtB(rep.amount)+'</span>';
+        if (gap) html += '<span style="font-family:Orbitron,monospace;font-size:8px;color:#475569;flex-shrink:0;min-width:52px;text-align:right">'+gap+'</span>';
+        html += '</div>';
       });
-    });
-    rookieEl.innerHTML = rhtml || '<div style="color:#334155;font-size:11px;text-align:center;padding:8px">No rookies in data</div>';
-  }
+    }
 
-  // ── TOP BLITZER PANEL ─────────────────────────────────────────────────────
-  var blitzerEl = document.getElementById('blitz-blitzer-panel-content');
-  if (blitzerEl) {
-    var bhtml = '';
-    BRACKET_ORDER.forEach(function(bName) {
-      var all = tops[bName].all.slice(0, 5);
-      if (all.length === 0) return;
-      var bColor = BRACKET_COLORS[bName];
-      bhtml += '<div class="blitz-group-label" style="color:'+bColor+';background:'+bColor+'18;border:1px solid '+bColor+'40">' + bName.replace(' Markets','') + '</div>';
-      all.forEach(function(rep, i) {
-        var gap = i > 0 ? ' -' + fmt(all[0].amount - rep.amount) : '';
-        bhtml += '<div class="blitz-rep-row">';
-        if (i === 0) bhtml += '<span class="blitzer-badge-1">⚡1</span>';
-        else if (i === 1) bhtml += '<span class="blitzer-badge-2">⚡2</span>';
-        else if (i === 2) bhtml += '<span class="blitzer-badge-3">⚡3</span>';
-        else bhtml += '<span class="hunt-badge">⚡ HUNT</span>';
-        bhtml += '<span class="blitz-rep-name">'+rep.name+'</span>';
-        bhtml += '<span class="blitz-rep-amt">'+fmt(rep.amount)+'</span>';
-        if (gap) bhtml += '<span class="blitz-gap">'+gap+'</span>';
-        bhtml += '</div>';
-      });
-    });
-    blitzerEl.innerHTML = bhtml;
-  }
+    html += '</div>';
+  });
+
+  html += '</div>';
+  panelsRow.innerHTML = html;
 }
-
 function getBlitzTopRookieByBracket(blitzData) {
   // Returns map of bracketName -> top rookie name (for badge injection in cards)
   var result = {};
