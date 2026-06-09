@@ -232,6 +232,31 @@
     #stp-loading-ring{display:none}
     #stp-loading-text{display:none;font-family:Orbitron,monospace;font-size:11px;color:#334155;letter-spacing:4px;animation:stp-pulse 1.5s ease-in-out infinite}
 
+    @keyframes blitz-electric{
+      0%{background-position:0% 50%;box-shadow:0 0 12px #7C3AED,0 0 30px rgba(124,58,237,0.4)}
+      25%{box-shadow:0 0 20px #A855F7,0 0 50px rgba(168,85,247,0.6),0 0 80px rgba(0,212,255,0.2)}
+      50%{background-position:100% 50%;box-shadow:0 0 16px #00D4FF,0 0 40px rgba(0,212,255,0.5)}
+      75%{box-shadow:0 0 24px #A855F7,0 0 60px rgba(168,85,247,0.7),0 0 100px rgba(124,58,237,0.3)}
+      100%{background-position:0% 50%;box-shadow:0 0 12px #7C3AED,0 0 30px rgba(124,58,237,0.4)}
+    }
+    @keyframes blitz-scanline{
+      0%{transform:translateX(-100%)}
+      100%{transform:translateX(400%)}
+    }
+    #blitz-bar-fill{
+      background:linear-gradient(90deg,#4C0080,#7C3AED,#A855F7,#C084FC,#00D4FF,#A855F7,#7C3AED,#4C0080);
+      background-size:300% 100%;
+      animation:blitz-electric 2s ease-in-out infinite;
+      position:relative;overflow:hidden;
+    }
+    #blitz-bar-fill::after{
+      content:'';position:absolute;top:0;left:0;width:40px;height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.6),transparent);
+      animation:blitz-scanline 2.5s linear infinite;
+    }
+    #blitz-bar-strip{border:1px solid rgba(168,85,247,0.4) !important;}
+    body.blitz-active #milestone-section{display:none !important}
+    body.blitz-active #total-display{display:none !important}
     #badge-legend-fixed{position:fixed;bottom:0;left:0;right:0;z-index:500;background:rgba(6,11,24,0.15);border-top:1px solid rgba(255,255,255,0.05);padding:10px 20px;backdrop-filter:blur(4px);display:flex;align-items:center;gap:0;justify-content:space-around;opacity:0.25;transition:opacity 0.3s,background 0.3s,backdrop-filter 0.3s}
     #badge-legend-fixed:hover{opacity:1;background:rgba(6,11,24,0.97);backdrop-filter:blur(20px);border-top-color:rgba(255,255,255,0.1)}
     #badge-legend-fixed .bl-title{display:none}
@@ -2396,7 +2421,7 @@ function closeBlitz() {
   if (panel) panel.style.display = "none";
   var btn = document.getElementById("blitz-event-btn");
   if (btn) btn.style.color = "#FFD700";
-  // Restore original background
+  document.body.classList.remove('blitz-active');
   document.body.style.background = "#060B18";
   document.body.style.backgroundAttachment = "";
   var bgOverlay = document.getElementById("blitz-bg-overlay");
@@ -2430,7 +2455,7 @@ function activateBlitzFilter() {
   if (panel) panel.style.display = "block";
   var btn = document.getElementById("blitz-event-btn");
   if (btn) btn.style.color = "#00FF88";
-  // Blitz background theme
+  document.body.classList.add('blitz-active');
   document.body.style.background = "linear-gradient(135deg, #0D0620 0%, #130830 30%, #0A1628 60%, #060B18 100%)";
   document.body.style.backgroundAttachment = "fixed";
   // Add purple grid overlay
