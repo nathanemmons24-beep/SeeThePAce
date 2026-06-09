@@ -1153,6 +1153,16 @@ function render(){
     });
     data = rookieFiltered;
   }
+  if (activeMarketFilters.size > 0 && data && data.teams) {
+    var mf = { total: 0, teams: {} };
+    Object.entries(data.teams).forEach(function(e) {
+      if (activeMarketFilters.has(e[0])) {
+        mf.teams[e[0]] = e[1];
+        mf.total += e[1].total;
+      }
+    });
+    data = mf;
+  }
   var DAYS_IN_MONTH=30;
   var goal=filterDay?(state.goal/DAYS_IN_MONTH):state.goal;
   var total=data.total,pct=Math.min((total/goal)*100,115);
@@ -2135,11 +2145,7 @@ var filterRookies = false;
 
 function toggleRookieFilter() {
   filterRookies = !filterRookies;
-  var btn = document.getElementById('rookie-filter-btn');
-  if (btn) {
-    btn.classList.toggle('active', filterRookies);
-    btn.innerHTML = filterRookies ? '&#x2B50; ROOKIES ONLY &#x2713;' : '&#x2B50; ROOKIES ONLY';
-  }
+  updateMenuStates();
   render();
 }
 
@@ -2165,10 +2171,18 @@ var CONSOLIDATE_COLORS = {
 
 // Always-on merges (regardless of Consolidate toggle)
 var ALWAYS_MERGE = {
-  "0914 - Central GTA":       { group: "Toronto 0914",   color: "#A855F7" },
-  "0914 - Eastern GTA":       { group: "Toronto 0914",   color: "#A855F7" },
-  "0535 - Central Northern NJ": { group: "0535 - New Jersey", color: "#00FF88" },
-  "0535 - New Jersey":          { group: "0535 - New Jersey", color: "#00FF88" },
+  "0914 - Central GTA":         { group: "Toronto 0914",        color: "#A855F7" },
+  "0914 - Eastern GTA":         { group: "Toronto 0914",        color: "#A855F7" },
+  "0535 - Central Northern NJ": { group: "0535 - New Jersey",   color: "#00FF88" },
+  "0535 - New Jersey":          { group: "0535 - New Jersey",   color: "#00FF88" },
+  "0930 - Atlanta":             { group: "0930 - Georgia",      color: "#34D399" },
+  "0930 - Eastern GA":          { group: "0930 - Georgia",      color: "#34D399" },
+  "0930 - Southern GA":         { group: "0930 - Georgia",      color: "#34D399" },
+  "0930 - Georgia":             { group: "0930 - Georgia",      color: "#34D399" },
+  "0868 - So Bend":             { group: "0868 - South Bend",   color: "#60A5FA" },
+  "0868 - South Bend":          { group: "0868 - South Bend",   color: "#60A5FA" },
+  "0790 - Tri-Cities TN":       { group: "0790 - Knoxville",    color: "#F59E0B" },
+  "0790 - Knoxville":           { group: "0790 - Knoxville",    color: "#F59E0B" },
 };
 
 function mergeAlways(rawData) {
@@ -2254,31 +2268,19 @@ function consolidateData(rawData) {
 }
 function toggleConsolidated() {
   filterConsolidated = !filterConsolidated;
-  var btn = document.getElementById('consolidated-btn');
-  if (btn) {
-    btn.classList.toggle('active', filterConsolidated);
-    btn.innerHTML = filterConsolidated
-      ? '&#x1F5FA; CONSOLIDATED &#x2713;'
-      : '&#x1F5FA; CONSOLIDATED';
-  }
   var banner = document.getElementById('consolidated-banner');
   if (banner) banner.style.display = filterConsolidated ? 'block' : 'none';
+  updateMenuStates();
   render();
 }
 
 function toggleTodayFilter() {
   filterToday = !filterToday;
   var btn = document.getElementById('today-filter-btn');
-  if (btn) {
-    btn.classList.toggle('active', filterToday);
-    btn.innerHTML = filterToday
-      ? '&#x2600;&#xFE0F; TODAY ONLY &#x2713;'
-      : '&#x2600;&#xFE0F; TODAY ONLY';
-  }
-  // Show a banner when filter is active
+  if (btn) { btn.classList.toggle('active', filterToday); btn.innerHTML = filterToday ? '&#x2600;&#xFE0F; TODAY ONLY &#x2713;' : '&#x2600;&#xFE0F; TODAY ONLY'; }
   var banner = document.getElementById('today-filter-banner');
   if (banner) banner.style.display = filterToday ? 'block' : 'none';
-  // Re-render with filtered data
+  updateMenuStates();
   render();
 }
 
@@ -2290,6 +2292,7 @@ function toggleMenu() {
   panel.style.display = menuOpen ? 'block' : 'none';
   btn.innerHTML = menuOpen ? '&#x2715;' : '&#x2630;';
   btn.style.transform = menuOpen ? 'rotate(90deg)' : 'rotate(0deg)';
+  if (menuOpen) buildMarketFilterList();
 }
 // Close menu on outside click
 document.addEventListener('click', function(e) {
@@ -2301,8 +2304,14 @@ document.addEventListener('click', function(e) {
 function updateMenuStates() {
   var sBtn = document.getElementById('scroll-btn');
   var fBtn = document.getElementById('bigfont-btn');
+  var tBtn = document.getElementById('today-filter-btn-menu');
+  var rBtn = document.getElementById('rookie-filter-btn');
+  var cBtn = document.getElementById('consolidated-btn');
   if (sBtn) sBtn.classList.toggle('active', scrollActive);
   if (fBtn) fBtn.classList.toggle('active', tvBigFont);
+  if (tBtn) { tBtn.classList.toggle('active', filterToday); tBtn.innerHTML = filterToday ? '&#x1F4C5; TODAY ONLY &#x2713;' : '&#x1F4C5; TODAY ONLY'; }
+  if (rBtn) { rBtn.classList.toggle('active', filterRookies); rBtn.innerHTML = filterRookies ? '&#x2B50; ROOKIES ONLY &#x2713;' : '&#x2B50; ROOKIES ONLY'; }
+  if (cBtn) { cBtn.classList.toggle('active', filterConsolidated); cBtn.innerHTML = filterConsolidated ? '&#x1F5FA; CONSOLIDATED &#x2713;' : '&#x1F5FA; CONSOLIDATED'; }
 }
 
 // ══ FULLSCREEN ══════════════════════════════════════════════════════════════════
@@ -2412,17 +2421,18 @@ var blitzUnlocked = false;
 
 var BLITZ_BRACKETS = {
   "Large Markets": {
-    stores: ["0930 - Atlanta","0930 - Eastern GA","0930 - Southern GA",
-             "0535 - Central Northern NJ","0535 - New Jersey","0800 - Long Island",
+    stores: ["0930 - Georgia","0930 - Atlanta","0930 - Eastern GA","0930 - Southern GA",
+             "0535 - New Jersey","0535 - Central Northern NJ","0800 - Long Island",
              "0890 - San Francisco","0576 - Cincinnati"],
     color: "#00FF88", accent: "#FFD700"
   },
   "Medium Markets": {
-    stores: ["0867 - Indy","0534 - Westchester","0791 - Nashville","0868 - So Bend"],
+    stores: ["0867 - Indy","0534 - Westchester","0791 - Nashville","0868 - South Bend","0868 - So Bend"],
     color: "#FFD700", accent: "#00FF88"
   },
   "Small Markets": {
-    stores: ["0914 - Central GTA","0914 - Eastern GTA","0790 - Knoxville","0792 - Chattanooga","0790 - Tri-Cities TN"],
+    stores: ["0914 - Central GTA","0914 - Eastern GTA","Toronto 0914",
+             "0790 - Knoxville","0790 - Tri-Cities TN","0792 - Chattanooga"],
     color: "#00D4FF", accent: "#FFD700"
   }
 };
@@ -3181,26 +3191,88 @@ function createMenu(){
   wrap.id = 'menu-btn-wrap';
   wrap.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;width:52px;height:52px;';
 
-  var panel = '<div id="menu-panel" style="display:none;position:absolute;bottom:60px;right:0;background:rgba(10,18,35,0.97);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:8px;width:210px;box-shadow:0 8px 40px rgba(0,0,0,0.8);backdrop-filter:blur(20px)">';
+  var panel = '<div id="menu-panel" style="display:none;position:absolute;bottom:60px;right:0;background:rgba(10,18,35,0.97);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:8px;width:270px;box-shadow:0 8px 40px rgba(0,0,0,0.8);backdrop-filter:blur(20px);max-height:80vh;overflow-y:auto;scrollbar-width:thin">';
+
+  // — CONTROLS —
   panel += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">CONTROLS</div>';
   panel += '<button class="menu-item" onclick="openAdmin();toggleMenu()">&#x2699; ADMIN</button>';
   panel += '<button class="menu-item" onclick="openBlitz();toggleMenu()" style="color:#FFD700">&#x2728; SPECIAL EVENT</button>';
   panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
+
+  // — DISPLAY —
   panel += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">DISPLAY</div>';
-  panel += '<button class="menu-item" onclick="startSpotlight();toggleMenu()">★ SPOTLIGHT</button>';
+  panel += '<button class="menu-item" onclick="startSpotlight();toggleMenu()">&#x2605; SPOTLIGHT</button>';
   panel += '<button class="menu-item" onclick="toggleFullscreen();toggleMenu()">&#x26F6; FULLSCREEN</button>';
   panel += '<button class="menu-item" id="bigfont-btn" onclick="toggleBigFont()">&#x1F4FA; TV MODE</button>';
   panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
-  panel += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FILTER</div>';
 
+  // — FILTERS —
+  panel += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FILTERS</div>';
   panel += '<button class="menu-item" id="consolidated-btn" onclick="toggleConsolidated()">&#x1F5FA; CONSOLIDATED</button>';
   panel += '<button class="menu-item" id="rookie-filter-btn" onclick="toggleRookieFilter()">&#x2B50; ROOKIES ONLY</button>';
+  panel += '<button class="menu-item" id="today-filter-btn-menu" onclick="toggleTodayFilter()">&#x1F4C5; TODAY ONLY</button>';
+  panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
+
+  // — MARKETS —
+  panel += '<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 12px 4px">';
+  panel +=   '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px">MARKETS</div>';
+  panel +=   '<button onclick="clearMarketFilter()" style="font-family:Orbitron,monospace;font-size:8px;color:#334155;background:none;border:none;cursor:pointer;letter-spacing:1px;padding:2px 4px;border-radius:4px" id="market-clear-btn">CLEAR</button>';
+  panel += '</div>';
+  panel += '<div id="market-filter-list" style="padding:2px 4px 4px"></div>';
+
   panel += '</div>';
 
   wrap.innerHTML =
     '<button id="menu-toggle" onclick="toggleMenu()" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#4F46E5);border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.5);display:flex;align-items:center;justify-content:center;position:relative;z-index:1">&#x2630;</button>' + panel;
 
   document.body.appendChild(wrap);
+}
+
+// ── MARKET FILTER ─────────────────────────────────────────────────────────────
+var activeMarketFilters = new Set(); // empty = show all
+
+function buildMarketFilterList() {
+  var list = document.getElementById('market-filter-list');
+  if (!list) return;
+  if (!state.data || !state.data.teams) { list.innerHTML = '<div style="font-size:10px;color:#334155;padding:4px 8px">No data yet</div>'; return; }
+
+  var teams = Object.keys(state.data.teams).sort();
+  list.innerHTML = teams.map(function(name) {
+    var display = name.includes(' - ') ? name.split(' - ').slice(1).join(' ').trim()
+                : (function(){ var m = name.match(/^(.+?)\s+(\d{4})$/); return m ? m[1].trim() : name; })();
+    var num = name.includes(' - ') ? name.split(' - ')[0].trim()
+            : (function(){ var m = name.match(/^(.+?)\s+(\d{4})$/); return m ? m[2].trim() : ''; })();
+    var active = activeMarketFilters.size === 0 || activeMarketFilters.has(name);
+    var color = (state.data.teams[name] || {}).color || '#64748B';
+    return '<button onclick="toggleMarketFilter(\''+name+'\')" id="mf-'+name.replace(/[^a-z0-9]/gi,'_')+'" style="'+
+      'display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;background:'+(activeMarketFilters.has(name)?'rgba(124,58,237,0.15)':'transparent')+';'+
+      'border:1px solid '+(activeMarketFilters.has(name)?'rgba(124,58,237,0.4)':'rgba(255,255,255,0.05)')+';'+
+      'border-radius:8px;margin-bottom:3px;cursor:pointer;text-align:left;transition:all 0.15s">'+
+      '<span style="width:8px;height:8px;border-radius:50%;background:'+color+';flex-shrink:0;box-shadow:0 0 6px '+color+'88"></span>'+
+      '<span style="flex:1;font-family:Exo 2,sans-serif;font-size:12px;font-weight:600;color:'+(activeMarketFilters.has(name)?'#fff':'#94A3B8')+'">'+display+'</span>'+
+      (num ? '<span style="font-family:Orbitron,monospace;font-size:9px;color:#475569">'+num+'</span>' : '')+
+      (activeMarketFilters.has(name) ? '<span style="color:#7C3AED;font-size:14px">&#x2713;</span>' : '')+
+    '</button>';
+  }).join('');
+
+  var clearBtn = document.getElementById('market-clear-btn');
+  if (clearBtn) clearBtn.style.opacity = activeMarketFilters.size > 0 ? '1' : '0.3';
+}
+
+function toggleMarketFilter(name) {
+  if (activeMarketFilters.has(name)) {
+    activeMarketFilters.delete(name);
+  } else {
+    activeMarketFilters.add(name);
+  }
+  buildMarketFilterList();
+  render();
+}
+
+function clearMarketFilter() {
+  activeMarketFilters.clear();
+  buildMarketFilterList();
+  render();
 }
 
 // ══ BOOT ══════════════════════════════════════════════════════════════════════
