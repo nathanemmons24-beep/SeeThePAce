@@ -1274,11 +1274,28 @@ function render(){
     data = mf;
   }
   var DAYS_IN_MONTH=30;
+  // MTD total always uses full unfiltered merged data (not blitz-filtered)
+  var mtdData = (function(){
+    var d = state.data;
+    if (!d || !d.teams) return d;
+    return mergeAlways(d);
+  })();
+  var mtdTotal = mtdData ? mtdData.total : 0;
   var goal=filterDay?(state.goal/DAYS_IN_MONTH):state.goal;
-  var total=data.total,pct=Math.min((total/goal)*100,115);
-  document.getElementById("blitz-title").textContent=state.title;
+  var total=data.total, pct=Math.min((total/goal)*100,115);
+
+  // Title changes to SUMMER SALE BLITZ when blitz is active
+  document.getElementById("blitz-title").textContent = blitzUnlocked ? "SUMMER SALE BLITZ" : state.title;
+
+  // Main progress bar always shows MTD
+  document.getElementById("total-display").innerHTML=fmt(mtdTotal)+' <span>of '+fmt(state.goal)+(filterDay?" daily goal":"")+'</span>';
+  document.getElementById("total-display").style.color=mtdTotal>=state.goal?"#00FF88":"#FFD700";
+  var mtdPct = Math.min((mtdTotal/state.goal)*100,100);
+  var bf=document.getElementById("bar-fill");
+  if(bf){bf.style.width=mtdPct+"%";bf.style.background=mtdTotal>=state.goal?"linear-gradient(90deg,#00FF88,#00D4FF)":"linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF)";}
+
   var dot=document.getElementById("status-dot");
-  var isLoading=(state.status==="demo");
+  var isLoading=(state.status==="demo") && !blitzUnlocked;
   if(state.status==="live"){dot.textContent="\u25CF LIVE";dot.className="live";}
   else if(state.status && state.status.startsWith("error")){
     dot.textContent="\u25CF ERROR: "+state.status.replace(/^error:\s*/i,"");
@@ -1295,18 +1312,13 @@ function render(){
   if(isLoading) return;
   var lu=document.getElementById("last-updated");
   if(lu)lu.innerHTML=state.lastUpdated?"Last updated: <span>"+state.lastUpdated+"</span>":"";
-  document.getElementById("total-display").innerHTML=fmt(total)+' <span>of '+fmt(goal)+(filterDay?" daily goal":"")+'</span>';
-  document.getElementById("total-display").style.color=total>=goal?"#00FF88":"#FFD700";
-  var next=MILESTONES.find(function(m){return total/goal<m.value;});
-    var bf=document.getElementById("bar-fill");
-  if(bf){bf.style.width=Math.min(pct,100)+"%";bf.style.background=total>=goal?"linear-gradient(90deg,#00FF88,#00D4FF)":"linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF)";}
   var bc=document.getElementById("bar-cursor");
   var bcl=document.getElementById("bar-cursor-label");
-  if(bc){bc.style.left=Math.min(pct,100)+"%";}
+  if(bc){bc.style.left=Math.min(mtdPct,100)+"%";}
   if(bcl){
-    var nextM=MILESTONES.find(function(m){return total/goal<m.value;});
-    if(nextM&&total<goal){var needed=Math.round(goal*nextM.value-total);bcl.textContent=fmt(needed)+" to "+nextM.label;}
-    else if(total>=goal){bcl.textContent="GOAL!";}
+    var nextM=MILESTONES.find(function(m){return mtdTotal/state.goal<m.value;});
+    if(nextM&&mtdTotal<state.goal){var needed=Math.round(state.goal*nextM.value-mtdTotal);bcl.textContent=fmt(needed)+" to "+nextM.label;}
+    else if(mtdTotal>=state.goal){bcl.textContent="GOAL!";}
     else{bcl.textContent="";}
   }
 
