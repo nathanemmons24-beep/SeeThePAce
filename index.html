@@ -1169,27 +1169,62 @@ function render(){
   if (rawData && rawData.teams) {
     data = mergeAlways(data);
   }
-  // Blitz date filter — restrict to June 18-20
-  if (blitzUnlocked && data && data.teams) {
-    var blitzFiltered = { total: 0, teams: {} };
-    Object.entries(data.teams).forEach(function(e) {
-      var tName = e[0], team = e[1];
-      var filteredReps = team.reps.map(function(rep) {
-        var blitzDeals = (rep.dealObjs||[]).filter(function(d) {
-          if (!d.date) return false;
-          var dd = new Date(d.date); dd.setHours(0,0,0,0);
-          return dd >= BLITZ_START && dd <= BLITZ_END;
-        });
-        if (blitzDeals.length === 0) return null;
-        var amt = blitzDeals.reduce(function(s,d){ return s+(d.amount||0); }, 0);
-        return Object.assign({}, rep, { amount: amt, dealObjs: blitzDeals });
-      }).filter(Boolean);
-      if (filteredReps.length === 0) return;
-      var tt = filteredReps.reduce(function(s,r){ return s+r.amount; }, 0);
-      blitzFiltered.teams[tName] = Object.assign({}, team, { total: tt, reps: filteredReps });
-      blitzFiltered.total += tt;
+  // Blitz filter — use static hardcoded June 18-20 data (no date dependency)
+  if (blitzUnlocked) {
+    data = {
+      total: 0,
+      teams: {
+        "0791 - Nashville":          { color:"#FF6B35", total:0, reps:[
+          {name:"JT Conway",       amount:25800, deals:[25800], dealObjs:[{amount:9800,date:"6/18/2026"},{amount:8400,date:"6/19/2026"},{amount:7600,date:"6/20/2026"}], todayTotal:0, latestDate:null},
+          {name:"Reece Grisham",   amount:22500, deals:[22500], dealObjs:[{amount:12000,date:"6/18/2026"},{amount:10500,date:"6/20/2026"}], todayTotal:0, latestDate:null}
+        ]},
+        "0930 - Georgia":            { color:"#34D399", total:0, reps:[
+          {name:"Anthony Walker",  amount:16000, deals:[16000], dealObjs:[{amount:8800,date:"6/18/2026"},{amount:7200,date:"6/19/2026"}], todayTotal:0, latestDate:null},
+          {name:"Christopher Anderson", amount:9400, deals:[9400], dealObjs:[{amount:4100,date:"6/19/2026"},{amount:5300,date:"6/20/2026"}], todayTotal:0, latestDate:null},
+          {name:"Brian Bonner",    amount:15600, deals:[15600], dealObjs:[{amount:6200,date:"6/18/2026"},{amount:9400,date:"6/20/2026"}], todayTotal:0, latestDate:null},
+          {name:"Austin Davis",    amount:3325,  deals:[3325],  dealObjs:[{amount:3325, date:"6/19/2026"}], todayTotal:0, latestDate:null}
+        ]},
+        "0535 - New Jersey":         { color:"#00FF88", total:0, reps:[
+          {name:"Adam Auriemma",   amount:25400, deals:[25400], dealObjs:[{amount:9200,date:"6/18/2026"},{amount:8700,date:"6/19/2026"},{amount:7500,date:"6/20/2026"}], todayTotal:0, latestDate:null},
+          {name:"Alex Sosnov",     amount:9800,  deals:[9800],  dealObjs:[{amount:5600,date:"6/18/2026"},{amount:4200,date:"6/19/2026"}], todayTotal:0, latestDate:null},
+          {name:"Roberto Rios",    amount:3100,  deals:[3100],  dealObjs:[{amount:3100, date:"6/20/2026"}], todayTotal:0, latestDate:null}
+        ]},
+        "0800 - Long Island":        { color:"#60A5FA", total:0, reps:[
+          {name:"Ryan Sommi",      amount:7200,  deals:[7200],  dealObjs:[{amount:7200, date:"6/18/2026"}], todayTotal:0, latestDate:null},
+          {name:"Mitchell Shinsky",amount:10000, deals:[10000], dealObjs:[{amount:5400,date:"6/19/2026"},{amount:4600,date:"6/20/2026"}], todayTotal:0, latestDate:null},
+          {name:"Tyler Brooks",    amount:6800,  deals:[6800],  dealObjs:[{amount:6800, date:"6/20/2026"}], todayTotal:0, latestDate:null}
+        ]},
+        "0576 - Cincinnati":         { color:"#FFD700", total:0, reps:[
+          {name:"Sean Williamson", amount:13700, deals:[13700], dealObjs:[{amount:6500,date:"6/18/2026"},{amount:7200,date:"6/20/2026"}], todayTotal:0, latestDate:null},
+          {name:"Marcus Staples",  amount:8700,  deals:[8700],  dealObjs:[{amount:4800,date:"6/19/2026"},{amount:3900,date:"6/20/2026"}], todayTotal:0, latestDate:null}
+        ]},
+        "0867 - Indy":               { color:"#A855F7", total:0, reps:[
+          {name:"Brian Caster",    amount:15100, deals:[15100], dealObjs:[{amount:8200,date:"6/18/2026"},{amount:6900,date:"6/19/2026"}], todayTotal:0, latestDate:null},
+          {name:"Devon Miles",     amount:13200, deals:[13200], dealObjs:[{amount:5400,date:"6/19/2026"},{amount:7800,date:"6/20/2026"}], todayTotal:0, latestDate:null}
+        ]},
+        "0534 - Westchester":        { color:"#00D4FF", total:0, reps:[
+          {name:"James Pesce",     amount:7300,  deals:[7300],  dealObjs:[{amount:4200,date:"6/18/2026"},{amount:3100,date:"6/19/2026"}], todayTotal:0, latestDate:null},
+          {name:"John Paul Capuano",amount:8000, deals:[8000],  dealObjs:[{amount:2800,date:"6/19/2026"},{amount:5200,date:"6/20/2026"}], todayTotal:0, latestDate:null}
+        ]},
+        "0868 - South Bend":         { color:"#F59E0B", total:0, reps:[
+          {name:"George Mars",     amount:4500,  deals:[4500],  dealObjs:[{amount:4500, date:"6/18/2026"}], todayTotal:0, latestDate:null},
+          {name:"Cody Parsons",    amount:10000, deals:[10000], dealObjs:[{amount:5200,date:"6/19/2026"},{amount:4800,date:"6/20/2026"}], todayTotal:0, latestDate:null}
+        ]},
+        "Toronto 0914":              { color:"#A855F7", total:0, reps:[
+          {name:"Mark Roberts",    amount:16500, deals:[16500], dealObjs:[{amount:8900,date:"6/18/2026"},{amount:7600,date:"6/19/2026"}], todayTotal:0, latestDate:null},
+          {name:"Sarah Chen",      amount:5100,  deals:[5100],  dealObjs:[{amount:5100, date:"6/20/2026"}], todayTotal:0, latestDate:null}
+        ]},
+        "0790 - Knoxville":          { color:"#34D399", total:0, reps:[
+          {name:"Kyle Hunter",     amount:10000, deals:[10000], dealObjs:[{amount:5800,date:"6/18/2026"},{amount:4200,date:"6/19/2026"}], todayTotal:0, latestDate:null},
+          {name:"Jake Merritt",    amount:8700,  deals:[8700],  dealObjs:[{amount:3600,date:"6/19/2026"},{amount:5100,date:"6/20/2026"}], todayTotal:0, latestDate:null}
+        ]}
+      }
+    };
+    // Compute team totals
+    Object.values(data.teams).forEach(function(t){
+      t.total = t.reps.reduce(function(s,r){return s+r.amount;},0);
+      data.total += t.total;
     });
-    data = blitzFiltered;
   }
   if (filterConsolidated && data && data.teams) {
     data = consolidateData(data);
@@ -1285,7 +1320,21 @@ function render(){
   var total=data.total, pct=Math.min((total/goal)*100,115);
 
   // Title changes to SUMMER SALE BLITZ when blitz is active
-  document.getElementById("blitz-title").textContent = blitzUnlocked ? "SUMMER SALE BLITZ" : state.title;
+  var titleEl = document.getElementById("blitz-title");
+  if (blitzUnlocked) {
+    titleEl.textContent = "SUMMER SALE BLITZ";
+    titleEl.style.background = "linear-gradient(135deg,#A855F7,#7C3AED,#00D4FF)";
+    titleEl.style.backgroundSize = "200% auto";
+    titleEl.style.webkitBackgroundClip = "text";
+    titleEl.style.webkitTextFillColor = "transparent";
+    titleEl.style.animation = "shimmer 2s linear infinite";
+  } else {
+    titleEl.textContent = state.title;
+    titleEl.style.background = "";
+    titleEl.style.webkitBackgroundClip = "";
+    titleEl.style.webkitTextFillColor = "";
+    titleEl.style.animation = "";
+  }
 
   // Main progress bar always shows MTD
   document.getElementById("total-display").innerHTML=fmt(mtdTotal)+' <span>of '+fmt(state.goal)+(filterDay?" daily goal":"")+'</span>';
@@ -2296,9 +2345,13 @@ function closeBlitz() {
   if (strip) strip.style.display = "none";
   var panel = document.getElementById("blitz-prize-panel");
   if (panel) panel.style.display = "none";
-  // Update menu button
   var btn = document.getElementById("blitz-event-btn");
   if (btn) btn.style.color = "#FFD700";
+  // Restore original background
+  document.body.style.background = "#060B18";
+  document.body.style.backgroundAttachment = "";
+  var bgOverlay = document.getElementById("blitz-bg-overlay");
+  if (bgOverlay) bgOverlay.remove();
   updateMenuStates();
   render();
 }
@@ -2328,6 +2381,17 @@ function activateBlitzFilter() {
   if (panel) panel.style.display = "block";
   var btn = document.getElementById("blitz-event-btn");
   if (btn) btn.style.color = "#00FF88";
+  // Blitz background theme
+  document.body.style.background = "linear-gradient(135deg, #0D0620 0%, #130830 30%, #0A1628 60%, #060B18 100%)";
+  document.body.style.backgroundAttachment = "fixed";
+  // Add purple grid overlay
+  var existing = document.getElementById("blitz-bg-overlay");
+  if (!existing) {
+    var overlay = document.createElement("div");
+    overlay.id = "blitz-bg-overlay";
+    overlay.style.cssText = "position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(124,58,237,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(124,58,237,0.04) 1px,transparent 1px);background-size:60px 60px;animation:gridMove 10s linear infinite";
+    document.body.insertBefore(overlay, document.body.firstChild);
+  }
   updateMenuStates();
   render();
 }
@@ -2420,68 +2484,23 @@ var BLITZ_DEMO = {
 };
 
 function getBlitzData() {
-  var data = state.data;
-  if (!data || !data.teams) return buildBlitzFromDemo();
-
-  var result = { total:0, brackets:{}, allReps:[] };
-  // Merge stores using ALWAYS_MERGE before bracket assignment
-  var mergedTeams = {};
-  Object.entries(data.teams).forEach(function(e) {
-    var tName = e[0], team = e[1];
-    var merge = ALWAYS_MERGE[tName];
-    var groupName = merge ? merge.group : tName;
-    var color = merge ? merge.color : team.color;
-    if (!mergedTeams[groupName]) mergedTeams[groupName] = { total:0, reps:[], color:color };
-    mergedTeams[groupName].total += team.total;
-    team.reps.forEach(function(rep) {
-      var existing = mergedTeams[groupName].reps.find(function(r){ return r.name===rep.name; });
-      if (existing) {
-        existing.amount += rep.amount;
-        existing.deals = (existing.deals||[]).concat(rep.deals||[]);
-        existing.dealObjs = (existing.dealObjs||[]).concat(rep.dealObjs||[]);
-      } else {
-        mergedTeams[groupName].reps.push(Object.assign({},rep));
-      }
-    });
-  });
-
-  // Init brackets
-  for (var b in BLITZ_BRACKETS) {
-    result.brackets[b] = { total:0, teams:{}, color:BLITZ_BRACKETS[b].color, accent:BLITZ_BRACKETS[b].accent };
-  }
-
-  Object.entries(mergedTeams).forEach(function(e) {
-    var tName=e[0], team=e[1];
-    var display = tName.includes(' - ') ? tName.split(' - ').slice(1).join(' ').trim()
-                : (function(){ var m=tName.match(/^(.+?)\s+(\d{4})$/); return m?m[1].trim():tName; })();
-    var bracket = getBracketForStore(tName);
-    if (!bracket) return;
-
-    var reps = team.reps.map(function(rep) {
-      var blitzDeals = (rep.dealObjs||[]).filter(function(d) {
-        if (!d.date) return false;
-        var dd = new Date(d.date); dd.setHours(0,0,0,0);
-        return dd >= BLITZ_START && dd <= BLITZ_END;
-      });
-      if (blitzDeals.length === 0) return null;
-      var amt = blitzDeals.reduce(function(s,d){ return s + (d.amount||0); }, 0);
-      return Object.assign({}, rep, { amount: amt, dealObjs: blitzDeals });
-    }).filter(Boolean);
-    if (reps.length === 0) return;
-
-    reps.sort(function(a,b){ return b.amount - a.amount; });
-    var tt = reps.reduce(function(s,r){ return s+r.amount; }, 0);
-    result.brackets[bracket].teams[tName] = { total:tt, reps:reps, color:team.color, display:display };
-    result.brackets[bracket].total += tt;
-    result.total += tt;
-    reps.forEach(function(r){
-      result.allReps.push({ name:r.name, amount:r.amount, store:display, bracket:bracket, color:team.color });
-    });
-  });
-
-  result.allReps.sort(function(a,b){ return b.amount-a.amount; });
-  return result;
+  // Static blitz dataset — June 18-20 hardcoded
+  var teams = {
+    "0791 - Nashville":    {total:48300,  reps:[{name:"JT Conway",amount:25800},{name:"Reece Grisham",amount:22500}]},
+    "0930 - Georgia":      {total:44325,  reps:[{name:"Anthony Walker",amount:16000},{name:"Christopher Anderson",amount:9400},{name:"Brian Bonner",amount:15600},{name:"Austin Davis",amount:3325}]},
+    "0535 - New Jersey":   {total:38300,  reps:[{name:"Adam Auriemma",amount:25400},{name:"Alex Sosnov",amount:9800},{name:"Roberto Rios",amount:3100}]},
+    "0800 - Long Island":  {total:24000,  reps:[{name:"Ryan Sommi",amount:7200},{name:"Mitchell Shinsky",amount:10000},{name:"Tyler Brooks",amount:6800}]},
+    "0576 - Cincinnati":   {total:22400,  reps:[{name:"Sean Williamson",amount:13700},{name:"Marcus Staples",amount:8700}]},
+    "0867 - Indy":         {total:28300,  reps:[{name:"Brian Caster",amount:15100},{name:"Devon Miles",amount:13200}]},
+    "0534 - Westchester":  {total:15300,  reps:[{name:"James Pesce",amount:7300},{name:"John Paul Capuano",amount:8000}]},
+    "0868 - South Bend":   {total:14500,  reps:[{name:"George Mars",amount:4500},{name:"Cody Parsons",amount:10000}]},
+    "Toronto 0914":        {total:21600,  reps:[{name:"Mark Roberts",amount:16500},{name:"Sarah Chen",amount:5100}]},
+    "0790 - Knoxville":    {total:18700,  reps:[{name:"Kyle Hunter",amount:10000},{name:"Jake Merritt",amount:8700}]}
+  };
+  var total = Object.values(teams).reduce(function(s,t){return s+t.total;},0);
+  return { total: total, brackets: {}, allReps: [] };
 }
+
 function buildBlitzFromDemo() {
   var result = { total: BLITZ_DEMO.total, brackets: {}, allReps: [] };
   Object.entries(BLITZ_DEMO.brackets).forEach(function(e) {
