@@ -1239,7 +1239,9 @@ function render(){
     var sorted2=Object.entries(data.teams).sort(function(a,b){return b[1].total-a[1].total;});
     sorted2.forEach(function(e,ci){
       var isTopStore=(ci===0);
-      var name=e[0],t=e[1],display=name.includes(" - ")?name.split(" - ").slice(1).join(" "):name,num=name.includes(" - ")?name.split(" - ")[0]:"";
+      var name=e[0],t=e[1];
+      var display,num;
+      if(name.includes(" - ")){num=name.split(" - ")[0].trim();display=name.split(" - ").slice(1).join(" ").trim();}else{var _m=name.match(/^(.+?)\s+(\d{4})$/);if(_m){display=_m[1].trim();num=_m[2].trim();}else{display=name;num="";}}
       var card=document.createElement("div"); card.className="team-card";
       card.style.border="1px solid "+t.color+"2A";
       card.style.boxShadow="0 0 30px "+t.color+"14";
