@@ -1501,7 +1501,7 @@ function render(){
   }
   else{dot.textContent="\u25CF LOADING...";dot.className="loading";}
   // Hide all board content while loading
-  ["top-leaderboards","store-rankings","mtd-bar-section","day-breakdown","biggest-mover",
+  ["top-leaderboards","store-rankings","day-breakdown","biggest-mover",
    "top-movers-tile"].forEach(function(id){
     var el=document.getElementById(id);
     if(!el) return;
@@ -1509,9 +1509,9 @@ function render(){
   });
   var gridEl=document.getElementById("cards-grid");
   if(gridEl) gridEl.style.display = isLoading ? 'none' : 'flex';
-  // MTD bar hidden when blitz active
+  // MTD bar: only hidden when blitz is active
   var mtdEl=document.getElementById("mtd-bar-section");
-  if(mtdEl && blitzUnlocked) mtdEl.style.display = 'none';
+  if(mtdEl) mtdEl.style.display = blitzUnlocked ? 'none' : 'block';
   if(isLoading) return;
   var lu=document.getElementById("last-updated");
   if(lu)lu.innerHTML=state.lastUpdated?"Last updated: <span>"+state.lastUpdated+"</span>":"";
