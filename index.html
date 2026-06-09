@@ -219,10 +219,17 @@
     @keyframes stp-dots{0%{content:""}33%{content:"."}66%{content:".."}100%{content:"..."}}
     @keyframes stp-ring{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
     @keyframes stp-pulse{0%,100%{opacity:0.4;transform:scale(0.97)}50%{opacity:1;transform:scale(1.03)}}
+    @keyframes stp-fadein{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes stp-scan{0%{transform:translateY(-100%)}100%{transform:translateY(100vh)}}
     .stp-title{font-family:Orbitron,monospace;font-size:clamp(28px,6vw,60px);font-weight:900;color:#00D4FF;letter-spacing:10px;animation:stp-glow 2s ease-in-out infinite}
     .stp-subtitle{font-family:Orbitron,monospace;font-size:13px;color:#334155;letter-spacing:6px;animation:stp-pulse 1.5s ease-in-out infinite}
     .stp-ring{width:60px;height:60px;border:3px solid rgba(0,212,255,0.15);border-top:3px solid #00D4FF;border-radius:50%;animation:stp-ring 1s linear infinite}
     .stp-dots::after{content:"";animation:stp-dots 1.5s steps(1) infinite}
+    #stp-enter-btn{font-family:Orbitron,monospace;font-size:15px;font-weight:700;letter-spacing:6px;color:#00D4FF;background:transparent;border:1.5px solid rgba(0,212,255,0.5);border-radius:40px;padding:14px 48px;cursor:pointer;transition:all 0.3s;animation:stp-fadein 0.8s ease both;margin-top:8px;position:relative;overflow:hidden}
+    #stp-enter-btn:hover{background:rgba(0,212,255,0.1);border-color:#00D4FF;box-shadow:0 0 30px rgba(0,212,255,0.3);letter-spacing:8px}
+    #stp-enter-btn:active{transform:scale(0.97)}
+    #stp-loading-ring{display:none}
+    #stp-loading-text{display:none;font-family:Orbitron,monospace;font-size:11px;color:#334155;letter-spacing:4px;animation:stp-pulse 1.5s ease-in-out infinite}
 
     #badge-legend-fixed{position:fixed;bottom:0;left:0;right:0;z-index:500;background:rgba(6,11,24,0.15);border-top:1px solid rgba(255,255,255,0.05);padding:10px 20px;backdrop-filter:blur(4px);display:flex;align-items:center;gap:0;justify-content:space-around;opacity:0.25;transition:opacity 0.3s,background 0.3s,backdrop-filter 0.3s}
     #badge-legend-fixed:hover{opacity:1;background:rgba(6,11,24,0.97);backdrop-filter:blur(20px);border-top-color:rgba(255,255,255,0.1)}
@@ -257,11 +264,14 @@
 </head>
 <body onclick="unlockAudio()" onkeydown="unlockAudio()">
 
-<!-- LOADING OVERLAY -->
+<!-- SPLASH / LOADING OVERLAY -->
 <div id="loading-overlay">
   <div class="stp-title">SEE THE PACE</div>
-  <div class="stp-ring"></div>
-  <div class="stp-subtitle">LOADING<span class="stp-dots"></span></div>
+  <div style="font-family:Orbitron,monospace;font-size:11px;color:#334155;letter-spacing:4px;margin-top:-12px">RENEWAL BY ANDERSEN</div>
+  <div style="width:200px;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.3),transparent);margin:4px 0"></div>
+  <button id="stp-enter-btn" onclick="enterDashboard()">ENTER</button>
+  <div id="stp-loading-ring" class="stp-ring"></div>
+  <div id="stp-loading-text">LOADING DATA<span class="stp-dots"></span></div>
 </div>
 
 <div id="app">
@@ -670,8 +680,20 @@ async function fetchData(){
     state.status = "error: " + err.message;
   }
 }
-function startPolling(){
-  clearInterval(pollTimer);
+function enterDashboard() {
+  // Swap ENTER button for loading spinner
+  var btn = document.getElementById('stp-enter-btn');
+  var ring = document.getElementById('stp-loading-ring');
+  var txt = document.getElementById('stp-loading-text');
+  if (btn) btn.style.display = 'none';
+  if (ring) ring.style.display = 'block';
+  if (txt) txt.style.display = 'block';
+  // Start fetching — overlay hides automatically on first successful load
+  fetchData();
+  pollTimer = setInterval(fetchData, POLL_MS);
+}
+
+
   fetchData();
   pollTimer=setInterval(fetchData, POLL_MS);
 }
@@ -2957,8 +2979,8 @@ render();
 if (state.data && state.data.teams) seedBadgeState(state.data);
 // Fetch settings once, then start polling — single call only
 // Fetch data immediately on load
-fetchData();
-pollTimer = setInterval(fetchData, POLL_MS);
+// Don't auto-fetch — wait for ENTER button
+// fetchData and polling start only after enterDashboard() is called
 resetCountdown();
 // Load settings in background
 fetchSettings().then(function(){ render(); }).catch(function(){});
