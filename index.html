@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <title>SeeThePace &mdash; Sales Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet"/>
   <style>
@@ -393,38 +394,32 @@
 <canvas id="confetti-canvas" style="position:fixed;inset:0;z-index:9997;pointer-events:none;display:none"></canvas>
 
 <!-- BLITZ SCOREBOARD OVERLAY -->
-<div id="blitz-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:linear-gradient(160deg,#FFF9E6 0%,#FFE0A0 20%,#FFD070 40%,#87CEEB 70%,#4DA8D8 100%);overflow-y:auto;flex-direction:column;align-items:center">
+<div id="blitz-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:#060B18;overflow-y:auto;flex-direction:column;align-items:center">
   <div id="blitz-auth" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px">
-    <div style="font-family:Orbitron,monospace;font-size:28px;font-weight:900;color:#FFD700;letter-spacing:6px;text-shadow:0 0 30px #FFD70066">&#x2728; SPECIAL EVENT</div>
-    <div style="font-family:Orbitron,monospace;font-size:13px;color:#00FF88;letter-spacing:3px;margin-bottom:8px">NOT READY YET &mdash; ADMINS ENTER PASSWORD</div>
-    <input id="blitz-pw-input" type="password" placeholder="Enter password" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,215,0,0.3);border-radius:10px;padding:12px 20px;color:#fff;font-family:Orbitron,monospace;font-size:14px;width:260px;text-align:center;outline:none" onkeydown="if(event.key==='Enter')checkBlitzPw()"/>
-    <button onclick="checkBlitzPw()" style="padding:10px 32px;border-radius:20px;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);color:#FFD700;font-family:Orbitron,monospace;font-size:12px;cursor:pointer;letter-spacing:2px">ENTER</button>
+    <div style="font-family:Orbitron,monospace;font-size:28px;font-weight:900;color:#00D4FF;letter-spacing:6px;text-shadow:0 0 30px #00D4FF66">&#x2728; SPECIAL EVENT</div>
+    <div style="font-family:Orbitron,monospace;font-size:11px;color:#334155;letter-spacing:3px;margin-bottom:8px">ENTER PASSWORD TO CONTINUE</div>
+    <input id="blitz-pw-input" type="password" placeholder="Enter password" style="background:rgba(255,255,255,0.05);border:1px solid rgba(0,212,255,0.25);border-radius:10px;padding:12px 20px;color:#fff;font-family:Orbitron,monospace;font-size:14px;width:260px;text-align:center;outline:none" onkeydown="if(event.key==='Enter')checkBlitzPw()"/>
+    <button onclick="checkBlitzPw()" style="padding:10px 32px;border-radius:20px;background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.4);color:#00D4FF;font-family:Orbitron,monospace;font-size:12px;cursor:pointer;letter-spacing:2px">ENTER</button>
     <div id="blitz-pw-err" style="color:#FF4444;font-family:Orbitron,monospace;font-size:10px;display:none">INCORRECT PASSWORD</div>
-    <button onclick="closeBlitz()" style="margin-top:8px;padding:6px 20px;border-radius:16px;background:transparent;border:1px solid rgba(255,255,255,0.1);color:#475569;font-family:Orbitron,monospace;font-size:10px;cursor:pointer">CANCEL</button>
-  </div>
-  <!-- Blitz Sticky Clock -->
-  <div id="blitz-sticky-clock" style="display:none;position:sticky;top:0;z-index:9600;width:100%;background:rgba(255,245,210,0.97);border-bottom:1px solid rgba(255,165,0,0.3);padding:8px 16px;align-items:center;justify-content:space-between;backdrop-filter:blur(12px)">
-    <div style="font-family:'Orbitron',monospace;font-size:clamp(13px,2vw,20px);color:#7A3F00;letter-spacing:3px" id="blitz-clock-display">--:--:--</div>
-    <div style="font-family:'Exo 2',sans-serif;font-size:12px;color:#A06000" id="blitz-clock-date">---</div>
+    <button onclick="closeBlitz()" style="margin-top:8px;padding:6px 20px;border-radius:16px;background:transparent;border:1px solid rgba(255,255,255,0.08);color:#334155;font-family:Orbitron,monospace;font-size:10px;cursor:pointer">CANCEL</button>
   </div>
   <!-- Blitz Hamburger Menu -->
   <div id="blitz-hamburger-wrap" style="display:none;position:fixed;bottom:20px;right:20px;z-index:9700;width:52px;height:52px">
-    <button id="blitz-menu-toggle" onclick="toggleBlitzMenu()" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#FF6B35,#FFD700);border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(255,107,53,0.5);display:flex;align-items:center;justify-content:center;position:relative;z-index:1">&#x2630;</button>
-    <div id="blitz-menu-panel" style="display:none;position:absolute;bottom:60px;right:0;background:rgba(6,11,24,0.97);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:8px;width:220px;box-shadow:0 8px 40px rgba(0,0,0,0.8);backdrop-filter:blur(20px)">
-      <div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:2px;padding:6px 12px 4px">NAVIGATION</div>
-      <button class="blitz-menu-item" onclick="closeBlitz();toggleBlitzMenuPanel()">🏠 Main Board</button>
-      <button class="blitz-menu-item" onclick="openBlitzAdmin();toggleBlitzMenuPanel()">⚙️ Admin</button>
+    <button id="blitz-menu-toggle" onclick="toggleBlitzMenu()" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#4F46E5);border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.5);display:flex;align-items:center;justify-content:center">&#x2630;</button>
+    <div id="blitz-menu-panel" style="display:none;position:absolute;bottom:60px;right:0;background:rgba(10,18,35,0.97);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:8px;width:210px;box-shadow:0 8px 40px rgba(0,0,0,0.8);backdrop-filter:blur(20px)">
+      <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">NAVIGATION</div>
+      <button class="menu-item" onclick="closeBlitz();toggleBlitzMenu()">&#x1F3E0; MAIN BOARD</button>
       <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>
-      <div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:2px;padding:6px 12px 4px">DISPLAY</div>
-      <button class="blitz-menu-item" id="blitz-fs-btn-menu" onclick="toggleBlitzFullscreen()">⛶ Fullscreen</button>
-      <button class="blitz-menu-item" id="blitz-tv-btn-menu" onclick="toggleBlitzTV()">📺 TV Mode</button>
-      <button class="blitz-menu-item" id="blitz-scroll-btn-menu" onclick="toggleBlitzScroll()">↕ Auto Scroll</button>
+      <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">DISPLAY</div>
+      <button class="menu-item" id="blitz-fs-btn-menu" onclick="toggleBlitzFullscreen()">&#x26F6; FULLSCREEN</button>
+      <button class="menu-item" id="blitz-tv-btn-menu" onclick="toggleBlitzTV()">&#x1F4FA; TV MODE</button>
+      <button class="menu-item" id="blitz-scroll-btn-menu" onclick="toggleBlitzScroll()">&#x21C5; AUTO SCROLL</button>
       <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>
-      <div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:2px;padding:6px 12px 4px">FILTER</div>
-      <button class="blitz-menu-item" id="blitz-rookie-btn-menu" onclick="toggleBlitzRookies()">⭐ Rookies Only</button>
+      <div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">FILTER</div>
+      <button class="menu-item" id="blitz-rookie-btn-menu" onclick="toggleBlitzRookies()">&#x2B50; ROOKIES ONLY</button>
     </div>
   </div>
-  <div id="blitz-board" style="display:none;width:100%;padding:0"></div>
+  <div id="blitz-board" style="display:none;width:100%;max-width:1400px;margin:0 auto;padding:24px 16px 80px"></div>
 </div>
 
 <script>
@@ -2179,11 +2174,8 @@ function checkBlitzPw() {
 function showBlitzBoard() {
   document.getElementById("blitz-auth").style.display = "none";
   document.getElementById("blitz-board").style.display = "block";
-  var sc = document.getElementById("blitz-sticky-clock");
-  if (sc) sc.style.display = "flex";
   var hw = document.getElementById("blitz-hamburger-wrap");
   if (hw) { hw.style.display = "block"; hw.style.visibility = "visible"; }
-  startBlitzClock();
   renderBlitz();
 }
 
@@ -2404,56 +2396,55 @@ var blitzMilestoneReached = {};
 
 function renderBlitz() {
   var bd = getBlitzData();
+  var board = document.getElementById("blitz-board");
   if (!bd) {
-    document.getElementById("blitz-board").innerHTML = '<div style="text-align:center;padding:40px;color:#8B5E00;font-family:Georgia,serif;font-size:18px">No data available</div>';
+    board.innerHTML = '<div style="text-align:center;padding:60px;color:#334155;font-family:Orbitron,monospace;font-size:14px;letter-spacing:2px">NO DATA AVAILABLE</div>';
     return;
   }
-  var board = document.getElementById("blitz-board");
-  var goal = BLITZ_GOAL; // 17M
-  var totalToShow = bd.total;
 
-  // Filter rookies if toggle on
-  var filteredBd = bd;
-  if (blitzShowRookiesOnly) {
-    filteredBd = filterBlitzRookies(bd);
-  }
+  var goal = BLITZ_GOAL;
+  var filteredBd = blitzShowRookiesOnly ? filterBlitzRookies(bd) : bd;
+  var total = bd.total; // always use unfiltered total for goal progress
 
-  board.innerHTML =
-    '<style>'+
-    '@import url("https://fonts.googleapis.com/css2?family=Pacifico&family=Exo+2:wght@300;400;600;700;900&display=swap");'+
-    '@keyframes sunRay{0%,100%{opacity:0.5;transform:rotate(0deg) scaleX(1)}50%{opacity:0.9;transform:rotate(1deg) scaleX(1.03)}}'+
-    '@keyframes wave{0%,100%{transform:translateX(0)}50%{transform:translateX(-8px)}}'+
-    '@keyframes unlockPop{0%{transform:scale(0.8);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}'+
-    '@keyframes shimmerSun{0%{background-position:-200% center}100%{background-position:200% center}}'+
-    '@keyframes podiumGlow{0%,100%{box-shadow:0 0 10px rgba(255,140,0,0.5)}50%{box-shadow:0 0 25px rgba(255,165,0,0.9),0 0 50px rgba(255,140,0,0.4)}}'+
-    '@keyframes rookieStar{0%,100%{transform:scale(1) rotate(0deg)}50%{transform:scale(1.2) rotate(15deg)}}'+
-    '.blitz-s-card{background:rgba(255,255,255,0.65);backdrop-filter:blur(10px);border:1px solid rgba(255,165,0,0.3);border-radius:16px;padding:14px 16px;margin-bottom:12px;box-shadow:0 4px 20px rgba(255,140,0,0.1)}'+
-    '.blitz-s-rep{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid rgba(0,0,0,0.07);border-radius:8px}'+
-    '.blitz-s-rep:last-child{border-bottom:none}'+
-    '.blitz-s-badge{font-size:9px;padding:2px 6px;border-radius:8px;font-weight:700;display:inline-block;margin:1px;font-family:"Exo 2",sans-serif}'+
-    '.blitz-bar-btn{padding:7px 14px;border-radius:22px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid;letter-spacing:0.3px;transition:all 0.2s;font-family:"Exo 2",sans-serif;position:relative}'+
-    '.blitz-bar-btn:hover{opacity:0.9;transform:scale(1.06) translateY(-1px);box-shadow:0 4px 14px rgba(255,140,0,0.35)}'+
-    '.rookie-star{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:linear-gradient(135deg,#FFD700,#FFA500);border-radius:50%;font-size:9px;font-weight:900;color:#5A3A00;margin-left:4px;border:1.5px solid #FFD700;animation:rookieStar 3s ease-in-out infinite;flex-shrink:0;vertical-align:middle}'+
-    '.prize-locked{background:rgba(255,255,255,0.3);border:1px solid rgba(0,0,0,0.12)}'+
-    '.prize-unlocked{background:linear-gradient(135deg,rgba(255,215,0,0.25),rgba(255,165,0,0.15));border:1.5px solid rgba(255,165,0,0.6);animation:unlockPop 0.5s ease both}'+
-    '.prize-next{background:rgba(255,255,255,0.5);border:2px dashed rgba(255,140,0,0.6)}'+
-    '.podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:12px}'+
-    '.podium-col{display:flex;flex-direction:column;align-items:center;gap:4px}'+
-    '.podium-block{display:flex;align-items:center;justify-content:center;border-radius:6px 6px 0 0;font-family:Orbitron,monospace;font-size:14px;font-weight:900}'+
-    '.hunt-badge{background:linear-gradient(90deg,rgba(100,180,255,0.2),rgba(100,180,255,0.1));border:1px solid rgba(100,180,255,0.5);border-radius:8px;padding:5px 10px;margin-bottom:4px;font-size:11px;color:#1A3A8F}'+
-    '.blitz-prizes-panel{flex-shrink:0;position:sticky;top:80px;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:none}'+
-    '.blitz-prizes-inner{padding:4px}'+
-    '.blitz-layout{display:flex;gap:16px;align-items:flex-start;max-width:1400px;margin:0 auto;padding:0 16px 80px}'+
-    '</style>'+
-    renderBlitzTopProgress(totalToShow, goal)+
-    renderBlitzDayBreakdown(filteredBd)+
-    '<div class="blitz-layout">'+
-      '<div class="blitz-prizes-panel" style="width:220px"><div class="blitz-prizes-inner">'+renderBlitzPrizes(totalToShow, goal)+'</div></div>'+
-      '<div style="flex:1;min-width:0">'+
-        renderBlitzBracketsNew(filteredBd)+
-        renderBlitzLeaderboardNew(filteredBd)+
-      '</div>'+
-    '</div>';
+  var html = '';
+
+  // ── HEADER ────────────────────────────────────────────────────────────────
+  html += '<div style="text-align:center;padding:32px 16px 20px">';
+  html += '<div style="font-family:Orbitron,monospace;font-size:clamp(22px,4vw,40px);font-weight:900;color:#00D4FF;letter-spacing:8px;text-shadow:0 0 30px #00D4FF44">&#x2728; SPECIAL EVENT</div>';
+  html += '<div style="font-family:Orbitron,monospace;font-size:11px;color:#334155;letter-spacing:4px;margin-top:6px">' + (state.title || 'SALES BLITZ') + '</div>';
+  html += '</div>';
+
+  // ── GOAL PROGRESS BAR ─────────────────────────────────────────────────────
+  var pct = Math.min((total / goal) * 100, 100);
+  html += '<div style="background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px 24px;margin-bottom:16px;backdrop-filter:blur(14px)">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px">';
+  html += '<div><div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:3px;margin-bottom:4px">TOTAL SALES</div>';
+  html += '<div style="font-family:Orbitron,monospace;font-size:clamp(22px,4vw,36px);font-weight:900;color:#00FF88">' + fmtB(total) + '</div></div>';
+  html += '<div style="text-align:right"><div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:3px;margin-bottom:4px">GOAL</div>';
+  html += '<div style="font-family:Orbitron,monospace;font-size:18px;font-weight:700;color:#475569">' + fmtB(goal) + '</div></div>';
+  html += '</div>';
+  html += '<div style="height:20px;background:rgba(255,255,255,0.04);border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);position:relative">';
+  html += '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#00D4FF,#00FF88,#00D4FF);border-radius:10px;transition:width 1.2s;box-shadow:0 0 16px rgba(0,212,255,0.4);background-size:200% 100%;animation:shimmer 2s linear infinite"></div>';
+  html += '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Orbitron,monospace;font-size:10px;font-weight:900;color:' + (pct > 45 ? '#060B18' : '#00D4FF') + '">' + pct.toFixed(1) + '%</div>';
+  html += '</div>';
+  html += '</div>';
+
+  // ── LAYOUT: PRIZES LEFT, BRACKETS RIGHT ───────────────────────────────────
+  html += '<div style="display:flex;gap:16px;align-items:flex-start">';
+
+  // Prizes panel
+  html += '<div style="width:200px;flex-shrink:0;position:sticky;top:20px">';
+  html += renderBlitzPrizes(total, goal);
+  html += '</div>';
+
+  // Team splits
+  html += '<div style="flex:1;min-width:0">';
+  html += renderBlitzBracketsNew(filteredBd);
+  html += '</div>';
+
+  html += '</div>';
+
+  board.innerHTML = html;
 }
 
 function filterBlitzRookies(bd) {
@@ -2543,27 +2534,30 @@ var PRIZE_COLORS = {
 
 function renderBlitzPrizes(total, goal) {
   var millions = total / 1000000;
-  var html = '<div style="font-family:Pacifico,Georgia,serif;font-size:15px;color:#C84000;text-align:center;margin-bottom:10px">🏆 Prize Unlock Track</div>';
+  var html = '<div style="background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px;backdrop-filter:blur(14px);margin-bottom:16px">';
+  html += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:3px;margin-bottom:12px">&#x1F3C6; PRIZE TRACK</div>';
   BLITZ_PRIZES.forEach(function(prize, i) {
     var milestone = i + 1;
     var unlocked = millions >= milestone;
     var isNext = !unlocked && millions >= milestone - 1;
     var c = PRIZE_COLORS[prize.tier];
-    var cls = unlocked ? 'prize-unlocked' : isNext ? 'prize-next' : 'prize-locked';
-    html += '<div class="'+cls+'" style="border-radius:10px;padding:7px 10px;margin-bottom:5px;display:flex;align-items:center;gap:8px;'+
-      (unlocked ? 'background:'+c.bg+';border:1.5px solid '+c.border+';' : '')+
-      (isNext ? 'box-shadow:0 0 12px rgba(255,140,0,0.3);' : '')+'">';
-    html += '<div style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;'+
-      'background:'+(unlocked?c.bg:'rgba(0,0,0,0.06)')+';border:1px solid '+(unlocked?c.border:'rgba(0,0,0,0.15)')+'">'+
-      (unlocked ? '✓' : isNext ? '⟳' : milestone)+'</div>';
-    html += '<div style="flex:1;min-width:0">'+
-      '<div style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:700;color:'+(unlocked?c.text:isNext?'#8B5E00':'#94A3B8')+'">'+prize.label+'</div>'+
-      '<div style="font-family:Orbitron,monospace;font-size:9px;color:'+(unlocked?c.text:'#CBD5E1')+';opacity:0.7">at $'+milestone+'M</div>'+
-    '</div>';
-    if (unlocked) html += '<span style="font-size:16px">'+prize.icon+'</span>';
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;margin-bottom:4px;background:' +
+      (unlocked ? 'rgba(0,255,136,0.06)' : isNext ? 'rgba(0,212,255,0.04)' : 'transparent') +
+      ';border:1px solid ' +
+      (unlocked ? 'rgba(0,255,136,0.2)' : isNext ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.04)') + '">';
+    html += '<div style="width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;background:' +
+      (unlocked ? 'rgba(0,255,136,0.15)' : 'rgba(255,255,255,0.04)') +
+      ';border:1px solid ' + (unlocked ? 'rgba(0,255,136,0.4)' : 'rgba(255,255,255,0.08)') + ';flex-shrink:0">' +
+      (unlocked ? '&#x2713;' : milestone) + '</div>';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div style="font-family:\'Exo 2\',sans-serif;font-size:11px;font-weight:700;color:' + (unlocked ? '#00FF88' : isNext ? '#CBD5E1' : '#475569') + '">' + prize.label + '</div>';
+    html += '<div style="font-family:Orbitron,monospace;font-size:8px;color:#334155">at $' + milestone + 'M</div>';
+    html += '</div>';
+    if (unlocked) html += '<span style="font-size:14px">' + prize.icon + '</span>';
     html += '</div>';
   });
-  return '<div class="blitz-s-card">'+html+'</div>';
+  html += '</div>';
+  return html;
 }
 
 function renderBlitzPodium(bracketReps, color, accent) {
@@ -2633,90 +2627,65 @@ function hexToRgb(hex) {
 
 function renderBlitzBracketsNew(bd) {
   var bracketOrder = ['Large Markets','Medium Markets','Small Markets'];
-  var bracketBg = {
-    'Large Markets':  'linear-gradient(135deg,rgba(0,200,100,0.08),rgba(255,215,0,0.06))',
-    'Medium Markets': 'linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,165,0,0.06))',
-    'Small Markets':  'linear-gradient(135deg,rgba(100,180,255,0.1),rgba(0,212,255,0.06))',
-  };
-  var bracketBorder = {
-    'Large Markets':  'rgba(0,160,60,0.3)',
-    'Medium Markets': 'rgba(255,165,0,0.4)',
-    'Small Markets':  'rgba(0,150,220,0.35)',
-  };
-  var bracketLabel = {
-    'Large Markets':  '🌊 Large Markets',
-    'Medium Markets': '☀️ Medium Markets',
-    'Small Markets':  '🌴 Small Markets',
-  };
-
-  return bracketOrder.map(function(bName) {
+  var html = '';
+  bracketOrder.forEach(function(bName) {
     var bracket = bd.brackets[bName];
-    if (!bracket || !bracket.total) return '';
-    var color = bracket.color, accent = bracket.accent;
+    if (!bracket || Object.keys(bracket.teams).length === 0) return;
+    var color  = BLITZ_BRACKETS[bName] ? BLITZ_BRACKETS[bName].color  : '#00D4FF';
     var sortedTeams = Object.entries(bracket.teams).sort(function(a,b){return b[1].total-a[1].total;});
-    var bracketReps = [];
-    sortedTeams.forEach(function(te){
-      te[1].reps.forEach(function(r){bracketReps.push({name:r.name,amount:r.amount,store:te[1].display,color:te[1].color||color});});
+    var maxTeam = sortedTeams[0] ? sortedTeams[0][1].total : 1;
+
+    html += '<div style="background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 20px;margin-bottom:16px;backdrop-filter:blur(14px)">';
+
+    // Bracket header
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06)">';
+    html += '<div style="font-family:Orbitron,monospace;font-size:11px;color:'+color+';letter-spacing:2px">'+bName.toUpperCase()+'</div>';
+    html += '<div style="font-family:Orbitron,monospace;font-size:16px;font-weight:900;color:#fff">'+fmtB(bracket.total)+'</div>';
+    html += '</div>';
+
+    // Team bars
+    html += '<div style="margin-bottom:16px">';
+    sortedTeams.forEach(function(te, i) {
+      var tName = te[0], t = te[1];
+      var dispName = t.display || (tName.includes(' - ') ? tName.split(' - ').slice(1).join(' ') : tName);
+      var pct = Math.max(6, (t.total / maxTeam) * 100);
+      var medals = ['&#x1F947;','&#x1F948;','&#x1F949;'];
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">';
+      html += '<div style="width:20px;text-align:center;font-size:'+(i<3?'14':'10')+'px;flex-shrink:0">'+(i<3?medals[i]:'<span style="font-family:Orbitron,monospace;font-size:9px;color:#475569">#'+(i+1)+'</span>')+'</div>';
+      html += '<div style="width:110px;font-family:\'Exo 2\',sans-serif;font-size:11px;font-weight:600;color:#CBD5E1;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+dispName+'</div>';
+      html += '<div style="flex:1;height:16px;background:rgba(255,255,255,0.04);border-radius:8px;overflow:hidden">';
+      html += '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,'+color+','+color+'88);border-radius:8px;transition:width 1s;box-shadow:0 0 6px '+color+'44"></div>';
+      html += '</div>';
+      html += '<div style="font-family:Orbitron,monospace;font-size:10px;color:'+color+';font-weight:700;width:72px;text-align:right;flex-shrink:0">'+fmtB(t.total)+'</div>';
+      html += '</div>';
     });
-    bracketReps.sort(function(a,b){return b.amount-a.amount;});
-    var maxT = sortedTeams[0] ? sortedTeams[0][1].total : 1;
+    html += '</div>';
 
-    return '<div style="background:'+bracketBg[bName]+';border:1.5px solid '+(bracketBorder[bName]||'rgba(0,0,0,0.1)')+';border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 20px rgba(0,0,0,0.06)">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(0,0,0,0.1)">'+
-        '<div style="font-family:Pacifico,Georgia,serif;font-size:16px;color:#1A3A8F">'+bracketLabel[bName]+'</div>'+
-        '<div style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:#C84000">'+fmtB(bracket.total)+'</div>'+
-      '</div>'+
-
-      // Podium
-      renderBlitzPodium(bracketReps, color, accent)+
-
-      // Market bar chart
-      '<div style="margin-bottom:12px">'+
-        sortedTeams.map(function(te,i){
-          var t=te[1], pct=Math.max(4,(t.total/maxT)*100);
-          var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-          return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'+
-            '<span style="font-size:'+(i<3?'14':'10')+'px;width:20px;text-align:center">'+
-              (medal||'<span style="font-family:Orbitron,monospace;font-size:9px;color:#94A3B8">#'+(i+1)+'</span>')+
-            '</span>'+
-            '<div style="width:100px;font-family:\'Exo 2\',sans-serif;font-size:11px;color:#374151;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.display+'</div>'+
-            '<div style="flex:1;height:14px;background:rgba(0,0,0,0.07);border-radius:7px;overflow:hidden">'+
-              '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#FF6B00,#FFD700);border-radius:7px;box-shadow:0 0 6px rgba(255,165,0,0.4);transition:width 1s"></div>'+
-            '</div>'+
-            '<div style="font-family:Orbitron,monospace;font-size:10px;color:#C84000;width:70px;text-align:right;font-weight:700">'+fmtB(t.total)+'</div>'+
-          '</div>';
-        }).join('')+
-      '</div>'+
-
-      // Team detail cards
-      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px">'+
-        sortedTeams.map(function(te){
-          var tName=te[0], t=te[1];
-          var mostDealsRep=''; var mostDealsN=0;
-          t.reps.forEach(function(r){var n=(r.deals||[r]).length;if(n>mostDealsN){mostDealsN=n;mostDealsRep=r.name;}});
-          return '<div style="background:rgba(255,255,255,0.55);border:1px solid rgba(0,0,0,0.1);border-radius:12px;overflow:hidden">'+
-            '<div style="padding:8px 12px;border-bottom:1px solid rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg,rgba(255,165,0,0.12),transparent)">'+
-              '<div style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:700;color:#374151">'+t.display+'</div>'+
-              '<div style="font-family:Orbitron,monospace;font-size:13px;font-weight:900;color:#C84000">'+fmtB(t.total)+'</div>'+
-            '</div>'+
-            t.reps.map(function(r,ri){
-              var badgesHtml = blitzRepBadges(r, t.reps, ri===0, r.name===mostDealsRep&&mostDealsN>1, bracketReps);
-              var rankColor=ri===0?'#C84000':ri<=2?'#8B5E00':'#94A3B8';
-              return '<div class="blitz-s-rep">'+
-                '<span style="font-family:Orbitron,monospace;font-size:10px;color:'+rankColor+';width:16px;flex-shrink:0;font-weight:700">'+(ri+1)+'</span>'+
-                '<div style="flex:1;min-width:0">'+
-                  '<div style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:700;color:#1E293B;display:flex;align-items:center;flex-wrap:wrap;gap:2px">'+
-                    r.name+badgesHtml+
-                  '</div>'+
-                '</div>'+
-                '<div style="font-family:Orbitron,monospace;font-size:11px;font-weight:700;color:'+rankColor+';flex-shrink:0">'+fmtB(r.amount)+'</div>'+
-              '</div>';
-            }).join('')+
-          '</div>';
-        }).join('')+
-      '</div>'+
-    '</div>';
-  }).join('');
+    // Rep cards grid
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">';
+    sortedTeams.forEach(function(te) {
+      var tName = te[0], t = te[1];
+      var dispName = t.display || (tName.includes(' - ') ? tName.split(' - ').slice(1).join(' ') : tName);
+      html += '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden">';
+      html += '<div style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg,rgba('+hexToRgb(color)+',0.08),transparent)">';
+      html += '<div style="font-family:\'Exo 2\',sans-serif;font-size:11px;font-weight:700;color:#CBD5E1">'+dispName+'</div>';
+      html += '<div style="font-family:Orbitron,monospace;font-size:12px;font-weight:900;color:'+color+'">'+fmtB(t.total)+'</div>';
+      html += '</div>';
+      t.reps.forEach(function(r, ri) {
+        var isRookie = ROOKIE_NAMES.has(r.name);
+        var rankColor = ri===0 ? color : ri<=2 ? '#CBD5E1' : '#475569';
+        html += '<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,0.04)">';
+        html += '<span style="font-family:Orbitron,monospace;font-size:9px;color:'+rankColor+';width:14px;flex-shrink:0">'+(ri+1)+'</span>';
+        html += '<div style="flex:1;font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:600;color:#E2E8F0;display:flex;align-items:center;gap:4px">'+r.name+(isRookie?'<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px">R</span>':'')+'</div>';
+        html += '<div style="font-family:Orbitron,monospace;font-size:11px;font-weight:700;color:'+rankColor+';flex-shrink:0">'+fmtB(r.amount)+'</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '</div>';
+  });
+  return html;
 }
 
 function renderBlitzLeaderboardNew(bd) {
