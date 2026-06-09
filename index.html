@@ -310,7 +310,10 @@
 
   <!-- STORE RANKINGS -->
   <div id="store-rankings" style="display:none">
-    <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:2px;margin-bottom:12px">&#x1F3C6; STORE RANKINGS</h3>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:2px;margin:0">&#x1F3C6; STORE RANKINGS</h3>
+      <div id="market-filter-banner" style="display:none;font-family:Orbitron,monospace;font-size:9px;color:#7C3AED;cursor:pointer;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);border-radius:20px;padding:3px 10px;letter-spacing:1px" onclick="clearMarketFilter()">FILTERED &mdash; CLEAR &#x2715;</div>
+    </div>
     <div id="rankings-list"></div>
   </div>
 
@@ -1226,21 +1229,28 @@ function render(){
   if(rl){
     rl.innerHTML="";
     var sorted=Object.entries(data.teams).sort(function(a,b){return b[1].total-a[1].total;});
-    var maxTotal=sorted.length>0?sorted[0][1].total:1;
+    // Use the pre-filter data for bar proportions so bars don't all go 100%
+    var allTeams = state.data ? mergeAlways(state.data).teams : data.teams;
+    var maxTotal = Math.max.apply(null, Object.values(allTeams).map(function(t){return t.total;})) || 1;
     var rmedals=["&#x1F947;","&#x1F948;","&#x1F949;"];
     sorted.forEach(function(e,i){
       var rname=e[0],t=e[1],_rm=rname.match(/^(.+?)\s+(\d{4})$/);
       var display=rname.includes(" - ")?rname.split(" - ").slice(1).join(" ").trim():(_rm?_rm[1].trim():rname);
       var pct=Math.max(8,(t.total/maxTotal)*100);
+      var isActive = activeMarketFilters.has(rname);
       var row=document.createElement("div");
-      row.style.cssText="display:flex;align-items:center;gap:10px;margin-bottom:8px;";
+      row.style.cssText="display:flex;align-items:center;gap:10px;margin-bottom:8px;cursor:pointer;border-radius:10px;padding:2px 4px;transition:background 0.15s;border:1px solid "+(isActive?"rgba(124,58,237,0.5)":"transparent")+";background:"+(isActive?"rgba(124,58,237,0.1)":"transparent");
+      row.title = isActive ? "Click to clear filter" : "Click to filter by "+display;
+      row.onclick = function(){ toggleMarketFilter(rname); };
       row.innerHTML=
         '<div style="width:24px;text-align:center;font-size:'+(i<3?"16":"11")+'px;flex-shrink:0">'+(i<3?rmedals[i]:'<span style="font-family:Orbitron,monospace;font-size:10px;color:#475569">#'+(i+1)+'</span>')+'</div>'+
-        '<div style="width:130px;font-size:12px;color:#CBD5E1;font-weight:600;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+display+'</div>'+
+        '<div style="width:130px;font-size:12px;color:'+(isActive?'#fff':'#CBD5E1')+';font-weight:'+(isActive?'700':'600')+';flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+display+(isActive?' <span style="color:#7C3AED;font-size:11px">&#x2713;</span>':'')+'</div>'+
         '<div style="flex:1;height:22px;background:rgba(255,255,255,0.04);border-radius:11px;overflow:hidden;">'+
           '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,'+t.color+','+t.color+'88);border-radius:11px;transition:width 1s;box-shadow:0 0 8px '+t.color+'44"></div>'+
         '</div>'+
         '<div style="font-family:Orbitron,monospace;font-size:11px;color:'+t.color+';font-weight:700;width:80px;text-align:right;flex-shrink:0">'+fmt(t.total)+'</div>';
+      row.addEventListener('mouseenter',function(){ if(!isActive) this.style.background='rgba(255,255,255,0.04)'; });
+      row.addEventListener('mouseleave',function(){ if(!isActive) this.style.background='transparent'; });
       rl.appendChild(row);
     });
   }
@@ -3265,12 +3275,16 @@ function toggleMarketFilter(name) {
   } else {
     activeMarketFilters.add(name);
   }
+  var banner = document.getElementById('market-filter-banner');
+  if (banner) banner.style.display = activeMarketFilters.size > 0 ? 'block' : 'none';
   buildMarketFilterList();
   render();
 }
 
 function clearMarketFilter() {
   activeMarketFilters.clear();
+  var banner = document.getElementById('market-filter-banner');
+  if (banner) banner.style.display = 'none';
   buildMarketFilterList();
   render();
 }
