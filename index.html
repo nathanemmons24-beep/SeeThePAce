@@ -291,6 +291,13 @@
     .blitz-rep-name{flex:1;font-family:'Exo 2',sans-serif;font-size:11px;color:#CBD5E1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .blitz-rep-amt{font-family:Orbitron,monospace;font-size:10px;color:#E2E8F0;flex-shrink:0}
     .blitz-gap{font-family:Orbitron,monospace;font-size:8px;color:#475569;flex-shrink:0}
+    .prize-icon{position:absolute;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:transform 0.15s;z-index:10}
+    .prize-icon:hover{transform:translateX(-50%) scale(1.15)}
+    .prize-icon-bubble{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);transition:all 0.4s}
+    .prize-icon-bubble.unlocked{border-color:rgba(168,85,247,0.7);background:rgba(168,85,247,0.15);animation:prizeIconGlow 1.8s ease-in-out infinite}
+    .prize-icon-label{font-family:Orbitron,monospace;font-size:6px;color:#2D3748;margin-top:2px;white-space:nowrap;text-align:center}
+    .prize-icon-label.unlocked{color:#A855F7}
+    @keyframes prizeIconGlow{0%,100%{box-shadow:0 0 6px 2px rgba(168,85,247,0.5)}50%{box-shadow:0 0 14px 4px rgba(168,85,247,0.9),0 0 22px 6px rgba(0,212,255,0.3)}}
     #badge-legend-fixed{background:rgba(6,11,24,0.15);border-top:1px solid rgba(255,255,255,0.05);padding:10px 20px;backdrop-filter:blur(4px);display:flex;align-items:center;gap:0;justify-content:space-around;opacity:0.25;transition:opacity 0.3s,background 0.3s,backdrop-filter 0.3s}
     #badge-legend-fixed:hover{opacity:1;background:rgba(6,11,24,0.97);backdrop-filter:blur(20px);border-top-color:rgba(255,255,255,0.1)}
     #badge-legend-fixed .bl-title{display:none}
@@ -370,27 +377,15 @@
       <button onclick="testPrizePopup()" style="font-family:Orbitron,monospace;font-size:8px;color:#A855F7;background:none;border:1px solid rgba(168,85,247,0.35);border-radius:8px;padding:3px 8px;cursor:pointer;letter-spacing:1px">🏆 TEST PRIZE</button>
       <button onclick="closeBlitz()" style="font-family:Orbitron,monospace;font-size:8px;color:#475569;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:3px 8px;cursor:pointer;letter-spacing:1px">EXIT EVENT</button>
     </div>
-    <!-- Progress bar with milestone ticks -->
-    <div style="position:relative;height:44px;margin-bottom:4px">
-      <div style="height:32px;background:rgba(255,255,255,0.05);border-radius:16px;overflow:hidden;margin-top:6px;box-shadow:inset 0 2px 8px rgba(0,0,0,0.5)">
+    <!-- Progress bar with prizes along it -->
+    <div style="position:relative;margin-bottom:8px;padding-bottom:52px">
+      <!-- Track -->
+      <div style="height:32px;background:rgba(255,255,255,0.05);border-radius:16px;overflow:hidden;box-shadow:inset 0 2px 8px rgba(0,0,0,0.5)">
         <div id="blitz-bar-fill" style="height:100%;width:0%;border-radius:16px;transition:width 1.2s"></div>
       </div>
-      <!-- Milestone ticks -->
-      <div id="blitz-milestone-ticks" style="position:absolute;top:0;left:0;right:0;height:44px;pointer-events:none"></div>
+      <!-- Prize icons positioned along bar -->
+      <div id="blitz-prize-icons" style="position:absolute;top:0;left:0;right:0;height:32px;pointer-events:none"></div>
     </div>
-    <!-- Milestone labels -->
-    <div style="display:flex;justify-content:space-between;font-family:Orbitron,monospace;font-size:8px;color:#334155;margin-top:2px">
-      <span>$1M</span><span>$5M</span><span>$9M</span><span>$13M</span><span>$17M</span>
-    </div>
-  </div>
-
-  <!-- STICKY BLITZ PRIZE PANEL -->
-  <div id="blitz-prize-panel" style="display:none;position:fixed;top:120px;left:16px;z-index:500;width:200px">
-    <div id="blitz-prize-header" onclick="togglePrizePanel()" style="background:rgba(10,15,30,0.85);border:1px solid rgba(124,58,237,0.4);border-radius:10px;padding:8px 12px;cursor:pointer;backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(124,58,237,0.2)">
-      <div style="font-family:Orbitron,monospace;font-size:9px;color:#A855F7;letter-spacing:2px">&#x1F3C6; BLITZ PRIZES</div>
-      <div id="blitz-prize-chevron" style="color:#475569;font-size:10px;transition:transform 0.2s">&#x25BC;</div>
-    </div>
-    <div id="blitz-prize-list" style="display:none;background:rgba(10,15,30,0.92);border:1px solid rgba(124,58,237,0.25);border-top:none;border-radius:0 0 10px 10px;padding:6px 8px;backdrop-filter:blur(16px);max-height:70vh;overflow-y:auto;scrollbar-width:thin"></div>
   </div>
 
   <!-- BLITZ BRACKET BREAKDOWN — visible when blitz filter active -->
@@ -1218,8 +1213,7 @@ function render(){
       var bs = document.getElementById('blitz-bracket-section');
       if (bs) bs.style.display = 'none';
       var pp = document.getElementById('blitz-prize-panel');
-      if (pp) pp.style.display = 'none';
-      var pr = document.getElementById('blitz-panels-row');
+      if (pp) pp.style.display = 'none';      var pr = document.getElementById('blitz-panels-row');
       if (pr) pr.style.display = 'none';
       return;
     }
@@ -1232,23 +1226,26 @@ function render(){
     document.getElementById('blitz-bar-goal').textContent = 'of ' + fmtB(BLITZ_GOAL) + ' \u00b7 ' + pct.toFixed(1) + '%';
     document.getElementById('blitz-bar-fill').style.width = pct + '%';
 
-    // Milestone ticks
-    var ticks = document.getElementById('blitz-milestone-ticks');
-    if (ticks) {
-      var html = '';
-      for (var m = 1; m <= 17; m++) {
-        var left = (m / 17 * 100).toFixed(2) + '%';
-        var reached = bd.total >= m * 1000000;
-        html += '<div style="position:absolute;left:' + left + ';top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center">' +
-          '<div style="width:3px;height:' + (reached ? '32px' : '18px') + ';border-radius:2px;background:' + (reached ? '#A855F7' : 'rgba(255,255,255,0.08)') + ';margin-top:' + (reached ? '6px' : '13px') + '"></div>' +
-          (reached ? '<div style="font-family:Orbitron,monospace;font-size:7px;color:#A855F7;margin-top:1px">$' + m + 'M</div>' : '') +
-        '</div>';
-      }
-      ticks.innerHTML = html;
+    // Prize icons along the bar
+    var iconsEl = document.getElementById('blitz-prize-icons');
+    if (iconsEl) {
+      var ihtml = '';
+      BLITZ_PRIZES.forEach(function(prize, i) {
+        var m = i + 1;
+        var left = ((m / 17) * 100).toFixed(2) + '%';
+        var unlocked = bd.total >= m * 1000000;
+        var unlockedClass = unlocked ? ' unlocked' : '';
+        var clickHandler = unlocked
+          ? 'onclick="showPrizeUnlockPopup(BLITZ_PRIZES[' + i + '],' + m + ')" style="pointer-events:auto"'
+          : 'style="pointer-events:auto;cursor:default"';
+        ihtml += '<div class="prize-icon" ' + clickHandler + ' style="left:' + left + ';top:-6px" title="' + prize.label + ' at $' + m + 'M">';
+        ihtml += '<div class="prize-icon-bubble' + unlockedClass + '">' + prize.icon + '</div>';
+        ihtml += '<div class="prize-icon-label' + unlockedClass + '">$' + m + 'M</div>';
+        ihtml += '</div>';
+      });
+      iconsEl.innerHTML = ihtml;
     }
 
-    // Prize panel
-    renderBlitzPrizePanel(bd.total);
     // Milestone unlock check
     checkBlitzMilestones(bd.total);
   })();
