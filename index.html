@@ -404,20 +404,21 @@
 
 
 
-  <!-- STORE RANKINGS -->
-  <div id="store-rankings" style="display:none">
-    <!-- MTD Progress Bar -->
-    <div id="mtd-bar-section" style="margin-bottom:20px">
-      <div id="total-display">$0 <span>of $85.40M</span></div>
-      <div id="bar-wrap">
-        <div id="bar-track">
-          <div id="bar-fill"></div>
-          <div id="bar-cursor" style="position:absolute;top:0;left:0%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;transition:left 1.2s cubic-bezier(.4,0,.2,1);z-index:20">
-            <span id="bar-cursor-label" style="font-family:Orbitron,monospace;font-size:9px;color:#FFD700;white-space:nowrap;margin-top:38px;text-shadow:0 0 6px rgba(255,215,0,0.7);font-weight:700;text-align:center"></span>
-          </div>
+  <!-- MTD PROGRESS BAR — always visible, hidden only by blitz CSS -->
+  <div id="mtd-bar-section" style="margin-bottom:20px">
+    <div id="total-display">$0 <span>of $85.40M</span></div>
+    <div id="bar-wrap">
+      <div id="bar-track">
+        <div id="bar-fill"></div>
+        <div id="bar-cursor" style="position:absolute;top:0;left:0%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;transition:left 1.2s cubic-bezier(.4,0,.2,1);z-index:20">
+          <span id="bar-cursor-label" style="font-family:Orbitron,monospace;font-size:9px;color:#FFD700;white-space:nowrap;margin-top:38px;text-shadow:0 0 6px rgba(255,215,0,0.7);font-weight:700;text-align:center"></span>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- STORE RANKINGS -->
+  <div id="store-rankings" style="display:none">
     <!-- Rankings header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:2px;margin:0">&#x1F3C6; STORE RANKINGS</h3>
@@ -1255,7 +1256,6 @@ function render(){
     checkBlitzMilestones(bd.total);
   })();
 
-  // (mtd-bar-section visibility controlled below near isLoading check)
   var rawData = state.data;
   var data = rawData;
   // Always merge first
@@ -1501,7 +1501,7 @@ function render(){
   }
   else{dot.textContent="\u25CF LOADING...";dot.className="loading";}
   // Hide all board content while loading
-  ["top-leaderboards","store-rankings","day-breakdown","biggest-mover",
+  ["top-leaderboards","store-rankings","mtd-bar-section","day-breakdown","biggest-mover",
    "top-movers-tile"].forEach(function(id){
     var el=document.getElementById(id);
     if(!el) return;
@@ -1509,9 +1509,9 @@ function render(){
   });
   var gridEl=document.getElementById("cards-grid");
   if(gridEl) gridEl.style.display = isLoading ? 'none' : 'flex';
-  // MTD bar: hidden only when blitz is active (it lives inside store-rankings)
+  // MTD bar hidden when blitz active
   var mtdEl=document.getElementById("mtd-bar-section");
-  if(mtdEl) mtdEl.style.display = blitzUnlocked ? 'none' : 'block';
+  if(mtdEl && blitzUnlocked) mtdEl.style.display = 'none';
   if(isLoading) return;
   var lu=document.getElementById("last-updated");
   if(lu)lu.innerHTML=state.lastUpdated?"Last updated: <span>"+state.lastUpdated+"</span>":"";
