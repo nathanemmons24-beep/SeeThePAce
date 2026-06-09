@@ -55,8 +55,8 @@
     .tv-btn-scroll.active{background:rgba(0,255,136,0.25);box-shadow:0 0 12px rgba(0,255,136,0.4)}
 
     /* App layout */
-    #app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px 16px;padding-top:130px}
-    #header{text-align:center;margin-bottom:20px;position:fixed;top:46px;left:0;right:0;z-index:199;background:#060B18;padding:10px 16px 8px;border-bottom:1px solid rgba(255,255,255,0.05)}
+    #header{text-align:center;margin-bottom:20px}
+    #app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px 16px;padding-top:56px}
     #blitz-title{font-family:"Orbitron",monospace;font-weight:900;font-size:clamp(24px,5vw,44px);letter-spacing:4px;background:linear-gradient(135deg,#00D4FF,#00FF88,#FFD700);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite;margin-bottom:6px}
     #subtitle{font-size:12px;color:#334155;font-family:"Orbitron",monospace;letter-spacing:3px}
     #status-dot{margin-left:12px}
@@ -1278,7 +1278,7 @@ function render(){
           tooltipHTML+='<div class="deal-tooltip-row">'+(db?'<span style="flex-shrink:0">'+db.icon+'</span>':'<span style="width:14px;flex-shrink:0">&nbsp;</span>')+'<span style="flex:1;font-size:11px;color:#94A3B8">'+dateStr+todayMark+'</span><span class="deal-tooltip-amt">'+fmt(obj.amount)+'</span></div>';
         });
         tooltipHTML+='</div>';
-        var multi=deals.length>1?'<span style="font-size:10px;color:#475569;margin-left:4px">(×'+deals.length+')</span>':"";
+        var multi="";
                 var repKey=rep.name+"|"+name;
         var sl=getStreakLevel(repKey);
         var scls=streakClass(sl);
