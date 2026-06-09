@@ -257,7 +257,7 @@
       animation:blitz-scanline 2.5s linear infinite;
     }
     #blitz-bar-strip{border:1px solid rgba(168,85,247,0.4) !important;}
-    body.blitz-active #milestone-section{display:none !important}
+    body.blitz-active #milestone-section{}
     @keyframes prizeRingPulse{0%,100%{transform:scale(1);opacity:0.8}50%{transform:scale(1.3);opacity:1}}
     @keyframes prizeCardIn{0%{transform:scale(0.3) rotate(-8deg);opacity:0}60%{transform:scale(1.08) rotate(1deg);opacity:1}80%{transform:scale(0.97) rotate(0deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
     @keyframes prizeBgIn{0%{opacity:0}100%{opacity:1}}
@@ -403,20 +403,21 @@
 
 
 
-  <!-- STORE RANKINGS -->
-  <div id="store-rankings" style="display:none">
-    <!-- MTD Progress Bar -->
-    <div id="milestone-section">
-      <div id="total-display">$0 <span>of $85.40M</span></div>
-      <div id="bar-wrap">
-        <div id="bar-track">
-          <div id="bar-fill"></div>
-          <div id="bar-cursor" style="position:absolute;top:0;left:0%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;transition:left 1.2s cubic-bezier(.4,0,.2,1);z-index:20">
-            <span id="bar-cursor-label" style="font-family:Orbitron,monospace;font-size:9px;color:#FFD700;white-space:nowrap;margin-top:38px;text-shadow:0 0 6px rgba(255,215,0,0.7);font-weight:700;text-align:center"></span>
-          </div>
+  <!-- MTD PROGRESS BAR — always visible -->
+  <div id="milestone-section">
+    <div id="total-display">$0 <span>of $85.40M</span></div>
+    <div id="bar-wrap">
+      <div id="bar-track">
+        <div id="bar-fill"></div>
+        <div id="bar-cursor" style="position:absolute;top:0;left:0%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;transition:left 1.2s cubic-bezier(.4,0,.2,1);z-index:20">
+          <span id="bar-cursor-label" style="font-family:Orbitron,monospace;font-size:9px;color:#FFD700;white-space:nowrap;margin-top:38px;text-shadow:0 0 6px rgba(255,215,0,0.7);font-weight:700;text-align:center"></span>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- STORE RANKINGS -->
+  <div id="store-rankings" style="display:none">
     <!-- Rankings header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:2px;margin:0">&#x1F3C6; STORE RANKINGS</h3>
