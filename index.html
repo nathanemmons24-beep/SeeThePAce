@@ -300,17 +300,37 @@
   </div>
 
 
-  <!-- PROGRESS -->
   <!-- BLITZ BAR — shown when special event is active -->
-  <div id="blitz-bar-strip" style="display:none;background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:10px 16px;margin-bottom:16px;backdrop-filter:blur(14px)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+  <div id="blitz-bar-strip" style="display:none;background:rgba(15,23,42,0.85);border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:12px 16px;margin-bottom:16px;backdrop-filter:blur(14px);box-shadow:0 0 20px rgba(124,58,237,0.15)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div style="font-family:Orbitron,monospace;font-size:9px;color:#7C3AED;letter-spacing:3px">&#x2728; SPECIAL EVENT</div>
-      <div id="blitz-bar-total" style="font-family:Orbitron,monospace;font-size:13px;font-weight:900;color:#00FF88"></div>
-      <div id="blitz-bar-goal" style="font-family:Orbitron,monospace;font-size:9px;color:#334155"></div>
+      <div style="display:flex;align-items:baseline;gap:6px">
+        <div id="blitz-bar-total" style="font-family:Orbitron,monospace;font-size:16px;font-weight:900;color:#00FF88"></div>
+        <div id="blitz-bar-goal" style="font-family:Orbitron,monospace;font-size:9px;color:#475569"></div>
+      </div>
+      <button onclick="closeBlitz()" style="font-family:Orbitron,monospace;font-size:8px;color:#475569;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:3px 8px;cursor:pointer;letter-spacing:1px">EXIT EVENT</button>
     </div>
-    <div style="height:8px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden">
-      <div id="blitz-bar-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#7C3AED,#00D4FF);border-radius:4px;transition:width 1s;box-shadow:0 0 8px rgba(124,58,237,0.5)"></div>
+    <!-- Progress bar with milestone ticks -->
+    <div style="position:relative;height:18px;margin-bottom:4px">
+      <div style="height:10px;background:rgba(255,255,255,0.04);border-radius:5px;overflow:hidden;margin-top:4px">
+        <div id="blitz-bar-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#7C3AED,#A855F7,#00D4FF);border-radius:5px;transition:width 1.2s;box-shadow:0 0 12px rgba(124,58,237,0.6)"></div>
+      </div>
+      <!-- Milestone ticks -->
+      <div id="blitz-milestone-ticks" style="position:absolute;top:0;left:0;right:0;height:18px;pointer-events:none"></div>
     </div>
+    <!-- Milestone labels -->
+    <div style="display:flex;justify-content:space-between;font-family:Orbitron,monospace;font-size:8px;color:#334155;margin-top:2px">
+      <span>$1M</span><span>$5M</span><span>$9M</span><span>$13M</span><span>$17M</span>
+    </div>
+  </div>
+
+  <!-- STICKY BLITZ PRIZE PANEL -->
+  <div id="blitz-prize-panel" style="display:none;position:fixed;top:120px;left:16px;z-index:500;width:200px">
+    <div id="blitz-prize-header" onclick="togglePrizePanel()" style="background:rgba(10,15,30,0.85);border:1px solid rgba(124,58,237,0.4);border-radius:10px;padding:8px 12px;cursor:pointer;backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(124,58,237,0.2)">
+      <div style="font-family:Orbitron,monospace;font-size:9px;color:#A855F7;letter-spacing:2px">&#x1F3C6; BLITZ PRIZES</div>
+      <div id="blitz-prize-chevron" style="color:#475569;font-size:10px;transition:transform 0.2s">&#x25BC;</div>
+    </div>
+    <div id="blitz-prize-list" style="display:none;background:rgba(10,15,30,0.92);border:1px solid rgba(124,58,237,0.25);border-top:none;border-radius:0 0 10px 10px;padding:6px 8px;backdrop-filter:blur(16px);max-height:70vh;overflow-y:auto;scrollbar-width:thin"></div>
   </div>
 
   <div id="milestone-section">
@@ -1070,28 +1090,67 @@ function renderLeaderboards(data){
 
 // \u2550\u2550 RENDER \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function render(){
-  // Update blitz bar strip on main dashboard
+  // Update blitz bar + prize panel + apply date filter when blitz is active
   (function() {
     var strip = document.getElementById('blitz-bar-strip');
     if (!strip) return;
+    if (!blitzUnlocked) { strip.style.display = 'none'; return; }
     var bd = getBlitzData();
-    if (bd && bd.total > 0 && blitzUnlocked) {
-      strip.style.display = 'block';
-      var pct = Math.min((bd.total / BLITZ_GOAL) * 100, 100);
-      document.getElementById('blitz-bar-total').textContent = fmtB(bd.total);
-      document.getElementById('blitz-bar-goal').textContent = 'of ' + fmtB(BLITZ_GOAL) + ' · ' + pct.toFixed(1) + '%';
-      document.getElementById('blitz-bar-fill').style.width = pct + '%';
-    } else {
-      strip.style.display = 'none';
+    if (!bd || bd.total === 0) { strip.style.display = 'none'; return; }
+
+    strip.style.display = 'block';
+    var pct = Math.min((bd.total / BLITZ_GOAL) * 100, 100);
+    document.getElementById('blitz-bar-total').textContent = fmtB(bd.total);
+    document.getElementById('blitz-bar-goal').textContent = 'of ' + fmtB(BLITZ_GOAL) + ' \u00b7 ' + pct.toFixed(1) + '%';
+    document.getElementById('blitz-bar-fill').style.width = pct + '%';
+
+    // Milestone ticks (17 marks, one per $1M)
+    var ticks = document.getElementById('blitz-milestone-ticks');
+    if (ticks) {
+      var html = '';
+      for (var m = 1; m <= 17; m++) {
+        var left = (m / 17 * 100).toFixed(2) + '%';
+        var reached = bd.total >= m * 1000000;
+        html += '<div style="position:absolute;left:' + left + ';top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center">' +
+          '<div style="width:2px;height:' + (reached ? '18px' : '10px') + ';border-radius:1px;background:' + (reached ? '#A855F7' : 'rgba(255,255,255,0.1)') + ';margin-top:' + (reached ? '0' : '4px') + '"></div>' +
+          (reached ? '<div style="font-family:Orbitron,monospace;font-size:7px;color:#A855F7;margin-top:1px">$' + m + 'M</div>' : '') +
+        '</div>';
+      }
+      ticks.innerHTML = html;
     }
+
+    // Prize panel
+    renderBlitzPrizePanel(bd.total);
   })();
 
   // Apply today filter if active
   var rawData = state.data;
   var data = rawData;
-  // Always merge Toronto 0914 (Central + Eastern GTA) first, then optional full consolidation
+  // Always merge first
   if (rawData && rawData.teams) {
     data = mergeAlways(data);
+  }
+  // Blitz date filter — restrict to June 18-20
+  if (blitzUnlocked && data && data.teams) {
+    var blitzFiltered = { total: 0, teams: {} };
+    Object.entries(data.teams).forEach(function(e) {
+      var tName = e[0], team = e[1];
+      var filteredReps = team.reps.map(function(rep) {
+        var blitzDeals = (rep.dealObjs||[]).filter(function(d) {
+          if (!d.date) return false;
+          var dd = new Date(d.date); dd.setHours(0,0,0,0);
+          return dd >= BLITZ_START && dd <= BLITZ_END;
+        });
+        if (blitzDeals.length === 0) return null;
+        var amt = blitzDeals.reduce(function(s,d){ return s+(d.amount||0); }, 0);
+        return Object.assign({}, rep, { amount: amt, dealObjs: blitzDeals });
+      }).filter(Boolean);
+      if (filteredReps.length === 0) return;
+      var tt = filteredReps.reduce(function(s,r){ return s+r.amount; }, 0);
+      blitzFiltered.teams[tName] = Object.assign({}, team, { total: tt, reps: filteredReps });
+      blitzFiltered.total += tt;
+    });
+    data = blitzFiltered;
   }
   if (filterConsolidated && rawData && rawData.teams) {
     data = consolidateData(data);
@@ -2166,7 +2225,8 @@ function openBlitz() {
   var overlay = document.getElementById("blitz-overlay");
   overlay.style.display = "flex";
   if (blitzUnlocked) {
-    showBlitzBoard();
+    document.getElementById("blitz-auth").style.display = "none";
+    setTimeout(function(){ var i=document.getElementById("blitz-pw-input"); if(i) i.focus(); }, 100);
   } else {
     document.getElementById("blitz-auth").style.display = "flex";
     document.getElementById("blitz-board").style.display = "none";
@@ -2175,12 +2235,17 @@ function openBlitz() {
 }
 
 function closeBlitz() {
-  document.getElementById("blitz-overlay").style.display = "none";
-  var sc = document.getElementById("blitz-sticky-clock");
-  if (sc) sc.style.display = "none";
-  var hw = document.getElementById("blitz-hamburger-wrap");
-  if (hw) hw.style.display = "none";
-  clearInterval(blitzClockTimer);
+  // Close auth overlay if open
+  var overlay = document.getElementById("blitz-overlay");
+  if (overlay) overlay.style.display = "none";
+  // Remove blitz filter from main board
+  blitzUnlocked = false;
+  var strip = document.getElementById("blitz-bar-strip");
+  if (strip) strip.style.display = "none";
+  var panel = document.getElementById("blitz-prize-panel");
+  if (panel) panel.style.display = "none";
+  updateMenuStates();
+  render();
 }
 
 function checkBlitzPw() {
@@ -2191,7 +2256,10 @@ function checkBlitzPw() {
     blitzUnlocked = true;
     err.style.display = "none";
     inp.value = "";
-    showBlitzBoard();
+    // Close overlay and apply blitz filter to main board
+    var overlay = document.getElementById("blitz-overlay");
+    if (overlay) overlay.style.display = "none";
+    activateBlitzFilter();
   } else {
     err.style.display = "block";
     inp.value = "";
@@ -2199,13 +2267,57 @@ function checkBlitzPw() {
   }
 }
 
-function showBlitzBoard() {
-  document.getElementById("blitz-auth").style.display = "none";
-  document.getElementById("blitz-board").style.display = "block";
-  var hw = document.getElementById("blitz-hamburger-wrap");
-  if (hw) { hw.style.display = "block"; hw.style.visibility = "visible"; }
-  renderBlitz();
+function activateBlitzFilter() {
+  // Show blitz UI on main board
+  var strip = document.getElementById("blitz-bar-strip");
+  if (strip) strip.style.display = "block";
+  var panel = document.getElementById("blitz-prize-panel");
+  if (panel) panel.style.display = "block";
+  updateMenuStates();
+  render();
 }
+
+function showBlitzBoard() {
+  // Legacy — now just activates the filter
+  activateBlitzFilter();
+}
+
+// Prize panel toggle
+var prizePanelOpen = false;
+function togglePrizePanel() {
+  prizePanelOpen = !prizePanelOpen;
+  var list = document.getElementById("blitz-prize-list");
+  var chev = document.getElementById("blitz-prize-chevron");
+  if (list) list.style.display = prizePanelOpen ? "block" : "none";
+  if (chev) chev.style.transform = prizePanelOpen ? "rotate(180deg)" : "rotate(0deg)";
+}
+
+function renderBlitzPrizePanel(total) {
+  var list = document.getElementById("blitz-prize-list");
+  if (!list) return;
+  var millions = total / 1000000;
+  var html = "";
+  BLITZ_PRIZES.forEach(function(prize, i) {
+    var milestone = i + 1;
+    var unlocked = millions >= milestone;
+    if (unlocked) {
+      html += '<div style="display:flex;align-items:center;gap:6px;padding:5px 4px;border-radius:6px;margin-bottom:2px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.35)">';
+      html += '<span style="font-size:14px">' + prize.icon + '</span>';
+      html += '<div style="flex:1"><div style="font-family:\'Exo 2\',sans-serif;font-size:11px;font-weight:700;color:#E2E8F0">' + prize.label + '</div>';
+      html += '<div style="font-family:Orbitron,monospace;font-size:8px;color:#7C3AED">$' + milestone + 'M &#x2713;</div></div>';
+      html += '</div>';
+    } else {
+      html += '<div style="display:flex;align-items:center;gap:6px;padding:5px 4px;border-radius:6px;margin-bottom:2px;background:transparent;border:1px solid rgba(255,255,255,0.05)">';
+      html += '<span style="font-size:14px;opacity:0.25">' + prize.icon + '</span>';
+      html += '<div style="flex:1"><div style="font-family:\'Exo 2\',sans-serif;font-size:11px;font-weight:600;color:#334155">' + prize.label + '</div>';
+      html += '<div style="font-family:Orbitron,monospace;font-size:8px;color:#1E293B">$' + milestone + 'M</div></div>';
+      html += '</div>';
+    }
+  });
+  list.innerHTML = html;
+}
+
+
 
 var BLITZ_DEMO = {
   total: 12793500,
