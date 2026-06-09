@@ -301,6 +301,18 @@
 
 
   <!-- PROGRESS -->
+  <!-- BLITZ BAR — shown when special event is active -->
+  <div id="blitz-bar-strip" style="display:none;background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:10px 16px;margin-bottom:16px;backdrop-filter:blur(14px)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div style="font-family:Orbitron,monospace;font-size:9px;color:#7C3AED;letter-spacing:3px;cursor:pointer" onclick="openBlitz()">&#x2728; SPECIAL EVENT &rsaquo;</div>
+      <div id="blitz-bar-total" style="font-family:Orbitron,monospace;font-size:13px;font-weight:900;color:#00FF88"></div>
+      <div id="blitz-bar-goal" style="font-family:Orbitron,monospace;font-size:9px;color:#334155"></div>
+    </div>
+    <div style="height:8px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden">
+      <div id="blitz-bar-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#7C3AED,#00D4FF);border-radius:4px;transition:width 1s;box-shadow:0 0 8px rgba(124,58,237,0.5)"></div>
+    </div>
+  </div>
+
   <div id="milestone-section">
     <div id="total-display">$0 <span>of $85.40M</span></div>
     <div id="bar-wrap"><div id="bar-track"><div id="bar-fill"></div><div id="bar-cursor" style="position:absolute;top:0;left:0%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;transition:left 1.2s cubic-bezier(.4,0,.2,1);z-index:20"><img src="data:image/png;base64,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" style="width:36px;height:36px;filter:drop-shadow(0 0 6px rgba(255,215,0,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.8));margin-top:-2px" /><span id="bar-cursor-label" style="font-family:Orbitron,monospace;font-size:9px;color:#FFD700;white-space:nowrap;margin-top:4px;text-shadow:0 0 6px rgba(255,215,0,0.7);font-weight:700;text-align:center"></span></div></div></div>
@@ -1058,6 +1070,22 @@ function renderLeaderboards(data){
 
 // \u2550\u2550 RENDER \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function render(){
+  // Update blitz bar strip on main dashboard
+  (function() {
+    var strip = document.getElementById('blitz-bar-strip');
+    if (!strip) return;
+    var bd = getBlitzData();
+    if (bd && bd.total > 0) {
+      strip.style.display = 'block';
+      var pct = Math.min((bd.total / BLITZ_GOAL) * 100, 100);
+      document.getElementById('blitz-bar-total').textContent = fmtB(bd.total);
+      document.getElementById('blitz-bar-goal').textContent = 'of ' + fmtB(BLITZ_GOAL) + ' · ' + pct.toFixed(1) + '%';
+      document.getElementById('blitz-bar-fill').style.width = pct + '%';
+    } else {
+      strip.style.display = 'none';
+    }
+  })();
+
   // Apply today filter if active
   var rawData = state.data;
   var data = rawData;
@@ -2228,35 +2256,58 @@ var BLITZ_DEMO = {
 
 function getBlitzData() {
   var data = state.data;
-  // Build from real data if available (June 18-20), otherwise use demo
-  var hasRealBlitz = false;
-  if (data && data.teams) {
-    Object.values(data.teams).forEach(function(t){
-      t.reps.forEach(function(r){
-        if((r.dealObjs||[]).some(function(d){
-          if(!d.date) return false;
-          var dd=new Date(d.date); dd.setHours(0,0,0,0);
-          return dd>=BLITZ_START&&dd<=BLITZ_END;
-        })) hasRealBlitz=true;
-      });
+  if (!data || !data.teams) return buildBlitzFromDemo();
+
+  var result = { total:0, brackets:{}, allReps:[] };
+  // Merge stores using ALWAYS_MERGE before bracket assignment
+  var mergedTeams = {};
+  Object.entries(data.teams).forEach(function(e) {
+    var tName = e[0], team = e[1];
+    var merge = ALWAYS_MERGE[tName];
+    var groupName = merge ? merge.group : tName;
+    var color = merge ? merge.color : team.color;
+    if (!mergedTeams[groupName]) mergedTeams[groupName] = { total:0, reps:[], color:color };
+    mergedTeams[groupName].total += team.total;
+    team.reps.forEach(function(rep) {
+      var existing = mergedTeams[groupName].reps.find(function(r){ return r.name===rep.name; });
+      if (existing) {
+        existing.amount += rep.amount;
+        existing.deals = (existing.deals||[]).concat(rep.deals||[]);
+        existing.dealObjs = (existing.dealObjs||[]).concat(rep.dealObjs||[]);
+      } else {
+        mergedTeams[groupName].reps.push(Object.assign({},rep));
+      }
     });
+  });
+
+  // Init brackets
+  for (var b in BLITZ_BRACKETS) {
+    result.brackets[b] = { total:0, teams:{}, color:BLITZ_BRACKETS[b].color, accent:BLITZ_BRACKETS[b].accent };
   }
-  if (!hasRealBlitz) {
-    // Build from demo inline
-    var result = { total: BLITZ_DEMO.total, brackets: {}, allReps: [] };
-    Object.keys(BLITZ_DEMO.brackets).forEach(function(bName) {
-      var b = BLITZ_DEMO.brackets[bName];
-      result.brackets[bName] = { total:b.total, teams:{}, color:b.color, accent:b.accent };
-      Object.keys(b.teams).forEach(function(tName) {
-        var t = b.teams[tName];
-        result.brackets[bName].teams[tName] = { total:t.total, display:t.display, color:t.color, reps:t.reps };
-        t.reps.forEach(function(r){ result.allReps.push({name:r.name,amount:r.amount,store:t.display,color:t.color,bracket:bName}); });
-      });
+
+  Object.entries(mergedTeams).forEach(function(e) {
+    var tName=e[0], team=e[1];
+    var display = tName.includes(' - ') ? tName.split(' - ').slice(1).join(' ').trim()
+                : (function(){ var m=tName.match(/^(.+?)\s+(\d{4})$/); return m?m[1].trim():tName; })();
+    var bracket = getBracketForStore(tName);
+    if (!bracket) return;
+
+    var reps = team.reps.filter(function(r){ return r.amount > 0; });
+    if (reps.length === 0) return;
+
+    reps.sort(function(a,b){ return b.amount - a.amount; });
+    var tt = reps.reduce(function(s,r){ return s+r.amount; }, 0);
+    result.brackets[bracket].teams[tName] = { total:tt, reps:reps, color:team.color, display:display };
+    result.brackets[bracket].total += tt;
+    result.total += tt;
+    reps.forEach(function(r){
+      result.allReps.push({ name:r.name, amount:r.amount, store:display, bracket:bracket, color:team.color });
     });
-    result.allReps.sort(function(a,b){return b.amount-a.amount;});
-    return result;
-  }
-  if (!data || !data.teams) return null;
+  });
+
+  result.allReps.sort(function(a,b){ return b.amount-a.amount; });
+  return result;
+}
 function buildBlitzFromDemo() {
   var result = { total: BLITZ_DEMO.total, brackets: {}, allReps: [] };
   Object.entries(BLITZ_DEMO.brackets).forEach(function(e) {
@@ -2274,59 +2325,6 @@ function buildBlitzFromDemo() {
 }
 
 
-  var result = { total:0, brackets:{}, allReps:[] };
-  // Merge Toronto GTA stores first
-  var mergedTeams = {};
-  Object.entries(data.teams).forEach(function(e) {
-    var tName = e[0], team = e[1];
-    var groupName = (tName === '0914 - Central GTA' || tName === '0914 - Eastern GTA') ? 'Toronto 0914' : tName;
-    if (!mergedTeams[groupName]) mergedTeams[groupName] = { total:0, reps:[], color: tName.startsWith('0914') ? '#A855F7' : team.color };
-    mergedTeams[groupName].total += team.total;
-    team.reps.forEach(function(rep) {
-      var existing = mergedTeams[groupName].reps.find(function(r){return r.name===rep.name;});
-      if (existing) {
-        existing.amount += rep.amount;
-        existing.deals = (existing.deals||[]).concat(rep.deals||[]);
-        existing.dealObjs = (existing.dealObjs||[]).concat(rep.dealObjs||[]);
-      } else {
-        mergedTeams[groupName].reps.push(Object.assign({},rep));
-      }
-    });
-  });
-  // Init brackets
-  for (var b in BLITZ_BRACKETS) {
-    result.brackets[b] = { total:0, teams:{}, color:BLITZ_BRACKETS[b].color, accent:BLITZ_BRACKETS[b].accent };
-  }
-  Object.entries(mergedTeams).forEach(function(e) {
-    var tName=e[0], team=e[1];
-    var display = tName === 'Toronto 0914' ? 'Toronto GTA' : (tName.includes(" - ")?tName.split(" - ").slice(1).join(" "):tName);
-    var lookupName = tName === 'Toronto 0914' ? '0914 - Central GTA' : tName;
-    var bracket=getBracketForStore(lookupName);
-    if (!bracket) return;
-    var filteredReps=[];
-    team.reps.forEach(function(rep) {
-      var blitzDeals=(rep.dealObjs||[]).filter(function(d){
-        if(!d.date) return false;
-        var dd=new Date(d.date); dd.setHours(0,0,0,0);
-        return dd >= BLITZ_START && dd <= BLITZ_END;
-      });
-      if(blitzDeals.length>0){
-        var amt=blitzDeals.reduce(function(s,d){return s+d.amount;},0);
-        filteredReps.push({name:rep.name,amount:amt,deals:blitzDeals,store:display,bracket:bracket});
-        result.allReps.push({name:rep.name,amount:amt,store:display,bracket:bracket,color:team.color});
-      }
-    });
-    if(filteredReps.length>0){
-      filteredReps.sort(function(a,b){return b.amount-a.amount;});
-      var tt=filteredReps.reduce(function(s,r){return s+r.amount;},0);
-      result.brackets[bracket].teams[tName]={total:tt,reps:filteredReps,color:team.color,display:display};
-      result.brackets[bracket].total+=tt;
-      result.total+=tt;
-    }
-  });
-  result.allReps.sort(function(a,b){return b.amount-a.amount;});
-  return result;
-}
 
 function fmtB(n){
   if(n>=1000000) return '$'+(n/1000000).toFixed(2)+'M';
