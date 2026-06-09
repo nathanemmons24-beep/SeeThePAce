@@ -3,7 +3,14 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="SeeThePace"/>
+  <meta name="theme-color" content="#0A0118"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <link rel="manifest" href="manifest.json"/>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="apple-touch-icon" href="icon-512.svg"/>
   <title>SeeThePace &mdash; Sales Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet"/>
   <style>
@@ -1456,13 +1463,6 @@ function render(){
     data = mf;
   }
   var DAYS_IN_MONTH=30;
-  // MTD total always uses full unfiltered merged data (not blitz-filtered)
-  var mtdData = (function(){
-    var d = state.data;
-    if (!d || !d.teams) return d;
-    return mergeAlways(d);
-  })();
-  var mtdTotal = mtdData ? mtdData.total : 0;
   var goal=filterDay?(state.goal/DAYS_IN_MONTH):state.goal;
   var total=data.total, pct=Math.min((total/goal)*100,115);
 
@@ -1484,11 +1484,11 @@ function render(){
   }
 
   // Main progress bar always shows MTD
-  document.getElementById("total-display").innerHTML=fmt(mtdTotal)+' <span>of '+fmt(state.goal)+(filterDay?" daily goal":"")+'</span>';
-  document.getElementById("total-display").style.color=mtdTotal>=state.goal?"#00FF88":"#FFD700";
-  var mtdPct = Math.min((mtdTotal/state.goal)*100,100);
+  document.getElementById("total-display").innerHTML=fmt(total)+' <span>of '+fmt(state.goal)+(filterDay?" daily goal":"")+'</span>';
+  document.getElementById("total-display").style.color=total>=state.goal?"#00FF88":"#FFD700";
+  var mtdPct = Math.min((total/state.goal)*100,100);
   var bf=document.getElementById("bar-fill");
-  if(bf){bf.style.width=mtdPct+"%";bf.style.background=mtdTotal>=state.goal?"linear-gradient(90deg,#00FF88,#00D4FF)":"linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF)";}
+  if(bf){bf.style.width=mtdPct+"%";bf.style.background=total>=state.goal?"linear-gradient(90deg,#00FF88,#00D4FF)":"linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF)";}
 
   var dot=document.getElementById("status-dot");
   var isLoading = (!data || !data.teams || Object.keys(data.teams).length === 0) && !blitzUnlocked;
@@ -1516,9 +1516,9 @@ function render(){
   var bcl=document.getElementById("bar-cursor-label");
   if(bc){bc.style.left=Math.min(mtdPct,100)+"%";}
   if(bcl){
-    var nextM=MILESTONES.find(function(m){return mtdTotal/state.goal<m.value;});
-    if(nextM&&mtdTotal<state.goal){var needed=Math.round(state.goal*nextM.value-mtdTotal);bcl.textContent=fmt(needed)+" to "+nextM.label;}
-    else if(mtdTotal>=state.goal){bcl.textContent="GOAL!";}
+    var nextM=MILESTONES.find(function(m){return total/state.goal<m.value;});
+    if(nextM&&total<state.goal){var needed=Math.round(state.goal*nextM.value-total);bcl.textContent=fmt(needed)+" to "+nextM.label;}
+    else if(total>=state.goal){bcl.textContent="GOAL!";}
     else{bcl.textContent="";}
   }
 
@@ -3693,7 +3693,15 @@ var firedBadges={};
   </div>
 </div>
 
-  <!-- PRIZE UNLOCK POPUP -->
+  <!-- PWA Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('sw.js').catch(function(){});
+      });
+    }
+  </script>
+</body>
   <div id="prize-unlock-popup" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;flex-direction:column">
     <!-- Dark overlay -->
     <div id="prize-popup-bg" style="position:absolute;inset:0;background:rgba(5,2,20,0.92);backdrop-filter:blur(8px)"></div>
@@ -3714,5 +3722,13 @@ var firedBadges={};
     </div>
   </div>
 
+  <!-- PWA Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('sw.js').catch(function(){});
+      });
+    }
+  </script>
 </body>
 </html>
