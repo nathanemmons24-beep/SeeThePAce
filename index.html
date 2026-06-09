@@ -2373,8 +2373,12 @@ function toggleScroll() {
 
 function getScrollEl() {
   var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
-  if (fsEl && fsEl !== document.documentElement && fsEl.scrollHeight > fsEl.clientHeight) return fsEl;
-  return null;
+  // Any fullscreen element with scrollable content — including documentElement
+  if (fsEl && fsEl.scrollHeight > fsEl.clientHeight) return fsEl;
+  // Not in fullscreen — scroll the page normally
+  return document.documentElement.scrollHeight > document.documentElement.clientHeight
+    ? document.documentElement
+    : null;
 }
 
 function runScroll() {
@@ -2382,8 +2386,10 @@ function runScroll() {
   if (scrollPausing) { scrollTimer = setTimeout(runScroll, scrollInterval); return; }
 
   var scEl = getScrollEl();
-  var maxScroll = scEl ? scEl.scrollHeight - scEl.clientHeight : document.documentElement.scrollHeight - window.innerHeight;
-  var cur = scEl ? scEl.scrollTop : window.scrollY;
+  if (!scEl) { scrollTimer = setTimeout(runScroll, scrollInterval); return; }
+
+  var maxScroll = scEl.scrollHeight - scEl.clientHeight;
+  var cur = scEl.scrollTop;
 
   // Hit bottom — pause then reverse
   if (scrollDir === 1 && cur >= maxScroll - 2) {
@@ -2407,9 +2413,7 @@ function runScroll() {
     return;
   }
 
-  var scEl2 = getScrollEl();
-  if (scEl2) scEl2.scrollTop += scrollDir * scrollSpeed;
-  else window.scrollBy(0, scrollDir * scrollSpeed);
+  scEl.scrollTop += scrollDir * scrollSpeed;
   scrollTimer = setTimeout(runScroll, scrollInterval);
 }
 
