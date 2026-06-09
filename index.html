@@ -1164,6 +1164,9 @@ function renderLeaderboards(data){
 
 // \u2550\u2550 RENDER \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function render(){
+  // Safety: ensure these Sets exist even if called before full script parse
+  if (!activeMarketFilters) activeMarketFilters = new Set();
+  if (!ROOKIE_NAMES) ROOKIE_NAMES = new Set();
   // ── Blitz bar (runs before data is set) ─────────────────────────────────
   (function() {
     var strip = document.getElementById('blitz-bar-strip');
@@ -1172,6 +1175,8 @@ function render(){
       strip.style.display = 'none';
       var bs = document.getElementById('blitz-bracket-section');
       if (bs) bs.style.display = 'none';
+      var pp = document.getElementById('blitz-prize-panel');
+      if (pp) pp.style.display = 'none';
       return;
     }
     var bd = getBlitzData();
