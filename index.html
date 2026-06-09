@@ -391,7 +391,7 @@
   <div id="blitz-bracket-section" style="display:none;margin-bottom:16px"></div>
 
   <!-- TOP ROOKIE + TOP BLITZER PANELS -->
-  <div id="blitz-panels-row">
+  <div id="blitz-panels-row" style="display:none">
     <div class="blitz-panel">
       <div class="blitz-panel-title">⭐ TOP ROOKIES</div>
       <div id="blitz-rookie-panel-content"></div>
@@ -1213,6 +1213,8 @@ function render(){
       if (bs) bs.style.display = 'none';
       var pp = document.getElementById('blitz-prize-panel');
       if (pp) pp.style.display = 'none';
+      var pr = document.getElementById('blitz-panels-row');
+      if (pr) pr.style.display = 'none';
       return;
     }
     var bd = getBlitzData();
@@ -1362,6 +1364,8 @@ function render(){
       });
       bd3.allReps.sort(function(a,b){return b.amount-a.amount;});
       renderBlitzPanels(bd3);
+      var panelsRow = document.getElementById('blitz-panels-row');
+      if (panelsRow) panelsRow.style.display = 'flex';
     })();
   }
   if (filterConsolidated && data && data.teams) {
