@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet"/>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{overflow-y:scroll;scroll-behavior:auto}
     body{background:#060B18;color:#E2E8F0;font-family:"Exo 2",sans-serif;min-height:100vh;overflow-x:hidden}
     body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);background-size:60px 60px;animation:gridMove 10s linear infinite}
     @keyframes gridMove{from{transform:translateY(0)}to{transform:translateY(60px)}}
@@ -2071,18 +2072,8 @@ function toggleScroll() {
 }
 
 function getScrollEl() {
-  // In fullscreen, try the fullscreen element first, then body, then documentElement
-  var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
-  if (fsEl) {
-    // Walk up from body to find which ancestor is actually scrolling
-    var candidates = [document.body, document.documentElement, fsEl];
-    for (var i = 0; i < candidates.length; i++) {
-      var el = candidates[i];
-      if (el && el.scrollHeight > el.clientHeight + 2) return el;
-    }
-  }
-  // Not fullscreen — body or documentElement
-  if (document.body.scrollHeight > document.body.clientHeight + 2) return document.body;
+  // document.documentElement is the correct scroll target in Chrome
+  // both in normal mode and fullscreen (documentElement.requestFullscreen)
   return document.documentElement;
 }
 
@@ -2090,19 +2081,23 @@ function runScroll() {
   if (!scrollActive) return;
   if (scrollPausing) { scrollTimer = setTimeout(runScroll, scrollInterval); return; }
 
-  var scEl = getScrollEl();
-  if (!scEl) { scrollTimer = setTimeout(runScroll, scrollInterval); return; }
+  var el = document.documentElement;
+  var maxScroll = el.scrollHeight - el.clientHeight;
+  var cur = el.scrollTop;
 
-  var maxScroll = scEl.scrollHeight - scEl.clientHeight;
-  var cur = scEl.scrollTop;
+  console.log('runScroll: scrollTop='+cur+' max='+maxScroll+' dir='+scrollDir);
+
+  if (maxScroll <= 0) {
+    // Nothing to scroll — try again after a second in case content hasn't loaded
+    scrollTimer = setTimeout(runScroll, 1000);
+    return;
+  }
 
   // Hit bottom — pause then reverse
   if (scrollDir === 1 && cur >= maxScroll - 2) {
     scrollPausing = true;
     scrollTimer = setTimeout(function() {
-      scrollDir = -1;
-      scrollPausing = false;
-      runScroll();
+      scrollDir = -1; scrollPausing = false; runScroll();
     }, scrollPause);
     return;
   }
@@ -2111,14 +2106,12 @@ function runScroll() {
   if (scrollDir === -1 && cur <= 2) {
     scrollPausing = true;
     scrollTimer = setTimeout(function() {
-      scrollDir = 1;
-      scrollPausing = false;
-      runScroll();
+      scrollDir = 1; scrollPausing = false; runScroll();
     }, scrollPause);
     return;
   }
 
-  scEl.scrollTop += scrollDir * scrollSpeed;
+  el.scrollTop += scrollDir * scrollSpeed;
   scrollTimer = setTimeout(runScroll, scrollInterval);
 }
 
