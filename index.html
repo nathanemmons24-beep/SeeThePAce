@@ -496,7 +496,7 @@ var firedBadges={};
 
 
 var SHEET_URL  = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
-var POLL_MS    = 3600000;
+var POLL_MS    = 10000;
 var ADMIN_PW   = "Mayday2015";
 var PALETTE    = ["#00D4FF","#00FF88","#FFD700","#FF6B35","#A855F7","#FF4EFF","#34D399","#F59E0B","#60A5FA","#FB7185"];
 var MILESTONES = [
@@ -621,7 +621,7 @@ var state={
   lastUpdated: null
 };
 var streakCounts = {}; // "Name|Team" -> number of deals (not syncs)
-var pollTimer=null,countdownTimer=null,secsLeft=3600,CIRC=2*Math.PI*15;
+var pollTimer=null,countdownTimer=null,secsLeft=10,CIRC=2*Math.PI*15;
 
 // \u2550\u2550 FETCH \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 var SETTINGS_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Settings";
@@ -704,24 +704,17 @@ function startPolling(){
 // \u2550\u2550 COUNTDOWN \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function resetCountdown(){
   clearInterval(countdownTimer);
-  // Sync to top of next hour
-  var now=new Date();
-  secsLeft = 3600 - (now.getMinutes()*60 + now.getSeconds());
+  secsLeft = POLL_MS / 1000;
   tickCountdown();
   countdownTimer=setInterval(tickCountdown,1000);
 }
 function tickCountdown(){
   secsLeft=Math.max(0,secsLeft-1);
-  var pct=(3600-secsLeft)/3600,offset=CIRC*pct,urgent=secsLeft<=60,color=urgent?"#FF4444":"#00D4FF";
-  // Update next sync and last sync hour labels
-  var now=new Date();
-  var nextHour=new Date(now); nextHour.setMinutes(0,0,0); nextHour.setHours(nextHour.getHours()+1);
-  var lastHour=new Date(nextHour); lastHour.setHours(lastHour.getHours()-1);
-  var fmt12=function(d){var h=d.getHours();var ampm=h>=12?"PM":"AM";h=h%12||12;return h+":00 "+ampm;};
+  var pct=(POLL_MS/1000 - secsLeft)/(POLL_MS/1000), offset=CIRC*pct, urgent=secsLeft<=3, color=urgent?"#FF4444":"#00D4FF";
   var lbl=document.getElementById("countdown-label");
-  if(lbl)lbl.textContent="NEXT SYNC "+fmt12(nextHour);
+  if(lbl)lbl.textContent="NEXT SYNC IN";
   var lst=document.getElementById("last-sync-text");
-  if(lst)lst.textContent="LAST SYNC "+fmt12(lastHour);
+  if(lst)lst.textContent=state.lastUpdated?"Last sync: "+state.lastUpdated:"";
   var ring=document.getElementById("refresh-ring");
   if(ring){ring.style.strokeDashoffset=offset;ring.style.stroke=color;}
   var num=document.getElementById("refresh-num");
