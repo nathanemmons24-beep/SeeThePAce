@@ -2049,32 +2049,39 @@ var scrollActive  = false;
 var scrollTimer   = null;
 var scrollDir     = 1;
 
+function scrollStep() {
+  if (!scrollActive) return;
+  var atBottom = (window.innerHeight + window.scrollY) >= document.body.scrollHeight - 4;
+  var atTop    = window.scrollY <= 2;
+  if (scrollDir === 1 && atBottom) {
+    scrollDir = -1;
+    clearInterval(scrollTimer);
+    scrollTimer = null;
+    setTimeout(function() {
+      if (!scrollActive) return;
+      scrollTimer = setInterval(scrollStep, 16);
+    }, 2500);
+    return;
+  }
+  if (scrollDir === -1 && atTop) {
+    scrollDir = 1;
+    clearInterval(scrollTimer);
+    scrollTimer = null;
+    setTimeout(function() {
+      if (!scrollActive) return;
+      scrollTimer = setInterval(scrollStep, 16);
+    }, 2500);
+    return;
+  }
+  window.scrollBy(0, scrollDir * 1.5);
+}
+
 function toggleScroll() {
   scrollActive = !scrollActive;
   updateMenuStates();
   if (scrollActive) {
     scrollDir = 1;
-    scrollTimer = setInterval(function() {
-      var atBottom = (window.innerHeight + window.scrollY) >= document.body.scrollHeight - 4;
-      var atTop    = window.scrollY <= 2;
-      if (scrollDir === 1 && atBottom) {
-        clearInterval(scrollTimer);
-        setTimeout(function() {
-          scrollDir = -1;
-          scrollTimer = setInterval(arguments.callee, 16);
-        }, 2500);
-        return;
-      }
-      if (scrollDir === -1 && atTop) {
-        clearInterval(scrollTimer);
-        setTimeout(function() {
-          scrollDir = 1;
-          scrollTimer = setInterval(arguments.callee, 16);
-        }, 2500);
-        return;
-      }
-      window.scrollBy(0, scrollDir * 1.5);
-    }, 16);
+    scrollTimer = setInterval(scrollStep, 16);
   } else {
     clearInterval(scrollTimer);
     scrollTimer = null;
@@ -2881,15 +2888,6 @@ function createMenu(){
   panel += '<button class="menu-item" id="consolidated-btn" onclick="toggleConsolidated()">&#x1F5FA; CONSOLIDATED</button>';
   panel += '<button class="menu-item" id="rookie-filter-btn" onclick="toggleRookieFilter()">&#x2B50; ROOKIES ONLY</button>';
   panel += '<button class="menu-item" id="today-filter-btn-menu" onclick="toggleTodayFilter()">&#x1F4C5; TODAY ONLY</button>';
-  panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
-
-  // — MARKETS —
-  panel += '<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 12px 4px">';
-  panel +=   '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px">MARKETS</div>';
-  panel +=   '<button onclick="clearMarketFilter()" style="font-family:Orbitron,monospace;font-size:8px;color:#334155;background:none;border:none;cursor:pointer;letter-spacing:1px;padding:2px 4px;border-radius:4px" id="market-clear-btn">CLEAR</button>';
-  panel += '</div>';
-  panel += '<div id="market-filter-list" style="padding:2px 4px 4px"></div>';
-
   panel += '</div>';
 
   wrap.innerHTML =
