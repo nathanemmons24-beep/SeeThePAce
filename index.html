@@ -1498,7 +1498,7 @@ function render(){
     if(el) el.style.display=isLoading?"none":"";
   });
   var mtdEl=document.getElementById("mtd-bar-section");
-  if(mtdEl) mtdEl.style.display = blitzUnlocked ? 'none' : '';
+  if(mtdEl) mtdEl.style.display = blitzUnlocked ? 'none' : 'block';
   if(isLoading) return;
   var lu=document.getElementById("last-updated");
   if(lu)lu.innerHTML=state.lastUpdated?"Last updated: <span>"+state.lastUpdated+"</span>":"";
