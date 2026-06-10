@@ -282,7 +282,8 @@
     #prize-popup-card.animate-in{animation:prizeCardIn 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards}
     #prize-popup-bg.animate-in{animation:prizeBgIn 0.4s ease forwards}
     #prize-popup-icon.bounce{animation:prizeIconBounce 0.8s ease 0.5s 3}
-    @keyframes topRookiePulse{0%,100%{box-shadow:0 0 6px 2px rgba(255,255,255,0.8),0 0 12px 4px rgba(168,85,247,0.6);background:rgba(255,255,255,0.95)}50%{box-shadow:0 0 12px 5px rgba(255,255,255,1),0 0 24px 8px rgba(168,85,247,0.9);background:#fff}}
+    @keyframes risingPulse{0%,100%{box-shadow:0 0 4px rgba(251,191,36,0.5),0 0 8px rgba(251,191,36,0.2)}50%{box-shadow:0 0 8px rgba(251,191,36,0.8),0 0 16px rgba(251,191,36,0.4)}}
+    .rising-badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;font-family:Orbitron,monospace;font-size:8px;font-weight:900;color:#451A03;background:linear-gradient(135deg,#FCD34D,#F59E0B);border:1.5px solid #FCD34D;animation:risingPulse 2s ease-in-out infinite;flex-shrink:0}0%,100%{box-shadow:0 0 6px 2px rgba(255,255,255,0.8),0 0 12px 4px rgba(168,85,247,0.6);background:rgba(255,255,255,0.95)}50%{box-shadow:0 0 12px 5px rgba(255,255,255,1),0 0 24px 8px rgba(168,85,247,0.9);background:#fff}}
     .top-rookie-badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;font-family:Orbitron,monospace;font-size:9px;font-weight:900;color:#1A0840;animation:topRookiePulse 1.4s ease-in-out infinite;flex-shrink:0}
     @keyframes zapPulse{0%,100%{box-shadow:0 0 4px 1px rgba(124,58,237,0.9),0 0 10px 3px rgba(0,212,255,0.6);opacity:1}50%{box-shadow:0 0 8px 3px rgba(168,85,247,1),0 0 20px 6px rgba(0,212,255,0.9);opacity:0.85}}
     @keyframes zapFlicker{0%,100%{transform:scale(1)}25%{transform:scale(1.05) rotate(-2deg)}75%{transform:scale(0.97) rotate(1deg)}}
@@ -1220,30 +1221,54 @@ function render(){
     var iconsEl = document.getElementById('blitz-prize-icons');
     if (iconsEl) {
       var ihtml = '';
+      // Find last unlocked and next to unlock
+      var lastUnlockedIdx = -1;
+      var nextUnlockedIdx = -1;
+      BLITZ_PRIZES.forEach(function(prize, i) {
+        if (bd.total >= (i+1) * 1000000) lastUnlockedIdx = i;
+      });
+      nextUnlockedIdx = lastUnlockedIdx + 1 < BLITZ_PRIZES.length ? lastUnlockedIdx + 1 : -1;
+
       BLITZ_PRIZES.forEach(function(prize, i) {
         var m = i + 1;
         var left = ((m / 17) * 100).toFixed(2) + '%';
         var unlocked = bd.total >= m * 1000000;
-        var lineColor = unlocked ? 'rgba(168,85,247,0.7)' : 'rgba(255,255,255,0.08)';
+        var isLastUnlocked = (i === lastUnlockedIdx);
+        var isNext = (i === nextUnlockedIdx);
+        var lineColor = unlocked ? 'rgba(168,85,247,0.7)' : isNext ? 'rgba(0,212,255,0.5)' : 'rgba(255,255,255,0.08)';
         var clickAttr = unlocked
           ? 'onclick="showPrizeUnlockPopup(BLITZ_PRIZES[' + i + '],' + m + ')" title="' + prize.label + ' — click to celebrate!"'
-          : 'title="' + prize.label + ' — reach $' + m + 'M to unlock"';
-        ihtml += '<div style="position:absolute;left:' + left + ';top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;' + (unlocked ? 'cursor:pointer' : 'cursor:default;opacity:0.4') + '" ' + clickAttr + '>';
-        // Vertical connector line
-        ihtml += '<div style="width:2px;height:10px;background:' + lineColor + ';border-radius:1px;flex-shrink:0"></div>';
-        // Prize icon bubble
-        ihtml += '<div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;';
-        if (unlocked) {
-          ihtml += 'background:rgba(168,85,247,0.2);border:2px solid rgba(168,85,247,0.8);animation:prizeIconGlow 1.8s ease-in-out infinite;box-shadow:0 0 10px rgba(168,85,247,0.6)">';
-        } else {
-          ihtml += 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1)">';
-        }
-        ihtml += prize.icon + '</div>';
-        // Dollar label
-        ihtml += '<div style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;margin-top:3px;color:' + (unlocked ? '#A855F7' : '#334155') + ';white-space:nowrap">$' + m + 'M</div>';
+          : 'title="' + prize.label + (isNext ? ' — NEXT UP! Reach $' + m + 'M' : ' — reach $' + m + 'M to unlock') + '"';
+
+        // Sizing: last unlocked = large, next = medium-large, rest normal
+        var size = isLastUnlocked ? 38 : isNext ? 32 : 26;
+        var fontSize = isLastUnlocked ? 20 : isNext ? 16 : 13;
+        var lineH = isLastUnlocked ? 14 : isNext ? 12 : 10;
+        var labelSize = isLastUnlocked ? 10 : isNext ? 9 : 8;
+        var opacity = unlocked ? '1' : isNext ? '0.9' : '0.35';
+
+        ihtml += '<div style="position:absolute;left:' + left + ';top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;cursor:' + (unlocked ? 'pointer' : 'default') + ';opacity:' + opacity + ';z-index:' + (isLastUnlocked||isNext?10:1) + '" ' + clickAttr + '>';
+        // Connector line
+        ihtml += '<div style="width:2px;height:' + lineH + 'px;background:' + lineColor + ';border-radius:1px;flex-shrink:0"></div>';
+        // Icon bubble
+        var borderStyle = isLastUnlocked
+          ? 'border:2px solid rgba(168,85,247,1);background:rgba(168,85,247,0.25);animation:prizeIconGlow 1.2s ease-in-out infinite;box-shadow:0 0 16px rgba(168,85,247,0.8),0 0 30px rgba(168,85,247,0.4)'
+          : isNext
+            ? 'border:2px solid rgba(0,212,255,0.8);background:rgba(0,212,255,0.12);animation:prizeIconGlow 2s ease-in-out infinite;box-shadow:0 0 10px rgba(0,212,255,0.5)'
+            : unlocked
+              ? 'border:2px solid rgba(168,85,247,0.7);background:rgba(168,85,247,0.15);animation:prizeIconGlow 1.8s ease-in-out infinite;box-shadow:0 0 8px rgba(168,85,247,0.5)'
+              : 'border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04)';
+        ihtml += '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:' + fontSize + 'px;flex-shrink:0;' + borderStyle + '">' + prize.icon + '</div>';
+        // Label
+        var labelColor = isLastUnlocked ? '#C084FC' : isNext ? '#00D4FF' : unlocked ? '#A855F7' : '#334155';
+        var labelWeight = (isLastUnlocked || isNext) ? '900' : '700';
+        ihtml += '<div style="font-family:Orbitron,monospace;font-size:' + labelSize + 'px;font-weight:' + labelWeight + ';margin-top:3px;color:' + labelColor + ';white-space:nowrap">$' + m + 'M</div>';
+        if (isNext) ihtml += '<div style="font-family:Orbitron,monospace;font-size:7px;color:#00D4FF;margin-top:1px;white-space:nowrap">NEXT</div>';
         ihtml += '</div>';
       });
       iconsEl.innerHTML = ihtml;
+      // Make container taller to fit bigger icons
+      iconsEl.style.height = '72px';
     }
 
     // Milestone unlock check
@@ -1261,32 +1286,50 @@ function render(){
   if (blitzUnlocked) {
     // Use BLITZ_DEMO as the authoritative blitz dataset
     data = { total: BLITZ_DEMO.total, teams: {} };
+    // Display name normalizer matching ALWAYS_MERGE
+    var blitzDisplayMap = {
+      "0535 - Central Northern NJ": "New Jersey",
+      "0535 - New Jersey": "New Jersey",
+      "0930 - Atlanta": "Georgia", "0930 - Eastern GA": "Georgia",
+      "0930 - Southern GA": "Georgia", "0930 - Georgia": "Georgia",
+      "0868 - So Bend": "South Bend", "0868 - South Bend": "South Bend",
+      "0790 - Tri-Cities TN": "Knoxville", "0790 - Knoxville": "Knoxville",
+      "0914 - Central GTA": "Toronto", "0914 - Eastern GTA": "Toronto",
+      "Toronto 0914": "Toronto"
+    };
     Object.entries(BLITZ_DEMO.brackets).forEach(function(be) {
-      var bracketName = be[0], bracket = be[1];
+      var bracket = be[1];
       Object.entries(bracket.teams).forEach(function(te) {
         var storeName = te[0], team = te[1];
-        data.teams[storeName] = {
-          color: team.color,
-          display: team.display,
-          total: team.total,
-          reps: team.reps.map(function(r) {
-            // Spread amount across Jun 18/19/20 (~35%/35%/30%)
-            var d18 = Math.round(r.amount * 0.35);
-            var d19 = Math.round(r.amount * 0.35);
-            var d20 = r.amount - d18 - d19;
-            return {
-              name: r.name, amount: r.amount,
-              deals: [d18, d19, d20],
+        var display = blitzDisplayMap[storeName] || team.display || storeName.split(' - ').slice(1).join(' ').trim();
+        // Merge teams with same display name
+        var mergeKey = storeName.replace(/^0\d+ - /, '');
+        // Find if a team with same display already exists
+        var existingKey = null;
+        Object.keys(data.teams).forEach(function(k){ if(data.teams[k].display===display) existingKey=k; });
+        var targetKey = existingKey || storeName;
+        if (!data.teams[targetKey]) {
+          data.teams[targetKey] = { color: team.color, display: display, total: 0, reps: [] };
+        }
+        var target = data.teams[targetKey];
+        target.total += team.total;
+        team.reps.forEach(function(r) {
+          var existing = target.reps.find(function(x){ return x.name===r.name; });
+          if (existing) { existing.amount += r.amount; }
+          else {
+            target.reps.push({ name: r.name, amount: r.amount, deals: [r.amount],
               dealObjs: [
-                {amount: d18, date: "6/18/2026", isToday: false},
-                {amount: d19, date: "6/19/2026", isToday: false},
-                {amount: d20, date: "6/20/2026", isToday: false}
-              ],
-              todayTotal: 0, latestDate: null
-            };
-          })
-        };
+                {amount: Math.round(r.amount*0.35), date: "6/18/2026", isToday: false},
+                {amount: Math.round(r.amount*0.35), date: "6/19/2026", isToday: false},
+                {amount: r.amount - Math.round(r.amount*0.35)*2, date: "6/20/2026", isToday: false}
+              ], todayTotal: 0, latestDate: null });
+          }
+        });
       });
+    });
+    // Re-sort reps within each team
+    Object.values(data.teams).forEach(function(t){
+      t.reps.sort(function(a,b){return b.amount-a.amount;});
     });
 
     // ── Bracket breakdown (built from the static blitz data) ──────────────
@@ -2567,7 +2610,7 @@ var BLITZ_DEMO = {
     "Large Markets": {
       total: 8612000, color: "#00FF88", accent: "#FFD700",
       teams: {
-        "0535 - Central Northern NJ": { total:2748000, display:"Central Northern NJ", color:"#00FF88", reps:[
+        "0535 - Central Northern NJ": { total:2748000, display:"New Jersey", color:"#00FF88", reps:[
           {name:"Gerry Zapantis",amount:612000},{name:"Alex Aubrey-Smith",amount:398000},{name:"Ken Haupt",amount:334000},{name:"Rocky Singh",amount:265000},{name:"Barry Dubin",amount:212000},{name:"Brian Whitmore",amount:487000},{name:"Matt Davis",amount:168000},{name:"Marcus Staples",amount:148000},{name:"Roberto Rios",amount:124000}]},
         "0890 - San Francisco": { total:2241000, display:"San Francisco", color:"#FFD700", reps:[
           {name:"Diana Muldowney",amount:498000},{name:"Daniel Odetto",amount:362000},{name:"Chris Navarro",amount:312000},{name:"Sarah Prentice",amount:298000},{name:"Ryan Acton",amount:234000},{name:"Austin Davis",amount:198000},{name:"Kevin Upton",amount:187000},{name:"Stephanie Wu",amount:152000}]},
@@ -2588,20 +2631,20 @@ var BLITZ_DEMO = {
           {name:"Jonathan Simms",amount:456000},{name:"JT Conway",amount:348000},{name:"Mark Sneed",amount:278000},{name:"Whitney Kent",amount:198000},{name:"Ben Laney",amount:118000}]},
         "0534 - Westchester": { total:798000, display:"Westchester", color:"#00D4FF", reps:[
           {name:"Kim Uniacke",amount:312000},{name:"Nick Patentas",amount:245000},{name:"Brian Greenberg",amount:162000},{name:"Roberto Rios",amount:79000}]},
-        "0868 - So Bend": { total:415200, display:"So Bend", color:"#FF6B35", reps:[
+        "0868 - So Bend": { total:415200, display:"South Bend", color:"#FF6B35", reps:[
           {name:"Al Reasonover",amount:234000},{name:"Marshall Clevenger",amount:131200},{name:"George Mars",amount:50000}]}
       }
     },
     "Small Markets": {
       total: 1942000, color: "#00D4FF", accent: "#FFD700",
       teams: {
-        "0914 - Central GTA": { total:687000, display:"Central GTA", color:"#00D4FF", reps:[
+        "0914 - Central GTA": { total:687000, display:"Toronto", color:"#00D4FF", reps:[
           {name:"Lee Jackson",amount:278000},{name:"Matthew Dorff",amount:221000},{name:"Sarah Prentice",amount:134000},{name:"Marcus Staples",amount:54000}]},
         "0790 - Knoxville": { total:534000, display:"Knoxville", color:"#FFD700", reps:[
           {name:"Whitney Kent",amount:223000},{name:"Gregory Fairclough",amount:198000},{name:"Ben Laney",amount:113000}]},
         "0792 - Chattanooga": { total:498000, display:"Chattanooga", color:"#00FF88", reps:[
           {name:"Ben Laney",amount:198000},{name:"Jeff Chambers",amount:178000},{name:"Austin Davis",amount:122000}]},
-        "0790 - Tri-Cities TN": { total:223000, display:"Tri-Cities TN", color:"#A855F7", reps:[
+        "0790 - Tri-Cities TN": { total:223000, display:"Knoxville", color:"#A855F7", reps:[
           {name:"Greg Hawkins",amount:148000},{name:"Roberto Rios",amount:75000}]}
       }
     }
@@ -2646,9 +2689,10 @@ function renderBlitzPanels(blitzData) {
   // Populate global badge maps
   blitzTopRookieMap = {};
   blitzTopBlitzerMap = {};
+  // Only the single top rookie per bracket gets the glowing badge
   BRACKET_ORDER.forEach(function(bName) {
     var rookies = tops[bName].rookies;
-    if (rookies.length > 0) blitzTopRookieMap[rookies[0].name] = bName;
+    if (rookies.length > 0) blitzTopRookieMap[rookies[0].name + '|' + bName] = true;
     tops[bName].all.slice(0,5).forEach(function(rep, i) {
       blitzTopBlitzerMap[rep.name] = i < 3 ? String(i+1) : 'hunt';
     });
@@ -2678,7 +2722,7 @@ function renderBlitzPanels(blitzData) {
     blitzers.forEach(function(rep, i) {
       var gap = i > 0 ? '-'+fmtB(blitzers[0].amount - rep.amount) : '';
       var isRookie = ROOKIE_NAMES && ROOKIE_NAMES.has(rep.name);
-      var isTopRookie = blitzTopRookieMap[rep.name];
+      var isTopRookie = blitzTopRookieMap[rep.name + '|' + bName];
       html += '<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03)">';
       if (i===0) html += '<span class="blitzer-badge-1">\u26A11</span>';
       else if (i===1) html += '<span class="blitzer-badge-2">\u26A12</span>';
@@ -2692,14 +2736,16 @@ function renderBlitzPanels(blitzData) {
       html += '</div>';
     });
 
-    // TOP ROOKIE section
-    if (rookies.length > 0) {
-      html += '<div style="font-family:Orbitron,monospace;font-size:8px;letter-spacing:2px;color:#475569;margin:10px 0 6px">\u2B50 TOP ROOKIE</div>';
-      rookies.forEach(function(rep, i) {
-        var gap = i > 0 ? '-'+fmtB(rookies[0].amount - rep.amount) : '';
+    // TOP ROOKIE section — top 5, with rising badge for 4th/5th
+    var rookies5 = tops[bName].rookies.slice(0, 5);
+    if (rookies5.length > 0) {
+      html += '<div style="font-family:Orbitron,monospace;font-size:8px;letter-spacing:2px;color:#475569;margin:10px 0 6px">\u2B50 TOP ROOKIES</div>';
+      rookies5.forEach(function(rep, i) {
+        var gap = i > 0 ? '-'+fmtB(rookies5[0].amount - rep.amount) : '';
         html += '<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03)">';
         if (i===0) html += '<span class="top-rookie-badge">R</span>';
-        else html += '<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px;opacity:0.6">R</span>';
+        else if (i <= 2) html += '<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px;opacity:0.7">R</span>';
+        else html += '<span class="rising-badge">&#x2191;</span>';
         html += '<span style="flex:1;font-family:\'Exo 2\',sans-serif;font-size:12px;color:#CBD5E1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+rep.name+'</span>';
         html += '<span style="font-family:Orbitron,monospace;font-size:10px;color:#E2E8F0;flex-shrink:0">'+fmtB(rep.amount)+'</span>';
         if (gap) html += '<span style="font-family:Orbitron,monospace;font-size:8px;color:#475569;flex-shrink:0;min-width:52px;text-align:right">'+gap+'</span>';
@@ -2768,7 +2814,7 @@ function getBlitzBracketForRep(repName, blitzData) {
 
 function getBlitzRepBadges(repName, topRookieMap, topBlitzerMap) {
   var badges = '';
-  if (topRookieMap[repName]) {
+  if (topRookieMap && Object.keys(topRookieMap).some(function(k){return k.split('|')[0]===repName;})) {
     badges += '<span class="top-rookie-badge" title="Top Rookie - '+topRookieMap[repName]+'">R</span>';
   } else if (ROOKIE_NAMES && ROOKIE_NAMES.has(repName)) {
     badges += '<span class="rookie-star" style="animation:none;width:16px;height:16px;font-size:8px">R</span>';
@@ -3315,7 +3361,7 @@ function renderBlitzBracketsNew(bd) {
       html += '</div>';
       t.reps.forEach(function(r, ri) {
         var isRookie = ROOKIE_NAMES.has(r.name);
-        var isTopRookie = blitzUnlocked && blitzTopRookieMap[r.name];
+        var isTopRookie = blitzUnlocked && blitzTopRookieMap[r.name + '|' + bName];
         var blitzerRank = blitzUnlocked ? blitzTopBlitzerMap[r.name] : null;
         var rankColor = ri===0 ? color : ri<=2 ? '#CBD5E1' : '#475569';
         html += '<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,0.04)">';
