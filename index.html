@@ -1265,70 +1265,23 @@ function render(){
   }
   // Blitz filter — static hardcoded June 18-20 data (~$8M total)
   if (blitzUnlocked) {
-    data = {
-      total: 0,
-      teams: {
-        // ── LARGE MARKETS ─────────────────────────────────────────────────
-        "0930 - Georgia":      { color:"#34D399", total:0, reps:[
-          {name:"Anthony Walker",       amount:186000, deals:[186000], dealObjs:[{amount:186000,date:"6/18/2026"}], todayTotal:0, latestDate:null},
-          {name:"Christopher Anderson", amount:142500, deals:[142500], dealObjs:[{amount:142500,date:"6/19/2026"}], todayTotal:0, latestDate:null},
-          {name:"Brian Bonner",         amount:168000, deals:[168000], dealObjs:[{amount:94000,date:"6/18/2026"},{amount:74000,date:"6/20/2026"}], todayTotal:0, latestDate:null},
-          {name:"Austin Davis",         amount:112000, deals:[112000], dealObjs:[{amount:52000,date:"6/19/2026"},{amount:60000,date:"6/20/2026"}], todayTotal:0, latestDate:null},
-          {name:"Marcus Bell",          amount:95000,  deals:[95000],  dealObjs:[{amount:95000,date:"6/19/2026"}], todayTotal:0, latestDate:null}
-        ]},
-        "0535 - New Jersey":   { color:"#00FF88", total:0, reps:[
-          {name:"Adam Auriemma",        amount:224000, deals:[224000], dealObjs:[{amount:82000,date:"6/18/2026"},{amount:78000,date:"6/19/2026"},{amount:64000,date:"6/20/2026"}], todayTotal:0, latestDate:null},
-          {name:"Alex Sosnov",          amount:158000, deals:[158000], dealObjs:[{amount:88000,date:"6/18/2026"},{amount:70000,date:"6/19/2026"}], todayTotal:0, latestDate:null},
-          {name:"Roberto Rios",         amount:134000, deals:[134000], dealObjs:[{amount:60000,date:"6/19/2026"},{amount:74000,date:"6/20/2026"}], todayTotal:0, latestDate:null},
-          {name:"Danny Cruz",           amount:98000,  deals:[98000],  dealObjs:[{amount:98000,date:"6/18/2026"}], todayTotal:0, latestDate:null}
-        ]},
-        "0800 - Long Island":  { color:"#60A5FA", total:0, reps:[
-          {name:"Ryan Sommi",           amount:189000, deals:[189000], dealObjs:[{amount:98000,date:"6/18/2026"},{amount:91000,date:"6/20/2026"}], todayTotal:0, latestDate:null},
-          {name:"Mitchell Shinsky",     amount:162000, deals:[162000], dealObjs:[{amount:80000,date:"6/19/2026"},{amount:82000,date:"6/20/2026"}], todayTotal:0, latestDate:null},
-          {name:"Tyler Brooks",         amount:118000, deals:[118000], dealObjs:[{amount:118000,date:"6/20/2026"}], todayTotal:0, latestDate:null},
-          {name:"Jake Ferraro",         amount:87000,  deals:[87000],  dealObjs:[{amount:87000,date:"6/18/2026"}], todayTotal:0, latestDate:null}
-        ]},
-        "0576 - Cincinnati":   { color:"#FFD700", total:0, reps:[
-          {name:"Sean Williamson",      amount:178000, deals:[178000], dealObjs:[{amount:96000,date:"6/18/2026"},{amount:82000,date:"6/20/2026"}], todayTotal:0, latestDate:null},
-          {name:"Marcus Staples",       amount:143000, deals:[143000], dealObjs:[{amount:71000,date:"6/19/2026"},{amount:72000,date:"6/20/2026"}], todayTotal:0, latestDate:null},
-          {name:"Chris Dawson",         amount:112000, deals:[112000], dealObjs:[{amount:112000,date:"6/19/2026"}], todayTotal:0, latestDate:null}
-        ]},
-        // ── MEDIUM MARKETS ────────────────────────────────────────────────
-        "0791 - Nashville":    { color:"#FF6B35", total:0, reps:[
-          {name:"JT Conway",            amount:248000, deals:[248000], dealObjs:[{amount:88000,date:"6/18/2026"},{amount:84000,date:"6/19/2026"},{amount:76000,date:"6/20/2026"}], todayTotal:0, latestDate:null},
-          {name:"Reece Grisham",        amount:196000, deals:[196000], dealObjs:[{amount:110000,date:"6/18/2026"},{amount:86000,date:"6/20/2026"}], todayTotal:0, latestDate:null},
-          {name:"Brianna Cole",         amount:134000, deals:[134000], dealObjs:[{amount:70000,date:"6/19/2026"},{amount:64000,date:"6/20/2026"}], todayTotal:0, latestDate:null}
-        ]},
-        "0867 - Indy":         { color:"#A855F7", total:0, reps:[
-          {name:"Brian Caster",         amount:182000, deals:[182000], dealObjs:[{amount:96000,date:"6/18/2026"},{amount:86000,date:"6/19/2026"}], todayTotal:0, latestDate:null},
-          {name:"Devon Miles",          amount:157000, deals:[157000], dealObjs:[{amount:74000,date:"6/19/2026"},{amount:83000,date:"6/20/2026"}], todayTotal:0, latestDate:null},
-          {name:"Lauren Hayes",         amount:118000, deals:[118000], dealObjs:[{amount:118000,date:"6/18/2026"}], todayTotal:0, latestDate:null}
-        ]},
-        "0534 - Westchester":  { color:"#00D4FF", total:0, reps:[
-          {name:"James Pesce",          amount:148000, deals:[148000], dealObjs:[{amount:76000,date:"6/18/2026"},{amount:72000,date:"6/19/2026"}], todayTotal:0, latestDate:null},
-          {name:"John Paul Capuano",    amount:132000, deals:[132000], dealObjs:[{amount:58000,date:"6/19/2026"},{amount:74000,date:"6/20/2026"}], todayTotal:0, latestDate:null},
-          {name:"Sofia Ramos",          amount:96000,  deals:[96000],  dealObjs:[{amount:96000,date:"6/20/2026"}], todayTotal:0, latestDate:null}
-        ]},
-        "0868 - South Bend":   { color:"#F59E0B", total:0, reps:[
-          {name:"George Mars",          amount:126000, deals:[126000], dealObjs:[{amount:66000,date:"6/18/2026"},{amount:60000,date:"6/19/2026"}], todayTotal:0, latestDate:null},
-          {name:"Cody Parsons",         amount:108000, deals:[108000], dealObjs:[{amount:52000,date:"6/19/2026"},{amount:56000,date:"6/20/2026"}], todayTotal:0, latestDate:null}
-        ]},
-        // ── SMALL MARKETS ─────────────────────────────────────────────────
-        "Toronto 0914":        { color:"#A855F7", total:0, reps:[
-          {name:"Mark Roberts",         amount:172000, deals:[172000], dealObjs:[{amount:88000,date:"6/18/2026"},{amount:84000,date:"6/19/2026"}], todayTotal:0, latestDate:null},
-          {name:"Sarah Chen",           amount:128000, deals:[128000], dealObjs:[{amount:62000,date:"6/19/2026"},{amount:66000,date:"6/20/2026"}], todayTotal:0, latestDate:null},
-          {name:"Ethan Park",           amount:94000,  deals:[94000],  dealObjs:[{amount:94000,date:"6/20/2026"}], todayTotal:0, latestDate:null}
-        ]},
-        "0790 - Knoxville":    { color:"#34D399", total:0, reps:[
-          {name:"Kyle Hunter",          amount:138000, deals:[138000], dealObjs:[{amount:72000,date:"6/18/2026"},{amount:66000,date:"6/19/2026"}], todayTotal:0, latestDate:null},
-          {name:"Jake Merritt",         amount:116000, deals:[116000], dealObjs:[{amount:54000,date:"6/19/2026"},{amount:62000,date:"6/20/2026"}], todayTotal:0, latestDate:null}
-        ]}
-      }
-    };
-    // Compute team totals
-    Object.values(data.teams).forEach(function(t){
-      t.total = t.reps.reduce(function(s,r){return s+r.amount;},0);
-      data.total += t.total;
+    // Use BLITZ_DEMO as the authoritative blitz dataset
+    data = { total: BLITZ_DEMO.total, teams: {} };
+    Object.entries(BLITZ_DEMO.brackets).forEach(function(be) {
+      var bracketName = be[0], bracket = be[1];
+      Object.entries(bracket.teams).forEach(function(te) {
+        var storeName = te[0], team = te[1];
+        data.teams[storeName] = {
+          color: team.color,
+          display: team.display,
+          total: team.total,
+          reps: team.reps.map(function(r) {
+            return { name: r.name, amount: r.amount, deals: [r.amount],
+                     dealObjs: [{amount: r.amount, date: "6/19/2026", isToday: false}],
+                     todayTotal: 0, latestDate: null };
+          })
+        };
+      });
     });
 
     // ── Bracket breakdown (built from the static blitz data) ──────────────
