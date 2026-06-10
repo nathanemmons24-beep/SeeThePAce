@@ -618,6 +618,7 @@ var pollTimer=null,countdownTimer=null,secsLeft=10,CIRC=2*Math.PI*15;
 // ── Utility formatters ────────────────────────────────────────────────────────
 var fmt = function(n){ return n>=1000000?"$"+(n/1000000).toFixed(2)+"M":"$"+n.toLocaleString(); };
 function getBadge(amt){ var b=null; for(var i=0;i<IND_BADGES.length;i++) if(amt>=IND_BADGES[i].threshold) b=IND_BADGES[i]; return b; }
+function getAllBadges(amt){ return IND_BADGES.filter(function(b){ return amt>=b.threshold; }); }
 function formatShortDate(d){
   if(!d) return "";
   if(typeof d === 'string') d = new Date(d);
@@ -1136,7 +1137,7 @@ function renderLeaderboards(data){
     row.innerHTML='<span class="leader-rank" style="color:'+rankColor+'">'+rank+'</span>'+
       '<div class="leader-info"><div class="leader-name">'+rep.name+'</div>'+
       '<div class="leader-store" style="color:'+rep.color+'">'+rep.store+'</div></div>'+
-      (badge?'<span style="font-size:13px">'+badge.icon+'</span>':'')+
+      getAllBadges(rep.amount).map(function(b){return '<span style="font-size:13px">'+b.icon+'</span>';}).join('')+
       '<span class="leader-amt">'+fmt(rep.amount)+'</span>';
     return row;
   }
@@ -1586,7 +1587,7 @@ function render(){
         repsHTML+='<div class="rep-row '+rc+' '+scls+'" style="'+(rank>=2&&rank<=3?"border-left-color:"+t.color:"")+'">'+
           '<span class="rep-rank" style="color:'+rankColor+'">'+rank+'</span>'+
           '<span class="rep-name" style="position:relative;cursor:help;display:flex;flex-direction:column;gap:1px">'+
-            '<span style="display:flex;align-items:center;gap:4px">'+rep.name+multi+(ROOKIE_NAMES.has(rep.name)?'<span class="rookie-star" style="animation:none;width:16px;height:16px;font-size:8px">R</span>':'')+'</span>'+
+            '<span style="display:flex;align-items:center;gap:4px">'+rep.name+multi+(ROOKIE_NAMES.has(rep.name)?'<span class="rookie-star" style="animation:none;width:16px;height:16px;font-size:8px">R</span>':'')+getAllBadges(rep.amount).map(function(b){return '<span class="rep-badge">'+b.icon+'</span>';}).join('')+'</span>'+
             badgesHTML+tooltipHTML+
           '</span>'+
           '<span class="rep-amt" style="color:'+amtColor+'">'+fmt(rep.amount)+'</span></div>';
@@ -3216,8 +3217,7 @@ function blitzRepBadges(rep, teamReps, isTeamLeader, isMostDeals, bracketReps) {
   var badges = [];
   var isRookie = ROOKIE_NAMES.has(rep.name);
   // Individual amount badge (same thresholds as main board)
-  var indBadge = getBadge(rep.amount);
-  if (indBadge) badges.push('<span class="blitz-s-badge" style="background:rgba('+hexToRgb(indBadge.color)+',0.15);border:1px solid rgba('+hexToRgb(indBadge.color)+',0.5);color:'+indBadge.color+'">'+indBadge.icon+' '+indBadge.label+'</span>');
+  getAllBadges(rep.amount).forEach(function(indBadge){ badges.push('<span class="blitz-s-badge" style="background:rgba('+hexToRgb(indBadge.color)+',0.15);border:1px solid rgba('+hexToRgb(indBadge.color)+',0.5);color:'+indBadge.color+'">'+indBadge.icon+' '+indBadge.label+'</span>'); });
   if (isTeamLeader) badges.push('<span class="blitz-s-badge" style="background:rgba(255,165,0,0.15);border:1px solid rgba(255,165,0,0.5);color:#8B5E00">⚡ LEADER</span>');
   if (isMostDeals) badges.push('<span class="blitz-s-badge" style="background:rgba(255,80,0,0.12);border:1px solid rgba(255,80,0,0.4);color:#C84000">🔥 MOST DEALS</span>');
   // bracket rank badge
@@ -3312,7 +3312,7 @@ function renderBlitzLeaderboardNew(bd) {
     '<div style="font-family:Pacifico,Georgia,serif;font-size:15px;color:#C84000;margin-bottom:10px">🏖️ Top 10 Overall Blitzers</div>'+
     top10.map(function(r,i){
       var isRookie = ROOKIE_NAMES.has(r.name);
-      var indBadge = getBadge(r.amount);
+      var indBadges = getAllBadges(r.amount);
       return '<div class="blitz-s-rep" style="'+(i===0?'background:linear-gradient(90deg,rgba(255,215,0,0.15),transparent);':'')+'">' +
         '<span style="width:24px;text-align:center;font-size:'+(i<3?'16':'11')+'px;flex-shrink:0">'+
           (i<3?medals[i]:'<span style="font-family:Orbitron,monospace;font-size:9px;color:#94A3B8">#'+(i+1)+'</span>')+
@@ -3321,7 +3321,7 @@ function renderBlitzLeaderboardNew(bd) {
           '<div style="font-family:\'Exo 2\',sans-serif;font-size:13px;font-weight:700;color:#1E293B;display:flex;align-items:center;gap:4px;flex-wrap:wrap">'+
             r.name+
             (isRookie?'<span class="rookie-star">R</span>':'')+
-            (indBadge?'<span class="blitz-s-badge" style="background:rgba('+hexToRgb(indBadge.color)+',0.12);border:1px solid rgba('+hexToRgb(indBadge.color)+',0.4);color:'+indBadge.color+'">'+indBadge.icon+'</span>':'')+
+            indBadges.map(function(b){return '<span class="blitz-s-badge" style="background:rgba('+hexToRgb(b.color)+',0.12);border:1px solid rgba('+hexToRgb(b.color)+',0.4);color:'+b.color+'">'+b.icon+'</span>';}).join('')+
           '</div>'+
           '<div style="font-family:\'Exo 2\',sans-serif;font-size:10px;color:#8B5E00;font-weight:600">'+r.store+'</div>'+
         '</div>'+
