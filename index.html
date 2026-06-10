@@ -682,15 +682,16 @@ function parseCsv(csv){
       var val=parseFloat(scoreRaw.replace(/[^0-9.]/g,""))||0;
       // Skip rows with genuinely no score (but allow $0 deals to not crash — just skip)
       if(!scoreRaw.trim()||isNaN(parseFloat(scoreRaw.replace(/[^0-9.]/g,""))))continue;
-      // Parse date — Sheet always sends M/D/YYYY (e.g. 6/10/2026)
+      // Parse date column — handles "Tue Jan 06 2026 00:00:00 GMT-0500..." and "6/1/2026"
       var dealDate=null,isToday=false;
       if(dateRaw){
         var dealDate2=null;
         var dmatch=dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
         if(dmatch){
-          var mo=parseInt(dmatch[1]), dy=parseInt(dmatch[2]), yr=parseInt(dmatch[3]);
-          dealDate2=new Date(yr, mo-1, dy);
+          // M/D/YYYY — Apps Script outputs month first (e.g. 6/10/2026)
+          dealDate2=new Date(parseInt(dmatch[3]),parseInt(dmatch[1])-1,parseInt(dmatch[2]));
         } else {
+          // Fallback: strip timezone and try native parse
           var cleanDate=dateRaw.replace(/GMT[+-]\d{4}.*$/,'').trim();
           dealDate2=new Date(cleanDate);
         }
