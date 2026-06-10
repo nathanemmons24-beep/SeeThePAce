@@ -298,7 +298,7 @@
     .blitz-panel{flex:1;background:rgba(10,15,30,0.85);border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:12px;backdrop-filter:blur(14px);min-width:0}
     .blitz-panel-title{font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#A855F7;margin-bottom:10px;text-align:center}
     .blitz-rep-name-wrap{position:relative;cursor:help}
-    .blitz-deal-tooltip{display:none;position:fixed;left:-9999px;top:-9999px;z-index:99999;min-width:180px;max-width:260px;background:rgba(8,12,28,0.98);border:1px solid rgba(168,85,247,0.5);border-radius:10px;padding:10px 12px;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.9),0 0 20px rgba(168,85,247,0.2);pointer-events:none}
+    .blitz-deal-tooltip{display:none;position:absolute;left:0;top:calc(100% + 4px);z-index:9999;min-width:180px;max-width:240px;background:rgba(8,12,28,0.98);border:1px solid rgba(168,85,247,0.5);border-radius:10px;padding:10px 12px;box-shadow:0 8px 32px rgba(0,0,0,0.9),0 0 20px rgba(168,85,247,0.2);pointer-events:none}
     .blitz-rep-name-wrap:hover .blitz-deal-tooltip{display:block}
     .blitz-rep-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
     .blitz-rep-row:last-child{border-bottom:none}
@@ -3493,7 +3493,7 @@ function renderBlitzBracketsNew(bd) {
     sortedTeams.forEach(function(te) {
       var tName = te[0], t = te[1];
       var dispName = BLITZ_DISPLAY_NAMES[tName] || t.display || (tName.includes(' - ') ? tName.split(' - ').slice(1).join(' ') : tName);
-      html += '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden">';
+      html += '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;position:relative">';
       html += '<div style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg,rgba('+hexToRgb(color)+',0.08),transparent)">';
       html += '<div style="font-family:\'Exo 2\',sans-serif;font-size:11px;font-weight:700;color:#CBD5E1">'+dispName+'</div>';
       html += '<div style="font-family:Orbitron,monospace;font-size:12px;font-weight:900;color:'+color+'">'+fmtB(t.total)+'</div>';
@@ -3737,27 +3737,6 @@ function updateBlitzMenuStates() {
 
 
 // ── CREATE MENU VIA JS ───────────────────────────────────────────────────────
-// Position blitz deal tooltips directly below the hovered name
-document.addEventListener('mouseover', function(e) {
-  var wrap = e.target && e.target.closest ? e.target.closest('.blitz-rep-name-wrap') : null;
-  if (!wrap) return;
-  var tooltip = wrap.querySelector('.blitz-deal-tooltip');
-  if (!tooltip) return;
-  var rect = wrap.getBoundingClientRect();
-  var tw = 220;
-  var th = tooltip.offsetHeight || 100;
-  // Default: below and left-aligned with the name
-  var x = rect.left;
-  var y = rect.bottom + 4;
-  // If goes off bottom, show above
-  if (y + th > window.innerHeight - 8) y = rect.top - th - 4;
-  // If goes off right, shift left
-  if (x + tw > window.innerWidth - 8) x = window.innerWidth - tw - 8;
-  if (x < 8) x = 8;
-  tooltip.style.left = x + 'px';
-  tooltip.style.top  = y + 'px';
-});
-
 function createMenu(){
   var wrap = document.createElement('div');
   wrap.id = 'menu-btn-wrap';
