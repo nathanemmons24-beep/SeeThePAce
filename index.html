@@ -383,7 +383,7 @@
       <div id="blitz-bar-fill" style="height:100%;width:0%;border-radius:16px;transition:width 1.2s"></div>
     </div>
     <!-- Prize icons row below bar - one per $1M milestone -->
-    <div id="blitz-prize-icons" style="position:relative;height:54px"></div>
+    <div id="blitz-prize-icons" style="position:relative;height:64px"></div>
   </div>
 
     <!-- BLITZ BRACKET BREAKDOWN — visible when blitz filter active -->
@@ -1224,7 +1224,7 @@ function render(){
     document.getElementById('blitz-bar-goal').textContent = 'of ' + fmtB(BLITZ_GOAL) + ' \u00b7 ' + pct.toFixed(1) + '%';
     document.getElementById('blitz-bar-fill').style.width = pct + '%';
 
-    // Prize icons below the bar
+    // Prize icons below the bar with vertical connector lines
     var iconsEl = document.getElementById('blitz-prize-icons');
     if (iconsEl) {
       var ihtml = '';
@@ -1232,18 +1232,23 @@ function render(){
         var m = i + 1;
         var left = ((m / 17) * 100).toFixed(2) + '%';
         var unlocked = bd.total >= m * 1000000;
+        var lineColor = unlocked ? 'rgba(168,85,247,0.7)' : 'rgba(255,255,255,0.08)';
         var clickAttr = unlocked
           ? 'onclick="showPrizeUnlockPopup(BLITZ_PRIZES[' + i + '],' + m + ')" title="' + prize.label + ' — click to celebrate!"'
           : 'title="' + prize.label + ' — reach $' + m + 'M to unlock"';
-        ihtml += '<div style="position:absolute;left:' + left + ';top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;' + (unlocked ? 'cursor:pointer' : 'cursor:default;opacity:0.35') + '" ' + clickAttr + '>';
-        ihtml += '<div style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;';
+        ihtml += '<div style="position:absolute;left:' + left + ';top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;' + (unlocked ? 'cursor:pointer' : 'cursor:default;opacity:0.4') + '" ' + clickAttr + '>';
+        // Vertical connector line
+        ihtml += '<div style="width:2px;height:10px;background:' + lineColor + ';border-radius:1px;flex-shrink:0"></div>';
+        // Prize icon bubble
+        ihtml += '<div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;';
         if (unlocked) {
-          ihtml += 'background:rgba(168,85,247,0.2);border:2px solid rgba(168,85,247,0.7);animation:prizeIconGlow 1.8s ease-in-out infinite;box-shadow:0 0 8px rgba(168,85,247,0.5)">';
+          ihtml += 'background:rgba(168,85,247,0.2);border:2px solid rgba(168,85,247,0.8);animation:prizeIconGlow 1.8s ease-in-out infinite;box-shadow:0 0 10px rgba(168,85,247,0.6)">';
         } else {
-          ihtml += 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)">';
+          ihtml += 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1)">';
         }
         ihtml += prize.icon + '</div>';
-        ihtml += '<div style="font-family:Orbitron,monospace;font-size:6px;margin-top:2px;color:' + (unlocked ? '#A855F7' : '#334155') + ';white-space:nowrap">$' + m + 'M</div>';
+        // Dollar label
+        ihtml += '<div style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;margin-top:3px;color:' + (unlocked ? '#A855F7' : '#334155') + ';white-space:nowrap">$' + m + 'M</div>';
         ihtml += '</div>';
       });
       iconsEl.innerHTML = ihtml;
