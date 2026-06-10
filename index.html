@@ -346,9 +346,7 @@
   <!-- HEADER -->
   <div id="header">
     <div id="blitz-title">Loading...</div>
-    <div id="archive-banner" style="display:none;font-family:Orbitron,monospace;font-size:10px;letter-spacing:2px;color:#FFD700;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.25);border-radius:20px;padding:4px 16px;margin-top:4px;cursor:pointer" onclick="resetToCurrentPeriod()">
-      &#x1F4C2; VIEWING ARCHIVE &mdash; <span id="archive-period-label"></span> &mdash; CLICK TO RETURN TO CURRENT
-    </div>
+
     <div id="subtitle">RENEWAL BY ANDERSEN &mdash; SEETHEPACE.COM <span id="status-dot" class="loading">&#x25CF; CONNECTING&hellip;</span></div>
   </div>
 
@@ -732,61 +730,13 @@ function parseCsv(csv){
 // \u2550\u2550 STATE \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 var _saved = (function(){ try{ return JSON.parse(localStorage.getItem("blitz_settings")||"{}"); }catch(e){return{};} })();
 var state={
-  sheetUrl:     _saved.sheetUrl || SHEET_URL,
-  goal:         _saved.goal     || 500000,
-  title:        _saved.title    || "Loading...",
-  data:         SAMPLE,
-  status:       "demo",
-  lastUpdated:  null,
-  monthlyGoals: {} // populated by fetchSettings: {jan:X, feb:X, ...}
+  sheetUrl: _saved.sheetUrl || SHEET_URL,
+  goal:     _saved.goal     || 500000,
+  title:    _saved.title    || "Loading...",
+  data:     SAMPLE,
+  status:   "demo",
+  lastUpdated: null
 };
-
-// Active period — defaults to current month/year
-var _now = new Date();
-var activePeriod = { month: _now.getMonth() + 1, year: _now.getFullYear() };
-
-var MONTH_NAMES = ["January","February","March","April","May","June",
-                   "July","August","September","October","November","December"];
-var MONTH_KEYS  = ["jan","feb","mar","apr","may","jun",
-                   "jul","aug","sep","oct","nov","dec"];
-
-function getGoalForPeriod(month, year) {
-  // month is 1-based
-  var key = MONTH_KEYS[month - 1] + "_goal";
-  if (state.monthlyGoals[key]) return state.monthlyGoals[key];
-  return state.goal; // fallback to current goal
-}
-
-function setActivePeriod(month, year) {
-  activePeriod = { month: month, year: year };
-  // Reset day filter when changing periods
-  filterDay = null;
-  render();
-  // Close menu if open
-  var mp = document.getElementById('menu-panel');
-  if (mp && mp.style.display !== 'none') toggleMenu();
-}
-
-function getAvailableMonths() {
-  // Scan state.data for all month/year combos that have deals
-  if (!state.data || !state.data.teams) return [];
-  var seen = {};
-  Object.values(state.data.teams).forEach(function(team) {
-    (team.reps || []).forEach(function(rep) {
-      (rep.dealObjs || []).forEach(function(d) {
-        if (!d.date) return;
-        var dt = (d.date instanceof Date) ? d.date : new Date(d.date);
-        if (isNaN(dt.getTime())) return;
-        var m = dt.getMonth() + 1, y = dt.getFullYear();
-        seen[y + '-' + m] = { month: m, year: y };
-      });
-    });
-  });
-  // Sort chronologically
-  return Object.values(seen).sort(function(a,b){
-    return (a.year*12+a.month) - (b.year*12+b.month);
-  });
-}
 var streakCounts = {}; // "Name|Team" -> number of deals (not syncs)
 var pollTimer=null,countdownTimer=null,secsLeft=10,CIRC=2*Math.PI*15;
 
@@ -817,11 +767,6 @@ async function fetchSettings() {
         if (key === "goal") {
           var g = parseFloat(val.replace(/[^0-9.]/g,""));
           if (g) { state.goal = g; console.log("Settings: goal =", g); }
-        }
-        // Monthly goals: jan_goal, feb_goal, ... dec_goal
-        if (key.indexOf("_goal") > 0) {
-          var mg = parseFloat(val.replace(/[^0-9.]/g,""));
-          if (mg) state.monthlyGoals[key] = mg;
         }
         // Don't override sheetUrl from Settings — we use Apps Script directly
       }
@@ -1315,54 +1260,6 @@ function render(){
     data = mergeAlways(data);
   }
 
-  // ── Period filter — show only activePeriod month/year (unless blitz active) ──
-  if (!blitzUnlocked && data && data.teams) {
-    // Debug: count deals and sum amounts by month
-    var monthCounts = {};
-    Object.values(data.teams).forEach(function(team) {
-      (team.reps||[]).forEach(function(rep) {
-        (rep.dealObjs||[]).forEach(function(d) {
-          var dt = d.date ? (d.date instanceof Date ? d.date : new Date(d.date)) : null;
-          var key = dt && !isNaN(dt.getTime()) ? (dt.getMonth()+1)+'/'+dt.getFullYear() : 'no-date';
-          if (!monthCounts[key]) monthCounts[key] = {count:0, total:0};
-          monthCounts[key].count++;
-          monthCounts[key].total += d.amount;
-        });
-      });
-    });
-    console.log('Deals by month:', JSON.stringify(monthCounts));
-    console.log('Active period:', activePeriod.month+'/'+activePeriod.year);
-    var pf = { total: 0, teams: {} };
-    Object.entries(data.teams).forEach(function(e) {
-      var tName = e[0], team = e[1];
-      var filteredReps = [];
-      (team.reps || []).forEach(function(rep) {
-        var periodDeals = (rep.dealObjs || []).filter(function(d) {
-          if (!d.date) {
-            // No date — include in current period only
-            var n = new Date();
-            return activePeriod.month === (n.getMonth()+1) && activePeriod.year === n.getFullYear();
-          }
-          var dt = (d.date instanceof Date) ? d.date : new Date(d.date);
-          if (isNaN(dt.getTime())) return false;
-          return (dt.getMonth() + 1) === activePeriod.month && dt.getFullYear() === activePeriod.year;
-        });
-        if (periodDeals.length === 0) return;
-        var periodTotal = periodDeals.reduce(function(s, d) { return s + d.amount; }, 0);
-        filteredReps.push(Object.assign({}, rep, {
-          amount: periodTotal,
-          deals: periodDeals.map(function(d){ return d.amount; }),
-          dealObjs: periodDeals,
-          todayTotal: rep.todayTotal
-        }));
-      });
-      if (filteredReps.length === 0) return;
-      var teamTotal = filteredReps.reduce(function(s, r) { return s + r.amount; }, 0);
-      pf.teams[tName] = Object.assign({}, team, { reps: filteredReps, total: teamTotal });
-      pf.total += teamTotal;
-    });
-    data = pf;
-  }
   // Blitz filter — static hardcoded June 18-20 data (~$8M total)
   if (blitzUnlocked) {
     // Use BLITZ_DEMO as the authoritative blitz dataset
@@ -1522,8 +1419,7 @@ function render(){
     data = mf;
   }
   var DAYS_IN_MONTH=30;
-  var periodGoal = getGoalForPeriod(activePeriod.month, activePeriod.year);
-  var goal=filterDay?(periodGoal/DAYS_IN_MONTH):periodGoal;
+  var goal=filterDay?(state.goal/DAYS_IN_MONTH):state.goal;
   var total=data.total, pct=Math.min((total/goal)*100,115);
 
   // Title changes to SUMMER SALE BLITZ when blitz is active
@@ -1536,19 +1432,11 @@ function render(){
     titleEl.style.webkitTextFillColor = "transparent";
     titleEl.style.animation = "shimmer 2s linear infinite";
   } else {
-    var _now2 = new Date();
-    var isCurrentPeriod = (activePeriod.month === _now2.getMonth()+1 && activePeriod.year === _now2.getFullYear());
-    titleEl.textContent = isCurrentPeriod ? state.title
-      : (MONTH_NAMES[activePeriod.month-1] + " " + activePeriod.year + " \u2014 " + state.title.replace(/^[A-Za-z]+ /, ""));
+    titleEl.textContent = state.title;
     titleEl.style.background = "";
     titleEl.style.webkitBackgroundClip = "";
     titleEl.style.webkitTextFillColor = "";
     titleEl.style.animation = "";
-    // Archive banner
-    var archBanner = document.getElementById('archive-banner');
-    var archLabel  = document.getElementById('archive-period-label');
-    if (archBanner) archBanner.style.display = isCurrentPeriod ? 'none' : 'inline-block';
-    if (archLabel)  archLabel.textContent = MONTH_NAMES[activePeriod.month-1] + ' ' + activePeriod.year;
   }
 
   // Main progress bar — reflects current filtered data
@@ -1612,7 +1500,7 @@ function render(){
   renderLeaderboards(data);
   renderDayBreakdown(data);
   updateBiggestMover(data);
-  checkMilestoneCelebration(data.total, periodGoal);
+  checkMilestoneCelebration(data.total, state.goal);
   var rl=document.getElementById("rankings-list");
   if(rl){
     rl.innerHTML="";
@@ -2423,7 +2311,7 @@ function toggleMenu() {
   panel.style.display = menuOpen ? 'block' : 'none';
   btn.innerHTML = menuOpen ? '&#x2715;' : '&#x2630;';
   btn.style.transform = menuOpen ? 'rotate(90deg)' : 'rotate(0deg)';
-  if (menuOpen) { buildMarketFilterList(); buildArchiveList(); }
+  if (menuOpen) buildMarketFilterList();
 }
 // Close menu on outside click
 document.addEventListener('click', function(e) {
@@ -3608,41 +3496,6 @@ function updateBlitzMenuStates() {
 
 
 // ── CREATE MENU VIA JS ───────────────────────────────────────────────────────
-function resetToCurrentPeriod() {
-  var n = new Date();
-  activePeriod = { month: n.getMonth()+1, year: n.getFullYear() };
-  filterDay = null;
-  render();
-  buildArchiveList();
-}
-
-function buildArchiveList() {
-  var list = document.getElementById('archive-month-list');
-  if (!list) return;
-  var months = getAvailableMonths();
-  var n = new Date();
-  var curM = n.getMonth()+1, curY = n.getFullYear();
-
-  var html = '';
-  // Current month button
-  var isCurrent = activePeriod.month===curM && activePeriod.year===curY;
-  html += '<button onclick="resetToCurrentPeriod()" style="display:block;width:100%;padding:6px 10px;margin-bottom:2px;border-radius:8px;border:1px solid '+(isCurrent?'rgba(0,255,136,0.4)':'rgba(255,255,255,0.06)')+';background:'+(isCurrent?'rgba(0,255,136,0.08)':'transparent')+';color:'+(isCurrent?'#00FF88':'#94A3B8')+';font-family:Orbitron,monospace;font-size:10px;cursor:pointer;text-align:left;letter-spacing:1px">'+(isCurrent?'&#x2713; ':'')+MONTH_NAMES[curM-1].toUpperCase()+' '+curY+' (CURRENT)</button>';
-
-  // Past months in reverse chronological order
-  var past = months.filter(function(m){ return !(m.month===curM && m.year===curY); }).reverse();
-  if (past.length > 0) {
-    html += '<div style="font-family:Orbitron,monospace;font-size:8px;color:#334155;letter-spacing:1px;padding:6px 4px 3px">PAST MONTHS</div>';
-    past.forEach(function(m) {
-      var active = activePeriod.month===m.month && activePeriod.year===m.year;
-      html += '<button onclick="setActivePeriod('+m.month+','+m.year+')" style="display:block;width:100%;padding:6px 10px;margin-bottom:2px;border-radius:8px;border:1px solid '+(active?'rgba(255,215,0,0.4)':'rgba(255,255,255,0.06)')+';background:'+(active?'rgba(255,215,0,0.08)':'transparent')+';color:'+(active?'#FFD700':'#94A3B8')+';font-family:Orbitron,monospace;font-size:10px;cursor:pointer;text-align:left;letter-spacing:1px">'+(active?'&#x2713; ':'')+MONTH_NAMES[m.month-1].toUpperCase()+' '+m.year+'</button>';
-    });
-  } else {
-    html += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;padding:6px 8px">No past months yet</div>';
-  }
-
-  list.innerHTML = html;
-}
-
 function createMenu(){
   var wrap = document.createElement('div');
   wrap.id = 'menu-btn-wrap';
@@ -3668,11 +3521,6 @@ function createMenu(){
   panel += '<button class="menu-item" id="consolidated-btn" onclick="toggleConsolidated()">&#x1F5FA; CONSOLIDATED</button>';
   panel += '<button class="menu-item" id="rookie-filter-btn" onclick="toggleRookieFilter()">&#x2B50; ROOKIES ONLY</button>';
   panel += '<button class="menu-item" id="today-filter-btn-menu" onclick="toggleTodayFilter()">&#x1F4C5; TODAY ONLY</button>';
-  panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
-
-  // — ARCHIVE —
-  panel += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">&#x1F4C2; ARCHIVE</div>';
-  panel += '<div id="archive-month-list" style="padding:4px 6px"></div>';
   panel += '</div>';
 
   wrap.innerHTML =
