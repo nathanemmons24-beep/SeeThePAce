@@ -611,6 +611,83 @@ var state={
 var streakCounts = {}; // "Name|Team" -> number of deals (not syncs)
 var pollTimer=null,countdownTimer=null,secsLeft=10,CIRC=2*Math.PI*15;
 
+// ── Utility formatters ────────────────────────────────────────────────────────
+var fmt = function(n){ return n>=1000000?"$"+(n/1000000).toFixed(2)+"M":"$"+n.toLocaleString(); };
+function getBadge(amt){ var b=null; for(var i=0;i<IND_BADGES.length;i++) if(amt>=IND_BADGES[i].threshold) b=IND_BADGES[i]; return b; }
+function formatShortDate(d){
+  if(!d) return "";
+  if(typeof d === 'string') d = new Date(d);
+  if(!(d instanceof Date) || isNaN(d.getTime())) return "";
+  var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return months[d.getMonth()]+" "+d.getDate();
+}
+function parseCsvLine(line){
+  var result=[],cur="",inQ=false;
+  for(var i=0;i<line.length;i++){
+    var ch=line[i];
+    if(ch==='"'){ if(inQ&&line[i+1]==='"'){cur+='"';i++;} else inQ=!inQ; }
+    else if(ch===','&&!inQ){ result.push(cur); cur=""; }
+    else cur+=ch;
+  }
+  result.push(cur);
+  return result;
+}
+function parseCsv(csv){
+  var lines=csv.trim().split("\n").filter(Boolean);
+  if(lines.length<2) return null;
+  var today=new Date(); today.setHours(0,0,0,0);
+  var data={total:0,teams:{}};
+  for(var i=1;i<lines.length;i++){
+    var cols=parseCsvLine(lines[i]).map(function(c){return c.replace(/^\"|\"$/g,"").trim();});
+    var store=cols[0],name=cols[1],scoreRaw=cols[2],dateRaw=cols[3]||"",cancelled=cols[5]||"";
+    if(!store||!name||!scoreRaw) continue;
+    if(cancelled.toLowerCase()==='yes') continue;
+    var score=parseFloat(scoreRaw.replace(/[$,]/g,""));
+    if(isNaN(score)||score<=0) continue;
+    // Parse date column — Apps Script outputs M/D/YYYY (e.g. 6/10/2026)
+    var dealDate=null,isToday=false;
+    if(dateRaw){
+      var dealDate2=null;
+      var dmatch=dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if(dmatch){
+        // M/D/YYYY — month is first
+        dealDate2=new Date(parseInt(dmatch[3]),parseInt(dmatch[1])-1,parseInt(dmatch[2]));
+      } else {
+        var cleanDate=dateRaw.replace(/GMT[+-]\d{4}.*$/,'').trim();
+        dealDate2=new Date(cleanDate);
+      }
+      if(dealDate2&&!isNaN(dealDate2.getTime())){
+        dealDate=dealDate2;
+        var dd=new Date(dealDate2); dd.setHours(0,0,0,0);
+        isToday=(dd.getTime()===today.getTime());
+      }
+    }
+    if(!data.teams[store]){
+      var storeColors=["#00FF88","#00D4FF","#FFD700","#FF6B35","#A855F7","#FF4EFF","#00FFC8","#4ADE80","#38BDF8","#FB923C","#E879F9","#34D399"];
+      var colorIdx=Object.keys(data.teams).length%storeColors.length;
+      data.teams[store]={total:0,color:storeColors[colorIdx],reps:[]};
+    }
+    var team=data.teams[store];
+    var rep=team.reps.find(function(r){return r.name===name;});
+    if(!rep){
+      rep={name:name,amount:0,deals:[],dealObjs:[],todayTotal:0,latestDate:null};
+      team.reps.push(rep);
+    }
+    rep.amount+=score;
+    rep.deals.push(score);
+    rep.dealObjs.push({amount:score,date:dealDate,isToday:isToday});
+    if(isToday) rep.todayTotal+=score;
+    if(dealDate&&(!rep.latestDate||dealDate>rep.latestDate)) rep.latestDate=dealDate;
+    team.total+=score;
+    data.total+=score;
+  }
+  if(Object.keys(data.teams).length===0) return null;
+  Object.values(data.teams).forEach(function(t){
+    t.reps.sort(function(a,b){return b.amount-a.amount;});
+  });
+  return data;
+}
+
 // \u2550\u2550 FETCH \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 var SETTINGS_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Settings";
 
