@@ -87,8 +87,12 @@
     #total-display{font-family:"Orbitron",monospace;font-size:16px;color:#FFD700}
     #total-display span{color:#475569}
     #bar-wrap{padding-bottom:60px}
-    #bar-track{position:relative;height:30px;background:rgba(255,255,255,0.06);border-radius:15px;overflow:visible}
-    #bar-fill{position:absolute;top:0;left:0;height:100%;width:0%;background:linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF);border-radius:15px;transition:width 1.2s cubic-bezier(.4,0,.2,1);box-shadow:0 0 24px rgba(0,212,255,0.5)}
+    #bar-track{position:relative;height:30px;background:rgba(255,255,255,0.06);border-radius:15px;overflow:hidden}
+    #bar-fill{position:absolute;top:0;left:0;height:100%;width:0%;border-radius:15px;transition:width 1.2s cubic-bezier(.4,0,.2,1);overflow:hidden;background:linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF);box-shadow:0 0 24px rgba(0,212,255,0.5)}
+    #bar-fill::before{content:'';position:absolute;top:-60%;left:-10%;width:120%;height:200%;background:radial-gradient(ellipse at 50% 110%,rgba(255,255,255,0.25) 0%,transparent 60%);animation:liquidSwell 3s ease-in-out infinite}
+    #bar-fill::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);border-radius:50%;animation:liquidSheen 2.5s ease-in-out infinite}
+    @keyframes liquidSwell{0%,100%{transform:translateY(0) scaleX(1)}50%{transform:translateY(-6%) scaleX(1.02)}}
+    @keyframes liquidSheen{0%{left:-100%;opacity:0}20%{opacity:1}80%{opacity:1}100%{left:150%;opacity:0}}
     #bar-pct{position:absolute;right:12px;top:0;bottom:0;display:flex;align-items:center;font-family:"Orbitron",monospace;font-size:11px;color:#fff;font-weight:700}
     .milestone-tick{position:absolute;top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10;pointer-events:none}
     .milestone-tick .tick-line{width:2px;height:30px;border-radius:2px;flex-shrink:0}
@@ -401,7 +405,13 @@
     <div id="total-display">$0 <span>of $85.40M</span></div>
     <div id="bar-wrap">
       <div id="bar-track">
-        <div id="bar-fill"></div>
+        <div id="bar-fill">
+          <svg id="bar-wave" style="position:absolute;bottom:0;left:0;width:200%;height:100%;opacity:0.35" preserveAspectRatio="none" viewBox="0 0 400 30">
+            <path id="wave-path" d="M0,15 C20,5 40,25 60,15 C80,5 100,25 120,15 C140,5 160,25 180,15 C200,5 220,25 240,15 C260,5 280,25 300,15 C320,5 340,25 360,15 C380,5 400,25 400,15 L400,30 L0,30 Z" fill="rgba(255,255,255,0.4)">
+              <animateTransform attributeName="transform" type="translate" from="0,0" to="-200,0" dur="2.5s" repeatCount="indefinite"/>
+            </path>
+          </svg>
+        </div>
         <div id="bar-cursor" style="position:absolute;top:0;left:0%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;transition:left 1.2s cubic-bezier(.4,0,.2,1);z-index:20">
           <span id="bar-cursor-label" style="font-family:Orbitron,monospace;font-size:9px;color:#FFD700;white-space:nowrap;margin-top:38px;text-shadow:0 0 6px rgba(255,215,0,0.7);font-weight:700;text-align:center"></span>
         </div>
