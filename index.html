@@ -1133,8 +1133,14 @@ function renderLeaderboards(data){
   allReps.sort(function(a,b){return b.amount-a.amount;});
   allDeals.sort(function(a,b){return b.amount-a.amount;});
   var all=allReps; // keep 'all' for TOP 10 OVERALL compatibility
-  // Pre-compute titles for leaderboard badges
+  // Pre-compute titles and top rookie for leaderboard badges
   var lbTitles = computeTitles(data);
+  var topRookieName = null, topRookieAmt = 0;
+  allReps.forEach(function(r){
+    if(ROOKIE_NAMES && ROOKIE_NAMES.has(r.name) && r.amount > topRookieAmt){
+      topRookieAmt = r.amount; topRookieName = r.name;
+    }
+  });
 
   function makeRow(rep,i){
     var rank=i+1,rc=rank===1?"rank1":rank===2?"rank2":rank===3?"rank3":"";
