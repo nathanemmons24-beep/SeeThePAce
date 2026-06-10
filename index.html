@@ -87,16 +87,16 @@
     #total-display{font-family:"Orbitron",monospace;font-size:16px;color:#FFD700}
     #total-display span{color:#475569}
     #bar-wrap{padding-bottom:60px}
-    #bar-track{position:relative;height:30px;background:rgba(255,255,255,0.06);border-radius:15px;overflow:hidden}
+    #bar-track{position:relative;height:30px;background:rgba(255,255,255,0.06);border-radius:15px;overflow:visible}
     #bar-fill{position:absolute;top:0;left:0;height:100%;width:0%;border-radius:15px;transition:width 1.2s cubic-bezier(.4,0,.2,1);overflow:hidden;background:linear-gradient(90deg,#FF6B35,#FFD700,#00D4FF);box-shadow:0 0 24px rgba(0,212,255,0.5)}
     #bar-fill::before{content:'';position:absolute;top:-60%;left:-10%;width:120%;height:200%;background:radial-gradient(ellipse at 50% 110%,rgba(255,255,255,0.25) 0%,transparent 60%);animation:liquidSwell 3s ease-in-out infinite}
     #bar-fill::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);border-radius:50%;animation:liquidSheen 2.5s ease-in-out infinite}
     @keyframes liquidSwell{0%,100%{transform:translateY(0) scaleX(1)}50%{transform:translateY(-6%) scaleX(1.02)}}
     @keyframes liquidSheen{0%{left:-100%;opacity:0}20%{opacity:1}80%{opacity:1}100%{left:150%;opacity:0}}
     #bar-pct{position:absolute;right:12px;top:0;bottom:0;display:flex;align-items:center;font-family:"Orbitron",monospace;font-size:11px;color:#fff;font-weight:700}
-    .milestone-tick{position:absolute;top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10;pointer-events:none}
-    .milestone-tick .tick-line{width:2px;height:30px;border-radius:2px;flex-shrink:0}
-    .milestone-tick .tick-icon{font-size:12px;margin-top:2px;flex-shrink:0}
+    .milestone-tick{position:absolute;bottom:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10;pointer-events:none}
+    .milestone-tick .tick-line{width:2px;height:42px;border-radius:2px;flex-shrink:0}
+    .milestone-tick .tick-icon{font-size:14px;margin-top:3px;flex-shrink:0}
     .milestone-tick .tick-label{font-family:Orbitron,monospace;font-size:9px;font-weight:700;margin-top:2px;white-space:nowrap;flex-shrink:0}
 
     /* Leaderboards */
