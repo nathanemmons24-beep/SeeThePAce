@@ -1565,7 +1565,7 @@ function render(){
         // Prestige titles
         var titles=computeTitles(data);
         var isCrown=(titles.crownKey===repKey);
-        var isRocket=(titles.rocketKeys.indexOf(repKey)>=0&&titles.rocketDays>0);
+        var isRocket=(titles.rocketKeys.indexOf(repKey)>=0&&titles.rocketDealAmt>0);
         var isOnFire=(titles.fireKeys.indexOf(repKey)>=0&&sl>=2);
         if(isCrown) scls+=" crown-title";
         else if(isRocket) scls+=" rocket-title";
@@ -1574,7 +1574,7 @@ function render(){
         // Smart inline badges
         var badges=[];
         if(isCrown) badges.push('<span style="font-size:9px;color:#FFD700;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.7);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace" class="crown-badge-anim">👑 THE CROWN</span>');
-        else if(isRocket) badges.push('<span style="font-size:9px;color:#E2E8F0;background:rgba(148,163,184,0.15);border:1px solid rgba(203,213,225,0.7);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace" class="rocket-badge-anim">🚀 ROCKET &middot; '+titles.rocketDays+' MOVER DAYS</span>');
+        else if(isRocket) badges.push('<span style="font-size:9px;color:#E2E8F0;background:rgba(148,163,184,0.15);border:1px solid rgba(203,213,225,0.7);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace" class="rocket-badge-anim">🚀 BIGGEST DEAL &middot; '+fmt(titles.rocketDealAmt)+'</span>');
         else if(isOnFire) badges.push('<span style="font-size:9px;color:#FF6B35;background:rgba(255,107,53,0.12);border:1px solid rgba(255,107,53,0.7);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace" class="streaker-badge-anim">🔥 STREAKER &middot; '+sl+' DAYS</span>');
         else if(sl>=3) badges.push('<span style="font-size:9px;color:#FF8C00;background:rgba(255,140,0,0.12);border:1px solid rgba(255,140,0,0.4);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">HEATING UP &middot; '+sl+' DAY STREAK</span>');
         if(isTop) badges.push('<span style="font-size:9px;color:#FFD700;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.35);border-radius:8px;padding:1px 6px;font-family:Orbitron,monospace">LEADER</span>');
@@ -1799,25 +1799,26 @@ function computeMoverDays(data) {
 
 function computeTitles(data) {
   var crownKey = null, crownAmt = 0;
-  var rocketKeys = [], rocketDays = 0;
+  var rocketKeys = [], rocketDealAmt = 0;
   var fireKeys = [], fireLevel = 0;
-
-  var moverCounts = computeMoverDays(data);
 
   Object.entries(data.teams).forEach(function(e) {
     var teamName = e[0], team = e[1];
     team.reps.forEach(function(rep) {
       var k = rep.name + "|" + teamName;
+      // Crown — highest total volume
       if (rep.amount > crownAmt) { crownAmt = rep.amount; crownKey = k; }
-      var md = moverCounts[k] || 0;
-      if (md > rocketDays) { rocketDays = md; rocketKeys = [k]; }
-      else if (md === rocketDays && md > 0) { rocketKeys.push(k); }
+      // Rocket — biggest single deal
+      var bigDeal = Math.max.apply(null, (rep.dealObjs||[{amount:rep.amount}]).map(function(d){return d.amount;}));
+      if (bigDeal > rocketDealAmt) { rocketDealAmt = bigDeal; rocketKeys = [k]; }
+      else if (bigDeal === rocketDealAmt && bigDeal > 0) { rocketKeys.push(k); }
+      // Fire — streak
       var sl = getStreakLevel(k);
       if (sl > fireLevel) { fireLevel = sl; fireKeys = [k]; }
       else if (sl === fireLevel && sl >= 2) { fireKeys.push(k); }
     });
   });
-  return { crownKey: crownKey, rocketKeys: rocketKeys, rocketDays: rocketDays, fireKeys: fireKeys, fireLevel: fireLevel };
+  return { crownKey: crownKey, rocketKeys: rocketKeys, rocketDealAmt: rocketDealAmt, fireKeys: fireKeys, fireLevel: fireLevel };
 }
 
 // ══ SPOTLIGHT ═══════════════════════════════════════════════════════════════════════
