@@ -298,7 +298,7 @@
     .blitz-panel{flex:1;background:rgba(10,15,30,0.85);border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:12px;backdrop-filter:blur(14px);min-width:0}
     .blitz-panel-title{font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#A855F7;margin-bottom:10px;text-align:center}
     .blitz-rep-name-wrap{position:relative;cursor:help}
-    .blitz-deal-tooltip{display:none;position:fixed;z-index:99999;min-width:180px;max-width:260px;background:rgba(8,12,28,0.98);border:1px solid rgba(168,85,247,0.5);border-radius:10px;padding:10px 12px;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.9),0 0 20px rgba(168,85,247,0.2);pointer-events:none}
+    .blitz-deal-tooltip{display:none;position:fixed;left:-9999px;top:-9999px;z-index:99999;min-width:180px;max-width:260px;background:rgba(8,12,28,0.98);border:1px solid rgba(168,85,247,0.5);border-radius:10px;padding:10px 12px;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.9),0 0 20px rgba(168,85,247,0.2);pointer-events:none}
     .blitz-rep-name-wrap:hover .blitz-deal-tooltip{display:block}
     .blitz-rep-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
     .blitz-rep-row:last-child{border-bottom:none}
@@ -3739,13 +3739,15 @@ function updateBlitzMenuStates() {
 // ── CREATE MENU VIA JS ───────────────────────────────────────────────────────
 // Position blitz deal tooltips at mouse cursor
 document.addEventListener('mousemove', function(e) {
-  var tooltip = document.querySelector('.blitz-rep-name-wrap:hover .blitz-deal-tooltip');
+  var wrap = e.target && e.target.closest ? e.target.closest('.blitz-rep-name-wrap') : null;
+  if (!wrap) return;
+  var tooltip = wrap.querySelector('.blitz-deal-tooltip');
   if (!tooltip) return;
-  var x = e.clientX + 14;
-  var y = e.clientY + 14;
-  // Keep within viewport
-  if (x + 260 > window.innerWidth) x = e.clientX - 270;
-  if (y + tooltip.offsetHeight > window.innerHeight) y = e.clientY - tooltip.offsetHeight - 8;
+  var x = e.clientX + 16;
+  var y = e.clientY + 16;
+  var tw = 260, th = tooltip.offsetHeight || 120;
+  if (x + tw > window.innerWidth)  x = e.clientX - tw - 8;
+  if (y + th > window.innerHeight) y = e.clientY - th - 8;
   tooltip.style.left = x + 'px';
   tooltip.style.top  = y + 'px';
 });
