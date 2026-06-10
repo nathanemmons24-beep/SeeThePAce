@@ -3737,17 +3737,22 @@ function updateBlitzMenuStates() {
 
 
 // ── CREATE MENU VIA JS ───────────────────────────────────────────────────────
-// Position blitz deal tooltips at mouse cursor
-document.addEventListener('mousemove', function(e) {
+// Position blitz deal tooltips next to the hovered element
+document.addEventListener('mouseover', function(e) {
   var wrap = e.target && e.target.closest ? e.target.closest('.blitz-rep-name-wrap') : null;
   if (!wrap) return;
   var tooltip = wrap.querySelector('.blitz-deal-tooltip');
   if (!tooltip) return;
-  var x = e.clientX + 16;
-  var y = e.clientY + 16;
-  var tw = 260, th = tooltip.offsetHeight || 120;
-  if (x + tw > window.innerWidth)  x = e.clientX - tw - 8;
-  if (y + th > window.innerHeight) y = e.clientY - th - 8;
+  var rect = wrap.getBoundingClientRect();
+  var tw = 220;
+  var x = rect.right + 8;
+  var y = rect.top;
+  // Flip left if off right edge
+  if (x + tw > window.innerWidth) x = rect.left - tw - 8;
+  // Keep within vertical bounds
+  var th = tooltip.offsetHeight || 120;
+  if (y + th > window.innerHeight) y = window.innerHeight - th - 8;
+  if (y < 8) y = 8;
   tooltip.style.left = x + 'px';
   tooltip.style.top  = y + 'px';
 });
