@@ -297,7 +297,9 @@
     body.blitz-active #blitz-panels-row{display:flex}
     .blitz-panel{flex:1;background:rgba(10,15,30,0.85);border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:12px;backdrop-filter:blur(14px);min-width:0}
     .blitz-panel-title{font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#A855F7;margin-bottom:10px;text-align:center}
-    .blitz-group-label{font-family:Orbitron,monospace;font-size:8px;letter-spacing:1px;margin:8px 0 4px;padding:3px 6px;border-radius:4px;display:inline-block}
+    .blitz-rep-name-wrap{position:relative}
+    .blitz-deal-tooltip{display:none;position:absolute;left:0;top:100%;z-index:999;min-width:180px;max-width:240px;background:rgba(8,12,28,0.97);border:1px solid rgba(168,85,247,0.4);border-radius:10px;padding:10px 12px;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.8),0 0 20px rgba(168,85,247,0.15);pointer-events:none;margin-top:4px}
+    .blitz-rep-name-wrap:hover .blitz-deal-tooltip{display:block}
     .blitz-rep-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
     .blitz-rep-row:last-child{border-bottom:none}
     .blitz-rep-name{flex:1;font-family:'Exo 2',sans-serif;font-size:11px;color:#CBD5E1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2664,7 +2666,7 @@ function getBlitzTopsByBracket(blitzData) {
       var team = e[1];
       (team.reps||[]).forEach(function(rep) {
         var isRookie = ROOKIE_NAMES && ROOKIE_NAMES.has(rep.name);
-        var entry = { name:rep.name, amount:rep.amount, color:team.color, isRookie:isRookie };
+        var entry = { name:rep.name, amount:rep.amount, color:team.color, isRookie:isRookie, dealObjs:rep.dealObjs||[] };
         result[bName].all.push(entry);
         if (isRookie) result[bName].rookies.push(entry);
       });
@@ -2673,6 +2675,20 @@ function getBlitzTopsByBracket(blitzData) {
     result[bName].rookies.sort(function(a,b){return b.amount-a.amount;});
   });
   return result;
+}
+
+function buildBlitzDealTooltip(rep) {
+  var deals = rep.dealObjs && rep.dealObjs.length ? rep.dealObjs : [{amount: rep.amount, date: null}];
+  var rows = deals.slice().sort(function(a,b){return b.amount-a.amount;}).map(function(d){
+    var dateStr = d.date ? formatShortDate(typeof d.date==='string'?new Date(d.date):d.date) : '—';
+    return '<div style="display:flex;justify-content:space-between;gap:16px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05)">'
+      + '<span style="font-family:Orbitron,monospace;font-size:9px;color:#94A3B8">'+dateStr+'</span>'
+      + '<span style="font-family:Orbitron,monospace;font-size:9px;color:#00FF88;font-weight:700">'+fmtB(d.amount)+'</span>'
+      + '</div>';
+  }).join('');
+  return '<div class="blitz-deal-tooltip">'
+    + '<div style="font-family:Orbitron,monospace;font-size:8px;letter-spacing:2px;color:#A855F7;margin-bottom:6px">'+deals.length+' DEAL'+(deals.length!==1?'S':'')+' · '+fmtB(rep.amount)+'</div>'
+    + rows + '</div>';
 }
 
 // Global maps updated by renderBlitzPanels, used by card rendering
@@ -2728,7 +2744,7 @@ function renderBlitzPanels(blitzData) {
       else html += '<span class="hunt-badge">\u26A1 HUNT</span>';
       if (isTopRookie) html += '<span class="top-rookie-badge">R</span>';
       else if (isRookie) html += '<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px">R</span>';
-      html += '<span style="flex:1;font-family:\'Exo 2\',sans-serif;font-size:12px;color:#CBD5E1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+rep.name+'</span>';
+      html += '<span style="flex:1;font-family:\'Exo 2\',sans-serif;font-size:12px;color:#CBD5E1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;cursor:help" class="blitz-rep-name-wrap">'+rep.name+buildBlitzDealTooltip(rep)+'</span>';
       html += '<span style="font-family:Orbitron,monospace;font-size:10px;color:#E2E8F0;flex-shrink:0">'+fmtB(rep.amount)+'</span>';
       if (gap) html += '<span style="font-family:Orbitron,monospace;font-size:8px;color:#475569;flex-shrink:0;min-width:52px;text-align:right">'+gap+'</span>';
       html += '</div>';
@@ -2744,7 +2760,7 @@ function renderBlitzPanels(blitzData) {
         if (i===0) html += '<span class="top-rookie-badge">R</span>';
         else if (i <= 2) html += '<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px;opacity:0.7">R</span>';
         else html += '<span class="rookie-hunt-badge">R HUNT</span>';
-        html += '<span style="flex:1;font-family:\'Exo 2\',sans-serif;font-size:12px;color:#CBD5E1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+rep.name+'</span>';
+        html += '<span style="flex:1;font-family:\'Exo 2\',sans-serif;font-size:12px;color:#CBD5E1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;cursor:help" class="blitz-rep-name-wrap">'+rep.name+buildBlitzDealTooltip(rep)+'</span>';
         html += '<span style="font-family:Orbitron,monospace;font-size:10px;color:#E2E8F0;flex-shrink:0">'+fmtB(rep.amount)+'</span>';
         if (gap) html += '<span style="font-family:Orbitron,monospace;font-size:8px;color:#475569;flex-shrink:0;min-width:52px;text-align:right">'+gap+'</span>';
         html += '</div>';
@@ -3525,6 +3541,21 @@ function renderBlitzBracketsNew(bd) {
           extraBadges += '<span style="font-size:8px;color:'+mc+';background:'+mc+'18;border:1px solid '+mc+'44;border-radius:6px;padding:1px 5px;font-family:Orbitron,monospace;margin-left:2px">#'+(blitzMoverMap[r.name]+1)+' MOVER</span>';
         }
 
+        // Build deals tooltip
+        var dealRows = '';
+        var deals = r.dealObjs || [{amount: r.amount, date: null}];
+        deals.slice().sort(function(a,b){return b.amount-a.amount;}).forEach(function(d){
+          var dateStr = d.date ? formatShortDate(typeof d.date==='string'?new Date(d.date):d.date) : '';
+          dealRows += '<div style="display:flex;justify-content:space-between;gap:16px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05)">'
+            + '<span style="font-family:Orbitron,monospace;font-size:9px;color:#94A3B8">' + (dateStr||'—') + '</span>'
+            + '<span style="font-family:Orbitron,monospace;font-size:9px;color:#00FF88;font-weight:700">' + fmtB(d.amount) + '</span>'
+            + '</div>';
+        });
+        var tooltip = '<div class="blitz-deal-tooltip">'
+          + '<div style="font-family:Orbitron,monospace;font-size:8px;letter-spacing:2px;color:#A855F7;margin-bottom:6px">' + deals.length + ' DEAL' + (deals.length!==1?'S':'') + ' · ' + fmtB(r.amount) + '</div>'
+          + dealRows
+          + '</div>';
+
         html += '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,0.04)">';
         html += '<span style="font-family:Orbitron,monospace;font-size:9px;color:'+rankColor+';width:14px;flex-shrink:0">'+(ri+1)+'</span>';
         if (blitzerRank === '1') html += '<span class="blitzer-badge-1">⚡</span>';
@@ -3533,7 +3564,7 @@ function renderBlitzBracketsNew(bd) {
         else if (blitzerRank === 'hunt') html += '<span class="hunt-badge">HUNT</span>';
         if (isTopRookie) html += '<span class="top-rookie-badge">R</span>';
         else if (isRookie) html += '<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px">R</span>';
-        html += '<div style="flex:1;min-width:80px;font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:600;color:#E2E8F0">'+r.name+extraBadges+'</div>';
+        html += '<div style="flex:1;min-width:80px;font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:600;color:#E2E8F0;position:relative;cursor:help" class="blitz-rep-name-wrap">'+r.name+extraBadges+tooltip+'</div>';
         html += '<div style="font-family:Orbitron,monospace;font-size:11px;font-weight:700;color:'+rankColor+';flex-shrink:0">'+fmtB(r.amount)+'</div>';
         html += '</div>';
       });
