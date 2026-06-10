@@ -437,6 +437,10 @@
       <div class="leader-title" style="color:#00D4FF">&#x1F3C6; TOP 10 OVERALL</div>
       <div id="top10-list"></div>
     </div>
+    <div class="leader-board" style="border-color:rgba(255,215,0,0.3)">
+      <div class="leader-title" style="color:#FFD700">&#x2B50; TOP 10 ROOKIES</div>
+      <div id="rookie10-list"></div>
+    </div>
   </div>
 
   <!-- BADGE LEGEND -->
@@ -1138,6 +1142,24 @@ function renderLeaderboards(data){
   }
   var t5=document.getElementById("top5-list"); if(t5){t5.innerHTML="";allDeals.slice(0,10).forEach(function(r,i){t5.appendChild(makeRow(r,i));});}
   var t10=document.getElementById("top10-list"); if(t10){t10.innerHTML="";all.slice(0,10).forEach(function(r,i){t10.appendChild(makeRow(r,i));});}
+  var r10=document.getElementById("rookie10-list"); if(r10){
+    var rookies=allReps.filter(function(r){return ROOKIE_NAMES&&ROOKIE_NAMES.has(r.name);});
+    r10.innerHTML="";
+    if(rookies.length===0){
+      r10.innerHTML='<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;padding:12px 18px;text-align:center">No rookie data</div>';
+    } else {
+      rookies.slice(0,10).forEach(function(rep,i){
+        var row=makeRow(rep,i);
+        // Add glowing R badge before the amount
+        var badge=document.createElement('span');
+        badge.className=i===0?'top-rookie-badge':'rookie-star';
+        if(i!==0){badge.style.animation='none';badge.style.width='16px';badge.style.height='16px';badge.style.fontSize='8px';}
+        badge.textContent='R';
+        row.insertBefore(badge,row.lastChild);
+        r10.appendChild(row);
+      });
+    }
+  }
 }
 
 // \u2550\u2550 RENDER \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
