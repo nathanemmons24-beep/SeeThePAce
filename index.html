@@ -94,10 +94,10 @@
     @keyframes liquidSwell{0%,100%{transform:translateY(0) scaleX(1)}50%{transform:translateY(-6%) scaleX(1.02)}}
     @keyframes liquidSheen{0%{left:-100%;opacity:0}20%{opacity:1}80%{opacity:1}100%{left:150%;opacity:0}}
     #bar-pct{position:absolute;right:12px;top:0;bottom:0;display:flex;align-items:center;font-family:"Orbitron",monospace;font-size:11px;color:#fff;font-weight:700}
-    .milestone-tick{position:absolute;bottom:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10;pointer-events:none}
-    .milestone-tick .tick-line{width:2px;height:42px;border-radius:2px;flex-shrink:0}
-    .milestone-tick .tick-icon{font-size:14px;margin-top:3px;flex-shrink:0}
-    .milestone-tick .tick-label{font-family:Orbitron,monospace;font-size:9px;font-weight:700;margin-top:2px;white-space:nowrap;flex-shrink:0}
+    .milestone-tick{position:absolute;top:100%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:10;pointer-events:none;margin-top:-5px}
+    .milestone-tick .tick-dot{width:10px;height:10px;border-radius:50%;border:2px solid;flex-shrink:0;transition:all 0.4s}
+    .milestone-tick .tick-icon{font-size:16px;margin-top:4px;flex-shrink:0;line-height:1}
+    .milestone-tick .tick-label{font-family:Orbitron,monospace;font-size:8px;font-weight:700;margin-top:2px;white-space:nowrap;flex-shrink:0}
 
     /* Leaderboards */
     #top-leaderboards{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
@@ -414,8 +414,9 @@
             </path>
           </svg>
         </div>
-        <div id="bar-cursor" style="position:absolute;top:0;left:0%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;transition:left 1.2s cubic-bezier(.4,0,.2,1);z-index:20">
-          <span id="bar-cursor-label" style="font-family:Orbitron,monospace;font-size:9px;color:#FFD700;white-space:nowrap;margin-top:38px;text-shadow:0 0 6px rgba(255,215,0,0.7);font-weight:700;text-align:center"></span>
+        <div id="bar-cursor" style="position:absolute;top:-28px;left:0%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;transition:left 1.2s cubic-bezier(.4,0,.2,1);z-index:20">
+          <span id="bar-cursor-label" style="font-family:Orbitron,monospace;font-size:9px;color:#FFD700;white-space:nowrap;text-shadow:0 0 6px rgba(255,215,0,0.7);font-weight:700;text-align:center;background:rgba(0,0,0,0.5);padding:2px 6px;border-radius:4px"></span>
+          <span style="color:#FFD700;font-size:10px;line-height:1">▼</span>
         </div>
       </div>
     </div>
@@ -1512,12 +1513,18 @@ function render(){
   if(track){
     track.querySelectorAll(".milestone-tick").forEach(function(e){e.remove();});
     MILESTONES.filter(function(m){return m.value<=1;}).forEach(function(m){
-      var reached=total/goal>=m.value,tick=document.createElement("div");
+      var reached=total/goal>=m.value;
+      var tick=document.createElement("div");
       tick.className="milestone-tick"; tick.style.left=(m.value*100)+"%";
-      var labelColor=reached?m.color:"rgba(255,255,255,0.25)";
-      var lineColor=reached?m.color:"rgba(255,255,255,0.12)";
-      var iconStyle=reached?"":"filter:grayscale(1) opacity(0.25)";
-      tick.innerHTML='<div class="tick-line" style="background:'+lineColor+'"></div>'+'<span class="tick-icon" style="'+iconStyle+'">'+m.icon+'</span>'+'<span class="tick-label" style="color:'+labelColor+'">'+m.label+'</span>';
+      var dotBg    = reached ? m.color : 'transparent';
+      var dotBorder= reached ? m.color : 'rgba(255,255,255,0.2)';
+      var dotGlow  = reached ? '0 0 8px '+m.color+',0 0 16px '+m.color+'88' : 'none';
+      var iconStyle= reached ? '' : 'filter:grayscale(1) opacity(0.3)';
+      var labelColor= reached ? m.color : 'rgba(255,255,255,0.2)';
+      tick.innerHTML=
+        '<div class="tick-dot" style="background:'+dotBg+';border-color:'+dotBorder+';box-shadow:'+dotGlow+'"></div>'+
+        '<span class="tick-icon" style="'+iconStyle+'">'+m.icon+'</span>'+
+        '<span class="tick-label" style="color:'+labelColor+'">'+m.label+'</span>';
       track.appendChild(tick);
     });
   }
