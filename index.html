@@ -368,6 +368,7 @@
 
   <!-- BLITZ BAR — shown when special event is active -->
   <div id="blitz-bar-strip" style="display:none;background:rgba(15,23,42,0.85);border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:12px 16px;margin-bottom:16px;backdrop-filter:blur(14px);box-shadow:0 0 20px rgba(124,58,237,0.15)">
+    <!-- Header row -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div style="font-family:Orbitron,monospace;font-size:9px;color:#7C3AED;letter-spacing:3px">&#x2728; SPECIAL EVENT</div>
       <div style="display:flex;align-items:baseline;gap:6px">
@@ -377,18 +378,15 @@
       <button onclick="testPrizePopup()" style="font-family:Orbitron,monospace;font-size:8px;color:#A855F7;background:none;border:1px solid rgba(168,85,247,0.35);border-radius:8px;padding:3px 8px;cursor:pointer;letter-spacing:1px">🏆 TEST PRIZE</button>
       <button onclick="closeBlitz()" style="font-family:Orbitron,monospace;font-size:8px;color:#475569;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:3px 8px;cursor:pointer;letter-spacing:1px">EXIT EVENT</button>
     </div>
-    <!-- Progress bar with prizes along it -->
-    <div style="position:relative;margin-bottom:8px;padding-bottom:52px">
-      <!-- Track -->
-      <div style="height:32px;background:rgba(255,255,255,0.05);border-radius:16px;overflow:hidden;box-shadow:inset 0 2px 8px rgba(0,0,0,0.5)">
-        <div id="blitz-bar-fill" style="height:100%;width:0%;border-radius:16px;transition:width 1.2s"></div>
-      </div>
-      <!-- Prize icons positioned along bar -->
-      <div id="blitz-prize-icons" style="position:absolute;top:0;left:0;right:0;height:32px;pointer-events:none"></div>
+    <!-- Progress bar -->
+    <div style="height:32px;background:rgba(255,255,255,0.05);border-radius:16px;overflow:hidden;box-shadow:inset 0 2px 8px rgba(0,0,0,0.5);margin-bottom:10px">
+      <div id="blitz-bar-fill" style="height:100%;width:0%;border-radius:16px;transition:width 1.2s"></div>
     </div>
+    <!-- Prize icons row below bar - one per $1M milestone -->
+    <div id="blitz-prize-icons" style="position:relative;height:54px"></div>
   </div>
 
-  <!-- BLITZ BRACKET BREAKDOWN — visible when blitz filter active -->
+    <!-- BLITZ BRACKET BREAKDOWN — visible when blitz filter active -->
   <div id="blitz-bracket-section" style="display:none;margin-bottom:16px"></div>
 
   <!-- BLITZ BRACKET LEADERBOARDS — 3 cards side by side -->
@@ -1226,7 +1224,7 @@ function render(){
     document.getElementById('blitz-bar-goal').textContent = 'of ' + fmtB(BLITZ_GOAL) + ' \u00b7 ' + pct.toFixed(1) + '%';
     document.getElementById('blitz-bar-fill').style.width = pct + '%';
 
-    // Prize icons along the bar
+    // Prize icons below the bar
     var iconsEl = document.getElementById('blitz-prize-icons');
     if (iconsEl) {
       var ihtml = '';
@@ -1234,13 +1232,18 @@ function render(){
         var m = i + 1;
         var left = ((m / 17) * 100).toFixed(2) + '%';
         var unlocked = bd.total >= m * 1000000;
-        var unlockedClass = unlocked ? ' unlocked' : '';
-        var clickHandler = unlocked
-          ? 'onclick="showPrizeUnlockPopup(BLITZ_PRIZES[' + i + '],' + m + ')" style="pointer-events:auto"'
-          : 'style="pointer-events:auto;cursor:default"';
-        ihtml += '<div class="prize-icon" ' + clickHandler + ' style="left:' + left + ';top:-6px" title="' + prize.label + ' at $' + m + 'M">';
-        ihtml += '<div class="prize-icon-bubble' + unlockedClass + '">' + prize.icon + '</div>';
-        ihtml += '<div class="prize-icon-label' + unlockedClass + '">$' + m + 'M</div>';
+        var clickAttr = unlocked
+          ? 'onclick="showPrizeUnlockPopup(BLITZ_PRIZES[' + i + '],' + m + ')" title="' + prize.label + ' — click to celebrate!"'
+          : 'title="' + prize.label + ' — reach $' + m + 'M to unlock"';
+        ihtml += '<div style="position:absolute;left:' + left + ';top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;' + (unlocked ? 'cursor:pointer' : 'cursor:default;opacity:0.35') + '" ' + clickAttr + '>';
+        ihtml += '<div style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;';
+        if (unlocked) {
+          ihtml += 'background:rgba(168,85,247,0.2);border:2px solid rgba(168,85,247,0.7);animation:prizeIconGlow 1.8s ease-in-out infinite;box-shadow:0 0 8px rgba(168,85,247,0.5)">';
+        } else {
+          ihtml += 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)">';
+        }
+        ihtml += prize.icon + '</div>';
+        ihtml += '<div style="font-family:Orbitron,monospace;font-size:6px;margin-top:2px;color:' + (unlocked ? '#A855F7' : '#334155') + ';white-space:nowrap">$' + m + 'M</div>';
         ihtml += '</div>';
       });
       iconsEl.innerHTML = ihtml;
