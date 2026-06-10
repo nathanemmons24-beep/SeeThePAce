@@ -1320,13 +1320,16 @@ function render(){
 
   // ── Period filter — show only activePeriod month/year (unless blitz active) ──
   if (!blitzUnlocked && data && data.teams) {
-    // Debug: count deals by month
+    // Debug: count deals and sum amounts by month
     var monthCounts = {};
     Object.values(data.teams).forEach(function(team) {
       (team.reps||[]).forEach(function(rep) {
         (rep.dealObjs||[]).forEach(function(d) {
-          var key = d.date ? ((d.date instanceof Date ? d.date : new Date(d.date)).getMonth()+1)+'/'+((d.date instanceof Date ? d.date : new Date(d.date)).getFullYear()) : 'no-date';
-          monthCounts[key] = (monthCounts[key]||0) + 1;
+          var dt = d.date ? (d.date instanceof Date ? d.date : new Date(d.date)) : null;
+          var key = dt && !isNaN(dt.getTime()) ? (dt.getMonth()+1)+'/'+dt.getFullYear() : 'no-date';
+          if (!monthCounts[key]) monthCounts[key] = {count:0, total:0};
+          monthCounts[key].count++;
+          monthCounts[key].total += d.amount;
         });
       });
     });
