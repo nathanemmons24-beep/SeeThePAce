@@ -684,16 +684,13 @@ function parseCsv(csv){
       var val=parseFloat(scoreRaw.replace(/[^0-9.]/g,""))||0;
       // Skip rows with genuinely no score (but allow $0 deals to not crash — just skip)
       if(!scoreRaw.trim()||isNaN(parseFloat(scoreRaw.replace(/[^0-9.]/g,""))))continue;
-      // Parse date column — Sheet sends M/D/YYYY (e.g. 3/23/2026)
+      // Parse date — Sheet always sends M/D/YYYY (e.g. 6/10/2026)
       var dealDate=null,isToday=false;
       if(dateRaw){
         var dealDate2=null;
         var dmatch=dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
         if(dmatch){
-          // M/D/YYYY format — month is first
           var mo=parseInt(dmatch[1]), dy=parseInt(dmatch[2]), yr=parseInt(dmatch[3]);
-          // Sanity check: if month > 12, it's actually D/M/YYYY — swap
-          if(mo > 12 && dy <= 12){ var tmp=mo; mo=dy; dy=tmp; }
           dealDate2=new Date(yr, mo-1, dy);
         } else {
           var cleanDate=dateRaw.replace(/GMT[+-]\d{4}.*$/,'').trim();
