@@ -2481,6 +2481,21 @@ var BLITZ_BRACKETS = {
   }
 };
 
+// Display name overrides for blitz bracket cards
+var BLITZ_DISPLAY_NAMES = {
+  "0535 - New Jersey": "New Jersey",
+  "0535 - Central Northern NJ": "New Jersey",
+  "0930 - Georgia": "Georgia",
+  "0930 - Atlanta": "Georgia",
+  "0868 - South Bend": "South Bend",
+  "0868 - So Bend": "South Bend",
+  "0790 - Knoxville": "Knoxville",
+  "0790 - Tri-Cities TN": "Knoxville",
+  "0914 - Central GTA": "Toronto",
+  "0914 - Eastern GTA": "Toronto",
+  "Toronto 0914": "Toronto"
+};
+
 function getBracketForStore(storeName) {
   for (var b in BLITZ_BRACKETS) {
     if (BLITZ_BRACKETS[b].stores.indexOf(storeName) >= 0) return b;
@@ -2610,13 +2625,13 @@ var BLITZ_DEMO = {
     "Large Markets": {
       total: 8612000, color: "#00FF88", accent: "#FFD700",
       teams: {
-        "0535 - Central Northern NJ": { total:2748000, display:"New Jersey", color:"#00FF88", reps:[
+        "0535 - New Jersey": { total:2748000, display:"New Jersey", color:"#00FF88", reps:[
           {name:"Gerry Zapantis",amount:612000},{name:"Alex Aubrey-Smith",amount:398000},{name:"Ken Haupt",amount:334000},{name:"Rocky Singh",amount:265000},{name:"Barry Dubin",amount:212000},{name:"Brian Whitmore",amount:487000},{name:"Matt Davis",amount:168000},{name:"Marcus Staples",amount:148000},{name:"Roberto Rios",amount:124000}]},
         "0890 - San Francisco": { total:2241000, display:"San Francisco", color:"#FFD700", reps:[
           {name:"Diana Muldowney",amount:498000},{name:"Daniel Odetto",amount:362000},{name:"Chris Navarro",amount:312000},{name:"Sarah Prentice",amount:298000},{name:"Ryan Acton",amount:234000},{name:"Austin Davis",amount:198000},{name:"Kevin Upton",amount:187000},{name:"Stephanie Wu",amount:152000}]},
         "0800 - Long Island": { total:1987000, display:"Long Island", color:"#00D4FF", reps:[
           {name:"Marlon McGlashin",amount:487000},{name:"Kyle Gray",amount:378000},{name:"Doug Zakow",amount:312000},{name:"Whitney Kent",amount:289000},{name:"Phil Torres",amount:243000},{name:"Caitlin Shore",amount:178000},{name:"Ben Laney",amount:100000}]},
-        "0930 - Atlanta": { total:987000, display:"Georgia", color:"#FF6B35", reps:[
+        "0930 - Georgia": { total:987000, display:"Georgia", color:"#FF6B35", reps:[
           {name:"Mark Roberts",amount:312000},{name:"Nick Yaffe",amount:234000},{name:"Julia Padgett",amount:214000},{name:"Sarah Prentice",amount:143000},{name:"Damon Wells",amount:84000}]},
         "0576 - Cincinnati": { total:649000, display:"Cincinnati", color:"#A855F7", reps:[
           {name:"Jeffrey Dunn",amount:234000},{name:"Logan Kinstle",amount:212000},{name:"Anthony Baird",amount:152000},{name:"Kevin Upton",amount:51000}]}
@@ -2631,7 +2646,7 @@ var BLITZ_DEMO = {
           {name:"Jonathan Simms",amount:456000},{name:"JT Conway",amount:348000},{name:"Mark Sneed",amount:278000},{name:"Whitney Kent",amount:198000},{name:"Ben Laney",amount:118000}]},
         "0534 - Westchester": { total:798000, display:"Westchester", color:"#00D4FF", reps:[
           {name:"Kim Uniacke",amount:312000},{name:"Nick Patentas",amount:245000},{name:"Brian Greenberg",amount:162000},{name:"Roberto Rios",amount:79000}]},
-        "0868 - So Bend": { total:415200, display:"South Bend", color:"#FF6B35", reps:[
+        "0868 - South Bend": { total:415200, display:"South Bend", color:"#FF6B35", reps:[
           {name:"Al Reasonover",amount:234000},{name:"Marshall Clevenger",amount:131200},{name:"George Mars",amount:50000}]}
       }
     },
@@ -2851,21 +2866,8 @@ function getBlitzCurrentData(data) {
 }
 
 function getBlitzData() {
-  // Static blitz totals matching demo data (~$8M)
-  var totals = {
-    "0930 - Georgia":     703500,
-    "0535 - New Jersey":  614000,
-    "0800 - Long Island": 556000,
-    "0576 - Cincinnati":  433000,
-    "0791 - Nashville":   578000,
-    "0867 - Indy":        457000,
-    "0534 - Westchester": 376000,
-    "0868 - South Bend":  234000,
-    "Toronto 0914":       394000,
-    "0790 - Knoxville":   254000
-  };
-  var total = Object.values(totals).reduce(function(s,v){return s+v;},0);
-  return { total: total, brackets: {}, allReps: [] };
+  // Always derive from BLITZ_DEMO — single source of truth
+  return buildBlitzFromDemo();
 }
 
 function buildBlitzFromDemo() {
@@ -3335,7 +3337,7 @@ function renderBlitzBracketsNew(bd) {
     html += '<div style="margin-bottom:16px">';
     sortedTeams.forEach(function(te, i) {
       var tName = te[0], t = te[1];
-      var dispName = t.display || (tName.includes(' - ') ? tName.split(' - ').slice(1).join(' ') : tName);
+      var dispName = BLITZ_DISPLAY_NAMES[tName] || t.display || (tName.includes(' - ') ? tName.split(' - ').slice(1).join(' ') : tName);
       var pct = Math.max(6, (t.total / maxTeam) * 100);
       var medals = ['&#x1F947;','&#x1F948;','&#x1F949;'];
       html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">';
@@ -3353,7 +3355,7 @@ function renderBlitzBracketsNew(bd) {
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">';
     sortedTeams.forEach(function(te) {
       var tName = te[0], t = te[1];
-      var dispName = t.display || (tName.includes(' - ') ? tName.split(' - ').slice(1).join(' ') : tName);
+      var dispName = BLITZ_DISPLAY_NAMES[tName] || t.display || (tName.includes(' - ') ? tName.split(' - ').slice(1).join(' ') : tName);
       html += '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden">';
       html += '<div style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg,rgba('+hexToRgb(color)+',0.08),transparent)">';
       html += '<div style="font-family:\'Exo 2\',sans-serif;font-size:11px;font-weight:700;color:#CBD5E1">'+dispName+'</div>';
