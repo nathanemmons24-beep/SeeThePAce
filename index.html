@@ -1325,7 +1325,11 @@ function render(){
       var filteredReps = [];
       (team.reps || []).forEach(function(rep) {
         var periodDeals = (rep.dealObjs || []).filter(function(d) {
-          if (!d.date) return false;
+          if (!d.date) {
+            // No date — include in current period only
+            var n = new Date();
+            return activePeriod.month === (n.getMonth()+1) && activePeriod.year === n.getFullYear();
+          }
           var dt = (d.date instanceof Date) ? d.date : new Date(d.date);
           if (isNaN(dt.getTime())) return false;
           return (dt.getMonth() + 1) === activePeriod.month && dt.getFullYear() === activePeriod.year;
