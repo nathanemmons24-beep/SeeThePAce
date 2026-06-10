@@ -1273,9 +1273,20 @@ function render(){
           display: team.display,
           total: team.total,
           reps: team.reps.map(function(r) {
-            return { name: r.name, amount: r.amount, deals: [r.amount],
-                     dealObjs: [{amount: r.amount, date: "6/19/2026", isToday: false}],
-                     todayTotal: 0, latestDate: null };
+            // Spread amount across Jun 18/19/20 (~35%/35%/30%)
+            var d18 = Math.round(r.amount * 0.35);
+            var d19 = Math.round(r.amount * 0.35);
+            var d20 = r.amount - d18 - d19;
+            return {
+              name: r.name, amount: r.amount,
+              deals: [d18, d19, d20],
+              dealObjs: [
+                {amount: d18, date: "6/18/2026", isToday: false},
+                {amount: d19, date: "6/19/2026", isToday: false},
+                {amount: d20, date: "6/20/2026", isToday: false}
+              ],
+              todayTotal: 0, latestDate: null
+            };
           })
         };
       });
