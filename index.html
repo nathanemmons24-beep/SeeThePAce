@@ -597,6 +597,17 @@ var IND_BADGES = [
 ];
 var SAMPLE = { total: 0, teams: {} };
 
+var _saved = (function(){ try{ return JSON.parse(localStorage.getItem("blitz_settings")||"{}"); }catch(e){return{};} })();
+var SHEET_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
+var state={
+  sheetUrl: _saved.sheetUrl || SHEET_URL,
+  goal:     _saved.goal     || 500000,
+  title:    _saved.title    || "Loading...",
+  data:     SAMPLE,
+  status:   "loading",
+  lastUpdated: null
+};
+
 var streakCounts = {}; // "Name|Team" -> number of deals (not syncs)
 var pollTimer=null,countdownTimer=null,secsLeft=10,CIRC=2*Math.PI*15;
 
