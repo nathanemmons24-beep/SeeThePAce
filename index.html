@@ -683,17 +683,18 @@ function parseCsv(csv){
       var val=parseFloat(scoreRaw.replace(/[^0-9.]/g,""))||0;
       // Skip rows with genuinely no score (but allow $0 deals to not crash — just skip)
       if(!scoreRaw.trim()||isNaN(parseFloat(scoreRaw.replace(/[^0-9.]/g,""))))continue;
-      // Parse date column — handles "Tue Jan 06 2026 00:00:00 GMT-0500..." and "6/1/2026"
+      // Parse date column — Sheet sends M/D/YYYY (e.g. 3/23/2026)
       var dealDate=null,isToday=false;
       if(dateRaw){
-        // Apps Script outputs d/m/yyyy (European) — parse manually
         var dealDate2=null;
         var dmatch=dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
         if(dmatch){
-          // d/m/yyyy format
-          dealDate2=new Date(parseInt(dmatch[3]),parseInt(dmatch[2])-1,parseInt(dmatch[1]));
+          // M/D/YYYY format — month is first
+          var mo=parseInt(dmatch[1]), dy=parseInt(dmatch[2]), yr=parseInt(dmatch[3]);
+          // Sanity check: if month > 12, it's actually D/M/YYYY — swap
+          if(mo > 12 && dy <= 12){ var tmp=mo; mo=dy; dy=tmp; }
+          dealDate2=new Date(yr, mo-1, dy);
         } else {
-          // Fallback: strip timezone and try native parse
           var cleanDate=dateRaw.replace(/GMT[+-]\d{4}.*$/,'').trim();
           dealDate2=new Date(cleanDate);
         }
@@ -1543,10 +1544,11 @@ function render(){
   var dot=document.getElementById("status-dot");
   var isLoading = (!data || !data.teams || Object.keys(data.teams).length === 0) && !blitzUnlocked;
   if(state.status==="live"){dot.textContent="\u25CF LIVE";dot.className="live";}
+  else if(state.status && state.status.startsWith("error") && !isLoading){
+    dot.textContent="\u25CF LIVE";dot.className="live";
+  }
   else if(state.status && state.status.startsWith("error")){
-    dot.textContent="\u25CF ERROR: "+state.status.replace(/^error:\s*/i,"");
-    dot.className="error";
-    dot.title=state.status;
+    dot.textContent="\u25CF SYNCING...";dot.className="loading";
   }
   else{dot.textContent="\u25CF LOADING...";dot.className="loading";}
   // Hide all board content while loading
