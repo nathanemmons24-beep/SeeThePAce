@@ -2722,7 +2722,7 @@ function renderBlitzPanels(blitzData) {
     blitzers.forEach(function(rep, i) {
       var gap = i > 0 ? '-'+fmtB(blitzers[0].amount - rep.amount) : '';
       var isRookie = ROOKIE_NAMES && ROOKIE_NAMES.has(rep.name);
-      var isTopRookie = blitzTopRookieMap[rep.name + '|' + bName];
+      var isTopRookie = (ROOKIE_NAMES && ROOKIE_NAMES.has(rep.name) && tops[bName].rookies.length > 0 && tops[bName].rookies[0].name === rep.name);
       html += '<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03)">';
       if (i===0) html += '<span class="blitzer-badge-1">\u26A11</span>';
       else if (i===1) html += '<span class="blitzer-badge-2">\u26A12</span>';
@@ -3359,9 +3359,21 @@ function renderBlitzBracketsNew(bd) {
       html += '<div style="font-family:\'Exo 2\',sans-serif;font-size:11px;font-weight:700;color:#CBD5E1">'+dispName+'</div>';
       html += '<div style="font-family:Orbitron,monospace;font-size:12px;font-weight:900;color:'+color+'">'+fmtB(t.total)+'</div>';
       html += '</div>';
+      // Compute top rookie for this bracket once
+      var bracketRookies = [];
+      if (bracket && bracket.teams) {
+        Object.values(bracket.teams).forEach(function(team){
+          (team.reps||[]).forEach(function(rep2){
+            if(ROOKIE_NAMES && ROOKIE_NAMES.has(rep2.name)) bracketRookies.push({name:rep2.name,amount:rep2.amount});
+          });
+        });
+        bracketRookies.sort(function(a,b){return b.amount-a.amount;});
+      }
+      var bracketTopRookie = bracketRookies.length > 0 ? bracketRookies[0].name : null;
+
       t.reps.forEach(function(r, ri) {
         var isRookie = ROOKIE_NAMES.has(r.name);
-        var isTopRookie = blitzUnlocked && blitzTopRookieMap[r.name + '|' + bName];
+        var isTopRookie = blitzUnlocked && isRookie && bracketTopRookie === r.name;
         var blitzerRank = blitzUnlocked ? blitzTopBlitzerMap[r.name] : null;
         var rankColor = ri===0 ? color : ri<=2 ? '#CBD5E1' : '#475569';
         html += '<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,0.04)">';
