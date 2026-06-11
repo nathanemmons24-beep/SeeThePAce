@@ -831,6 +831,7 @@ function checkLandingPw() {
   if (!inp) { enterDashboard(); return; }
   if (inp.value.trim() === LANDING_PW) {
     if (err) err.style.display = 'none';
+    storeAuth();
     enterDashboard();
   } else {
     if (err) err.style.display = 'block';
@@ -840,6 +841,39 @@ function checkLandingPw() {
     inp.focus();
   }
 }
+
+// Auth persists for 20 mins, clears on hard refresh/new version/tab close
+var AUTH_VERSION = "v2";  // bump this string to force re-auth on next deploy
+var AUTH_TTL_MS  = 20 * 60 * 1000; // 20 minutes
+
+function checkStoredAuth() {
+  try {
+    // sessionStorage clears on tab close / hard refresh
+    var raw = sessionStorage.getItem('stp_auth');
+    if (!raw) return false;
+    var data = JSON.parse(raw);
+    if (data.version !== AUTH_VERSION) return false;
+    if (Date.now() - data.ts > AUTH_TTL_MS) {
+      sessionStorage.removeItem('stp_auth');
+      return false;
+    }
+    return true;
+  } catch(e) { return false; }
+}
+
+function storeAuth() {
+  try {
+    sessionStorage.setItem('stp_auth', JSON.stringify({
+      ts: Date.now(),
+      version: AUTH_VERSION
+    }));
+  } catch(e){}
+}
+
+// Auto-enter if already authenticated this session
+(function(){
+  if (checkStoredAuth()) enterDashboard();
+})();
 
 function enterDashboard() {
   // Hide landing elements, show loading spinner
