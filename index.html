@@ -1372,7 +1372,7 @@ function render(){
         var dayDeals=(rep.dealObjs||[]).filter(function(d){
           if(!d.date) return false;
           var dk=new Date(d.date); dk.setHours(0,0,0,0);
-          return dk.toISOString().split("T")[0]===filterDay;
+          return (dk.getFullYear()+'-'+(dk.getMonth()+1)+'-'+dk.getDate())===filterDay;
         });
         if(dayDeals.length>0){
           var dayAmt=dayDeals.reduce(function(s,d){return s+d.amount;},0);
@@ -1919,8 +1919,10 @@ function renderDayBreakdown(data) {
     team.reps.forEach(function(rep) {
       (rep.dealObjs || []).forEach(function(obj) {
         if (!obj.date) return;
-        var d = new Date(obj.date); d.setHours(0,0,0,0);
-        var key = d.toISOString().split('T')[0];
+        var d = (obj.date instanceof Date) ? new Date(obj.date) : new Date(obj.date);
+        d.setHours(0,0,0,0);
+        // Use local date string to avoid UTC timezone shifting the day
+        var key = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
         if (!dayTotals[key]) {
           var diff = Math.round((today - d) / 86400000);
           var label = diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : formatShortDate(d);
@@ -3619,7 +3621,7 @@ function renderBlitzDayBreakdown(bd) {
           var date = dealObj && dealObj.date ? dealObj.date : null;
           if (!date) return;
           var d = new Date(date); d.setHours(0,0,0,0);
-          var key = d.toISOString().split('T')[0];
+          var key = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
           if (!dayTotals[key]) {
             var diff = Math.round((today - d) / 86400000);
             var label = diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : formatShortDate(d);
