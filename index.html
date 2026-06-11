@@ -224,7 +224,8 @@
     body.tv-mode #app{padding-top:110px!important}
     :fullscreen #app,:-webkit-full-screen #app{padding-top:110px!important}
   
-    body.tv-mode #header{margin-top:30px}
+    body.tv-mode #header{margin-top:56px}
+    body.tv-mode #app{padding-top:120px!important}
     body.tv-mode #subtitle{font-size:20px!important;letter-spacing:4px}
     body.tv-mode #blitz-clock{font-size:clamp(24px,3.5vw,40px)!important}
     body.tv-mode #total-display{font-size:32px!important}
@@ -1992,6 +1993,8 @@ function toggleBigFont() {
   updateMenuStates();
   document.body.classList.toggle('tv-mode', tvBigFont);
   setTimeout(adjustTopPadding, 50);
+  setTimeout(adjustTopPadding, 300);
+  setTimeout(adjustTopPadding, 800);
   // Also directly scale the app for max compatibility
   var app = document.getElementById('app');
   if (app) app.style.fontSize = tvBigFont ? '130%' : '';
@@ -3829,9 +3832,10 @@ function adjustTopPadding() {
   if (!clock || !app) return;
   var clockH  = clock.offsetHeight  || 0;
   var tickerH = (ticker && ticker.style.display !== 'none') ? (ticker.offsetHeight || 0) : 0;
-  var total   = clockH + tickerH + 8; // 8px breathing room
+  var isTv    = document.body.classList.contains('tv-mode');
+  var buffer  = isTv ? 20 : 8;
+  var total   = clockH + tickerH + buffer;
   app.style.paddingTop = total + 'px';
-  // Also reposition ticker top
   if (ticker) ticker.style.top = clockH + 'px';
 }
 
