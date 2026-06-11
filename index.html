@@ -1969,19 +1969,22 @@ function toggleBigFont() {
   // Scroll is controlled by fullscreen only, not TV mode button
 }
 
+function toggleDayFilter(key) {
+  filterDay = (filterDay === key) ? null : key;
+  render();
+}
+
 // ══ DAY BREAKDOWN ═════════════════════════════════════════════════════════════
 function renderDayBreakdown(data) {
   var dayTotals = {};
   var today = new Date(); today.setHours(0,0,0,0);
 
-  // Collect deal objects grouped by day
   Object.values(data.teams).forEach(function(team) {
     team.reps.forEach(function(rep) {
       (rep.dealObjs || []).forEach(function(obj) {
         if (!obj.date) return;
         var d = (obj.date instanceof Date) ? new Date(obj.date) : new Date(obj.date);
         d.setHours(0,0,0,0);
-        // Use local date string to avoid UTC timezone shifting the day
         var key = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
         if (!dayTotals[key]) {
           var diff = Math.round((today - d) / 86400000);
@@ -2000,111 +2003,63 @@ function renderDayBreakdown(data) {
   if (!el || !barsEl || days.length === 0) { if(el) el.style.display='none'; return; }
   el.style.display = 'block';
 
-  // Build bar chart canvas
-  barsEl.innerHTML = '<canvas id="day-chart" style="width:100%;height:200px;display:block"></canvas>';
-  // Use requestAnimationFrame to ensure element is in DOM and sized
-  requestAnimationFrame(function() {
-    var canvas = document.getElementById('day-chart');
-    if (!canvas) return;
-    var DPR = window.devicePixelRatio || 1;
-    var W = barsEl.clientWidth || 600, H = 200;
-    canvas.width  = W * DPR; canvas.height = H * DPR;
-    canvas.style.width = W+'px'; canvas.style.height = H+'px';
-    var ctx = canvas.getContext('2d');
-    ctx.scale(DPR, DPR);
+  var maxVal = Math.max.apply(null, days.map(function(d){ return d[1].total; }));
+  var BAR_W = 72;   // px per bar
+  var GAP   = 16;   // px gap
+  var CHART_H = 160; // bar area height in px
 
-    var PAD = { top:30, right:16, bottom:48, left:76 };
-    var cW = W - PAD.left - PAD.right;
-    var cH = H - PAD.top  - PAD.bottom;
-    var maxVal = Math.max.apply(null, days.map(function(d){ return d[1].total; }));
-    if (maxVal === 0) return;
+  // Color palette cycling
+  var COLORS = [
+    'linear-gradient(180deg,#00D4FF,#0070CC)',
+    'linear-gradient(180deg,#00FF88,#00AA55)',
+    'linear-gradient(180deg,#FFD700,#FF8C00)',
+    'linear-gradient(180deg,#FF6B35,#CC2200)',
+    'linear-gradient(180deg,#A855F7,#6D28D9)',
+    'linear-gradient(180deg,#FF4EFF,#9B00CC)',
+    'linear-gradient(180deg,#34D399,#059669)',
+    'linear-gradient(180deg,#FB923C,#C2410C)',
+    'linear-gradient(180deg,#60A5FA,#2563EB)',
+    'linear-gradient(180deg,#F472B6,#BE185D)',
+  ];
 
-    var barW = Math.max(16, Math.min(120, cW / days.length * 0.85));
-    var gap   = cW / days.length;
-    var barColors = ['#00D4FF','#00FF88','#FFD700','#FF6B35','#A855F7','#FF4EFF'];
+  var html = '<div style="overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;padding-bottom:8px;cursor:grab;user-select:none" id="day-scroll-wrap">'
+    + '<div style="display:flex;align-items:flex-end;gap:'+GAP+'px;padding:8px 16px 0;min-width:max-content">';
 
-    // Horizontal grid lines + Y labels
-    for (var g = 0; g <= 4; g++) {
-      var gy = PAD.top + (g / 4) * cH;
-      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(PAD.left, gy); ctx.lineTo(W - PAD.right, gy); ctx.stroke();
-      ctx.fillStyle = '#475569';
-      ctx.font = '10px Orbitron, monospace';
-      ctx.textAlign = 'right';
-      ctx.fillText(fmt(Math.round(maxVal * (1 - g/4))), PAD.left - 8, gy + 4);
-    }
+  days.forEach(function(entry, i) {
+    var key = entry[0], day = entry[1];
+    var pct = maxVal > 0 ? (day.total / maxVal) : 0;
+    var barH = Math.max(12, Math.round(pct * CHART_H));
+    var color = COLORS[i % COLORS.length];
+    var isSelected = (filterDay === key);
+    var border = isSelected ? 'outline:2px solid #FFD700;outline-offset:2px;' : '';
+    var clickKey = key;
 
-    var dayKeys = days.map(function(d){return d[0];});
-
-    // Click handler — filter by clicked day
-    canvas.style.cursor = "pointer";
-    canvas.onclick = function(evt) {
-      var rect2 = canvas.getBoundingClientRect();
-      var clickX = (evt.clientX - rect2.left);
-      var clickedKey = null;
-      days.forEach(function(entry, i) {
-        var bx2 = PAD.left + gap*i + gap/2 - barW/2;
-        if(clickX >= bx2 && clickX <= bx2+barW) clickedKey = entry[0];
-      });
-      if(clickedKey) {
-        filterDay = (filterDay === clickedKey) ? null : clickedKey; // toggle
-        var dayBanner = document.getElementById("day-filter-banner");
-        if(dayBanner) {
-          if(filterDay) {
-            var dk = new Date(filterDay+"T12:00:00");
-            dayBanner.style.display="block";
-            dayBanner.querySelector("#day-filter-label").textContent = formatShortDate(dk);
-          } else {
-            dayBanner.style.display="none";
-          }
-        }
-        render();
-      }
-    };
-
-    days.forEach(function(entry, i) {
-      var day = entry[1];
-      var isSelected = (filterDay === entry[0]);
-      var barH  = (day.total / maxVal) * cH;
-      var bx    = PAD.left + gap * i + gap/2 - barW/2;
-      var by    = PAD.top + cH - barH;
-      var color = isSelected ? "#FFFFFF" : barColors[i % barColors.length];
-
-      // Bar gradient
-      var grad = ctx.createLinearGradient(0, by, 0, by + barH);
-      grad.addColorStop(0, color);
-      grad.addColorStop(1, color + '55');
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.roundRect ? ctx.roundRect(bx, by, barW, barH, [6,6,0,0])
-                    : ctx.rect(bx, by, barW, barH);
-      ctx.fill();
-
-      // Glow effect
-      ctx.shadowColor = color;
-      ctx.shadowBlur  = 12;
-      ctx.fillStyle   = 'transparent';
-      ctx.fill();
-      ctx.shadowBlur  = 0;
-
-      // Amount above bar
-      ctx.fillStyle   = '#E2E8F0';
-      ctx.font        = 'bold 11px Orbitron, monospace';
-      ctx.textAlign   = 'center';
-      ctx.fillText(fmt(day.total), bx + barW/2, by - 6);
-
-      // Day label below
-      ctx.fillStyle = color;
-      ctx.font      = '10px Orbitron, monospace';
-      ctx.fillText(day.label, bx + barW/2, H - PAD.bottom + 14);
-
-      // Deal count
-      ctx.fillStyle = '#475569';
-      ctx.font      = '9px sans-serif';
-      ctx.fillText(day.deals + ' deal' + (day.deals !== 1 ? 's' : ''), bx + barW/2, H - PAD.bottom + 28);
-    });
+    html += '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;width:'+BAR_W+'px" onclick="toggleDayFilter(\'' + clickKey + '\')">'; 
+    // Amount label above bar
+    html += '<div style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#E2E8F0;white-space:nowrap;text-align:center">'+fmt(day.total)+'</div>';
+    // Bar
+    html += '<div style="width:'+BAR_W+'px;height:'+barH+'px;border-radius:8px 8px 4px 4px;background:'+color+';'+border+'transition:height 0.5s cubic-bezier(.4,0,.2,1);box-shadow:0 4px 12px rgba(0,0,0,0.3)"></div>';
+    // Date label
+    html += '<div style="font-family:Orbitron,monospace;font-size:10px;color:'+(isSelected?'#FFD700':'#7DD3FC')+';white-space:nowrap;font-weight:700">'+day.label+'</div>';
+    // Deals count
+    html += '<div style="font-family:Orbitron,monospace;font-size:8px;color:#334155;white-space:nowrap">'+day.deals+' deal'+(day.deals!==1?'s':'')+'</div>';
+    html += '</div>';
   });
+
+  html += '</div></div>';
+  barsEl.innerHTML = html;
+
+  // Drag-to-scroll on desktop
+  var wrap = document.getElementById('day-scroll-wrap');
+  if (wrap) {
+    var isDown = false, startX = 0, scrollLeft = 0;
+    wrap.addEventListener('mousedown', function(e){ isDown=true; startX=e.pageX-wrap.offsetLeft; scrollLeft=wrap.scrollLeft; wrap.style.cursor='grabbing'; });
+    wrap.addEventListener('mouseleave', function(){ isDown=false; wrap.style.cursor='grab'; });
+    wrap.addEventListener('mouseup', function(){ isDown=false; wrap.style.cursor='grab'; });
+    wrap.addEventListener('mousemove', function(e){ if(!isDown) return; e.preventDefault(); var x=e.pageX-wrap.offsetLeft; wrap.scrollLeft=scrollLeft-(x-startX); });
+    // Scroll to end (most recent) on load
+    wrap.scrollLeft = wrap.scrollWidth;
+  }
 }
 
 // ══ BIGGEST MOVER ═════════════════════════════════════════════════════════════
