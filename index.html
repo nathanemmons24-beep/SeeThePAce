@@ -2781,22 +2781,6 @@ function renderBlitzPanels(blitzData) {
     });
 
     // TOP ROOKIE section — top 5, with rising badge for 4th/5th
-    var rookies5 = tops[bName].rookies.slice(0, 5);
-    if (rookies5.length > 0) {
-      html += '<div style="font-family:Orbitron,monospace;font-size:8px;letter-spacing:2px;color:#475569;margin:10px 0 6px">\u2B50 TOP ROOKIES</div>';
-      rookies5.forEach(function(rep, i) {
-        var gap = i > 0 ? '-'+fmtB(rookies5[0].amount - rep.amount) : '';
-        html += '<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03)">';
-        if (i===0) html += '<span class="top-rookie-badge">R</span>';
-        else if (i <= 2) html += '<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px;opacity:0.7">R</span>';
-        else html += '<span class="rookie-hunt-badge">R HUNT</span>';
-        html += '<span style="flex:1;font-family:\'Exo 2\',sans-serif;font-size:12px;color:#CBD5E1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;cursor:help" class="blitz-rep-name-wrap">'+rep.name+buildBlitzDealTooltip(rep)+'</span>';
-        html += '<span style="font-family:Orbitron,monospace;font-size:10px;color:#E2E8F0;flex-shrink:0">'+fmtB(rep.amount)+'</span>';
-        if (gap) html += '<span style="font-family:Orbitron,monospace;font-size:8px;color:#475569;flex-shrink:0;min-width:52px;text-align:right">'+gap+'</span>';
-        html += '</div>';
-      });
-    }
-
     html += '</div>';
   });
 
