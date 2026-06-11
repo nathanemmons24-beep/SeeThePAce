@@ -1590,12 +1590,16 @@ function render(){
   if(lu)lu.innerHTML=state.lastUpdated?"Last updated: <span>"+state.lastUpdated+"</span>":"";
   var bc=document.getElementById("bar-cursor");
   var bcl=document.getElementById("bar-cursor-label");
-  if(bc){bc.style.left=Math.min(mtdPct,100)+"%";}
+  var pctPos=Math.min(mtdPct,100);
+  if(bc){bc.style.left=pctPos+"%";}
   if(bcl){
     var nextM=MILESTONES.find(function(m){return total/goal<m.value;});
     if(nextM&&total<goal){var needed=Math.round(goal*nextM.value-total);bcl.textContent=fmt(needed)+" to "+nextM.label;}
     else if(total>=goal){bcl.textContent="GOAL!";}
     else{bcl.textContent="";}
+    // Shift left when near right edge to avoid overlapping goal number
+    bcl.style.transform = pctPos > 55 ? 'translateX(-100%)' : 'translateX(-50%)';
+    bcl.style.left = pctPos > 55 ? '-8px' : '0';
   }
 
   
@@ -1631,8 +1635,8 @@ function render(){
   if(rl){
     rl.innerHTML="";
     var sorted=Object.entries(data.teams).sort(function(a,b){return b[1].total-a[1].total;});
-    // Use the pre-filter data for bar proportions so bars don't all go 100%
-    var allTeams = state.data ? mergeAlways(state.data).teams : data.teams;
+    // When filtering by day, use filtered data max so bars scale correctly
+    var allTeams = (!filterDay && state.data) ? mergeAlways(state.data).teams : data.teams;
     var maxTotal = Math.max.apply(null, Object.values(allTeams).map(function(t){return t.total;})) || 1;
     var rmedals=["&#x1F947;","&#x1F948;","&#x1F949;"];
     sorted.forEach(function(e,i){
