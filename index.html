@@ -28,8 +28,16 @@
     ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
 
     /* Clock */
-    #blitz-clock{font-family:"Orbitron",monospace;font-size:clamp(14px,2.5vw,22px);color:#475569;letter-spacing:3px;text-align:center;position:fixed;top:0;left:0;right:0;z-index:200;background:#060B18;padding:10px 0 6px;border-bottom:1px solid rgba(255,255,255,0.06)}
+    #blitz-clock{font-family:"Orbitron",monospace;font-size:clamp(14px,2.5vw,22px);color:#475569;letter-spacing:3px;text-align:center;position:fixed;top:0;left:0;right:0;z-index:200;background:#060B18;padding:10px 0 4px;border-bottom:1px solid rgba(255,255,255,0.06)}
     #blitz-clock span{color:#64748B}
+    #sales-ticker{position:fixed;top:44px;left:0;right:0;z-index:199;background:rgba(6,11,24,0.95);border-bottom:1px solid rgba(255,255,255,0.05);padding:4px 16px;display:flex;align-items:center;gap:12px;overflow:hidden;height:28px}
+    #sales-ticker-label{font-family:Orbitron,monospace;font-size:8px;font-weight:700;letter-spacing:2px;color:#334155;white-space:nowrap;flex-shrink:0}
+    #sales-ticker-track{display:flex;gap:20px;overflow:hidden;flex:1}
+    .ticker-item{display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0;font-family:"Exo 2",sans-serif;font-size:11px}
+    .ticker-item .t-name{color:#94A3B8}
+    .ticker-item .t-amt{font-family:Orbitron,monospace;font-size:10px;font-weight:700;color:#00FF88}
+    .ticker-item .t-store{font-family:Orbitron,monospace;font-size:8px;color:#475569}
+    .ticker-item .t-dot{color:#1E293B;font-size:10px}
 
     /* Hot streak */
     @keyframes streakPulse{0%,100%{box-shadow:var(--streak-shadow)}50%{box-shadow:var(--streak-shadow-bright)}}
@@ -65,7 +73,7 @@
 
     /* App layout */
     #header{text-align:center;margin-bottom:20px}
-    #app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px 16px;padding-top:56px}
+    #app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px 16px;padding-top:80px}
     #blitz-title{font-family:"Orbitron",monospace;font-weight:900;font-size:clamp(24px,5vw,44px);letter-spacing:4px;background:linear-gradient(135deg,#00D4FF,#00FF88,#FFD700);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite;margin-bottom:6px}
     #subtitle{font-size:12px;color:#334155;font-family:"Orbitron",monospace;letter-spacing:3px}
     #status-dot{margin-left:12px}
@@ -375,6 +383,12 @@
     <span id="last-updated"></span>
     <span id="last-sync-text"></span>
     <svg id="countdown-svg" style="display:none"><circle id="countdown-ring"/></svg>
+  </div>
+
+  <!-- RECENT SALES TICKER -->
+  <div id="sales-ticker">
+    <div id="sales-ticker-label">&#x1F4B0; RECENT SALES</div>
+    <div id="sales-ticker-track"></div>
   </div>
 
 
@@ -1529,6 +1543,7 @@ function render(){
     });
   }
 
+  renderSalesTicker(data);
   renderLeaderboards(data);
   renderDayBreakdown(data);
   updateBiggestMover(data);
@@ -3746,6 +3761,45 @@ function updateBlitzMenuStates() {
 
 
 // ── CREATE MENU VIA JS ───────────────────────────────────────────────────────
+function renderSalesTicker(data) {
+  var track = document.getElementById('sales-ticker-track');
+  if (!track || !data || !data.teams) return;
+
+  // Collect all deals with dates, sort newest first
+  var allDeals = [];
+  Object.entries(data.teams).forEach(function(e) {
+    var storeName = e[0], team = e[1];
+    var display = team.display || storeName.split(' - ').slice(1).join(' ').trim() || storeName;
+    team.reps.forEach(function(rep) {
+      (rep.dealObjs || []).forEach(function(d) {
+        allDeals.push({ name: rep.name, amount: d.amount, date: d.date, store: display, color: team.color });
+      });
+    });
+  });
+
+  // Sort by date descending, take last 10
+  allDeals.sort(function(a, b) {
+    var da = a.date ? (a.date instanceof Date ? a.date : new Date(a.date)) : new Date(0);
+    var db = b.date ? (b.date instanceof Date ? b.date : new Date(b.date)) : new Date(0);
+    return db - da;
+  });
+  var recent = allDeals.slice(0, 10);
+
+  if (recent.length === 0) { document.getElementById('sales-ticker').style.display = 'none'; return; }
+  document.getElementById('sales-ticker').style.display = 'flex';
+
+  track.innerHTML = recent.map(function(d) {
+    var dateStr = d.date ? formatShortDate(d.date instanceof Date ? d.date : new Date(d.date)) : '';
+    return '<div class="ticker-item">'
+      + '<span class="t-name">' + d.name + '</span>'
+      + '<span class="t-amt">' + fmt(d.amount) + '</span>'
+      + '<span class="t-store" style="color:' + d.color + '">' + d.store + '</span>'
+      + (dateStr ? '<span class="t-store">' + dateStr + '</span>' : '')
+      + '<span class="t-dot">&#x2022;</span>'
+      + '</div>';
+  }).join('');
+}
+
 function createMenu(){
   var wrap = document.createElement('div');
   wrap.id = 'menu-btn-wrap';
