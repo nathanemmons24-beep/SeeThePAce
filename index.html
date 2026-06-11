@@ -215,6 +215,14 @@
     .blitz-menu-item.active{color:#FFD700;background:rgba(255,165,0,0.15)}
     #scroll-btn,#bigfont-btn{color:#475569}
     :fullscreen #scroll-btn,:fullscreen #bigfont-btn,:-webkit-full-screen #scroll-btn,:-webkit-full-screen #bigfont-btn{color:#CBD5E1}
+    :fullscreen #sales-ticker,:-webkit-full-screen #sales-ticker{display:flex!important;position:fixed;top:44px;left:0;right:0}
+    :fullscreen #blitz-clock,:-webkit-full-screen #blitz-clock{display:block!important;position:fixed;top:0;left:0;right:0}
+    body.tv-mode #sales-ticker{display:flex!important;font-size:13px;height:34px;top:58px}
+    body.tv-mode #sales-ticker-label{font-size:10px}
+    body.tv-mode .ticker-item{font-size:13px}
+    body.tv-mode .ticker-item .t-amt{font-size:12px}
+    body.tv-mode .ticker-item .t-store{font-size:10px}
+    body.tv-mode #app{padding-top:100px}
   
     body.tv-mode #blitz-title{font-size:clamp(48px,8vw,80px)!important;letter-spacing:8px}
     body.tv-mode #subtitle{font-size:20px!important;letter-spacing:4px}
