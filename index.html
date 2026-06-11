@@ -371,7 +371,14 @@
   <div class="stp-title">SEE THE PACE</div>
   <div style="font-family:Orbitron,monospace;font-size:11px;color:#334155;letter-spacing:4px;margin-top:-12px">RENEWAL BY ANDERSEN</div>
   <div style="width:200px;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.3),transparent);margin:4px 0"></div>
-  <button id="stp-enter-btn" onclick="enterDashboard()">ENTER</button>
+  <button id="stp-enter-btn" onclick="showLandingPw()" style="font-family:Orbitron,monospace;font-size:15px;font-weight:700;letter-spacing:6px;color:#00D4FF;background:transparent;border:1.5px solid rgba(0,212,255,0.5);border-radius:40px;padding:14px 48px;cursor:pointer;transition:all 0.3s;animation:stp-fadein 0.8s ease both;margin-top:8px">ENTER</button>
+  <div id="stp-pw-wrap" style="display:none;flex-direction:column;align-items:center;gap:10px;animation:stp-fadein 0.4s ease both">
+    <input id="stp-pw-input" type="password" placeholder="PASSWORD" maxlength="20"
+      style="background:rgba(255,255,255,0.04);border:1px solid rgba(0,212,255,0.25);border-radius:10px;padding:12px 24px;color:#fff;font-family:Orbitron,monospace;font-size:14px;letter-spacing:4px;width:220px;text-align:center;outline:none"
+      onkeydown="if(event.key==='Enter')checkLandingPw()"/>
+    <div id="stp-pw-err" style="color:#FF4444;font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;display:none">INCORRECT PASSWORD</div>
+    <button onclick="checkLandingPw()" style="font-family:Orbitron,monospace;font-size:13px;font-weight:700;letter-spacing:4px;color:#00D4FF;background:transparent;border:1.5px solid rgba(0,212,255,0.5);border-radius:40px;padding:10px 36px;cursor:pointer;transition:all 0.3s">SUBMIT</button>
+  </div>
   <div id="stp-loading-ring" class="stp-ring"></div>
   <div id="stp-loading-text">LOADING DATA<span class="stp-dots"></span></div>
 </div>
@@ -550,10 +557,7 @@
 <div id="blitz-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:#060B18;overflow-y:auto;flex-direction:column;align-items:center">
   <div id="blitz-auth" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px">
     <div style="font-family:Orbitron,monospace;font-size:28px;font-weight:900;color:#00D4FF;letter-spacing:6px;text-shadow:0 0 30px #00D4FF66">&#x2728; SPECIAL EVENT</div>
-    <div style="font-family:Orbitron,monospace;font-size:11px;color:#334155;letter-spacing:3px;margin-bottom:8px">ENTER PASSWORD TO CONTINUE</div>
-    <input id="blitz-pw-input" type="password" placeholder="Enter password" style="background:rgba(255,255,255,0.05);border:1px solid rgba(0,212,255,0.25);border-radius:10px;padding:12px 20px;color:#fff;font-family:Orbitron,monospace;font-size:14px;width:260px;text-align:center;outline:none" onkeydown="if(event.key==='Enter')checkBlitzPw()"/>
-    <button onclick="checkBlitzPw()" style="padding:10px 32px;border-radius:20px;background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.4);color:#00D4FF;font-family:Orbitron,monospace;font-size:12px;cursor:pointer;letter-spacing:2px">ENTER</button>
-    <div id="blitz-pw-err" style="color:#FF4444;font-family:Orbitron,monospace;font-size:10px;display:none">INCORRECT PASSWORD</div>
+    <button onclick="activateBlitzFilter()" style="padding:14px 48px;border-radius:40px;background:rgba(0,212,255,0.12);border:1.5px solid rgba(0,212,255,0.5);color:#00D4FF;font-family:Orbitron,monospace;font-size:15px;cursor:pointer;letter-spacing:6px;transition:all 0.3s;margin-top:8px" onmouseover="this.style.background='rgba(0,212,255,0.2)';this.style.boxShadow='0 0 30px rgba(0,212,255,0.3)'" onmouseout="this.style.background='rgba(0,212,255,0.12)';this.style.boxShadow='none'">ENTER</button>
     <button onclick="closeBlitz()" style="margin-top:8px;padding:6px 20px;border-radius:16px;background:transparent;border:1px solid rgba(255,255,255,0.08);color:#334155;font-family:Orbitron,monospace;font-size:10px;cursor:pointer">CANCEL</button>
   </div>
   <!-- Blitz Hamburger Menu -->
@@ -813,15 +817,41 @@ async function fetchData(){
     state.status = "error: " + err.message;
   }
 }
+var LANDING_PW = "Rba123";
+
+function showLandingPw() {
+  document.getElementById('stp-enter-btn').style.display = 'none';
+  var wrap = document.getElementById('stp-pw-wrap');
+  wrap.style.display = 'flex';
+  setTimeout(function(){ document.getElementById('stp-pw-input').focus(); }, 50);
+}
+
+function checkLandingPw() {
+  var inp = document.getElementById('stp-pw-input');
+  var err = document.getElementById('stp-pw-err');
+  if (!inp) { enterDashboard(); return; }
+  if (inp.value.trim() === LANDING_PW) {
+    if (err) err.style.display = 'none';
+    enterDashboard();
+  } else {
+    if (err) err.style.display = 'block';
+    inp.value = '';
+    inp.style.borderColor = 'rgba(255,68,68,0.6)';
+    setTimeout(function(){ inp.style.borderColor = 'rgba(0,212,255,0.25)'; }, 1500);
+    inp.focus();
+  }
+}
+
 function enterDashboard() {
-  // Swap ENTER button for loading spinner
-  var btn = document.getElementById('stp-enter-btn');
+  // Hide landing elements, show loading spinner
+  var btn  = document.getElementById('stp-enter-btn');
+  var wrap = document.getElementById('stp-pw-wrap');
   var ring = document.getElementById('stp-loading-ring');
-  var txt = document.getElementById('stp-loading-text');
-  if (btn) btn.style.display = 'none';
+  var txt  = document.getElementById('stp-loading-text');
+  if (btn)  btn.style.display  = 'none';
+  if (wrap) wrap.style.display = 'none';
   if (ring) ring.style.display = 'block';
-  if (txt) txt.style.display = 'block';
-  // Start fetching — overlay hides automatically on first successful load
+  if (txt)  txt.style.display  = 'block';
   fetchData();
   pollTimer = setInterval(fetchData, POLL_MS);
 }
@@ -3816,7 +3846,7 @@ function createMenu(){
 
   // — CONTROLS —
   panel += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">CONTROLS</div>';
-  panel += '<button class="menu-item" onclick="openAdmin();toggleMenu()">&#x2699; ADMIN</button>';
+  // ADMIN hidden from menu — access via URL only
   panel += '<button class="menu-item" id="blitz-event-btn" onclick="toggleBlitzEvent();toggleMenu()" style="color:#FFD700">&#x2728; SPECIAL EVENT</button>';
   panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
 
