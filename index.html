@@ -675,8 +675,8 @@ function parseCsv(csv){
       var dealDate2=null;
       var dmatch=dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
       if(dmatch){
-        // M/D/YYYY — month is first
-        dealDate2=new Date(parseInt(dmatch[3]),parseInt(dmatch[1])-1,parseInt(dmatch[2]));
+        // Apps Script formatDate outputs M/D/YYYY but Sheet stores D/M — parse as D/M/YYYY
+        dealDate2=new Date(parseInt(dmatch[3]),parseInt(dmatch[2])-1,parseInt(dmatch[1]));
       } else {
         var cleanDate=dateRaw.replace(/GMT[+-]\d{4}.*$/,'').trim();
         dealDate2=new Date(cleanDate);
