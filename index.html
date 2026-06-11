@@ -77,8 +77,7 @@
 
     /* App layout */
     #app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px 16px;padding-top:86px}
-    #header{text-align:center;margin-bottom:20px;padding-top:4px}
-    #blitz-title{font-family:"Orbitron",monospace;font-weight:900;font-size:clamp(24px,5vw,44px);letter-spacing:4px;background:linear-gradient(135deg,#00D4FF,#00FF88,#FFD700);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite;margin-bottom:6px}
+    #header{text-align:center;margin-bottom:20px;padding-top:4px}    #blitz-title{font-family:"Orbitron",monospace;font-weight:900;font-size:clamp(24px,5vw,44px);letter-spacing:4px;background:linear-gradient(135deg,#00D4FF,#00FF88,#FFD700);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite;margin-bottom:6px}
     #subtitle{font-size:12px;color:#334155;font-family:"Orbitron",monospace;letter-spacing:3px}
     #status-dot{margin-left:12px}
     #status-dot.live{color:#00FF88;animation:pulse 2s infinite}
@@ -1958,6 +1957,7 @@ function toggleBigFont() {
   tvBigFont = !tvBigFont;
   updateMenuStates();
   document.body.classList.toggle('tv-mode', tvBigFont);
+  setTimeout(adjustTopPadding, 50);
   // Also directly scale the app for max compatibility
   var app = document.getElementById('app');
   if (app) app.style.fontSize = tvBigFont ? '130%' : '';
@@ -3786,6 +3786,27 @@ function renderSalesTicker(data) {
   var duration = Math.max(20, itemCount * 6);
   inner.style.animationDuration = duration + 's';
 }
+
+function adjustTopPadding() {
+  var clock  = document.getElementById('blitz-clock');
+  var ticker = document.getElementById('sales-ticker');
+  var app    = document.getElementById('app');
+  if (!clock || !app) return;
+  var clockH  = clock.offsetHeight  || 0;
+  var tickerH = (ticker && ticker.style.display !== 'none') ? (ticker.offsetHeight || 0) : 0;
+  var total   = clockH + tickerH + 8; // 8px breathing room
+  app.style.paddingTop = total + 'px';
+  // Also reposition ticker top
+  if (ticker) ticker.style.top = clockH + 'px';
+}
+
+// Run on load, after fonts render, and on resize
+window.addEventListener('load',   adjustTopPadding);
+window.addEventListener('resize', adjustTopPadding);
+document.addEventListener('fullscreenchange',       adjustTopPadding);
+document.addEventListener('webkitfullscreenchange', adjustTopPadding);
+setTimeout(adjustTopPadding, 200); // after fonts load
+setTimeout(adjustTopPadding, 800); // safety net
 
 function createMenu(){
   var wrap = document.createElement('div');
