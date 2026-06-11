@@ -2004,11 +2004,10 @@ function renderDayBreakdown(data) {
   el.style.display = 'block';
 
   var maxVal = Math.max.apply(null, days.map(function(d){ return d[1].total; }));
-  var BAR_W = 72;   // px per bar
-  var GAP   = 16;   // px gap
-  var CHART_H = 160; // bar area height in px
+  var BAR_MIN = 60;
+  var GAP     = 12;
+  var CHART_H = 160;
 
-  // Color palette cycling
   var COLORS = [
     'linear-gradient(180deg,#00D4FF,#0070CC)',
     'linear-gradient(180deg,#00FF88,#00AA55)',
@@ -2022,8 +2021,12 @@ function renderDayBreakdown(data) {
     'linear-gradient(180deg,#F472B6,#BE185D)',
   ];
 
-  var html = '<div style="overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;padding-bottom:8px;cursor:grab;user-select:none" id="day-scroll-wrap">'
-    + '<div style="display:flex;align-items:flex-end;gap:'+GAP+'px;padding:8px 16px 0;min-width:max-content">';
+  var containerW = barsEl.clientWidth || 600;
+  var totalMinW = days.length * (BAR_MIN + GAP);
+  var useScroll = totalMinW > containerW;
+
+  var html = '<div style="overflow-x:' + (useScroll ? 'auto' : 'visible') + ';overflow-y:visible;-webkit-overflow-scrolling:touch;padding-bottom:8px;cursor:' + (useScroll ? 'grab' : 'default') + '" id="day-scroll-wrap">'
+    + '<div style="display:flex;align-items:flex-end;gap:'+GAP+'px;padding:8px 12px 0;' + (useScroll ? 'min-width:max-content' : 'width:100%') + '">';
 
   days.forEach(function(entry, i) {
     var key = entry[0], day = entry[1];
@@ -2032,16 +2035,12 @@ function renderDayBreakdown(data) {
     var color = COLORS[i % COLORS.length];
     var isSelected = (filterDay === key);
     var border = isSelected ? 'outline:2px solid #FFD700;outline-offset:2px;' : '';
-    var clickKey = key;
+    var flex = useScroll ? 'flex-shrink:0;width:'+BAR_MIN+'px' : 'flex:1;min-width:'+BAR_MIN+'px';
 
-    html += '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;width:'+BAR_W+'px" onclick="toggleDayFilter(\'' + clickKey + '\')">'; 
-    // Amount label above bar
+    html += '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;'+flex+'" onclick="toggleDayFilter(\'' + key + '\')">'; 
     html += '<div style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#E2E8F0;white-space:nowrap;text-align:center">'+fmt(day.total)+'</div>';
-    // Bar
-    html += '<div style="width:'+BAR_W+'px;height:'+barH+'px;border-radius:8px 8px 4px 4px;background:'+color+';'+border+'transition:height 0.5s cubic-bezier(.4,0,.2,1);box-shadow:0 4px 12px rgba(0,0,0,0.3)"></div>';
-    // Date label
+    html += '<div style="width:100%;height:'+barH+'px;border-radius:8px 8px 4px 4px;background:'+color+';'+border+'transition:height 0.5s cubic-bezier(.4,0,.2,1);box-shadow:0 4px 12px rgba(0,0,0,0.3)"></div>';
     html += '<div style="font-family:Orbitron,monospace;font-size:10px;color:'+(isSelected?'#FFD700':'#7DD3FC')+';white-space:nowrap;font-weight:700">'+day.label+'</div>';
-    // Deals count
     html += '<div style="font-family:Orbitron,monospace;font-size:8px;color:#334155;white-space:nowrap">'+day.deals+' deal'+(day.deals!==1?'s':'')+'</div>';
     html += '</div>';
   });
@@ -2521,11 +2520,7 @@ function toggleBlitzEvent() {
 }
 
 function openBlitz() {
-  var overlay = document.getElementById("blitz-overlay");
-  overlay.style.display = "flex";
-  document.getElementById("blitz-auth").style.display = "flex";
-  document.getElementById("blitz-board").style.display = "none";
-  setTimeout(function(){ var i=document.getElementById("blitz-pw-input"); if(i) i.focus(); }, 100);
+  activateBlitzFilter();
 }
 
 function closeBlitz() {
