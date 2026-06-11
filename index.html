@@ -2063,7 +2063,7 @@ function renderDayBreakdown(data) {
   var useScroll = totalMinW > containerW;
 
   var html = '<div style="overflow-x:' + (useScroll ? 'auto' : 'visible') + ';overflow-y:visible;-webkit-overflow-scrolling:touch;padding-bottom:8px;cursor:' + (useScroll ? 'grab' : 'default') + '" id="day-scroll-wrap">'
-    + '<div style="display:flex;align-items:flex-end;gap:'+GAP+'px;padding:8px 12px 0;' + (useScroll ? 'min-width:max-content' : 'width:100%') + '">';
+    + '<div style="display:flex;align-items:flex-end;justify-content:center;gap:'+GAP+'px;padding:8px 12px 0;' + (useScroll ? 'min-width:max-content' : 'width:100%') + '">';
 
   days.forEach(function(entry, i) {
     var key = entry[0], day = entry[1];
@@ -2072,7 +2072,8 @@ function renderDayBreakdown(data) {
     var color = COLORS[i % COLORS.length];
     var isSelected = (filterDay === key);
     var border = isSelected ? 'outline:2px solid #FFD700;outline-offset:2px;' : '';
-    var flex = useScroll ? 'flex-shrink:0;width:'+BAR_MIN+'px' : 'flex:1;min-width:'+BAR_MIN+'px';
+    var BAR_MAX = 120;
+    var flex = useScroll ? 'flex-shrink:0;width:'+BAR_MIN+'px' : 'flex:1;min-width:'+BAR_MIN+'px;max-width:'+BAR_MAX+'px';
 
     html += '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;'+flex+'" onclick="toggleDayFilter(\'' + key + '\')">'; 
     html += '<div style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#E2E8F0;white-space:nowrap;text-align:center">'+fmt(day.total)+'</div>';
@@ -2093,10 +2094,11 @@ function renderDayBreakdown(data) {
     wrap.addEventListener('mouseleave', function(){ isDown=false; wrap.style.cursor='grab'; });
     wrap.addEventListener('mouseup', function(){ isDown=false; wrap.style.cursor='grab'; });
     wrap.addEventListener('mousemove', function(e){ if(!isDown) return; e.preventDefault(); var x=e.pageX-wrap.offsetLeft; wrap.scrollLeft=scrollLeft-(x-startX); });
-    // Scroll to end (most recent) on load
     wrap.scrollLeft = wrap.scrollWidth;
   }
+
 }
+
 
 // ══ BIGGEST MOVER ═════════════════════════════════════════════════════════════
 function updateBiggestMover(data) {
