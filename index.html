@@ -945,17 +945,8 @@ function unlockAudio(){
     var src = _unlockAC.createBufferSource();
     src.buffer = buf; src.connect(_unlockAC.destination); src.start(0);
     console.log('Audio unlocked. AC state:', _unlockAC.state);
-    // Decode blitz sounds immediately in same gesture context
-    blitzAudioCtx = _unlockAC;
-    BLITZ_AUDIO_SRCS.forEach(function(dataUrl, i) {
-      fetch(dataUrl)
-        .then(function(r){ return r.arrayBuffer(); })
-        .then(function(ab){ return _unlockAC.decodeAudioData(ab); })
-        .then(function(decoded){
-          blitzAudioBuffers[i] = decoded;
-          console.log('Pre-decoded blitz sound', i);
-        }).catch(function(e){ console.warn('Blitz decode error:', e); });
-    });
+    // Pre-create Audio elements for blitz sounds (iOS compatible)
+    initBlitzAudioEls();
     // Also decode regular clips
     preDecodeClips();
   } catch(e) {
@@ -3031,32 +3022,47 @@ var BLITZ_AUDIO_SRCS = [
 ];
 
 // Pre-decode all audio on first user interaction
-var blitzAudioBuffers = [];
+var blitzAudioBuffers = []; // kept for legacy reference
 var blitzAudioCtx = null;
+var _blitzAudioEls = []; // Audio element pool
 
 function ensureBlitzAudio() {
-  // Reuse the shared unlocked context — never create a new one (iOS blocks it)
   if (!blitzAudioCtx && _unlockAC) blitzAudioCtx = _unlockAC;
   if (blitzAudioCtx && blitzAudioCtx.state === 'suspended') blitzAudioCtx.resume();
   return blitzAudioCtx;
 }
 
+// Pre-create Audio elements from base64 sources (works on iOS)
+function initBlitzAudioEls() {
+  if (_blitzAudioEls.length > 0) return;
+  BLITZ_AUDIO_SRCS.forEach(function(src) {
+    try {
+      var a = new Audio(src);
+      a.volume = 0.85;
+      a.load();
+      _blitzAudioEls.push(a);
+    } catch(e) {}
+  });
+  console.log('Blitz audio elements ready:', _blitzAudioEls.length);
+}
+
 function playBlitzSound() {
-  // Pick a random sound from the pool
-  var ac = ensureBlitzAudio();
-  if (!ac) { playVictorySound(); return; } // fallback to synth
-  var available = blitzAudioBuffers.filter(Boolean);
-  if (available.length === 0) { playVictorySound(); return; }
-  var buf = available[Math.floor(Math.random() * available.length)];
-  try {
-    var source = ac.createBufferSource();
-    var gain = ac.createGain();
-    source.buffer = buf;
-    source.connect(gain);
-    gain.connect(ac.destination);
-    gain.gain.value = 0.85;
-    source.start(0);
-  } catch(e) { playVictorySound(); }
+  // Try Audio element first (iOS compatible)
+  if (_blitzAudioEls.length === 0) initBlitzAudioEls();
+  if (_blitzAudioEls.length > 0) {
+    var el = _blitzAudioEls[Math.floor(Math.random() * _blitzAudioEls.length)];
+    try {
+      el.currentTime = 0;
+      var p = el.play();
+      if (p && p.catch) p.catch(function(e) {
+        console.warn('Audio play failed, trying synth:', e.message);
+        playVictorySound();
+      });
+      return;
+    } catch(e) {}
+  }
+  // Fallback to synth
+  playVictorySound();
 }
 
 // Blitz sounds decode via unlockAudio() on first user gesture
