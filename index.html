@@ -2787,8 +2787,9 @@ function renderBlitzPanels(blitzData) {
   BRACKET_ORDER.forEach(function(bName) {
     var rookies = tops[bName].rookies;
     if (rookies.length > 0) blitzTopRookieMap[rookies[0].name + '|' + bName] = true;
-    tops[bName].all.slice(0,5).forEach(function(rep, i) {
-      blitzTopBlitzerMap[rep.name] = i < 3 ? String(i+1) : 'hunt';
+    var badgeSlots = bName === 'Large Markets' ? 4 : 3;
+    tops[bName].all.slice(0,6).forEach(function(rep, i) {
+      blitzTopBlitzerMap[rep.name] = i < badgeSlots ? String(i+1) : 'hunt';
     });
   });
 
@@ -2798,7 +2799,8 @@ function renderBlitzPanels(blitzData) {
   var html = '<div style="display:flex;gap:12px;width:100%">';
   BRACKET_ORDER.forEach(function(bName) {
     var bColor = BRACKET_COLORS[bName];
-    var blitzers = tops[bName].all.slice(0, 5);
+    var badgeSlots = bName === 'Large Markets' ? 4 : 3;
+    var blitzers = tops[bName].all.slice(0, 6);
     var rookies  = tops[bName].rookies.slice(0, 3);
     var bracketTotal = blitzData.brackets[bName] ? blitzData.brackets[bName].total : 0;
     if (blitzers.length === 0) return;
@@ -2821,6 +2823,7 @@ function renderBlitzPanels(blitzData) {
       if (i===0) html += '<span class="blitzer-badge-1">\u26A11</span>';
       else if (i===1) html += '<span class="blitzer-badge-2">\u26A12</span>';
       else if (i===2) html += '<span class="blitzer-badge-3">\u26A13</span>';
+      else if (i===3 && badgeSlots >= 4) html += '<span class="blitzer-badge-3" style="background:linear-gradient(135deg,#6D28D9,#4C1D95)">\u26A14</span>';
       else html += '<span class="hunt-badge">\u26A1 HUNT</span>';
       if (isTopRookie) html += '<span class="top-rookie-badge">R</span>';
       else if (isRookie) html += '<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px">R</span>';
@@ -3620,6 +3623,7 @@ function renderBlitzBracketsNew(bd) {
         if (blitzerRank === '1') html += '<span class="blitzer-badge-1">⚡</span>';
         else if (blitzerRank === '2') html += '<span class="blitzer-badge-2">⚡</span>';
         else if (blitzerRank === '3') html += '<span class="blitzer-badge-3">⚡</span>';
+        else if (blitzerRank === '4') html += '<span class="blitzer-badge-3" style="background:linear-gradient(135deg,#6D28D9,#4C1D95)">⚡</span>';
         else if (blitzerRank === 'hunt') html += '<span class="hunt-badge">HUNT</span>';
         if (isTopRookie) html += '<span class="top-rookie-badge">R</span>';
         else if (isRookie) html += '<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px">R</span>';
