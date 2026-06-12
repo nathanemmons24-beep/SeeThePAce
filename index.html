@@ -939,18 +939,28 @@ function unlockAudio(){
   AUDIO_READY = true;
   try {
     _unlockAC = new (window.AudioContext || window.webkitAudioContext)();
-    if (_unlockAC.state === "suspended") _unlockAC.resume();
-    // Silent buffer — required by Safari/iOS to unlock
+    if (_unlockAC.state === 'suspended') _unlockAC.resume();
+    // iOS requires playing a real buffer inside the gesture handler — no setTimeout
     var buf = _unlockAC.createBuffer(1, 1, 22050);
     var src = _unlockAC.createBufferSource();
-    src.buffer = buf;
-    src.connect(_unlockAC.destination);
-    src.start(0);
-    console.log("Audio unlocked. AC state:", _unlockAC.state);
-    // Pre-decode all clips immediately while we have the user gesture context
-    setTimeout(function(){ preDecodeClips(); }, 100);
+    src.buffer = buf; src.connect(_unlockAC.destination); src.start(0);
+    console.log('Audio unlocked. AC state:', _unlockAC.state);
+    // Decode blitz sounds immediately in same gesture context
+    blitzAudioCtx = _unlockAC;
+    BLITZ_AUDIO_SRCS.forEach(function(dataUrl, i) {
+      fetch(dataUrl)
+        .then(function(r){ return r.arrayBuffer(); })
+        .then(function(ab){ return _unlockAC.decodeAudioData(ab); })
+        .then(function(decoded){
+          blitzAudioBuffers[i] = decoded;
+          console.log('Pre-decoded blitz sound', i);
+        }).catch(function(e){ console.warn('Blitz decode error:', e); });
+    });
+    // Also decode regular clips
+    preDecodeClips();
   } catch(e) {
-    console.warn("Audio unlock error:", e.message);
+    console.warn('Audio unlock error:', e.message);
+    AUDIO_READY = false;
   }
 }
 
@@ -3022,18 +3032,9 @@ var blitzAudioBuffers = [];
 var blitzAudioCtx = null;
 
 function ensureBlitzAudio() {
-  if (blitzAudioCtx) return blitzAudioCtx;
-  try {
-    blitzAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    // Add 3 synth sounds to the pool
-    BLITZ_AUDIO_SRCS.forEach(function(src, i) {
-      fetch(src)
-        .then(function(r){ return r.arrayBuffer(); })
-        .then(function(buf){ return blitzAudioCtx.decodeAudioData(buf); })
-        .then(function(decoded){ blitzAudioBuffers[i] = decoded; console.log('Blitz sound ' + i + ' decoded'); })
-        .catch(function(e){ console.warn('Sound decode failed:', e); });
-    });
-  } catch(e) {}
+  // Reuse the shared unlocked context — never create a new one (iOS blocks it)
+  if (!blitzAudioCtx && _unlockAC) blitzAudioCtx = _unlockAC;
+  if (blitzAudioCtx && blitzAudioCtx.state === 'suspended') blitzAudioCtx.resume();
   return blitzAudioCtx;
 }
 
@@ -3055,11 +3056,7 @@ function playBlitzSound() {
   } catch(e) { playVictorySound(); }
 }
 
-// Unlock audio on first click anywhere
-document.addEventListener('click', function _unlockBlitz() {
-  ensureBlitzAudio();
-  document.removeEventListener('click', _unlockBlitz);
-}, { once: true });
+// Blitz sounds decode via unlockAudio() on first user gesture
 
 function playVictorySound() {
   try {
