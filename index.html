@@ -314,8 +314,16 @@
     .blitzer-badge-2{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:18px;border-radius:5px;font-family:Orbitron,monospace;font-size:9px;font-weight:900;color:#fff;background:linear-gradient(135deg,#3B0099,#6D28D9,#00A8CC);box-shadow:0 0 6px rgba(109,40,217,0.8),0 0 12px rgba(0,168,204,0.5);flex-shrink:0;padding:0 4px;animation:zapPulse 1.5s ease-in-out infinite 0.2s;border:1px solid rgba(0,168,204,0.4)}
     .blitzer-badge-3{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:18px;border-radius:5px;font-family:Orbitron,monospace;font-size:9px;font-weight:900;color:#C4B5FD;background:linear-gradient(135deg,#2E0073,#5B21B6,#0E7490);box-shadow:0 0 5px rgba(91,33,182,0.7),0 0 10px rgba(14,116,144,0.4);flex-shrink:0;padding:0 4px;animation:zapPulse 1.8s ease-in-out infinite 0.4s;border:1px solid rgba(91,33,182,0.4)}
     .hunt-badge{display:inline-flex;align-items:center;justify-content:center;padding:0 5px;height:18px;border-radius:5px;font-family:Orbitron,monospace;font-size:7px;font-weight:700;color:#A78BFA;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.35);flex-shrink:0;white-space:nowrap;letter-spacing:0.5px}
-    #blitz-panels-row{display:none;gap:12px;margin-bottom:16px}
+    #blitz-panels-row{display:none;gap:12px;margin-bottom:16px;flex-wrap:wrap}
     body.blitz-active #blitz-panels-row{display:flex}
+    @media(max-width:600px){
+      #blitz-panels-row>div{min-width:100%!important;flex:1 1 100%!important}
+      #blitz-bracket-section .blitz-bracket-card{min-width:100%!important}
+      .blitz-s-badge{font-size:7px!important;padding:1px 4px!important}
+      #blitz-bar-strip{padding:10px 12px!important}
+      #blitz-prize-icons{height:52px!important}
+      .prize-slot>div:last-child{font-size:7px!important}
+    }
     .blitz-panel{flex:1;background:rgba(10,15,30,0.85);border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:12px;backdrop-filter:blur(14px);min-width:0}
     .blitz-panel-title{font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#A855F7;margin-bottom:10px;text-align:center}
     .blitz-rep-name-wrap{position:relative;cursor:help}
@@ -2785,7 +2793,7 @@ function renderBlitzPanels(blitzData) {
     var bracketTotal = blitzData.brackets[bName] ? blitzData.brackets[bName].total : 0;
     if (blitzers.length === 0) return;
 
-    html += '<div style="flex:1;min-width:0;background:rgba(10,15,30,0.85);border:1px solid '+bColor+'40;border-top:2px solid '+bColor+';border-radius:12px;padding:14px;backdrop-filter:blur(14px)">';
+    html += '<div style="flex:1;min-width:min(100%,260px);background:rgba(10,15,30,0.85);border:1px solid '+bColor+'40;border-top:2px solid '+bColor+';border-radius:12px;padding:14px;backdrop-filter:blur(14px)">';
 
     // Card header
     html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06)">';
@@ -3159,6 +3167,12 @@ function showLockedPrizePopup(prize, milestone, needed) {
   ms.textContent   = '$' + milestone + 'M MILESTONE';
   lbl.style.color  = '#94A3B8';
 
+  // Update status/subtitle text for locked state
+  var status   = document.getElementById('prize-popup-status');
+  var subtitle = document.getElementById('prize-popup-subtitle');
+  if (status)   { status.textContent = 'NOT UNLOCKED'; status.style.color = '#64748B'; }
+  if (subtitle) { subtitle.textContent = 'NEED TO REACH THIS MILESTONE'; subtitle.style.color = '#334155'; }
+
   // Override card style for locked state
   card.style.borderColor = 'rgba(100,116,139,0.4)';
   card.style.boxShadow   = '0 0 30px rgba(100,116,139,0.2)';
@@ -3196,12 +3210,14 @@ function showLockedPrizePopup(prize, milestone, needed) {
 function closePrizePopup() {
   var popup = document.getElementById('prize-unlock-popup');
   if (popup) popup.style.display = 'none';
-  // Reset card styles for next unlock popup
+  // Reset card styles
   var card = document.getElementById('prize-popup-card');
-  if (card) {
-    card.style.borderColor = '';
-    card.style.boxShadow   = '';
-  }
+  if (card) { card.style.borderColor = ''; card.style.boxShadow = ''; }
+  // Restore status/subtitle text for next unlock popup
+  var status   = document.getElementById('prize-popup-status');
+  var subtitle = document.getElementById('prize-popup-subtitle');
+  if (status)   { status.textContent = 'MILESTONE UNLOCKED'; status.style.color = '#A855F7'; }
+  if (subtitle) { subtitle.textContent = 'THE TEAM HAS UNLOCKED'; subtitle.style.color = ''; }
   var btn = document.getElementById('prize-unlock-popup') && document.querySelector('#prize-popup-card button');
   if (btn && btn._origText) {
     btn.textContent = btn._origText;
@@ -3500,7 +3516,7 @@ function renderBlitzBracketsNew(bd) {
   var blitzMoverMap = {};
   blitzAllReps.slice(0,3).forEach(function(r,i){ blitzMoverMap[r.name]=i; });
 
-  var html = '<div style="display:flex;gap:12px;align-items:flex-start">';
+  var html = '<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start">';
   bracketOrder.forEach(function(bName) {
     var bracket = bd.brackets[bName];
     if (!bracket || Object.keys(bracket.teams).length === 0) return;
@@ -3508,7 +3524,7 @@ function renderBlitzBracketsNew(bd) {
     var sortedTeams = Object.entries(bracket.teams).sort(function(a,b){return b[1].total-a[1].total;});
     var maxTeam = sortedTeams[0] ? sortedTeams[0][1].total : 1;
 
-    html += '<div style="flex:1;min-width:0;background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-top:2px solid '+color+';border-radius:14px;padding:16px 20px;backdrop-filter:blur(14px)">';
+    html += '<div style="flex:1;min-width:min(100%,280px);background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-top:2px solid '+color+';border-radius:14px;padding:16px 20px;backdrop-filter:blur(14px)">';
 
     // Bracket header
     html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06)">';
@@ -4032,9 +4048,9 @@ var firedBadges={};
         <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(168,85,247,0.3),transparent);animation:prizeRingPulse 1.5s ease-in-out infinite"></div>
         <span id="prize-popup-icon" style="position:relative;z-index:1;filter:drop-shadow(0 0 16px rgba(255,200,0,0.8))">🏆</span>
       </div>
-      <div style="font-family:Orbitron,monospace;font-size:11px;letter-spacing:4px;color:#A855F7;margin-bottom:8px">MILESTONE UNLOCKED</div>
+      <div id="prize-popup-status" style="font-family:Orbitron,monospace;font-size:11px;letter-spacing:4px;color:#A855F7;margin-bottom:8px">MILESTONE UNLOCKED</div>
       <div id="prize-popup-milestone" style="font-family:Orbitron,monospace;font-size:28px;font-weight:900;color:#FFD700;text-shadow:0 0 20px rgba(255,215,0,0.5);margin-bottom:6px">$1M REACHED</div>
-      <div style="font-family:Orbitron,monospace;font-size:11px;letter-spacing:3px;color:#475569;margin-bottom:28px">THE TEAM HAS UNLOCKED</div>
+      <div id="prize-popup-subtitle" style="font-family:Orbitron,monospace;font-size:11px;letter-spacing:3px;color:#475569;margin-bottom:28px">THE TEAM HAS UNLOCKED</div>
       <div id="prize-popup-label" style="font-family:'Exo 2',sans-serif;font-size:32px;font-weight:900;color:#E2E8F0;text-shadow:0 0 30px rgba(255,255,255,0.3);margin-bottom:32px">$500 Cash</div>
       <button onclick="closePrizePopup()" style="font-family:Orbitron,monospace;font-size:13px;letter-spacing:2px;padding:14px 40px;border-radius:50px;background:linear-gradient(135deg,#7C3AED,#A855F7);border:none;color:#fff;cursor:pointer;box-shadow:0 0 24px rgba(168,85,247,0.5)">LET'S GO! 🔥</button>
     </div>
