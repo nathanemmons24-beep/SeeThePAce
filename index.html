@@ -564,7 +564,10 @@
 <div id="blitz-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:#060B18;overflow-y:auto;flex-direction:column;align-items:center">
   <div id="blitz-auth" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px">
     <div style="font-family:Orbitron,monospace;font-size:28px;font-weight:900;color:#00D4FF;letter-spacing:6px;text-shadow:0 0 30px #00D4FF66">&#x2728; SPECIAL EVENT</div>
-    <button onclick="activateBlitzFilter()" style="padding:14px 48px;border-radius:40px;background:rgba(0,212,255,0.12);border:1.5px solid rgba(0,212,255,0.5);color:#00D4FF;font-family:Orbitron,monospace;font-size:15px;cursor:pointer;letter-spacing:6px;transition:all 0.3s;margin-top:8px" onmouseover="this.style.background='rgba(0,212,255,0.2)';this.style.boxShadow='0 0 30px rgba(0,212,255,0.3)'" onmouseout="this.style.background='rgba(0,212,255,0.12)';this.style.boxShadow='none'">ENTER</button>
+    <div style="font-family:Orbitron,monospace;font-size:11px;color:#334155;letter-spacing:3px;margin-bottom:8px">ENTER PASSWORD TO CONTINUE</div>
+    <input id="blitz-pw-input" type="password" placeholder="Enter password" style="background:rgba(255,255,255,0.05);border:1px solid rgba(0,212,255,0.25);border-radius:10px;padding:12px 20px;color:#fff;font-family:Orbitron,monospace;font-size:14px;width:260px;text-align:center;outline:none" onkeydown="if(event.key==='Enter')checkBlitzPw()"/>
+    <button onclick="checkBlitzPw()" style="padding:10px 32px;border-radius:20px;background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.4);color:#00D4FF;font-family:Orbitron,monospace;font-size:12px;cursor:pointer;letter-spacing:2px">ENTER</button>
+    <div id="blitz-pw-err" style="color:#FF4444;font-family:Orbitron,monospace;font-size:10px;display:none">INCORRECT PASSWORD</div>
     <button onclick="closeBlitz()" style="margin-top:8px;padding:6px 20px;border-radius:16px;background:transparent;border:1px solid rgba(255,255,255,0.08);color:#334155;font-family:Orbitron,monospace;font-size:10px;cursor:pointer">CANCEL</button>
   </div>
   <!-- Blitz Hamburger Menu -->
@@ -2571,7 +2574,13 @@ function toggleBlitzEvent() {
 }
 
 function openBlitz() {
-  activateBlitzFilter();
+  var overlay = document.getElementById('blitz-overlay');
+  if (overlay) {
+    overlay.style.display = 'flex';
+    document.getElementById('blitz-auth').style.display = 'flex';
+    document.getElementById('blitz-board').style.display = 'none';
+    setTimeout(function(){ var i=document.getElementById('blitz-pw-input'); if(i) i.focus(); }, 100);
+  }
 }
 
 function closeBlitz() {
