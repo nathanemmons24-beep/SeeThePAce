@@ -712,15 +712,20 @@ function parseCsv(csv){
     if(cancelled.toLowerCase()==='yes') continue;
     var score=parseFloat(scoreRaw.replace(/[$,]/g,""));
     if(isNaN(score)||score<=0) continue;
-    // Parse date column — Apps Script outputs M/D/YYYY (e.g. 6/8/2026)
+    // Parse date column — Apps Script outputs YYYY-MM-DD (unambiguous)
+    // Falls back to M/D/YYYY for manually typed dates
     var dealDate=null,isToday=false;
     if(dateRaw){
       var dealDate2=null;
-      var dmatch=dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
-      if(dmatch){
-        var mo=parseInt(dmatch[1]), dy=parseInt(dmatch[2]), yr=parseInt(dmatch[3]);
+      var isoMatch=dateRaw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      var slashMatch=dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+      if(isoMatch){
+        // YYYY-MM-DD from Apps Script
+        dealDate2=new Date(parseInt(isoMatch[1]), parseInt(isoMatch[2])-1, parseInt(isoMatch[3]));
+      } else if(slashMatch){
+        // M/D/YYYY fallback for manually entered dates
+        var mo=parseInt(slashMatch[1]), dy=parseInt(slashMatch[2]), yr=parseInt(slashMatch[3]);
         if(yr < 100) yr += 2000;
-        // Sanity check: if month > 12 it's D/M — swap
         if(mo > 12 && dy <= 12){ var tmp=mo; mo=dy; dy=tmp; }
         dealDate2=new Date(yr, mo-1, dy);
       } else {
