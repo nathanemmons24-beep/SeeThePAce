@@ -3401,30 +3401,63 @@ function checkNewDealsAndNotify(data) {
   seedKnownDeals(data);
   // Notify Teams for each new deal
   newDeals.forEach(function(deal) {
-    if (deal.amount > 0) notifyTeamsSale(deal);
+    if (deal.amount > 0) {
+      console.log('New deal detected, notifying Teams:', deal.name, deal.amount);
+      notifyTeamsSale(deal);
+    }
   });
+}
+
+var TEAMS_WEBHOOK = 'https://defaultfff219acc9a94bdb96350d5e802153.3d.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c8f90f8b296342ea90c7ce51e4e11915/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xKZBVxOm4Qn1lbPHjJEsjtcsdcYaQwzUHx5bIKBsHso';
+
+function buildTeamsCard(body) {
+  return JSON.stringify({
+    "type": "message",
+    "attachments": [{
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.2",
+        "body": [{ "type": "Container", "style": "emphasis", "items": body }]
+      }
+    }]
+  });
+}
+
+function postToTeamsWebhook(cardJson) {
+  fetch(TEAMS_WEBHOOK, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain' },
+    body: cardJson
+  }).catch(function(){});
 }
 
 function notifyTeamsSale(deal) {
   try {
-    var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
-    var dateStr = deal.date ? formatShortDate(deal.date instanceof Date ? deal.date : new Date(deal.date)) : '';
-    var params = '?signal=new_sale&name=' + encodeURIComponent(deal.name) +
-      '&amount=' + encodeURIComponent(deal.amount) +
-      '&store=' + encodeURIComponent(deal.store) +
-      '&date=' + encodeURIComponent(dateStr);
-    fetch(APPS_SCRIPT_URL + params, { mode: 'no-cors' }).catch(function(){});
+    var amt = parseFloat(String(deal.amount).replace(/[$,]/g,''));
+    var formatted = isNaN(amt) ? '$0' : '$' + amt.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    var storeName = deal.display || String(deal.store).replace(/^\d{4}\s*-\s*/, '').trim();
+    var card = buildTeamsCard([
+      { "type": "TextBlock", "text": "\uD83D\uDCB0  " + formatted, "weight": "Bolder", "size": "ExtraLarge", "color": "Good", "wrap": false },
+      { "type": "TextBlock", "text": "\u26A1 NEW SALE  \u00B7  " + deal.name + "  \u00B7  " + storeName, "weight": "Bolder", "size": "Medium", "color": "Accent", "spacing": "Small", "wrap": true }
+    ]);
+    postToTeamsWebhook(card);
   } catch(e) {}
 }
 
 function notifyTeamsMilestone(prize, milestone, total) {
   try {
-    var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
-    var params = '?signal=blitz_milestone&milestone=' + encodeURIComponent(milestone) +
-      '&prizeLabel=' + encodeURIComponent(prize.label) +
-      '&prizeIcon=' + encodeURIComponent(prize.icon) +
-      '&total=' + encodeURIComponent(total);
-    fetch(APPS_SCRIPT_URL + params, { mode: 'no-cors' }).catch(function(){});
+    var milStr = '$' + milestone + 'M';
+    var totStr = total >= 1000000 ? '$' + (total/1000000).toFixed(2) + 'M' : '$' + total;
+    var card = buildTeamsCard([
+      { "type": "TextBlock", "text": prize.icon + "  MILESTONE UNLOCKED!", "weight": "Bolder", "size": "ExtraLarge", "color": "Warning", "wrap": false },
+      { "type": "TextBlock", "text": milStr + " REACHED  \u00B7  " + totStr + " total", "weight": "Bolder", "size": "Medium", "color": "Good", "spacing": "Small", "wrap": true },
+      { "type": "TextBlock", "text": prize.icon + " " + prize.label + " HAS BEEN UNLOCKED!", "weight": "Bolder", "size": "Large", "color": "Accent", "spacing": "Small", "wrap": true }
+    ]);
+    postToTeamsWebhook(card);
   } catch(e) {}
 }
 
