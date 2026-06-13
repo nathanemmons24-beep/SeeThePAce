@@ -712,20 +712,17 @@ function parseCsv(csv){
     if(cancelled.toLowerCase()==='yes') continue;
     var score=parseFloat(scoreRaw.replace(/[$,]/g,""));
     if(isNaN(score)||score<=0) continue;
-    // Parse date column — Apps Script outputs M/D/YYYY (e.g. 6/13/2026)
+    // Parse date column — Sheet stores M/D/YYYY (e.g. 6/12/2026)
     var dealDate=null,isToday=false;
     if(dateRaw){
       var dealDate2=null;
       var dmatch=dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
       if(dmatch){
         var p1=parseInt(dmatch[1]), p2=parseInt(dmatch[2]), yr=parseInt(dmatch[3]);
-        // If first number > 12 it must be the day, so format is D/M/YYYY
-        // If second number > 12 it must be the day, so format is M/D/YYYY
-        // Otherwise assume M/D/YYYY (Apps Script default)
         var mo, dy;
-        if(p1 > 12){ dy=p1; mo=p2; }       // D/M/YYYY
-        else if(p2 > 12){ mo=p1; dy=p2; }  // M/D/YYYY
-        else { mo=p1; dy=p2; }             // assume M/D/YYYY
+        if(p1 > 12){ dy=p1; mo=p2; }      // first must be day
+        else if(p2 > 12){ mo=p1; dy=p2; } // second must be day, M/D/YYYY
+        else { mo=p1; dy=p2; }            // both ≤12 — assume M/D/YYYY
         dealDate2=new Date(yr, mo-1, dy);
       } else {
         var cleanDate=dateRaw.replace(/GMT[+-]\d{4}.*$/,'').trim();
@@ -2543,8 +2540,8 @@ function toggleScroll() {
 // ══ BLITZ SCOREBOARD ══════════════════════════════════════════════════════════
 var BLITZ_PW = "Mayday2015";
 var BLITZ_GOAL = 17000000;
-var BLITZ_START = new Date(2026, 5, 18); // June 18
-var BLITZ_END   = new Date(2026, 5, 20, 23, 59, 59); // June 20 end
+var BLITZ_START = new Date(2026, 5, 12); // June 12
+var BLITZ_END   = new Date(2026, 5, 14, 23, 59, 59); // June 14 end
 var blitzUnlocked = false;
 
 var BLITZ_BRACKETS = {
