@@ -722,7 +722,6 @@ function parseCsv(csv){
       var slashMatch=dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
       if(isoMatch){
         dealDate2=new Date(parseInt(isoMatch[1]), parseInt(isoMatch[2])-1, parseInt(isoMatch[3]));
-        if(dateRaw.indexOf('2026-0')==0) console.log('ISO:',dateRaw,'->',dealDate2.toDateString());
       } else if(slashMatch){
         var p1=parseInt(slashMatch[1]), p2=parseInt(slashMatch[2]), yr=parseInt(slashMatch[3]);
         if(yr < 100) yr += 2000;
