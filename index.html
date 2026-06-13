@@ -3409,36 +3409,22 @@ function notifyTeamsSale(deal) {
   try {
     var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
     var dateStr = deal.date ? formatShortDate(deal.date instanceof Date ? deal.date : new Date(deal.date)) : '';
-    fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        signal: 'new_sale',
-        name: deal.name,
-        amount: deal.amount,
-        store: deal.store,
-        date: dateStr
-      })
-    }).catch(function(){});
+    var params = '?signal=new_sale&name=' + encodeURIComponent(deal.name) +
+      '&amount=' + encodeURIComponent(deal.amount) +
+      '&store=' + encodeURIComponent(deal.store) +
+      '&date=' + encodeURIComponent(dateStr);
+    fetch(APPS_SCRIPT_URL + params, { mode: 'no-cors' }).catch(function(){});
   } catch(e) {}
 }
 
 function notifyTeamsMilestone(prize, milestone, total) {
   try {
     var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
-    fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        signal: 'blitz_milestone',
-        milestone: milestone,
-        prizeLabel: prize.label,
-        prizeIcon: prize.icon,
-        total: total
-      })
-    }).catch(function(){});
+    var params = '?signal=blitz_milestone&milestone=' + encodeURIComponent(milestone) +
+      '&prizeLabel=' + encodeURIComponent(prize.label) +
+      '&prizeIcon=' + encodeURIComponent(prize.icon) +
+      '&total=' + encodeURIComponent(total);
+    fetch(APPS_SCRIPT_URL + params, { mode: 'no-cors' }).catch(function(){});
   } catch(e) {}
 }
 
