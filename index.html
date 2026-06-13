@@ -3411,7 +3411,8 @@ function notifyTeamsSale(deal) {
     var dateStr = deal.date ? formatShortDate(deal.date instanceof Date ? deal.date : new Date(deal.date)) : '';
     fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         signal: 'new_sale',
         name: deal.name,
@@ -3428,7 +3429,8 @@ function notifyTeamsMilestone(prize, milestone, total) {
     var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
     fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         signal: 'blitz_milestone',
         milestone: milestone,
