@@ -829,9 +829,9 @@ async function fetchData(){
     console.log("fetchData: got " + csv.split("\n").length + " lines, first: " + csv.substring(0, 80));
     var parsed = parseCsv(csv);
     if (parsed) {
-      if(!firstFetch){ firstFetch=true; seedBadgeState(parsed); }
-      else if(!BQR){ checkBadgeUpgrades(parsed); }
-      else{ seedBadgeState(parsed); }
+      if(!firstFetch){ firstFetch=true; seedBadgeState(parsed); seedKnownDeals(parsed); }
+      else if(!BQR){ checkBadgeUpgrades(parsed); checkNewDealsAndNotify(parsed); }
+      else{ seedBadgeState(parsed); seedKnownDeals(parsed); }
       updateStreaks(parsed);
       state.data=parsed; state.status="live"; state.lastUpdated=new Date().toLocaleTimeString();
       var lo=document.getElementById("loading-overlay");
@@ -3362,8 +3362,82 @@ function checkBlitzMilestones(total) {
     if(millions>=ms && !blitzMilestoneReached[ms]){
       blitzMilestoneReached[ms]=true;
       showPrizeUnlockPopup(prize,ms);
+      // Notify Teams via Apps Script
+      notifyTeamsMilestone(prize, ms, total);
     }
   });
+}
+
+// Track known deal IDs to detect new ones between fetches
+var _knownDealIds = null;
+
+function seedKnownDeals(data) {
+  _knownDealIds = new Set();
+  Object.values(data.teams).forEach(function(team) {
+    team.reps.forEach(function(rep) {
+      (rep.dealObjs||[]).forEach(function(d,i) {
+        _knownDealIds.add(rep.name + '|' + d.amount + '|' + i);
+      });
+    });
+  });
+}
+
+function checkNewDealsAndNotify(data) {
+  if (!_knownDealIds) { seedKnownDeals(data); return; }
+  var newDeals = [];
+  Object.entries(data.teams).forEach(function(e) {
+    var storeName = e[0], team = e[1];
+    var display = team.display || storeName.split(' - ').slice(1).join(' ').trim() || storeName;
+    team.reps.forEach(function(rep) {
+      (rep.dealObjs||[]).forEach(function(d,i) {
+        var key = rep.name + '|' + d.amount + '|' + i;
+        if (!_knownDealIds.has(key)) {
+          newDeals.push({ name: rep.name, amount: d.amount, store: storeName, display: display, date: d.date });
+        }
+      });
+    });
+  });
+  // Update known set
+  seedKnownDeals(data);
+  // Notify Teams for each new deal
+  newDeals.forEach(function(deal) {
+    if (deal.amount > 0) notifyTeamsSale(deal);
+  });
+}
+
+function notifyTeamsSale(deal) {
+  try {
+    var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
+    var dateStr = deal.date ? formatShortDate(deal.date instanceof Date ? deal.date : new Date(deal.date)) : '';
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        signal: 'new_sale',
+        name: deal.name,
+        amount: deal.amount,
+        store: deal.store,
+        date: dateStr
+      })
+    }).catch(function(){});
+  } catch(e) {}
+}
+
+function notifyTeamsMilestone(prize, milestone, total) {
+  try {
+    var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        signal: 'blitz_milestone',
+        milestone: milestone,
+        prizeLabel: prize.label,
+        prizeIcon: prize.icon,
+        total: total
+      })
+    }).catch(function(){});
+  } catch(e) {}
 }
 
 function testPrizePopup() {
