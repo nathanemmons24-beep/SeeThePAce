@@ -712,14 +712,21 @@ function parseCsv(csv){
     if(cancelled.toLowerCase()==='yes') continue;
     var score=parseFloat(scoreRaw.replace(/[$,]/g,""));
     if(isNaN(score)||score<=0) continue;
-    // Parse date column — Apps Script outputs M/D/YYYY (e.g. 6/10/2026)
+    // Parse date column — Apps Script outputs M/D/YYYY (e.g. 6/13/2026)
     var dealDate=null,isToday=false;
     if(dateRaw){
       var dealDate2=null;
       var dmatch=dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
       if(dmatch){
-        // Apps Script formatDate outputs M/D/YYYY but Sheet stores D/M — parse as D/M/YYYY
-        dealDate2=new Date(parseInt(dmatch[3]),parseInt(dmatch[2])-1,parseInt(dmatch[1]));
+        var p1=parseInt(dmatch[1]), p2=parseInt(dmatch[2]), yr=parseInt(dmatch[3]);
+        // If first number > 12 it must be the day, so format is D/M/YYYY
+        // If second number > 12 it must be the day, so format is M/D/YYYY
+        // Otherwise assume M/D/YYYY (Apps Script default)
+        var mo, dy;
+        if(p1 > 12){ dy=p1; mo=p2; }       // D/M/YYYY
+        else if(p2 > 12){ mo=p1; dy=p2; }  // M/D/YYYY
+        else { mo=p1; dy=p2; }             // assume M/D/YYYY
+        dealDate2=new Date(yr, mo-1, dy);
       } else {
         var cleanDate=dateRaw.replace(/GMT[+-]\d{4}.*$/,'').trim();
         dealDate2=new Date(cleanDate);
@@ -828,6 +835,7 @@ async function fetchData(){
   }
 }
 var LANDING_PW = "Rba123";
+var BLITZ_LANDING_PW = "Blitz";
 
 function showLandingPw() {
   document.getElementById('stp-enter-btn').style.display = 'none';
@@ -840,10 +848,15 @@ function checkLandingPw() {
   var inp = document.getElementById('stp-pw-input');
   var err = document.getElementById('stp-pw-err');
   if (!inp) { enterDashboard(); return; }
-  if (inp.value.trim() === LANDING_PW) {
+  var val = inp.value.trim();
+  if (val === LANDING_PW) {
     if (err) err.style.display = 'none';
     storeAuth();
     enterDashboard();
+  } else if (val === BLITZ_LANDING_PW) {
+    if (err) err.style.display = 'none';
+    storeAuth();
+    enterDashboard(true); // true = go straight to blitz
   } else {
     if (err) err.style.display = 'block';
     inp.value = '';
@@ -886,8 +899,7 @@ function storeAuth() {
   if (checkStoredAuth()) enterDashboard();
 })();
 
-function enterDashboard() {
-  // Hide landing elements, show loading spinner
+function enterDashboard(goToBlitz) {
   var btn  = document.getElementById('stp-enter-btn');
   var wrap = document.getElementById('stp-pw-wrap');
   var ring = document.getElementById('stp-loading-ring');
@@ -896,6 +908,15 @@ function enterDashboard() {
   if (wrap) wrap.style.display = 'none';
   if (ring) ring.style.display = 'block';
   if (txt)  txt.style.display  = 'block';
+  if (goToBlitz) {
+    // After data loads, activate blitz filter
+    var _blitzOnLoad = setInterval(function() {
+      if (state.status === 'live') {
+        clearInterval(_blitzOnLoad);
+        activateBlitzFilter();
+      }
+    }, 500);
+  }
   fetchData();
   pollTimer = setInterval(fetchData, POLL_MS);
 }
