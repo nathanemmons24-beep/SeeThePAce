@@ -3426,38 +3426,33 @@ function buildTeamsCard(body) {
   });
 }
 
-function postToTeamsWebhook(cardJson) {
-  fetch(TEAMS_WEBHOOK, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'text/plain' },
-    body: cardJson
-  }).catch(function(){});
+function postToTeamsViaAppsScript(params) {
+  fetch('https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?' + params, { mode: 'no-cors' }).catch(function(){});
 }
 
 function notifyTeamsSale(deal) {
   try {
     var amt = parseFloat(String(deal.amount).replace(/[$,]/g,''));
-    var formatted = isNaN(amt) ? '$0' : '$' + amt.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     var storeName = deal.display || String(deal.store).replace(/^\d{4}\s*-\s*/, '').trim();
-    var card = buildTeamsCard([
-      { "type": "TextBlock", "text": "\uD83D\uDCB0  " + formatted, "weight": "Bolder", "size": "ExtraLarge", "color": "Good", "wrap": false },
-      { "type": "TextBlock", "text": "\u26A1 NEW SALE  \u00B7  " + deal.name + "  \u00B7  " + storeName, "weight": "Bolder", "size": "Medium", "color": "Accent", "spacing": "Small", "wrap": true }
-    ]);
-    postToTeamsWebhook(card);
+    postToTeamsViaAppsScript(
+      'signal=new_sale' +
+      '&name=' + encodeURIComponent(deal.name) +
+      '&amount=' + encodeURIComponent(amt) +
+      '&store=' + encodeURIComponent(deal.store) +
+      '&display=' + encodeURIComponent(storeName)
+    );
   } catch(e) {}
 }
 
 function notifyTeamsMilestone(prize, milestone, total) {
   try {
-    var milStr = '$' + milestone + 'M';
-    var totStr = total >= 1000000 ? '$' + (total/1000000).toFixed(2) + 'M' : '$' + total;
-    var card = buildTeamsCard([
-      { "type": "TextBlock", "text": prize.icon + "  MILESTONE UNLOCKED!", "weight": "Bolder", "size": "ExtraLarge", "color": "Warning", "wrap": false },
-      { "type": "TextBlock", "text": milStr + " REACHED  \u00B7  " + totStr + " total", "weight": "Bolder", "size": "Medium", "color": "Good", "spacing": "Small", "wrap": true },
-      { "type": "TextBlock", "text": prize.icon + " " + prize.label + " HAS BEEN UNLOCKED!", "weight": "Bolder", "size": "Large", "color": "Accent", "spacing": "Small", "wrap": true }
-    ]);
-    postToTeamsWebhook(card);
+    postToTeamsViaAppsScript(
+      'signal=blitz_milestone' +
+      '&milestone=' + encodeURIComponent(milestone) +
+      '&prizeLabel=' + encodeURIComponent(prize.label) +
+      '&prizeIcon=' + encodeURIComponent(prize.icon || '') +
+      '&total=' + encodeURIComponent(total)
+    );
   } catch(e) {}
 }
 
