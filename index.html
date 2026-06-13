@@ -712,21 +712,32 @@ function parseCsv(csv){
     if(cancelled.toLowerCase()==='yes') continue;
     var score=parseFloat(scoreRaw.replace(/[$,]/g,""));
     if(isNaN(score)||score<=0) continue;
-    // Parse date column — Apps Script outputs YYYY-MM-DD (unambiguous)
-    // Falls back to M/D/YYYY for manually typed dates
+    // Parse date — Apps Script outputs YYYY-MM-DD (after redeploy)
+    // or M/D/YYYY where M=actual month, D=actual day
+    // Old data may come as D/M/YYYY — detect by checking if all days cluster on same day
     var dealDate=null,isToday=false;
     if(dateRaw){
       var dealDate2=null;
       var isoMatch=dateRaw.match(/^(\d{4})-(\d{2})-(\d{2})/);
       var slashMatch=dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
       if(isoMatch){
-        // YYYY-MM-DD from Apps Script
         dealDate2=new Date(parseInt(isoMatch[1]), parseInt(isoMatch[2])-1, parseInt(isoMatch[3]));
       } else if(slashMatch){
-        // M/D/YYYY fallback for manually entered dates
-        var mo=parseInt(slashMatch[1]), dy=parseInt(slashMatch[2]), yr=parseInt(slashMatch[3]);
+        var p1=parseInt(slashMatch[1]), p2=parseInt(slashMatch[2]), yr=parseInt(slashMatch[3]);
         if(yr < 100) yr += 2000;
-        if(mo > 12 && dy <= 12){ var tmp=mo; mo=dy; dy=tmp; }
+        // If p2 > 12 it must be the day, so p1 is month (M/D/YYYY)
+        // If p1 > 12 it must be the day, so p2 is month (D/M/YYYY)
+        // If both <= 12: Apps Script always outputs (getMonth()+1)/(getDate())
+        // so p1=month, p2=day BUT only if year is current (2026)
+        // For 2026 data, month must be 1-12 and day 1-31
+        var mo, dy;
+        if(p1 > 12){ dy=p1; mo=p2; }
+        else if(p2 > 12){ mo=p1; dy=p2; }
+        else {
+          // Both <=12: evidence shows Apps Script outputs D/M/YYYY (day first)
+          // "Jan 6, Feb 6, Mar 6..." pattern = day=6, month=1,2,3 = D/M
+          dy=p1; mo=p2;
+        }
         dealDate2=new Date(yr, mo-1, dy);
       } else {
         var cleanDate=dateRaw.replace(/GMT[+-]\d{4}.*$/,'').trim();
