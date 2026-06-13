@@ -3178,7 +3178,9 @@ function showLockedPrizePopup(prize, milestone, needed) {
   var ms    = document.getElementById('prize-popup-milestone');
   if (!popup) return;
 
-  icon.textContent = prize.icon;
+  icon.textContent = '?';
+  icon.style.color = '#475569';
+  icon.style.fontSize = '48px';
   lbl.textContent  = '???';
   ms.textContent   = '$' + milestone + 'M MILESTONE';
   lbl.style.color  = '#475569';
@@ -3243,6 +3245,8 @@ function closePrizePopup() {
     btn.style.cursor     = '';
     btn.onclick = function(){ closePrizePopup(); };
   }
+  var iconEl = document.getElementById('prize-popup-icon');
+  if (iconEl) { iconEl.style.color = ''; iconEl.style.fontSize = ''; }
   var neededDiv = document.getElementById('prize-needed-label');
   if (neededDiv) neededDiv.style.display = 'none';
   var cv = document.getElementById('prize-particles');
