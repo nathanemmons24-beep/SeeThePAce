@@ -1368,14 +1368,12 @@ function render(){
     data = mergeAlways(data);
   }
 
-  // Blitz filter — static hardcoded June 18-20 data (~$8M total)
+  // Blitz filter — uses REAL data filtered to Jun 12-14 2026
   if (blitzUnlocked) {
-    // Use BLITZ_DEMO as the authoritative blitz dataset
-    data = { total: BLITZ_DEMO.total, teams: {} };
-    // Display name normalizer matching ALWAYS_MERGE
+    var BLITZ_START = new Date(2026, 5, 12); // Jun 12
+    var BLITZ_END   = new Date(2026, 5, 14, 23, 59, 59); // Jun 14 end
     var blitzDisplayMap = {
-      "0535 - Central Northern NJ": "New Jersey",
-      "0535 - New Jersey": "New Jersey",
+      "0535 - Central Northern NJ": "New Jersey", "0535 - New Jersey": "New Jersey",
       "0930 - Atlanta": "Georgia", "0930 - Eastern GA": "Georgia",
       "0930 - Southern GA": "Georgia", "0930 - Georgia": "Georgia",
       "0868 - So Bend": "South Bend", "0868 - South Bend": "South Bend",
@@ -1383,34 +1381,37 @@ function render(){
       "0914 - Central GTA": "Toronto", "0914 - Eastern GTA": "Toronto",
       "Toronto 0914": "Toronto"
     };
-    Object.entries(BLITZ_DEMO.brackets).forEach(function(be) {
-      var bracket = be[1];
-      Object.entries(bracket.teams).forEach(function(te) {
-        var storeName = te[0], team = te[1];
-        var display = blitzDisplayMap[storeName] || team.display || storeName.split(' - ').slice(1).join(' ').trim();
-        // Merge teams with same display name
-        var mergeKey = storeName.replace(/^0\d+ - /, '');
-        // Find if a team with same display already exists
-        var existingKey = null;
-        Object.keys(data.teams).forEach(function(k){ if(data.teams[k].display===display) existingKey=k; });
-        var targetKey = existingKey || storeName;
+    data = { total: 0, teams: {} };
+    // Filter state.data to blitz dates only
+    var rawData = state.data && state.data.teams ? mergeAlways(state.data) : { teams: {} };
+    Object.entries(rawData.teams).forEach(function(e) {
+      var storeName = e[0], team = e[1];
+      var display = blitzDisplayMap[storeName] || storeName.split(' - ').slice(1).join(' ').trim() || storeName;
+      var existingKey = null;
+      Object.keys(data.teams).forEach(function(k){ if(data.teams[k].display===display) existingKey=k; });
+      var targetKey = existingKey || storeName;
+      team.reps.forEach(function(rep) {
+        var blitzDeals = (rep.dealObjs||[]).filter(function(d) {
+          if (!d.date) return false;
+          var dt = d.date instanceof Date ? d.date : new Date(d.date);
+          return dt >= BLITZ_START && dt <= BLITZ_END;
+        });
+        if (blitzDeals.length === 0) return;
+        var repTotal = blitzDeals.reduce(function(s,d){ return s+d.amount; }, 0);
         if (!data.teams[targetKey]) {
           data.teams[targetKey] = { color: team.color, display: display, total: 0, reps: [] };
         }
         var target = data.teams[targetKey];
-        target.total += team.total;
-        team.reps.forEach(function(r) {
-          var existing = target.reps.find(function(x){ return x.name===r.name; });
-          if (existing) { existing.amount += r.amount; }
-          else {
-            target.reps.push({ name: r.name, amount: r.amount, deals: [r.amount],
-              dealObjs: [
-                {amount: Math.round(r.amount*0.35), date: "6/18/2026", isToday: false},
-                {amount: Math.round(r.amount*0.35), date: "6/19/2026", isToday: false},
-                {amount: r.amount - Math.round(r.amount*0.35)*2, date: "6/20/2026", isToday: false}
-              ], todayTotal: 0, latestDate: null });
-          }
-        });
+        var existing = target.reps.find(function(r){ return r.name===rep.name; });
+        if (existing) {
+          existing.amount += repTotal;
+          existing.dealObjs = existing.dealObjs.concat(blitzDeals);
+        } else {
+          target.reps.push({ name: rep.name, amount: repTotal, deals: blitzDeals.map(function(d){return d.amount;}),
+            dealObjs: blitzDeals, todayTotal: rep.todayTotal||0, latestDate: rep.latestDate||null });
+        }
+        target.total += repTotal;
+        data.total += repTotal;
       });
     });
     // Re-sort reps within each team
@@ -2933,8 +2934,64 @@ function getBlitzCurrentData(data) {
 }
 
 function getBlitzData() {
-  // Always derive from BLITZ_DEMO — single source of truth
-  return buildBlitzFromDemo();
+  // Use real data filtered to Jun 12-14 2026
+  var BLITZ_START = new Date(2026, 5, 12);
+  var BLITZ_END   = new Date(2026, 5, 14, 23, 59, 59);
+  var result = { total: 0, brackets: {}, allReps: [] };
+  if (!state.data || !state.data.teams) return result;
+  var rawData = mergeAlways(state.data);
+
+  BRACKET_ORDER.forEach(function(bName) {
+    result.brackets[bName] = { total: 0, teams: {}, color: BRACKET_COLORS[bName] };
+  });
+
+  Object.entries(rawData.teams).forEach(function(e) {
+    var storeName = e[0], team = e[1];
+    var bName = getBracketForStore(storeName);
+    if (!bName) return;
+    var display = BLITZ_DISPLAY_NAMES[storeName] || storeName.split(' - ').slice(1).join(' ').trim() || storeName;
+
+    var filteredReps = [];
+    team.reps.forEach(function(rep) {
+      var blitzDeals = (rep.dealObjs||[]).filter(function(d) {
+        if (!d.date) return false;
+        var dt = d.date instanceof Date ? d.date : new Date(d.date);
+        return dt >= BLITZ_START && dt <= BLITZ_END;
+      });
+      if (blitzDeals.length === 0) return;
+      var repTotal = blitzDeals.reduce(function(s,d){ return s+d.amount; }, 0);
+      var repObj = { name: rep.name, amount: repTotal, store: display,
+        color: team.color, bracket: bName, dealObjs: blitzDeals };
+      filteredReps.push(repObj);
+      result.allReps.push(repObj);
+    });
+    if (filteredReps.length === 0) return;
+
+    var teamTotal = filteredReps.reduce(function(s,r){ return s+r.amount; }, 0);
+    var existingTeam = null;
+    Object.keys(result.brackets[bName].teams).forEach(function(k){
+      if (result.brackets[bName].teams[k].display === display) existingTeam = k;
+    });
+    var tKey = existingTeam || storeName;
+    if (!result.brackets[bName].teams[tKey]) {
+      result.brackets[bName].teams[tKey] = { total: 0, display: display, color: team.color, reps: [] };
+    }
+    filteredReps.forEach(function(r) {
+      var ex = result.brackets[bName].teams[tKey].reps.find(function(x){ return x.name===r.name; });
+      if (ex) { ex.amount += r.amount; ex.dealObjs = ex.dealObjs.concat(r.dealObjs); }
+      else result.brackets[bName].teams[tKey].reps.push(r);
+    });
+    result.brackets[bName].teams[tKey].total += teamTotal;
+    result.brackets[bName].total += teamTotal;
+    result.total += teamTotal;
+  });
+
+  BRACKET_ORDER.forEach(function(bName) {
+    Object.values(result.brackets[bName].teams).forEach(function(t){
+      t.reps.sort(function(a,b){ return b.amount-a.amount; });
+    });
+  });
+  return result;
 }
 
 function buildBlitzFromDemo() {
