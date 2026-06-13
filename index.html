@@ -707,7 +707,7 @@ function parseCsv(csv){
   var data={total:0,teams:{}};
   for(var i=1;i<lines.length;i++){
     var cols=parseCsvLine(lines[i]).map(function(c){return c.replace(/^\"|\"$/g,"").trim();});
-    var store=cols[0],name=cols[1],scoreRaw=cols[2],dateRaw=cols[3]||"",cancelled=cols[5]||"";
+    var store=cols[0],name=cols[1],scoreRaw=cols[2],dateRaw=cols[3]||"",enabledId=cols[4]||"",cancelled=cols[5]||"";
     if(!store||!name||!scoreRaw) continue;
     if(cancelled.toLowerCase()==='yes') continue;
     var score=parseFloat(scoreRaw.replace(/[$,]/g,""));
@@ -762,7 +762,7 @@ function parseCsv(csv){
     }
     rep.amount+=score;
     rep.deals.push(score);
-    rep.dealObjs.push({amount:score,date:dealDate,isToday:isToday});
+    rep.dealObjs.push({amount:score,date:dealDate,isToday:isToday,enabledId:enabledId});
     if(isToday) rep.todayTotal+=score;
     if(dealDate&&(!rep.latestDate||dealDate>rep.latestDate)) rep.latestDate=dealDate;
     team.total+=score;
@@ -3375,8 +3375,10 @@ function seedKnownDeals(data) {
   _knownDealIds = new Set();
   Object.values(data.teams).forEach(function(team) {
     team.reps.forEach(function(rep) {
-      (rep.dealObjs||[]).forEach(function(d,i) {
-        _knownDealIds.add(rep.name + '|' + d.amount + '|' + i);
+      (rep.dealObjs||[]).forEach(function(d) {
+        var dateKey = d.date instanceof Date ? d.date.toDateString() : String(d.date);
+        var key = (d.enabledId && d.enabledId !== '') ? d.enabledId : (rep.name + '|' + d.amount + '|' + dateKey);
+        _knownDealIds.add(key);
       });
     });
   });
@@ -3389,8 +3391,9 @@ function checkNewDealsAndNotify(data) {
     var storeName = e[0], team = e[1];
     var display = team.display || storeName.split(' - ').slice(1).join(' ').trim() || storeName;
     team.reps.forEach(function(rep) {
-      (rep.dealObjs||[]).forEach(function(d,i) {
-        var key = rep.name + '|' + d.amount + '|' + i;
+      (rep.dealObjs||[]).forEach(function(d) {
+        var dateKey = d.date instanceof Date ? d.date.toDateString() : String(d.date);
+        var key = (d.enabledId && d.enabledId !== '') ? d.enabledId : (rep.name + '|' + d.amount + '|' + dateKey);
         if (!_knownDealIds.has(key)) {
           newDeals.push({ name: rep.name, amount: d.amount, store: storeName, display: display, date: d.date });
         }
