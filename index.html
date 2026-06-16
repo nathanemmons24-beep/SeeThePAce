@@ -952,6 +952,23 @@ function storeAuth() {
 // Auto-enter if already authenticated this session
 (function(){
   if (checkStoredAuth()) enterDashboard();
+
+  // TV link: ?tv=1 bypasses password, enables TV mode + auto scroll + fullscreen
+  if (new URLSearchParams(window.location.search).get('tv') === '1') {
+    sessionStorage.setItem('stp_auth', JSON.stringify({ts: Date.now(), version: AUTH_VERSION}));
+    enterDashboard();
+    setTimeout(function() {
+      // TV mode
+      if (!tvBigFont) toggleBigFont();
+      // Auto scroll
+      if (!scrollActive) toggleScroll();
+      // Fullscreen
+      try {
+        if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        else if (document.documentElement.webkitRequestFullscreen) document.documentElement.webkitRequestFullscreen();
+      } catch(e) {}
+    }, 1500);
+  }
 })();
 
 function enterDashboard(goToBlitz) {
