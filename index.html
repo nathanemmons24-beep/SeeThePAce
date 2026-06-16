@@ -2927,7 +2927,7 @@ function renderBlitzPrizePanel(total) {
 
 
 var BLITZ_DEMO = {
-  total: 19240000,
+  total: 9000000,
   // Day totals: Jun 18 = $7.1M, Jun 19 = $6.8M, Jun 20 = $5.3M
   brackets: {
     "Large Markets": {
@@ -3014,9 +3014,9 @@ var BLITZ_DEMO = {
 
 // Demo day totals (for booster bar demo): Jun18=7.1M, Jun19=6.8M, Jun20=5.34M
 var BLITZ_DEMO_DAY_TOTALS = {
-  18: 7100000,
-  19: 6800000,
-  20: 5340000
+  18: 2000000,
+  19: 7000000,
+  20: 0
 };
 
 // ══ BLITZ PANELS: TOP ROOKIE + TOP BLITZERS ════════════════════════════════
@@ -3288,17 +3288,17 @@ function buildBlitzFromDemo() {
   var day1 = new Date(2026, 5, 18); // Jun 18
   var day2 = new Date(2026, 5, 19); // Jun 19
   var day3 = new Date(2026, 5, 20); // Jun 20
+  // Day proportions: day1=22%, day2=78%, day3=0%
+  var d1Pct = 0.222, d2Pct = 0.778, d3Pct = 0;
   Object.entries(BLITZ_DEMO.brackets).forEach(function(e) {
     var bName=e[0], b=e[1];
     result.brackets[bName] = { total:b.total, teams:{}, color:b.color, accent:b.accent };
     Object.entries(b.teams).forEach(function(te) {
       var tName=te[0], t=te[1];
       var repsWithDealObjs = t.reps.map(function(r) {
-        var days = r.days || [Math.round(r.amount*0.38), Math.round(r.amount*0.36), Math.round(r.amount*0.26)];
         var dealObjs = [
-          {amount:days[0], date:day1},
-          {amount:days[1], date:day2},
-          {amount:days[2], date:day3}
+          {amount:Math.round(r.amount*d1Pct), date:day1},
+          {amount:Math.round(r.amount*d2Pct), date:day2}
         ].filter(function(d){ return d.amount > 0; });
         return {name:r.name, amount:r.amount, store:t.display, color:t.color, bracket:bName, dealObjs:dealObjs};
       });
