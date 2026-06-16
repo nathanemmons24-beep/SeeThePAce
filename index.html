@@ -423,7 +423,7 @@
 
 
   <!-- BLITZ BAR — shown when special event is active -->
-  <div id="blitz-bar-strip" style="display:none;background:rgba(15,23,42,0.85);border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:12px 16px;margin-bottom:16px;backdrop-filter:blur(14px);box-shadow:0 0 20px rgba(124,58,237,0.15)">
+  <div id="blitz-bar-strip" style="display:none;background:rgba(15,23,42,0.85);border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:12px 16px;margin-bottom:8px;backdrop-filter:blur(14px);box-shadow:0 0 20px rgba(124,58,237,0.15)">
     <!-- Header row -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div style="font-family:Orbitron,monospace;font-size:9px;color:#7C3AED;letter-spacing:3px">&#x26A1; BLITZ BAR</div>
@@ -439,6 +439,26 @@
     </div>
     <!-- Prize icons row below bar - one per $1M milestone -->
     <div id="blitz-prize-icons" style="position:relative;height:64px"></div>
+  </div>
+
+  <!-- BLITZ BOOSTER BAR — $6M daily bonus challenge -->
+  <div id="blitz-booster-strip" style="display:none;background:rgba(15,23,42,0.85);border:1px solid rgba(251,146,60,0.3);border-radius:12px;padding:12px 16px;margin-bottom:16px;backdrop-filter:blur(14px);box-shadow:0 0 20px rgba(251,146,60,0.1)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-family:Orbitron,monospace;font-size:9px;color:#FB923C;letter-spacing:3px">&#x1F525; BOOSTER BAR</div>
+      <div style="display:flex;align-items:baseline;gap:6px">
+        <div id="booster-bar-total" style="font-family:Orbitron,monospace;font-size:16px;font-weight:900;color:#FB923C"></div>
+        <div id="booster-bar-goal" style="font-family:Orbitron,monospace;font-size:9px;color:#475569">of $6M today</div>
+      </div>
+      <div id="booster-bar-label" style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">DAILY BONUS</div>
+    </div>
+    <div style="height:20px;background:rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;box-shadow:inset 0 2px 8px rgba(0,0,0,0.5);margin-bottom:8px;position:relative">
+      <div id="booster-bar-fill" style="height:100%;width:0%;border-radius:10px;background:linear-gradient(90deg,#ea580c,#fb923c,#fcd34d);transition:width 1.2s;box-shadow:0 0 12px rgba(251,146,60,0.6)"></div>
+      <!-- $6M markers every 6M -->
+      <div style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none">
+        <div style="position:absolute;left:100%;top:0;width:2px;height:100%;background:rgba(251,146,60,0.6)"></div>
+      </div>
+    </div>
+    <div id="booster-bar-status" style="font-family:Orbitron,monospace;font-size:8px;color:#64748B;letter-spacing:1px;text-align:center"></div>
   </div>
 
     <!-- BLITZ BRACKET BREAKDOWN — visible when blitz filter active -->
@@ -1356,7 +1376,7 @@ function render(){
     strip.style.display = 'block';
     var pct = Math.min((bd.total / BLITZ_GOAL) * 100, 100);
     document.getElementById('blitz-bar-total').textContent = fmtB(bd.total);
-    document.getElementById('blitz-bar-goal').textContent = 'of ' + fmtB(BLITZ_GOAL) + ' \u00b7 ' + pct.toFixed(1) + '%';
+    document.getElementById('blitz-bar-goal').textContent = 'of ' + fmtB(BLITZ_GOAL) + ' · ' + pct.toFixed(1) + '%';
     document.getElementById('blitz-bar-fill').style.width = pct + '%';
 
     // Prize icons below the bar — uniform size, hover 4x, locked shows info popup
@@ -1392,6 +1412,61 @@ function render(){
     }
     // Milestone unlock check
     checkBlitzMilestones(bd.total);
+
+    // ── Booster Bar — daily $6M challenge ─────────────────────────────────
+    (function() {
+      var booster = document.getElementById('blitz-booster-strip');
+      if (!booster) return;
+      booster.style.display = 'block';
+
+      var BOOSTER_GOAL = 6000000;
+      var today = new Date();
+      var todayTotal = 0;
+      if (state.data && state.data.teams) {
+        Object.values(state.data.teams).forEach(function(team) {
+          team.reps.forEach(function(rep) {
+            (rep.dealObjs || []).forEach(function(d) {
+              if (!d.date) return;
+              var dt = d.date instanceof Date ? d.date : new Date(d.date);
+              if (isNaN(dt.getTime())) return;
+              var isBlitzDay = dt >= BLITZ_START && dt <= BLITZ_END;
+              var isTodayDate = dt.getFullYear() === today.getFullYear() && dt.getMonth() === today.getMonth() && dt.getDate() === today.getDate();
+              if (isBlitzDay && isTodayDate) todayTotal += d.amount;
+            });
+          });
+        });
+      }
+
+      // Find which booster prize applies today based on blitz day number
+      var blitzDay1 = new Date(2026, 5, 18); // Jun 18
+      var dayNum = Math.floor((today - blitzDay1) / 86400000) + 1; // 1, 2, or 3
+      var boosterPrizes = BLITZ_PRIZES.filter(function(p){ return p.booster; });
+      var todayBooster = boosterPrizes[Math.min(dayNum - 1, boosterPrizes.length - 1)];
+      var boosterLabel = todayBooster ? todayBooster.booster : '$25 Amazon Gift Card For All DCs';
+
+      var boosterPct = Math.min((todayTotal / BOOSTER_GOAL) * 100, 100);
+      var boosterHit = todayTotal >= BOOSTER_GOAL;
+      document.getElementById('booster-bar-total').textContent = fmtB(todayTotal);
+      document.getElementById('booster-bar-fill').style.width = boosterPct + '%';
+      document.getElementById('booster-bar-goal').textContent = 'of $6M today \u00b7 ' + boosterLabel;
+
+      if (boosterHit) {
+        document.getElementById('booster-bar-label').textContent = '\uD83C\uDFC6 BONUS UNLOCKED!';
+        document.getElementById('booster-bar-label').style.color = '#4ADE80';
+        document.getElementById('booster-bar-status').textContent = 'DAILY $6M GOAL SMASHED! ' + boosterLabel.toUpperCase() + ' EARNED!';
+        document.getElementById('booster-bar-status').style.color = '#4ADE80';
+        booster.style.borderColor = 'rgba(74,222,128,0.4)';
+        booster.style.boxShadow = '0 0 20px rgba(74,222,128,0.2)';
+      } else {
+        var needed = fmtB(BOOSTER_GOAL - todayTotal);
+        document.getElementById('booster-bar-label').textContent = 'DAILY BONUS';
+        document.getElementById('booster-bar-label').style.color = '#FB923C';
+        document.getElementById('booster-bar-status').textContent = needed + ' TO UNLOCK: ' + boosterLabel.toUpperCase() + ' \u2022 ' + boosterPct.toFixed(1) + '%';
+        document.getElementById('booster-bar-status').style.color = '#64748B';
+        booster.style.borderColor = 'rgba(251,146,60,0.3)';
+        booster.style.boxShadow = '0 0 20px rgba(251,146,60,0.1)';
+      }
+    })();
   })();
 
   var rawData = state.data;
@@ -1401,10 +1476,10 @@ function render(){
     data = mergeAlways(data);
   }
 
-  // Blitz filter — uses REAL data filtered to Jun 12-14 2026
+  // Blitz filter — uses REAL data filtered to Jun 18-20 2026
   if (blitzUnlocked) {
-    var BLITZ_START = new Date(2026, 5, 12); // Jun 12
-    var BLITZ_END   = new Date(2026, 5, 14, 23, 59, 59); // Jun 14 end
+    var BLITZ_START = new Date(2026, 5, 18); // Jun 18
+    var BLITZ_END   = new Date(2026, 5, 20, 23, 59, 59); // Jun 20 end
     var blitzDisplayMap = {
       "0535 - Central Northern NJ": "New Jersey", "0535 - New Jersey": "New Jersey",
       "0930 - Atlanta": "Georgia", "0930 - Eastern GA": "Georgia",
@@ -2555,8 +2630,8 @@ function toggleScroll() {
 // ══ BLITZ SCOREBOARD ══════════════════════════════════════════════════════════
 var BLITZ_PW = "Mayday2015";
 var BLITZ_GOAL = 17000000;
-var BLITZ_START = new Date(2026, 5, 12); // June 12
-var BLITZ_END   = new Date(2026, 5, 14, 23, 59, 59); // June 14 end
+var BLITZ_START = new Date(2026, 5, 18); // June 18
+var BLITZ_END   = new Date(2026, 5, 20, 23, 59, 59); // June 20 end
 var blitzUnlocked = false;
 
 var BLITZ_BRACKETS = {
@@ -2967,9 +3042,9 @@ function getBlitzCurrentData(data) {
 }
 
 function getBlitzData() {
-  // Use real data filtered to Jun 12-14 2026
-  var BLITZ_START = new Date(2026, 5, 12);
-  var BLITZ_END   = new Date(2026, 5, 14, 23, 59, 59);
+  // Use real data filtered to Jun 18-20 2026
+  var BLITZ_START = new Date(2026, 5, 18);
+  var BLITZ_END   = new Date(2026, 5, 20, 23, 59, 59);
   var result = { total: 0, brackets: {}, allReps: [] };
   if (!state.data || !state.data.teams) return result;
   var rawData = mergeAlways(state.data);
@@ -3575,23 +3650,23 @@ function renderBlitzTopProgress(total, goal) {
 }
 
 var BLITZ_PRIZES = [
-  {label:"Team Amazon Gift Cards ($25 each)", icon:"📦", tier:"gift"},
-  {label:"Dinner for Two",                    icon:"🍽️", tier:"dinner"},
-  {label:"Donation to U.S. Hunger",           icon:"❤️", tier:"charity"},
-  {label:"$300 Gas & Grocery Bundle",         icon:"⛽", tier:"cash"},
-  {label:"Apple iPad",                        icon:"📱", tier:"tech"},
-  {label:"MacBook Pro",                       icon:"💻", tier:"tech"},
-  {label:"Lunch with David Moore",            icon:"🤝", tier:"experience"},
-  {label:"Luxury Spa Experience",             icon:"💆", tier:"experience"},
-  {label:"New Tires Gift Card",               icon:"🚗", tier:"wheels"},
-  {label:"2 FIFA World Cup Tickets",          icon:"⚽", tier:"event"},
-  {label:"Apple Watch Series 11",             icon:"⌚", tier:"tech"},
-  {label:"$500 Visa Gift Card",               icon:"💳", tier:"cash"},
-  {label:"Donation to Sunrise Charity",       icon:"🌅", tier:"charity"},
-  {label:"KitchenAid Espresso Machine",       icon:"☕", tier:"home"},
-  {label:"Backyard Smoker",                   icon:"🔥", tier:"home"},
-  {label:"$500 Visa Gift Card",               icon:"💳", tier:"cash"},
-  {label:"Triple Grand Prize Unlock!",        icon:"🏆", tier:"grand"},
+  {label:"$50 Gas Card for Every Member on Your Team", icon:"⛽", tier:"cash",       booster:"$25 Amazon Gift Card For All DCs"},
+  {label:"$500 Visa Gift Card",                        icon:"💳", tier:"cash"},
+  {label:"Round of Golf for Four",                     icon:"⛳", tier:"experience"},
+  {label:"Meal Donation to U.S. Hunger",               icon:"❤️", tier:"charity"},
+  {label:"KitchenAid Automatic Espresso Machine",      icon:"☕", tier:"home"},
+  {label:"$500 Visa Gift Card",                        icon:"💳", tier:"cash"},
+  {label:"2 FIFA World Cup Tickets",                   icon:"⚽", tier:"event",      booster:"$50 Amazon Gift Card For All DCs"},
+  {label:"Lunch with David Moore",                     icon:"🤝", tier:"experience"},
+  {label:"$500 Visa Gift Card",                        icon:"💳", tier:"cash"},
+  {label:"Donation to Sunrise Charity",                icon:"🌅", tier:"charity"},
+  {label:"Disney Vacation for Two",                    icon:"🏰", tier:"experience"},
+  {label:"$500 Visa Gift Card",                        icon:"💳", tier:"cash"},
+  {label:"New Tires Gift Card",                        icon:"🚗", tier:"wheels",     booster:"$100 Amazon Gift Card For All DCs"},
+  {label:"Big Green Egg",                              icon:"🥩", tier:"home"},
+  {label:"TAG Heuer Formula 1 Watch",                  icon:"⌚", tier:"tech"},
+  {label:"$750 Visa Gift Card",                        icon:"💳", tier:"cash"},
+  {label:"GRAND PRIZE: 2 FIFA World Cup Tickets + Eleven Madison Park + Air & Lodging + $1,000 Gas & Grocery Bundle", icon:"🏆", tier:"grand"},
 ];
 
 var PRIZE_COLORS = {
