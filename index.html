@@ -341,6 +341,11 @@
     .prize-icon-label{font-family:Orbitron,monospace;font-size:6px;color:#2D3748;margin-top:2px;white-space:nowrap;text-align:center}
     .prize-icon-label.unlocked{color:#A855F7}
     @keyframes prizeIconGlow{0%,100%{box-shadow:0 0 6px 2px rgba(168,85,247,0.5)}50%{box-shadow:0 0 14px 4px rgba(168,85,247,0.9),0 0 22px 6px rgba(0,212,255,0.3)}}
+    @keyframes boosterElectric{0%{background-position:0% 50%;opacity:0.85}50%{background-position:100% 50%;opacity:1}100%{background-position:0% 50%;opacity:0.85}}
+    @keyframes boosterGlow{0%,100%{box-shadow:0 0 8px rgba(251,146,60,0.4)}50%{box-shadow:0 0 20px rgba(251,146,60,0.9),0 0 35px rgba(253,211,77,0.5)}}
+    @keyframes boosterFullGlow{0%,100%{box-shadow:0 0 12px rgba(74,222,128,0.6),0 0 24px rgba(74,222,128,0.3)}50%{box-shadow:0 0 28px rgba(74,222,128,1),0 0 50px rgba(74,222,128,0.6),0 0 70px rgba(74,222,128,0.2)}}
+    @keyframes boosterFullPulse{0%,100%{border-color:rgba(74,222,128,0.4)}50%{border-color:rgba(74,222,128,0.9)}}
+    @keyframes electricSpark{0%,100%{opacity:0.3;transform:scaleX(1)}25%{opacity:1;transform:scaleX(1.02)}50%{opacity:0.6;transform:scaleX(0.98)}75%{opacity:1;transform:scaleX(1.01)}}
     #badge-legend-fixed{background:rgba(6,11,24,0.15);border-top:1px solid rgba(255,255,255,0.05);padding:10px 20px;backdrop-filter:blur(4px);display:flex;align-items:center;gap:0;justify-content:space-around;opacity:0.25;transition:opacity 0.3s,background 0.3s,backdrop-filter 0.3s}
     #badge-legend-fixed:hover{opacity:1;background:rgba(6,11,24,0.97);backdrop-filter:blur(20px);border-top-color:rgba(255,255,255,0.1)}
     #badge-legend-fixed .bl-title{display:none}
@@ -1467,22 +1472,37 @@ function render(){
         });
       }
 
-      // Booster prizes per day
+      // Cumulative prizes: 1 day=$25, 2 days=$50, 3 days=$100
       var boosterPrizes = ['$25 Amazon Gift Card For All DCs', '$50 Amazon Gift Card For All DCs', '$100 Amazon Gift Card For All DCs'];
+      var daysHit = 0;
 
       [1,2,3].forEach(function(day) {
         var total = dayTotals[day-1];
         var pctDay = Math.min((total / DAY_GOAL) * 100, 100);
         var hit = total >= DAY_GOAL;
+        if (hit) daysHit++;
+
         var fillEl  = document.getElementById('booster-day'+day+'-fill');
         var totalEl = document.getElementById('booster-day'+day+'-total');
         var labelEl = document.getElementById('booster-day'+day+'-label');
+        var wrapEl  = document.getElementById('booster-day'+day+'-wrap');
+
         if (fillEl) {
           fillEl.style.width = pctDay + '%';
-          fillEl.style.background = hit
-            ? 'linear-gradient(90deg,#16a34a,#4ade80)'
-            : 'linear-gradient(90deg,#ea580c,#fb923c,#fcd34d)';
-          fillEl.style.boxShadow = hit ? '0 0 12px rgba(74,222,128,0.5)' : '0 0 8px rgba(251,146,60,0.4)';
+          if (hit) {
+            fillEl.style.background = 'linear-gradient(270deg,#4ade80,#16a34a,#86efac,#4ade80)';
+            fillEl.style.backgroundSize = '300% 300%';
+            fillEl.style.animation = 'boosterElectric 1.5s ease infinite, electricSpark 0.8s ease-in-out infinite';
+            fillEl.style.boxShadow = '0 0 0px rgba(74,222,128,0)';
+            fillEl.parentElement.style.animation = 'boosterFullGlow 2s ease-in-out infinite';
+            fillEl.parentElement.style.borderRadius = '8px';
+          } else {
+            fillEl.style.background = 'linear-gradient(270deg,#ea580c,#fb923c,#fcd34d,#fb923c,#ea580c)';
+            fillEl.style.backgroundSize = '300% 300%';
+            fillEl.style.animation = 'boosterElectric 2s ease infinite';
+            fillEl.style.boxShadow = 'none';
+            fillEl.parentElement.style.animation = total > 0 ? 'boosterGlow 2s ease-in-out infinite' : 'none';
+          }
         }
         if (totalEl) {
           totalEl.textContent = total > 0 ? fmtB(total) : '--';
@@ -1490,14 +1510,19 @@ function render(){
         }
         if (labelEl) {
           if (hit) {
-            labelEl.textContent = '\uD83C\uDFC6 ' + boosterPrizes[day-1] + ' UNLOCKED!';
+            // Show cumulative prize for this many days hit
+            labelEl.textContent = '\uD83C\uDFC6 ' + boosterPrizes[daysHit-1] + ' EARNED!';
             labelEl.style.color = '#4ade80';
+            labelEl.style.fontWeight = '700';
           } else if (total > 0) {
-            labelEl.textContent = fmtB(DAY_GOAL - total) + ' to unlock: ' + boosterPrizes[day-1];
+            labelEl.textContent = fmtB(DAY_GOAL - total) + ' to unlock bonus';
             labelEl.style.color = '#64748B';
+            labelEl.style.fontWeight = 'normal';
           } else {
-            labelEl.textContent = boosterPrizes[day-1];
+            // Hide prize - just show target
+            labelEl.textContent = 'Hit $6M to unlock \uD83D\uDD12';
             labelEl.style.color = '#334155';
+            labelEl.style.fontWeight = 'normal';
           }
         }
       });
