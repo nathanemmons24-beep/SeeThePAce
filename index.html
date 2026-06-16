@@ -455,6 +455,7 @@ if (new URLSearchParams(window.location.search).get('tv') === '1') {
   <div id="blitz-booster-strip" style="display:none;background:rgba(15,23,42,0.85);border:1px solid rgba(251,146,60,0.3);border-radius:12px;padding:12px 16px;margin-bottom:8px;backdrop-filter:blur(14px);box-shadow:0 0 20px rgba(251,146,60,0.1)">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div style="font-family:Orbitron,monospace;font-size:9px;color:#FB923C;letter-spacing:3px">&#x1F525; BOOSTER BAR</div>
+      <div id="booster-earned-display" style="font-family:Orbitron,monospace;font-size:11px;font-weight:900;color:#475569;letter-spacing:1px">$0 EARNED</div>
       <div style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">$6M DAILY BONUS</div>
       <button onclick="closeBlitz()" style="font-family:Orbitron,monospace;font-size:8px;color:#475569;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:3px 8px;cursor:pointer;letter-spacing:1px">EXIT EVENT</button>
     </div>
@@ -1527,6 +1528,7 @@ function render(){
 
       // Cumulative prizes: 1 day=$25, 2 days=$50, 3 days=$100
       var boosterPrizes = ['$25 Amazon Gift Card For All DCs', '$50 Amazon Gift Card For All DCs', '$100 Amazon Gift Card For All DCs'];
+      var earnedAmounts = ['$25', '$50', '$100'];
       var daysHit = 0;
 
       [1,2,3].forEach(function(day) {
@@ -1579,6 +1581,19 @@ function render(){
           }
         }
       });
+
+      // Update earned counter in header
+      var earnedEl = document.getElementById('booster-earned-display');
+      if (earnedEl) {
+        if (daysHit === 0) {
+          earnedEl.textContent = 'HIT $6M TO EARN \uD83D\uDD12';
+          earnedEl.style.color = '#334155';
+        } else {
+          earnedEl.textContent = '\uD83C\uDFC6 ' + earnedAmounts[daysHit-1] + ' AMAZON GIFT CARD EARNED!';
+          earnedEl.style.color = '#4ade80';
+          earnedEl.style.textShadow = '0 0 10px rgba(74,222,128,0.6)';
+        }
+      }
     })();
   })();
 
