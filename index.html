@@ -1006,12 +1006,17 @@ function fetchPrizesFromSheet() {
       try {
         var prizes = JSON.parse(txt);
         if (!Array.isArray(prizes) || prizes.length === 0) return;
-        // Add tier for grand prize detection
+        // Sort by milestone ascending so $1M is index 0
+        prizes.sort(function(a, b) { return (a.milestone || 0) - (b.milestone || 0); });
+        // Mark grand prize tier
         prizes.forEach(function(p) {
           if (!p.tier && p.label && p.label.toLowerCase().indexOf('grand prize') >= 0) p.tier = 'grand';
         });
-        BLITZ_PRIZES = prizes;
-        console.log('Prizes loaded from Sheet:', prizes.length, 'prizes');
+        // Only replace if we got a valid set
+        if (prizes.length >= 5) {
+          BLITZ_PRIZES = prizes;
+          console.log('Prizes loaded from Sheet:', prizes.length, 'prizes');
+        }
       } catch(e) {
         console.warn('Could not parse prizes from Sheet, using defaults');
       }
