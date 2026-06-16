@@ -3692,38 +3692,58 @@ function checkBlitzMilestones(total) {
 // Track known deal IDs to detect new ones between fetches
 var _knownDealIds = null;
 
+function _dealKey(rep, d) {
+  var dateKey = d.date instanceof Date ? d.date.toDateString() : String(d.date);
+  // Use enabledId alone if available — most reliable, survives amount corrections
+  if (d.enabledId && d.enabledId !== '' && d.enabledId !== 'undefined') return 'eid:' + d.enabledId;
+  // Fallback: name + date only (no amount, so corrections don't re-trigger)
+  return 'nd:' + rep.name + '|' + dateKey;
+}
+
 function seedKnownDeals(data) {
   _knownDealIds = new Set();
   Object.values(data.teams).forEach(function(team) {
     team.reps.forEach(function(rep) {
       (rep.dealObjs||[]).forEach(function(d) {
-        var dateKey = d.date instanceof Date ? d.date.toDateString() : String(d.date);
-        var key = (d.enabledId && d.enabledId !== '') ? d.enabledId : (rep.name + '|' + d.amount + '|' + dateKey);
-        _knownDealIds.add(key);
+        _knownDealIds.add(_dealKey(rep, d));
       });
     });
   });
+  // Persist to sessionStorage so page refresh doesn't re-notify
+  try { sessionStorage.setItem('_knownDealIds', JSON.stringify([..._knownDealIds])); } catch(e) {}
+}
+
+function loadKnownDeals() {
+  try {
+    var stored = sessionStorage.getItem('_knownDealIds');
+    if (stored) { _knownDealIds = new Set(JSON.parse(stored)); return true; }
+  } catch(e) {}
+  return false;
 }
 
 function checkNewDealsAndNotify(data) {
-  if (!_knownDealIds) { seedKnownDeals(data); return; }
+  // On first call, try to load from sessionStorage before seeding fresh
+  if (!_knownDealIds) {
+    if (!loadKnownDeals()) { seedKnownDeals(data); }
+    return;
+  }
   var newDeals = [];
   Object.entries(data.teams).forEach(function(e) {
     var storeName = e[0], team = e[1];
     var display = team.display || storeName.split(' - ').slice(1).join(' ').trim() || storeName;
     team.reps.forEach(function(rep) {
       (rep.dealObjs||[]).forEach(function(d) {
-        var dateKey = d.date instanceof Date ? d.date.toDateString() : String(d.date);
-        var key = (d.enabledId && d.enabledId !== '') ? d.enabledId : (rep.name + '|' + d.amount + '|' + dateKey);
+        var key = _dealKey(rep, d);
         if (!_knownDealIds.has(key)) {
-          newDeals.push({ name: rep.name, amount: d.amount, store: storeName, display: display, date: d.date });
+          newDeals.push({ name: rep.name, amount: d.amount, store: storeName, display: display, date: d.date, key: key });
         }
       });
     });
   });
-  // Update known set
-  seedKnownDeals(data);
-  // Notify Teams for each new deal
+  // Add new keys to known set and persist
+  newDeals.forEach(function(deal) { _knownDealIds.add(deal.key); });
+  try { sessionStorage.setItem('_knownDealIds', JSON.stringify([..._knownDealIds])); } catch(e) {}
+  // Notify Teams for each genuinely new deal
   newDeals.forEach(function(deal) {
     if (deal.amount > 0) {
       console.log('New deal detected, notifying Teams:', deal.name, deal.amount);
