@@ -425,7 +425,7 @@
   <!-- BLITZ BAR — shown when special event is active -->
   <div id="blitz-bar-strip" style="display:none;background:rgba(15,23,42,0.85);border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:12px 16px;margin-bottom:8px;backdrop-filter:blur(14px);box-shadow:0 0 20px rgba(124,58,237,0.15)">
     <!-- Header row -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div style="font-family:Orbitron,monospace;font-size:9px;color:#7C3AED;letter-spacing:3px">&#x26A1; BLITZ BAR</div>
       <div style="display:flex;align-items:baseline;gap:6px">
         <div id="blitz-bar-total" style="font-family:Orbitron,monospace;font-size:16px;font-weight:900;color:#00FF88"></div>
@@ -433,64 +433,56 @@
       </div>
       <button onclick="closeBlitz()" style="font-family:Orbitron,monospace;font-size:8px;color:#475569;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:3px 8px;cursor:pointer;letter-spacing:1px">EXIT EVENT</button>
     </div>
-    <!-- 3-day segmented bars -->
-    <div style="display:flex;gap:6px;margin-bottom:10px">
-      <!-- Day 1 -->
-      <div style="flex:1">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
-          <div style="font-family:Orbitron,monospace;font-size:8px;color:#7C3AED;letter-spacing:1px">JUN 18</div>
-          <div id="blitz-day1-total" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#00FF88"></div>
-        </div>
-        <div style="height:24px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,0.5)">
-          <div id="blitz-day1-fill" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#7C3AED,#00FF88);transition:width 1.2s;box-shadow:0 0 10px rgba(0,255,136,0.4)"></div>
-        </div>
-        <div id="blitz-day1-label" style="font-family:Orbitron,monospace;font-size:7px;color:#475569;margin-top:3px;text-align:center">of $6M</div>
-      </div>
-      <!-- Day 2 -->
-      <div style="flex:1">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
-          <div style="font-family:Orbitron,monospace;font-size:8px;color:#7C3AED;letter-spacing:1px">JUN 19</div>
-          <div id="blitz-day2-total" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#00FF88"></div>
-        </div>
-        <div style="height:24px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,0.5)">
-          <div id="blitz-day2-fill" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#7C3AED,#00FF88);transition:width 1.2s;box-shadow:0 0 10px rgba(0,255,136,0.4)"></div>
-        </div>
-        <div id="blitz-day2-label" style="font-family:Orbitron,monospace;font-size:7px;color:#475569;margin-top:3px;text-align:center">of $6M</div>
-      </div>
-      <!-- Day 3 -->
-      <div style="flex:1">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
-          <div style="font-family:Orbitron,monospace;font-size:8px;color:#7C3AED;letter-spacing:1px">JUN 20</div>
-          <div id="blitz-day3-total" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#00FF88"></div>
-        </div>
-        <div style="height:24px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,0.5)">
-          <div id="blitz-day3-fill" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#7C3AED,#00FF88);transition:width 1.2s;box-shadow:0 0 10px rgba(0,255,136,0.4)"></div>
-        </div>
-        <div id="blitz-day3-label" style="font-family:Orbitron,monospace;font-size:7px;color:#475569;margin-top:3px;text-align:center">of $6M</div>
-      </div>
+    <!-- Single growing progress bar -->
+    <div style="height:32px;background:rgba(255,255,255,0.05);border-radius:16px;overflow:hidden;box-shadow:inset 0 2px 8px rgba(0,0,0,0.5);margin-bottom:10px">
+      <div id="blitz-bar-fill" style="height:100%;width:0%;border-radius:16px;transition:width 1.2s"></div>
     </div>
     <!-- Prize icons row below bar - one per $1M milestone -->
     <div id="blitz-prize-icons" style="position:relative;height:64px"></div>
   </div>
 
-  <!-- BLITZ BOOSTER BAR — $6M daily bonus challenge -->
+  <!-- BLITZ BOOSTER BAR — 3 daily $6M segments -->
   <div id="blitz-booster-strip" style="display:none;background:rgba(15,23,42,0.85);border:1px solid rgba(251,146,60,0.3);border-radius:12px;padding:12px 16px;margin-bottom:16px;backdrop-filter:blur(14px);box-shadow:0 0 20px rgba(251,146,60,0.1)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div style="font-family:Orbitron,monospace;font-size:9px;color:#FB923C;letter-spacing:3px">&#x1F525; BOOSTER BAR</div>
-      <div style="display:flex;align-items:baseline;gap:6px">
-        <div id="booster-bar-total" style="font-family:Orbitron,monospace;font-size:16px;font-weight:900;color:#FB923C"></div>
-        <div id="booster-bar-goal" style="font-family:Orbitron,monospace;font-size:9px;color:#475569">of $6M today</div>
-      </div>
-      <div id="booster-bar-label" style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">DAILY BONUS</div>
+      <div style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">$6M DAILY BONUS</div>
     </div>
-    <div style="height:20px;background:rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;box-shadow:inset 0 2px 8px rgba(0,0,0,0.5);margin-bottom:8px;position:relative">
-      <div id="booster-bar-fill" style="height:100%;width:0%;border-radius:10px;background:linear-gradient(90deg,#ea580c,#fb923c,#fcd34d);transition:width 1.2s;box-shadow:0 0 12px rgba(251,146,60,0.6)"></div>
-      <!-- $6M markers every 6M -->
-      <div style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none">
-        <div style="position:absolute;left:100%;top:0;width:2px;height:100%;background:rgba(251,146,60,0.6)"></div>
+    <!-- 3 day segments -->
+    <div style="display:flex;gap:6px">
+      <!-- Day 1 Jun 18 -->
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+          <div style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">JUN 18</div>
+          <div id="booster-day1-total" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#FB923C"></div>
+        </div>
+        <div style="height:20px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,0.5)">
+          <div id="booster-day1-fill" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#ea580c,#fb923c,#fcd34d);transition:width 1.2s"></div>
+        </div>
+        <div id="booster-day1-label" style="font-family:Orbitron,monospace;font-size:7px;color:#475569;margin-top:3px;text-align:center"></div>
+      </div>
+      <!-- Day 2 Jun 19 -->
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+          <div style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">JUN 19</div>
+          <div id="booster-day2-total" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#FB923C"></div>
+        </div>
+        <div style="height:20px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,0.5)">
+          <div id="booster-day2-fill" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#ea580c,#fb923c,#fcd34d);transition:width 1.2s"></div>
+        </div>
+        <div id="booster-day2-label" style="font-family:Orbitron,monospace;font-size:7px;color:#475569;margin-top:3px;text-align:center"></div>
+      </div>
+      <!-- Day 3 Jun 20 -->
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+          <div style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">JUN 20</div>
+          <div id="booster-day3-total" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#FB923C"></div>
+        </div>
+        <div style="height:20px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,0.5)">
+          <div id="booster-day3-fill" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#ea580c,#fb923c,#fcd34d);transition:width 1.2s"></div>
+        </div>
+        <div id="booster-day3-label" style="font-family:Orbitron,monospace;font-size:7px;color:#475569;margin-top:3px;text-align:center"></div>
       </div>
     </div>
-    <div id="booster-bar-status" style="font-family:Orbitron,monospace;font-size:8px;color:#64748B;letter-spacing:1px;text-align:center"></div>
   </div>
 
     <!-- BLITZ BRACKET BREAKDOWN — visible when blitz filter active -->
@@ -1409,60 +1401,7 @@ function render(){
     var pct = Math.min((bd.total / BLITZ_GOAL) * 100, 100);
     document.getElementById('blitz-bar-total').textContent = fmtB(bd.total);
     document.getElementById('blitz-bar-goal').textContent = 'of ' + fmtB(BLITZ_GOAL) + ' \u00b7 ' + pct.toFixed(1) + '%';
-
-    // Calculate day totals
-    var DAY_GOAL = 6000000;
-    var blitzDay1 = new Date(2026, 5, 18);
-    var blitzDay2 = new Date(2026, 5, 19);
-    var blitzDay3 = new Date(2026, 5, 20);
-    var dayTotals = [0, 0, 0];
-
-    if (bd.isDemo && BLITZ_DEMO_DAY_TOTALS) {
-      dayTotals = [BLITZ_DEMO_DAY_TOTALS[18], BLITZ_DEMO_DAY_TOTALS[19], BLITZ_DEMO_DAY_TOTALS[20]];
-    } else if (state.data && state.data.teams) {
-      Object.values(state.data.teams).forEach(function(team) {
-        team.reps.forEach(function(rep) {
-          (rep.dealObjs||[]).forEach(function(d) {
-            if (!d.date) return;
-            var dt = d.date instanceof Date ? d.date : new Date(d.date);
-            if (isNaN(dt.getTime())) return;
-            var dy = dt.getDate(), mo = dt.getMonth(), yr = dt.getFullYear();
-            if (yr === 2026 && mo === 5) {
-              if (dy === 18) dayTotals[0] += d.amount;
-              else if (dy === 19) dayTotals[1] += d.amount;
-              else if (dy === 20) dayTotals[2] += d.amount;
-            }
-          });
-        });
-      });
-    }
-
-    // Update each day segment
-    [1,2,3].forEach(function(day) {
-      var total = dayTotals[day-1];
-      var pctDay = Math.min((total / DAY_GOAL) * 100, 100);
-      var hit = total >= DAY_GOAL;
-      var fillEl = document.getElementById('blitz-day'+day+'-fill');
-      var totalEl = document.getElementById('blitz-day'+day+'-total');
-      var labelEl = document.getElementById('blitz-day'+day+'-label');
-      if (fillEl) {
-        fillEl.style.width = pctDay + '%';
-        fillEl.style.background = hit
-          ? 'linear-gradient(90deg,#16a34a,#4ade80)'
-          : 'linear-gradient(90deg,#7C3AED,#00FF88)';
-        fillEl.style.boxShadow = hit
-          ? '0 0 12px rgba(74,222,128,0.6)'
-          : '0 0 10px rgba(0,255,136,0.4)';
-      }
-      if (totalEl) {
-        totalEl.textContent = fmtB(total);
-        totalEl.style.color = hit ? '#4ade80' : '#00FF88';
-      }
-      if (labelEl) {
-        labelEl.textContent = hit ? '\uD83C\uDFC6 $6M GOAL HIT!' : (pctDay.toFixed(1) + '% of $6M');
-        labelEl.style.color = hit ? '#4ade80' : '#475569';
-      }
-    });
+    document.getElementById('blitz-bar-fill').style.width = pct + '%';
 
     // Prize icons below the bar — uniform size, hover 4x, locked shows info popup
     var iconsEl = document.getElementById('blitz-prize-icons');
@@ -1498,68 +1437,70 @@ function render(){
     // Milestone unlock check
     checkBlitzMilestones(bd.total);
 
-    // ── Booster Bar — daily $6M challenge ─────────────────────────────────
+    // ── Booster Bar — 3 daily $6M segments ────────────────────────────────
     (function() {
       var booster = document.getElementById('blitz-booster-strip');
       if (!booster) return;
       booster.style.display = 'block';
 
-      var BOOSTER_GOAL = 6000000;
-      var today = new Date();
-      var todayTotal = 0;
-      var isDemo = false;
+      var DAY_GOAL = 6000000;
+      var dayTotals = [0, 0, 0];
 
-      // Check if we're using demo data
-      if (state.data && state.data.teams) {
+      // Use demo day totals if no real data
+      if (bd.isDemo && BLITZ_DEMO_DAY_TOTALS) {
+        dayTotals = [BLITZ_DEMO_DAY_TOTALS[18], BLITZ_DEMO_DAY_TOTALS[19], BLITZ_DEMO_DAY_TOTALS[20]];
+      } else if (state.data && state.data.teams) {
         Object.values(state.data.teams).forEach(function(team) {
           team.reps.forEach(function(rep) {
-            (rep.dealObjs || []).forEach(function(d) {
+            (rep.dealObjs||[]).forEach(function(d) {
               if (!d.date) return;
               var dt = d.date instanceof Date ? d.date : new Date(d.date);
               if (isNaN(dt.getTime())) return;
-              var isBlitzDay = dt >= BLITZ_START && dt <= BLITZ_END;
-              var isTodayDate = dt.getFullYear() === today.getFullYear() && dt.getMonth() === today.getMonth() && dt.getDate() === today.getDate();
-              if (isBlitzDay && isTodayDate) todayTotal += d.amount;
+              var dy = dt.getDate(), mo = dt.getMonth(), yr = dt.getFullYear();
+              if (yr === 2026 && mo === 5) {
+                if (dy === 18) dayTotals[0] += d.amount;
+                else if (dy === 19) dayTotals[1] += d.amount;
+                else if (dy === 20) dayTotals[2] += d.amount;
+              }
             });
           });
         });
       }
 
-      // If no real data, use demo day totals — simulate day 1 (Jun 18) over $6M
-      if (todayTotal === 0 && BLITZ_DEMO_DAY_TOTALS) {
-        isDemo = true;
-        todayTotal = BLITZ_DEMO_DAY_TOTALS[18]; // Show Jun 18 demo (over $6M)
-      }
+      // Booster prizes per day
+      var boosterPrizes = ['$25 Amazon Gift Card For All DCs', '$50 Amazon Gift Card For All DCs', '$100 Amazon Gift Card For All DCs'];
 
-      // Find which booster prize applies today based on blitz day number
-      var blitzDay1 = new Date(2026, 5, 18); // Jun 18
-      var dayNum = Math.floor((today - blitzDay1) / 86400000) + 1; // 1, 2, or 3
-      var boosterPrizes = BLITZ_PRIZES.filter(function(p){ return p.booster; });
-      var todayBooster = boosterPrizes[Math.min(dayNum - 1, boosterPrizes.length - 1)];
-      var boosterLabel = todayBooster ? todayBooster.booster : '$25 Amazon Gift Card For All DCs';
-
-      var boosterPct = Math.min((todayTotal / BOOSTER_GOAL) * 100, 100);
-      var boosterHit = todayTotal >= BOOSTER_GOAL;
-      document.getElementById('booster-bar-total').textContent = fmtB(todayTotal);
-      document.getElementById('booster-bar-fill').style.width = boosterPct + '%';
-      document.getElementById('booster-bar-goal').textContent = 'of $6M today \u00b7 ' + boosterLabel;
-
-      if (boosterHit) {
-        document.getElementById('booster-bar-label').textContent = '\uD83C\uDFC6 BONUS UNLOCKED!';
-        document.getElementById('booster-bar-label').style.color = '#4ADE80';
-        document.getElementById('booster-bar-status').textContent = 'DAILY $6M GOAL SMASHED! ' + boosterLabel.toUpperCase() + ' EARNED!';
-        document.getElementById('booster-bar-status').style.color = '#4ADE80';
-        booster.style.borderColor = 'rgba(74,222,128,0.4)';
-        booster.style.boxShadow = '0 0 20px rgba(74,222,128,0.2)';
-      } else {
-        var needed = fmtB(BOOSTER_GOAL - todayTotal);
-        document.getElementById('booster-bar-label').textContent = 'DAILY BONUS';
-        document.getElementById('booster-bar-label').style.color = '#FB923C';
-        document.getElementById('booster-bar-status').textContent = needed + ' TO UNLOCK: ' + boosterLabel.toUpperCase() + ' \u2022 ' + boosterPct.toFixed(1) + '%';
-        document.getElementById('booster-bar-status').style.color = '#64748B';
-        booster.style.borderColor = 'rgba(251,146,60,0.3)';
-        booster.style.boxShadow = '0 0 20px rgba(251,146,60,0.1)';
-      }
+      [1,2,3].forEach(function(day) {
+        var total = dayTotals[day-1];
+        var pctDay = Math.min((total / DAY_GOAL) * 100, 100);
+        var hit = total >= DAY_GOAL;
+        var fillEl  = document.getElementById('booster-day'+day+'-fill');
+        var totalEl = document.getElementById('booster-day'+day+'-total');
+        var labelEl = document.getElementById('booster-day'+day+'-label');
+        if (fillEl) {
+          fillEl.style.width = pctDay + '%';
+          fillEl.style.background = hit
+            ? 'linear-gradient(90deg,#16a34a,#4ade80)'
+            : 'linear-gradient(90deg,#ea580c,#fb923c,#fcd34d)';
+          fillEl.style.boxShadow = hit ? '0 0 12px rgba(74,222,128,0.5)' : '0 0 8px rgba(251,146,60,0.4)';
+        }
+        if (totalEl) {
+          totalEl.textContent = total > 0 ? fmtB(total) : '--';
+          totalEl.style.color = hit ? '#4ade80' : '#FB923C';
+        }
+        if (labelEl) {
+          if (hit) {
+            labelEl.textContent = '\uD83C\uDFC6 ' + boosterPrizes[day-1] + ' UNLOCKED!';
+            labelEl.style.color = '#4ade80';
+          } else if (total > 0) {
+            labelEl.textContent = fmtB(DAY_GOAL - total) + ' to unlock: ' + boosterPrizes[day-1];
+            labelEl.style.color = '#64748B';
+          } else {
+            labelEl.textContent = boosterPrizes[day-1];
+            labelEl.style.color = '#334155';
+          }
+        }
+      });
     })();
   })();
 
