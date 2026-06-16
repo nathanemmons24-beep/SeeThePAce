@@ -3099,6 +3099,8 @@ function getBlitzData() {
       t.reps.sort(function(a,b){ return b.amount-a.amount; });
     });
   });
+  // If no real blitz data yet, use demo data so the board looks populated
+  if (result.total === 0) return buildBlitzFromDemo();
   return result;
 }
 
