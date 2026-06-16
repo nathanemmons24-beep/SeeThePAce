@@ -2739,6 +2739,8 @@ function closeBlitz() {
   if (strip) strip.style.display = "none";
   var panel = document.getElementById("blitz-prize-panel");
   if (panel) panel.style.display = "none";
+  var pr = document.getElementById("blitz-panels-row");
+  if (pr) pr.style.display = "none";
   var btn = document.getElementById("blitz-event-btn");
   if (btn) btn.style.color = "#FFD700";
   document.body.classList.remove('blitz-active');
