@@ -289,7 +289,7 @@
       box-shadow:0 0 24px rgba(124,58,237,0.8),0 0 8px rgba(168,85,247,0.5),inset 0 1px 0 rgba(255,255,255,0.2);
     }
     #blitz-bar-fill::after, #prize-bar-fill::after{
-      content:'';position:absolute;top:0;left:0;width:40px;height:100%;
+      content:'';position:absolute;top:0;left:-40px;width:40px;height:100%;
       background:linear-gradient(90deg,transparent,rgba(255,255,255,0.6),transparent);
       animation:blitz-scanline 2.5s linear infinite;
     }
@@ -378,6 +378,12 @@
   </style>
 </head>
 <body onclick="unlockAudio()" onkeydown="unlockAudio()">
+<script>
+// TV bypass — set auth before any render so enterDashboard skips password
+if (new URLSearchParams(window.location.search).get('tv') === '1') {
+  sessionStorage.setItem('stp_auth', JSON.stringify({ts: Date.now(), version: 'v2'}));
+}
+</script>
 
 <!-- SPLASH / LOADING OVERLAY -->
 <div id="loading-overlay">
@@ -441,7 +447,7 @@
       </div>
     </div>
     <div style="height:32px;background:rgba(255,255,255,0.05);border-radius:16px;overflow:hidden;box-shadow:inset 0 2px 8px rgba(0,0,0,0.5);margin-bottom:10px">
-      <div id="prize-bar-fill" style="height:100%;width:0%;border-radius:16px;transition:width 1.2s"></div>
+      <div id="prize-bar-fill" style="height:100%;width:0%;border-radius:16px;"></div>
     </div>
     <div id="blitz-prize-icons" style="position:relative;height:64px"></div>
   </div>
@@ -952,19 +958,7 @@ function storeAuth() {
 
 // Auto-enter if already authenticated this session
 (function(){
-  // TV link: ?tv=1 bypasses password, enables TV mode + auto scroll + fullscreen
-  if (new URLSearchParams(window.location.search).get('tv') === '1') {
-    sessionStorage.setItem('stp_auth', JSON.stringify({ts: Date.now(), version: AUTH_VERSION}));
-    enterDashboard();
-    setTimeout(function() {
-      if (!tvBigFont) toggleBigFont();
-      if (!scrollActive) toggleScroll();
-      try {
-        if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
-        else if (document.documentElement.webkitRequestFullscreen) document.documentElement.webkitRequestFullscreen();
-      } catch(e) {}
-    }, 1500);
-  } else if (checkStoredAuth()) {
+  if (checkStoredAuth()) {
     enterDashboard();
   }
 })();
@@ -990,6 +984,17 @@ function enterDashboard(goToBlitz) {
   fetchPrizesFromSheet();
   fetchData();
   pollTimer = setInterval(fetchData, POLL_MS);
+  // TV mode auto-init
+  if (new URLSearchParams(window.location.search).get('tv') === '1') {
+    setTimeout(function() {
+      if (!tvBigFont) toggleBigFont();
+      if (!scrollActive) toggleScroll();
+      try {
+        if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        else if (document.documentElement.webkitRequestFullscreen) document.documentElement.webkitRequestFullscreen();
+      } catch(e) {}
+    }, 1500);
+  }
 }
 
 function fetchPrizesFromSheet() {
@@ -1448,7 +1453,16 @@ function render(){
       var pct = Math.min((bd.total / BLITZ_GOAL) * 100, 100);
       document.getElementById('prize-bar-total').textContent = fmtB(bd.total);
       document.getElementById('prize-bar-goal').textContent = 'of ' + fmtB(BLITZ_GOAL) + ' \u00b7 ' + pct.toFixed(1) + '%';
-      document.getElementById('prize-bar-fill').style.width = pct + '%';
+      var fill = document.getElementById('prize-bar-fill');
+      fill.style.width = pct + '%';
+      fill.style.background = 'linear-gradient(90deg,#4C0080,#7C3AED,#A855F7,#C084FC,#00D4FF,#A855F7,#7C3AED,#4C0080)';
+      fill.style.backgroundSize = '300% 100%';
+      fill.style.animation = 'blitz-electric 2s ease-in-out infinite';
+      fill.style.boxShadow = '0 0 24px rgba(124,58,237,0.8),0 0 8px rgba(168,85,247,0.5),inset 0 1px 0 rgba(255,255,255,0.2)';
+      fill.style.borderRadius = '16px';
+      fill.style.position = 'relative';
+      fill.style.overflow = 'hidden';
+      fill.style.transition = 'width 1.2s';
       var iconsEl = document.getElementById('blitz-prize-icons');
       if (iconsEl) {
         var ihtml = '';
