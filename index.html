@@ -431,48 +431,46 @@
 
   <!-- BLITZ BOOSTER BAR — 3 daily $6M segments -->
     <!-- BLITZ BRACKET BREAKDOWN — visible when blitz filter active -->
-  <div id="blitz-panels-row" style="display:none">
-    <!-- BOOSTER BAR inside blitz board -->
-    <div id="blitz-booster-strip" style="width:100%;background:rgba(15,23,42,0.85);border:1px solid rgba(251,146,60,0.3);border-radius:12px;padding:12px 16px;margin-bottom:8px;backdrop-filter:blur(14px);box-shadow:0 0 20px rgba(251,146,60,0.1)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="font-family:Orbitron,monospace;font-size:9px;color:#FB923C;letter-spacing:3px">&#x1F525; BOOSTER BAR</div>
-        <div style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">$6M DAILY BONUS</div>
-        <button onclick="closeBlitz()" style="font-family:Orbitron,monospace;font-size:8px;color:#475569;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:3px 8px;cursor:pointer;letter-spacing:1px">EXIT EVENT</button>
+  <div id="blitz-booster-strip" style="display:none;background:rgba(15,23,42,0.85);border:1px solid rgba(251,146,60,0.3);border-radius:12px;padding:12px 16px;margin-bottom:8px;backdrop-filter:blur(14px);box-shadow:0 0 20px rgba(251,146,60,0.1)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-family:Orbitron,monospace;font-size:9px;color:#FB923C;letter-spacing:3px">&#x1F525; BOOSTER BAR</div>
+      <div style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">$6M DAILY BONUS</div>
+      <button onclick="closeBlitz()" style="font-family:Orbitron,monospace;font-size:8px;color:#475569;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:3px 8px;cursor:pointer;letter-spacing:1px">EXIT EVENT</button>
+    </div>
+    <div style="display:flex;gap:6px">
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+          <div style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">JUN 18</div>
+          <div id="booster-day1-total" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#FB923C"></div>
+        </div>
+        <div style="height:20px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,0.5)">
+          <div id="booster-day1-fill" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#ea580c,#fb923c,#fcd34d);transition:width 1.2s"></div>
+        </div>
+        <div id="booster-day1-label" style="font-family:Orbitron,monospace;font-size:7px;color:#475569;margin-top:3px;text-align:center"></div>
       </div>
-      <div style="display:flex;gap:6px">
-        <div style="flex:1">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
-            <div style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">JUN 18</div>
-            <div id="booster-day1-total" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#FB923C"></div>
-          </div>
-          <div style="height:20px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,0.5)">
-            <div id="booster-day1-fill" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#ea580c,#fb923c,#fcd34d);transition:width 1.2s"></div>
-          </div>
-          <div id="booster-day1-label" style="font-family:Orbitron,monospace;font-size:7px;color:#475569;margin-top:3px;text-align:center"></div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+          <div style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">JUN 19</div>
+          <div id="booster-day2-total" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#FB923C"></div>
         </div>
-        <div style="flex:1">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
-            <div style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">JUN 19</div>
-            <div id="booster-day2-total" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#FB923C"></div>
-          </div>
-          <div style="height:20px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,0.5)">
-            <div id="booster-day2-fill" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#ea580c,#fb923c,#fcd34d);transition:width 1.2s"></div>
-          </div>
-          <div id="booster-day2-label" style="font-family:Orbitron,monospace;font-size:7px;color:#475569;margin-top:3px;text-align:center"></div>
+        <div style="height:20px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,0.5)">
+          <div id="booster-day2-fill" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#ea580c,#fb923c,#fcd34d);transition:width 1.2s"></div>
         </div>
-        <div style="flex:1">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
-            <div style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">JUN 20</div>
-            <div id="booster-day3-total" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#FB923C"></div>
-          </div>
-          <div style="height:20px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,0.5)">
-            <div id="booster-day3-fill" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#ea580c,#fb923c,#fcd34d);transition:width 1.2s"></div>
-          </div>
-          <div id="booster-day3-label" style="font-family:Orbitron,monospace;font-size:7px;color:#475569;margin-top:3px;text-align:center"></div>
+        <div id="booster-day2-label" style="font-family:Orbitron,monospace;font-size:7px;color:#475569;margin-top:3px;text-align:center"></div>
+      </div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+          <div style="font-family:Orbitron,monospace;font-size:8px;color:#FB923C;letter-spacing:1px">JUN 20</div>
+          <div id="booster-day3-total" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#FB923C"></div>
         </div>
+        <div style="height:20px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,0.5)">
+          <div id="booster-day3-fill" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#ea580c,#fb923c,#fcd34d);transition:width 1.2s"></div>
+        </div>
+        <div id="booster-day3-label" style="font-family:Orbitron,monospace;font-size:7px;color:#475569;margin-top:3px;text-align:center"></div>
       </div>
     </div>
   </div>
+  <div id="blitz-panels-row" style="display:none"></div>
 
 
 
@@ -1400,6 +1398,8 @@ function render(){
       if (pp) pp.style.display = 'none';
       var pr = document.getElementById('blitz-panels-row');
       if (pr) pr.style.display = 'none';
+      var booster = document.getElementById('blitz-booster-strip');
+      if (booster) booster.style.display = 'none';
       return;
     }
     var bd = getBlitzData();
@@ -1412,6 +1412,7 @@ function render(){
     (function() {
       var booster = document.getElementById('blitz-booster-strip');
       if (!booster) return;
+      booster.style.display = 'block';
 
       var DAY_GOAL = 6000000;
       var dayTotals = [0, 0, 0];
@@ -2741,6 +2742,8 @@ function closeBlitz() {
   if (panel) panel.style.display = "none";
   var pr = document.getElementById("blitz-panels-row");
   if (pr) pr.style.display = "none";
+  var booster = document.getElementById("blitz-booster-strip");
+  if (booster) booster.style.display = "none";
   var btn = document.getElementById("blitz-event-btn");
   if (btn) btn.style.color = "#FFD700";
   document.body.classList.remove('blitz-active');
