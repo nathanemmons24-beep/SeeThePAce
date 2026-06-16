@@ -3454,7 +3454,20 @@ function drainPrizeQueue() {
   var ms    = document.getElementById('prize-popup-milestone');
   if (!popup){drainPrizeQueue();return;}
   icon.textContent = item.prize.icon;
-  lbl.textContent  = item.prize.label;
+  // Format grand prize as bulleted list
+  if (item.prize.tier === 'grand' && item.prize.label.indexOf('+') >= 0) {
+    var parts = item.prize.label.replace(/^GRAND PRIZE:\s*/i, '').split('+').map(function(s){ return s.trim(); });
+    lbl.innerHTML = '<div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#FFD700;margin-bottom:10px">GRAND PRIZE</div>'
+      + parts.map(function(p, i){ 
+          return '<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;text-align:left">'
+            + '<span style="color:#FFD700;font-weight:900;min-width:16px">' + (i+1) + '.</span>'
+            + '<span>' + p + '</span></div>';
+        }).join('');
+    lbl.style.textAlign = 'left';
+  } else {
+    lbl.textContent = item.prize.label;
+    lbl.style.textAlign = 'center';
+  }
   ms.textContent   = '$'+item.milestone+'M REACHED';
   var c = PRIZE_COLORS[item.prize.tier];
   if (c) lbl.style.color = '#E2E8F0';
@@ -3799,7 +3812,7 @@ var BLITZ_PRIZES = [
   {label:"Big Green Egg",                              icon:"🥩", tier:"home"},
   {label:"TAG Heuer Formula 1 Watch",                  icon:"⌚", tier:"tech"},
   {label:"$750 Visa Gift Card",                        icon:"💳", tier:"cash"},
-  {label:"GRAND PRIZE: 2 FIFA World Cup Tickets + Eleven Madison Park + Air & Lodging + $1,000 Gas & Grocery Bundle", icon:"🏆", tier:"grand"},
+  {label:"GRAND PRIZE: 2 FIFA World Cup Tickets + Eleven Madison Park Dinner + Airfare & Lodging + $1,000 Gas & Grocery Gift Card Bundle", icon:"🏆", tier:"grand"},
 ];
 
 var PRIZE_COLORS = {
