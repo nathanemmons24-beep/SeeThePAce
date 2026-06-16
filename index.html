@@ -1587,6 +1587,20 @@ function render(){
       t.reps.sort(function(a,b){return b.amount-a.amount;});
     });
 
+    // If no real blitz data, fall back to demo for panels
+    if (data.total === 0) {
+      var demoData = buildBlitzFromDemo();
+      data = { total: demoData.total, teams: {} };
+      Object.entries(demoData.brackets).forEach(function(e) {
+        var bName = e[0], b = e[1];
+        Object.entries(b.teams).forEach(function(te) {
+          var tName = te[0], t = te[1];
+          data.teams[tName] = { color: t.color, display: t.display, total: t.total, reps: t.reps };
+          data.total = demoData.total;
+        });
+      });
+    }
+
     // ── Bracket breakdown (built from the static blitz data) ──────────────
     var bracketSection = document.getElementById('blitz-bracket-section');
     if (bracketSection) {
