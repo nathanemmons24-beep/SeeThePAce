@@ -1422,6 +1422,9 @@ function render(){
       var BOOSTER_GOAL = 6000000;
       var today = new Date();
       var todayTotal = 0;
+      var isDemo = false;
+
+      // Check if we're using demo data
       if (state.data && state.data.teams) {
         Object.values(state.data.teams).forEach(function(team) {
           team.reps.forEach(function(rep) {
@@ -1435,6 +1438,12 @@ function render(){
             });
           });
         });
+      }
+
+      // If no real data, use demo day totals — simulate day 1 (Jun 18) over $6M
+      if (todayTotal === 0 && BLITZ_DEMO_DAY_TOTALS) {
+        isDemo = true;
+        todayTotal = BLITZ_DEMO_DAY_TOTALS[18]; // Show Jun 18 demo (over $6M)
       }
 
       // Find which booster prize applies today based on blitz day number
@@ -2794,50 +2803,96 @@ function renderBlitzPrizePanel(total) {
 
 
 var BLITZ_DEMO = {
-  total: 15041200,
+  total: 19240000,
+  // Day totals: Jun 18 = $7.1M, Jun 19 = $6.8M, Jun 20 = $5.3M
   brackets: {
     "Large Markets": {
-      total: 8612000, color: "#00FF88", accent: "#FFD700",
+      total: 11020000, color: "#00FF88", accent: "#FFD700",
       teams: {
-        "0535 - New Jersey": { total:2748000, display:"New Jersey", color:"#00FF88", reps:[
-          {name:"Gerry Zapantis",amount:612000},{name:"Alex Aubrey-Smith",amount:398000},{name:"Ken Haupt",amount:334000},{name:"Rocky Singh",amount:265000},{name:"Barry Dubin",amount:212000},{name:"Brian Whitmore",amount:487000},{name:"Matt Davis",amount:168000},{name:"Marcus Staples",amount:148000},{name:"Roberto Rios",amount:124000}]},
-        "0890 - San Francisco": { total:2241000, display:"San Francisco", color:"#FFD700", reps:[
-          {name:"Diana Muldowney",amount:498000},{name:"Daniel Odetto",amount:362000},{name:"Chris Navarro",amount:312000},{name:"Sarah Prentice",amount:298000},{name:"Ryan Acton",amount:234000},{name:"Austin Davis",amount:198000},{name:"Kevin Upton",amount:187000},{name:"Stephanie Wu",amount:152000}]},
-        "0800 - Long Island": { total:1987000, display:"Long Island", color:"#00D4FF", reps:[
-          {name:"Marlon McGlashin",amount:487000},{name:"Kyle Gray",amount:378000},{name:"Doug Zakow",amount:312000},{name:"Whitney Kent",amount:289000},{name:"Phil Torres",amount:243000},{name:"Caitlin Shore",amount:178000},{name:"Ben Laney",amount:100000}]},
-        "0930 - Georgia": { total:987000, display:"Georgia", color:"#FF6B35", reps:[
-          {name:"Mark Roberts",amount:312000},{name:"Nick Yaffe",amount:234000},{name:"Julia Padgett",amount:214000},{name:"Sarah Prentice",amount:143000},{name:"Damon Wells",amount:84000}]},
-        "0576 - Cincinnati": { total:649000, display:"Cincinnati", color:"#A855F7", reps:[
-          {name:"Jeffrey Dunn",amount:234000},{name:"Logan Kinstle",amount:212000},{name:"Anthony Baird",amount:152000},{name:"Kevin Upton",amount:51000}]}
+        "0535 - New Jersey": { total:3240000, display:"New Jersey", color:"#00FF88", reps:[
+          {name:"Gerry Zapantis",    amount:842000, days:[380000,312000,150000]},
+          {name:"Alex Aubrey-Smith", amount:612000, days:[280000,212000,120000]},
+          {name:"Ken Haupt",         amount:534000, days:[234000,187000,113000]},
+          {name:"Rocky Singh",       amount:498000, days:[198000,178000,122000]},
+          {name:"Brian Whitmore",    amount:412000, days:[187000,143000, 82000]},
+          {name:"Barry Dubin",       amount:342000, days:[142000,134000, 66000]}]},
+        "0890 - San Francisco": { total:2987000, display:"San Francisco", color:"#FFD700", reps:[
+          {name:"Diana Muldowney",   amount:734000, days:[312000,278000,144000]},
+          {name:"Daniel Odetto",     amount:612000, days:[267000,234000,111000]},
+          {name:"Chris Navarro",     amount:498000, days:[212000,187000, 99000]},
+          {name:"Sarah Prentice",    amount:412000, days:[178000,156000, 78000]},
+          {name:"Ryan Acton",        amount:387000, days:[167000,143000, 77000]},
+          {name:"Kevin Upton",       amount:344000, days:[143000,134000, 67000]}]},
+        "0800 - Long Island": { total:2643000, display:"Long Island", color:"#00D4FF", reps:[
+          {name:"Marlon McGlashin",  amount:698000, days:[298000,256000,144000]},
+          {name:"Kyle Gray",         amount:543000, days:[234000,198000,111000]},
+          {name:"Doug Zakow",        amount:487000, days:[212000,178000, 97000]},
+          {name:"Whitney Kent",      amount:412000, days:[178000,156000, 78000]},
+          {name:"Phil Torres",       amount:343000, days:[143000,134000, 66000]},
+          {name:"Caitlin Shore",     amount:160000, days:[ 68000, 59000, 33000]}]},
+        "0930 - Georgia": { total:1198000, display:"Georgia", color:"#FF6B35", reps:[
+          {name:"Mark Roberts",      amount:398000, days:[167000,156000, 75000]},
+          {name:"Nick Yaffe",        amount:312000, days:[134000,112000, 66000]},
+          {name:"Julia Padgett",     amount:287000, days:[122000,109000, 56000]},
+          {name:"Damon Wells",       amount:201000, days:[ 87000, 76000, 38000]}]},
+        "0576 - Cincinnati": { total:952000, display:"Cincinnati", color:"#A855F7", reps:[
+          {name:"Jeffrey Dunn",      amount:387000, days:[167000,143000, 77000]},
+          {name:"Logan Kinstle",     amount:312000, days:[134000,112000, 66000]},
+          {name:"Anthony Baird",     amount:253000, days:[109000, 96000, 48000]}]}
       }
     },
     "Medium Markets": {
-      total: 4487200, color: "#FFD700", accent: "#00FF88",
+      total: 5987000, color: "#FFD700", accent: "#00FF88",
       teams: {
-        "0867 - Indy": { total:1876000, display:"Indy", color:"#FFD700", reps:[
-          {name:"Justo Rodriguez",amount:467000},{name:"Brad Dickey",amount:378000},{name:"Jakobe Young",amount:298000},{name:"Brian Caster",amount:243000},{name:"Austin Davis",amount:189000},{name:"Marcus Staples",amount:143000},{name:"Leah Vance",amount:98000},{name:"Rob Cleary",amount:60000}]},
-        "0791 - Nashville": { total:1398000, display:"Nashville", color:"#00FF88", reps:[
-          {name:"Jonathan Simms",amount:456000},{name:"JT Conway",amount:348000},{name:"Mark Sneed",amount:278000},{name:"Whitney Kent",amount:198000},{name:"Ben Laney",amount:118000}]},
-        "0534 - Westchester": { total:798000, display:"Westchester", color:"#00D4FF", reps:[
-          {name:"Kim Uniacke",amount:312000},{name:"Nick Patentas",amount:245000},{name:"Brian Greenberg",amount:162000},{name:"Roberto Rios",amount:79000}]},
-        "0868 - South Bend": { total:415200, display:"South Bend", color:"#FF6B35", reps:[
-          {name:"Al Reasonover",amount:234000},{name:"Marshall Clevenger",amount:131200},{name:"George Mars",amount:50000}]}
+        "0867 - Indy": { total:2134000, display:"Indy", color:"#FFD700", reps:[
+          {name:"Justo Rodriguez",   amount:567000, days:[243000,212000,112000]},
+          {name:"Brad Dickey",       amount:487000, days:[212000,178000, 97000]},
+          {name:"Jakobe Young",      amount:412000, days:[178000,154000, 80000]},
+          {name:"Brian Caster",      amount:343000, days:[145000,134000, 64000]},
+          {name:"Leah Vance",        amount:325000, days:[139000,122000, 64000]}]},
+        "0791 - Nashville": { total:1876000, display:"Nashville", color:"#00FF88", reps:[
+          {name:"Jonathan Simms",    amount:612000, days:[264000,234000,114000]},
+          {name:"JT Conway",         amount:498000, days:[212000,189000, 97000]},
+          {name:"Mark Sneed",        amount:412000, days:[178000,154000, 80000]},
+          {name:"Ben Laney",         amount:354000, days:[153000,134000, 67000]}]},
+        "0534 - Westchester": { total:1143000, display:"Westchester", color:"#00D4FF", reps:[
+          {name:"Kim Uniacke",       amount:412000, days:[178000,154000, 80000]},
+          {name:"Nick Patentas",     amount:387000, days:[167000,145000, 75000]},
+          {name:"Brian Greenberg",   amount:344000, days:[148000,131000, 65000]}]},
+        "0868 - South Bend": { total:834000, display:"South Bend", color:"#FF6B35", reps:[
+          {name:"Al Reasonover",     amount:412000, days:[178000,154000, 80000]},
+          {name:"Marshall Clevenger",amount:312000, days:[134000,118000, 60000]},
+          {name:"Chris Dobbins",     amount:110000, days:[ 47000, 42000, 21000]}]}
       }
     },
     "Small Markets": {
-      total: 1942000, color: "#00D4FF", accent: "#FFD700",
+      total: 2233000, color: "#00D4FF", accent: "#FFD700",
       teams: {
-        "0914 - Central GTA": { total:687000, display:"Toronto", color:"#00D4FF", reps:[
-          {name:"Lee Jackson",amount:278000},{name:"Matthew Dorff",amount:221000},{name:"Sarah Prentice",amount:134000},{name:"Marcus Staples",amount:54000}]},
-        "0790 - Knoxville": { total:534000, display:"Knoxville", color:"#FFD700", reps:[
-          {name:"Whitney Kent",amount:223000},{name:"Gregory Fairclough",amount:198000},{name:"Ben Laney",amount:113000}]},
-        "0792 - Chattanooga": { total:498000, display:"Chattanooga", color:"#00FF88", reps:[
-          {name:"Ben Laney",amount:198000},{name:"Jeff Chambers",amount:178000},{name:"Austin Davis",amount:122000}]},
-        "0790 - Tri-Cities TN": { total:223000, display:"Knoxville", color:"#A855F7", reps:[
-          {name:"Greg Hawkins",amount:148000},{name:"Roberto Rios",amount:75000}]}
+        "0914 - Central GTA": { total:734000, display:"Toronto", color:"#00D4FF", reps:[
+          {name:"Lee Jackson",       amount:312000, days:[134000,118000, 60000]},
+          {name:"Matthew Dorff",     amount:256000, days:[110000, 98000, 48000]},
+          {name:"Marcus Staples",    amount:166000, days:[ 71000, 63000, 32000]}]},
+        "0790 - Knoxville": { total:643000, display:"Knoxville", color:"#FFD700", reps:[
+          {name:"Whitney Kent",      amount:287000, days:[123000,109000, 55000]},
+          {name:"Gregory Fairclough",amount:234000, days:[101000, 89000, 44000]},
+          {name:"Ben Laney",         amount:122000, days:[ 52000, 47000, 23000]}]},
+        "0792 - Chattanooga": { total:534000, display:"Chattanooga", color:"#00FF88", reps:[
+          {name:"Jeff Chambers",     amount:256000, days:[110000, 98000, 48000]},
+          {name:"Austin Davis",      amount:178000, days:[ 76000, 68000, 34000]},
+          {name:"Rob Cleary",        amount:100000, days:[ 43000, 38000, 19000]}]},
+        "0867 - Indy": { total:322000, display:"Indy", color:"#A855F7", reps:[
+          {name:"Greg Hawkins",      amount:198000, days:[ 85000, 76000, 37000]},
+          {name:"Roberto Rios",      amount:124000, days:[ 53000, 47000, 24000]}]}
       }
     }
   }
+};
+
+// Demo day totals (for booster bar demo): Jun18=7.1M, Jun19=6.8M, Jun20=5.34M
+var BLITZ_DEMO_DAY_TOTALS = {
+  18: 7100000,
+  19: 6800000,
+  20: 5340000
 };
 
 // ══ BLITZ PANELS: TOP ROOKIE + TOP BLITZERS ════════════════════════════════
@@ -3105,15 +3160,26 @@ function getBlitzData() {
 }
 
 function buildBlitzFromDemo() {
-  var result = { total: BLITZ_DEMO.total, brackets: {}, allReps: [] };
+  var result = { total: BLITZ_DEMO.total, brackets: {}, allReps: [], isDemo: true };
+  var day1 = new Date(2026, 5, 18); // Jun 18
+  var day2 = new Date(2026, 5, 19); // Jun 19
+  var day3 = new Date(2026, 5, 20); // Jun 20
   Object.entries(BLITZ_DEMO.brackets).forEach(function(e) {
     var bName=e[0], b=e[1];
     result.brackets[bName] = { total:b.total, teams:{}, color:b.color, accent:b.accent };
     Object.entries(b.teams).forEach(function(te) {
       var tName=te[0], t=te[1];
-      var repsWithStore = t.reps.map(function(r){ return Object.assign({},r,{store:t.display,color:t.color,bracket:bName}); });
-      result.brackets[bName].teams[tName] = { total:t.total, display:t.display, color:t.color, reps:t.reps };
-      repsWithStore.forEach(function(r){ result.allReps.push(r); });
+      var repsWithDealObjs = t.reps.map(function(r) {
+        var days = r.days || [Math.round(r.amount*0.38), Math.round(r.amount*0.36), Math.round(r.amount*0.26)];
+        var dealObjs = [
+          {amount:days[0], date:day1},
+          {amount:days[1], date:day2},
+          {amount:days[2], date:day3}
+        ].filter(function(d){ return d.amount > 0; });
+        return {name:r.name, amount:r.amount, store:t.display, color:t.color, bracket:bName, dealObjs:dealObjs};
+      });
+      result.brackets[bName].teams[tName] = { total:t.total, display:t.display, color:t.color, reps:repsWithDealObjs };
+      repsWithDealObjs.forEach(function(r){ result.allReps.push(r); });
     });
   });
   result.allReps.sort(function(a,b){return b.amount-a.amount;});
