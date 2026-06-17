@@ -3779,12 +3779,7 @@ function renderBlitz() {
   // ── LAYOUT: PRIZES LEFT, BRACKETS RIGHT ───────────────────────────────────
   html += '<div style="display:flex;gap:16px;align-items:flex-start">';
 
-  // Prizes panel
-  html += '<div style="width:200px;flex-shrink:0;position:sticky;top:20px">';
-  html += renderBlitzPrizes(total, goal);
-  html += '</div>';
-
-  // Team splits
+  // Team splits — full width, no prize panel
   html += '<div style="flex:1;min-width:0">';
   html += renderBlitzBracketsNew(filteredBd);
   html += '</div>';
