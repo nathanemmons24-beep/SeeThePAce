@@ -672,7 +672,7 @@ var ROOKIE_NAMES = new Set();
 
 
 
-var APP_VERSION = "20260613";
+var APP_VERSION = "20260618";
 
 
 
@@ -1531,10 +1531,7 @@ function render(){
       var DAY_GOAL = 6000000;
       var dayTotals = [0, 0, 0];
 
-      // Use demo day totals if no real data
-      if (bd.isDemo && BLITZ_DEMO_DAY_TOTALS) {
-        dayTotals = [BLITZ_DEMO_DAY_TOTALS[18], BLITZ_DEMO_DAY_TOTALS[19], BLITZ_DEMO_DAY_TOTALS[20]];
-      } else if (state.data && state.data.teams) {
+      if (state.data && state.data.teams) {
         Object.values(state.data.teams).forEach(function(team) {
           team.reps.forEach(function(rep) {
             (rep.dealObjs||[]).forEach(function(d) {
@@ -1680,20 +1677,6 @@ function render(){
     Object.values(data.teams).forEach(function(t){
       t.reps.sort(function(a,b){return b.amount-a.amount;});
     });
-
-    // If no real blitz data, fall back to demo for panels
-    if (data.total === 0) {
-      var demoData = buildBlitzFromDemo();
-      data = { total: demoData.total, teams: {} };
-      Object.entries(demoData.brackets).forEach(function(e) {
-        var bName = e[0], b = e[1];
-        Object.entries(b.teams).forEach(function(te) {
-          var tName = te[0], t = te[1];
-          data.teams[tName] = { color: t.color, display: t.display, total: t.total, reps: t.reps };
-          data.total = demoData.total;
-        });
-      });
-    }
 
     // ── Bracket breakdown (built from the static blitz data) ──────────────
     var bracketSection = document.getElementById('blitz-bracket-section');
@@ -3016,13 +2999,6 @@ function renderBlitzPrizePanel(total) {
 
 
 
-var BLITZ_DEMO = {
-  total: 9000000,
-  // Day totals: Jun 18 = $7.1M, Jun 19 = $6.8M, Jun 20 = $5.3M
-  brackets: {
-    "Large Markets": {
-      total: 11020000, color: "#00FF88", accent: "#FFD700",
-      teams: {
         "0535 - New Jersey": { total:3240000, display:"New Jersey", color:"#00FF88", reps:[
           {name:"Gerry Zapantis",    amount:842000, days:[380000,312000,150000]},
           {name:"Alex Aubrey-Smith", amount:612000, days:[280000,212000,120000]},
@@ -3100,13 +3076,6 @@ var BLITZ_DEMO = {
       }
     }
   }
-};
-
-// Demo day totals (for booster bar demo): Jun18=7.1M, Jun19=6.8M, Jun20=5.34M
-var BLITZ_DEMO_DAY_TOTALS = {
-  18: 2000000,
-  19: 7000000,
-  20: 0
 };
 
 // ══ BLITZ PANELS: TOP ROOKIE + TOP BLITZERS ════════════════════════════════
@@ -3368,39 +3337,8 @@ function getBlitzData() {
       t.reps.sort(function(a,b){ return b.amount-a.amount; });
     });
   });
-  // If no real blitz data yet, use demo data so the board looks populated
-  if (result.total === 0) return buildBlitzFromDemo();
   return result;
 }
-
-function buildBlitzFromDemo() {
-  var result = { total: BLITZ_DEMO.total, brackets: {}, allReps: [], isDemo: true };
-  var day1 = new Date(2026, 5, 18); // Jun 18
-  var day2 = new Date(2026, 5, 19); // Jun 19
-  var day3 = new Date(2026, 5, 20); // Jun 20
-  // Day proportions: day1=22%, day2=78%, day3=0%
-  var d1Pct = 0.222, d2Pct = 0.778, d3Pct = 0;
-  Object.entries(BLITZ_DEMO.brackets).forEach(function(e) {
-    var bName=e[0], b=e[1];
-    result.brackets[bName] = { total:b.total, teams:{}, color:b.color, accent:b.accent };
-    Object.entries(b.teams).forEach(function(te) {
-      var tName=te[0], t=te[1];
-      var repsWithDealObjs = t.reps.map(function(r) {
-        var dealObjs = [
-          {amount:Math.round(r.amount*d1Pct), date:day1},
-          {amount:Math.round(r.amount*d2Pct), date:day2}
-        ].filter(function(d){ return d.amount > 0; });
-        return {name:r.name, amount:r.amount, store:t.display, color:t.color, bracket:bName, dealObjs:dealObjs};
-      });
-      result.brackets[bName].teams[tName] = { total:t.total, display:t.display, color:t.color, reps:repsWithDealObjs };
-      repsWithDealObjs.forEach(function(r){ result.allReps.push(r); });
-    });
-  });
-  result.allReps.sort(function(a,b){return b.amount-a.amount;});
-  return result;
-}
-
-
 
 function fmtB(n){
   if(n>=1000000) return '$'+(n/1000000).toFixed(2)+'M';
@@ -3873,9 +3811,17 @@ function renderBlitz() {
   var html = '';
 
   // ── HEADER ────────────────────────────────────────────────────────────────
-  html += '<div style="text-align:center;padding:32px 16px 20px">';
-  html += '<div style="font-family:Orbitron,monospace;font-size:clamp(22px,4vw,40px);font-weight:900;color:#00D4FF;letter-spacing:8px;text-shadow:0 0 30px #00D4FF44">&#x2728; SPECIAL EVENT</div>';
-  html += '<div style="font-family:Orbitron,monospace;font-size:11px;color:#334155;letter-spacing:4px;margin-top:6px">' + (state.title || 'SALES BLITZ') + '</div>';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:32px 16px 20px;flex-wrap:wrap;gap:16px">';
+  html += '<div style="flex:1;min-width:200px;text-align:center">';
+  html += '<div style="font-family:Orbitron,monospace;font-size:clamp(22px,4vw,40px);font-weight:900;color:#00D4FF;letter-spacing:8px;text-shadow:0 0 30px #00D4FF44">&#x2728; SUMMER SALE BLITZ</div>';
+  html += '<div style="font-family:Orbitron,monospace;font-size:11px;color:#334155;letter-spacing:4px;margin-top:6px">' + (state.title || 'JUN 18–20 · $17M GOAL') + '</div>';
+  html += '</div>';
+  html += '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0">';
+  html += '<div style="background:#fff;border-radius:10px;padding:6px;box-shadow:0 0 20px rgba(0,212,255,0.3);border:2px solid rgba(0,212,255,0.4)">';
+  html += '<img src="teams_qr.svg" width="90" height="90" style="display:block;border-radius:4px" alt="Teams QR"/>';
+  html += '</div>';
+  html += '<div style="font-family:Orbitron,monospace;font-size:8px;color:#00D4FF;letter-spacing:2px;text-align:center">JOIN THE CONVERSATION!</div>';
+  html += '</div>';
   html += '</div>';
 
   // ── GOAL PROGRESS BAR ─────────────────────────────────────────────────────
