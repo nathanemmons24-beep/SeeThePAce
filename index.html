@@ -2883,13 +2883,14 @@ function toggleBlitzEvent() {
 }
 
 function openBlitz() {
+  blitzUnlocked = true;
   var overlay = document.getElementById('blitz-overlay');
   if (overlay) {
     overlay.style.display = 'flex';
-    document.getElementById('blitz-auth').style.display = 'flex';
-    document.getElementById('blitz-board').style.display = 'none';
-    setTimeout(function(){ var i=document.getElementById('blitz-pw-input'); if(i) i.focus(); }, 100);
+    document.getElementById('blitz-auth').style.display = 'none';
+    document.getElementById('blitz-board').style.display = 'block';
   }
+  activateBlitzFilter();
 }
 
 function closeBlitz() {
