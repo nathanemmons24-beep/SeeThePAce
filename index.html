@@ -903,7 +903,7 @@ async function fetchData(){
     if (parsed) {
       if(!firstFetch){ firstFetch=true; seedBadgeState(parsed); seedKnownDeals(parsed); }
       else if(!BQR){ checkBadgeUpgrades(parsed); checkNewDealsAndNotify(parsed); }
-      else{ seedBadgeState(parsed); seedKnownDeals(parsed); }
+      else{ seedBadgeState(parsed); /* badge queue running — do NOT re-seed known deals */ }
       updateStreaks(parsed);
       state.data=parsed; state.status="live"; state.lastUpdated=new Date().toLocaleTimeString();
       var lo=document.getElementById("loading-overlay");
@@ -3771,7 +3771,8 @@ function loadKnownDeals() {
 }
 
 function checkNewDealsAndNotify(data) {
-  // On first call, try to load from sessionStorage before seeding fresh
+  // If _knownDealIds is null, seed first and return — never notify on the same
+  // call that initialises the set (avoids mass-firing on reconnect / tab reopen)
   if (!_knownDealIds) {
     if (!loadKnownDeals()) { seedKnownDeals(data); }
     return;
