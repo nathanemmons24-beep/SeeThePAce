@@ -1253,7 +1253,7 @@ function testSound(badge){
 
 // \u2550\u2550 BADGE ALERT \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function showBadgeAlert(icon,text,repName,color,big,amount){
-  var inBlitz = (function(){ var o=document.getElementById('blitz-overlay'); return o && o.style.display!=='none'; })();
+  var inBlitz = blitzUnlocked;
   var panelId = inBlitz ? 'blitz-notif-panel' : 'notif-panel';
   var panel=document.getElementById(panelId);
   if(!panel){
@@ -1900,7 +1900,8 @@ function render(){
     });
   }
 
-  renderSalesTicker(data);
+  // Always use full unfiltered data for the ticker so all recent deals show
+  renderSalesTicker(blitzUnlocked && state.data ? mergeAlways(state.data) : data);
   renderLeaderboards(data);
   renderDayBreakdown(data);
   updateBiggestMover(data);
@@ -2890,13 +2891,7 @@ function toggleBlitzEvent() {
 }
 
 function openBlitz() {
-  var overlay = document.getElementById('blitz-overlay');
-  if (overlay) {
-    overlay.style.display = 'flex';
-    document.getElementById('blitz-auth').style.display = 'flex';
-    document.getElementById('blitz-board').style.display = 'none';
-    setTimeout(function(){ var i=document.getElementById('blitz-pw-input'); if(i) i.focus(); }, 100);
-  }
+  activateBlitzFilter();
 }
 
 function closeBlitz() {
@@ -4464,7 +4459,7 @@ function createMenu(){
   // — CONTROLS —
   panel += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">CONTROLS</div>';
   // ADMIN hidden from menu — access via URL only
-  panel += '<button class="menu-item" id="blitz-event-btn" onclick="toggleBlitzEvent();toggleMenu()" style="color:#FFD700">&#x2728; SPECIAL EVENT</button>';
+  panel += '<button class="menu-item" id="blitz-event-btn" onclick="toggleBlitzEvent();toggleMenu()" style="color:#FFD700">&#x26A1; BLITZ 2026</button>';
   panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
 
   // — DISPLAY —
