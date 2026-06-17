@@ -1929,7 +1929,7 @@ function render(){
     var rmedals=["&#x1F947;","&#x1F948;","&#x1F949;"];
     sorted.forEach(function(e,i){
       var rname=e[0],t=e[1],_rm=rname.match(/^(.+?)\s+(\d{4})$/);
-      var display=rname.includes(" - ")?rname.split(" - ").slice(1).join(" ").trim():(_rm?_rm[1].trim():rname);
+      var display = t.display || (rname.includes(" - ") ? rname.split(" - ").slice(1).join(" ").trim() : (_rm ? _rm[1].trim() : rname));
       var pct=Math.max(8,(t.total/maxTotal)*100);
       var isActive = activeMarketFilters ? activeMarketFilters.has(rname) : false;
       var row=document.createElement("div");
@@ -2579,21 +2579,66 @@ var CONSOLIDATE_COLORS = {
 
 // Always-on merges (regardless of Consolidate toggle)
 var ALWAYS_MERGE = {
-  "0914 - Central GTA":         { group: "Toronto",             color: "#A855F7" },
-  "0914 - Eastern GTA":         { group: "Toronto",             color: "#A855F7" },
-  "Toronto 0914":               { group: "Toronto",             color: "#A855F7" },
-  "Toronto, Ontario (914)":     { group: "Toronto",             color: "#A855F7" },
-  "Toronto Ontario (914)":      { group: "Toronto",             color: "#A855F7" },
-  "0535 - Central Northern NJ": { group: "0535 - New Jersey",   color: "#00FF88" },
-  "0535 - New Jersey":          { group: "0535 - New Jersey",   color: "#00FF88" },
-  "0930 - Atlanta":             { group: "0930 - Georgia",      color: "#34D399" },
-  "0930 - Eastern GA":          { group: "0930 - Georgia",      color: "#34D399" },
-  "0930 - Southern GA":         { group: "0930 - Georgia",      color: "#34D399" },
-  "0930 - Georgia":             { group: "0930 - Georgia",      color: "#34D399" },
-  "0868 - So Bend":             { group: "0868 - South Bend",   color: "#60A5FA" },
-  "0868 - South Bend":          { group: "0868 - South Bend",   color: "#60A5FA" },
-  "0790 - Tri-Cities TN":       { group: "0790 - Knoxville",    color: "#F59E0B" },
-  "0790 - Knoxville":           { group: "0790 - Knoxville",    color: "#F59E0B" },
+  "0914 - Central GTA":              { group: "Toronto",             color: "#A855F7" },
+  "0914 - Eastern GTA":              { group: "Toronto",             color: "#A855F7" },
+  "Toronto 0914":                    { group: "Toronto",             color: "#A855F7" },
+  "Toronto, Ontario (914)":          { group: "Toronto",             color: "#A855F7" },
+  "Toronto Ontario (914)":           { group: "Toronto",             color: "#A855F7" },
+  "0535 - Central Northern NJ":      { group: "0535 - New Jersey",   color: "#00FF88" },
+  "0535 - New Jersey":               { group: "0535 - New Jersey",   color: "#00FF88" },
+  "New Jersey-New York Metro (535)": { group: "0535 - New Jersey",   color: "#00FF88" },
+  "New Jersey-New York Metro":       { group: "0535 - New Jersey",   color: "#00FF88" },
+  "0930 - Atlanta":                  { group: "0930 - Georgia",      color: "#34D399" },
+  "0930 - Eastern GA":               { group: "0930 - Georgia",      color: "#34D399" },
+  "0930 - Southern GA":              { group: "0930 - Georgia",      color: "#34D399" },
+  "0930 - Georgia":                  { group: "0930 - Georgia",      color: "#34D399" },
+  "Atlanta, GA (930)":               { group: "0930 - Georgia",      color: "#34D399" },
+  "Atlanta, GA":                     { group: "0930 - Georgia",      color: "#34D399" },
+  "0868 - So Bend":                  { group: "0868 - South Bend",   color: "#60A5FA" },
+  "0868 - South Bend":               { group: "0868 - South Bend",   color: "#60A5FA" },
+  "South Bend, IN (868)":            { group: "0868 - South Bend",   color: "#60A5FA" },
+  "South Bend, IN":                  { group: "0868 - South Bend",   color: "#60A5FA" },
+  "0790 - Tri-Cities TN":            { group: "0790 - Knoxville",    color: "#F59E0B" },
+  "0790 - Knoxville":                { group: "0790 - Knoxville",    color: "#F59E0B" },
+  "Knoxville, TN (790)":             { group: "0790 - Knoxville",    color: "#F59E0B" },
+  "Knoxville, TN":                   { group: "0790 - Knoxville",    color: "#F59E0B" },
+  "0800 - Long Island":              { group: "0800 - Long Island",  color: "#00D4FF" },
+  "Long Island, NY (800)":           { group: "0800 - Long Island",  color: "#00D4FF" },
+  "Long Island, NY":                 { group: "0800 - Long Island",  color: "#00D4FF" },
+  "0890 - San Francisco":            { group: "0890 - San Francisco",color: "#FFD700" },
+  "San Francisco, CA (890)":         { group: "0890 - San Francisco",color: "#FFD700" },
+  "San Francisco, CA":               { group: "0890 - San Francisco",color: "#FFD700" },
+  "0576 - Cincinnati":               { group: "0576 - Cincinnati",   color: "#A855F7" },
+  "Cincinnati-Dayton OH (576)":      { group: "0576 - Cincinnati",   color: "#A855F7" },
+  "Cincinnati-Dayton OH":            { group: "0576 - Cincinnati",   color: "#A855F7" },
+  "Cincinnati-Dayton O...":          { group: "0576 - Cincinnati",   color: "#A855F7" },
+  "0867 - Indy":                     { group: "0867 - Indy",         color: "#FF6B35" },
+  "Indianapolis, IN (867)":          { group: "0867 - Indy",         color: "#FF6B35" },
+  "Indianapolis, IN":                { group: "0867 - Indy",         color: "#FF6B35" },
+  "0534 - Westchester":              { group: "0534 - Westchester",  color: "#00FF88" },
+  "Westchester, NY (534)":           { group: "0534 - Westchester",  color: "#00FF88" },
+  "Westchester, NY":                 { group: "0534 - Westchester",  color: "#00FF88" },
+  "0791 - Nashville":                { group: "0791 - Nashville",    color: "#FB923C" },
+  "Nashville, TN (791)":             { group: "0791 - Nashville",    color: "#FB923C" },
+  "Nashville, TN":                   { group: "0791 - Nashville",    color: "#FB923C" },
+  "0792 - Chattanooga":              { group: "0792 - Chattanooga",  color: "#4ADE80" },
+  "Chattanooga, TN (792)":           { group: "0792 - Chattanooga",  color: "#4ADE80" },
+  "Chattanooga, TN":                 { group: "0792 - Chattanooga",  color: "#4ADE80" },
+};
+
+var STORE_DISPLAY_NAMES = {
+  "0535 - New Jersey":   "New Jersey",
+  "0930 - Georgia":      "Georgia",
+  "0868 - South Bend":   "South Bend",
+  "0790 - Knoxville":    "Knoxville",
+  "0800 - Long Island":  "Long Island",
+  "0890 - San Francisco":"San Francisco",
+  "0576 - Cincinnati":   "Cincinnati",
+  "0867 - Indy":         "Indy",
+  "0534 - Westchester":  "Westchester",
+  "0791 - Nashville":    "Nashville",
+  "0792 - Chattanooga":  "Chattanooga",
+  "Toronto":             "Toronto",
 };
 
 function mergeAlways(rawData) {
@@ -2603,8 +2648,9 @@ function mergeAlways(rawData) {
     var mapping = ALWAYS_MERGE[storeName];
     var groupName = mapping ? mapping.group : storeName;
     var color     = mapping ? mapping.color  : team.color;
+    var displayName = STORE_DISPLAY_NAMES[groupName] || groupName.replace(/^\d{4}\s*-\s*/, '').trim();
     if (!result.teams[groupName]) {
-      result.teams[groupName] = { total: 0, reps: [], color: color };
+      result.teams[groupName] = { total: 0, reps: [], color: color, display: displayName };
     }
     var grp = result.teams[groupName];
     grp.total += team.total;
