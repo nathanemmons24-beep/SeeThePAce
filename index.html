@@ -2887,10 +2887,15 @@ function openBlitz() {
   var overlay = document.getElementById('blitz-overlay');
   if (overlay) {
     overlay.style.display = 'flex';
-    document.getElementById('blitz-auth').style.display = 'none';
-    document.getElementById('blitz-board').style.display = 'block';
+    var auth = document.getElementById('blitz-auth');
+    if (auth) auth.style.display = 'none';
+    var board = document.getElementById('blitz-board');
+    if (board) board.style.display = 'block';
+    var hamburger = document.getElementById('blitz-hamburger-wrap');
+    if (hamburger) hamburger.style.display = 'block';
   }
   activateBlitzFilter();
+  renderBlitz();
 }
 
 function closeBlitz() {
