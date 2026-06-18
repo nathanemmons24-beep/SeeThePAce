@@ -338,7 +338,9 @@
     #blitz-panels-row{display:none;gap:12px;margin-bottom:16px;flex-wrap:wrap}
     body.blitz-active #blitz-panels-row{display:flex}
     @media(max-width:600px){
+      #blitz-panels-row{flex-direction:column!important}
       #blitz-panels-row>div{min-width:100%!important;flex:1 1 100%!important}
+      #blitz-panels-row>div>div{min-width:100%!important}
       #blitz-bracket-section .blitz-bracket-card{min-width:100%!important}
       .blitz-s-badge{font-size:7px!important;padding:1px 4px!important}
       #blitz-bar-strip{padding:10px 12px!important}
@@ -3165,14 +3167,14 @@ function renderBlitzPanels(blitzData) {
   var panelsRow = document.getElementById('blitz-panels-row');
   if (!panelsRow) return;
 
-  var html = '<div style="display:flex;gap:12px;width:100%">';
+  var html = '<div style="display:flex;flex-wrap:wrap;gap:12px;width:100%">';
   BRACKET_ORDER.forEach(function(bName) {
     var bColor = BRACKET_COLORS[bName];
     var badgeSlots = bName === 'Large Markets' ? 4 : 3;
     var blitzers = tops[bName].all.slice(0, 6);
     var rookies  = tops[bName].rookies.slice(0, 3);
     var bracketTotal = blitzData.brackets[bName] ? blitzData.brackets[bName].total : 0;
-    html += '<div style="flex:1;min-width:min(100%,260px);background:rgba(10,15,30,0.85);border:1px solid '+bColor+'40;border-top:2px solid '+bColor+';border-radius:12px;padding:14px;backdrop-filter:blur(14px)">';
+    html += '<div style="flex:1;min-width:min(100%,280px);box-sizing:border-box;background:rgba(10,15,30,0.85);border:1px solid '+bColor+'40;border-top:2px solid '+bColor+';border-radius:12px;padding:14px;backdrop-filter:blur(14px)">';
 
     // Card header
     html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06)">';
