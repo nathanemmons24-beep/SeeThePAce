@@ -714,7 +714,7 @@ var firedBadges={};
 
 
 
-var SHEET_URL  = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
+var SHEET_URL  = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Corrected";
 var POLL_MS    = 10000;
 var ADMIN_PW   = "Mayday2015";
 var PALETTE    = ["#00D4FF","#00FF88","#FFD700","#FF6B35","#A855F7","#FF4EFF","#34D399","#F59E0B","#60A5FA","#FB7185"];
@@ -737,7 +737,7 @@ var IND_BADGES = [
 var SAMPLE = { total: 0, teams: {} };
 
 var _saved = (function(){ try{ return JSON.parse(localStorage.getItem("blitz_settings")||"{}"); }catch(e){return{};} })();
-var SHEET_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
+var SHEET_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Corrected";
 var state={
   sheetUrl: _saved.sheetUrl || SHEET_URL,
   goal:     _saved.goal     || 500000,
@@ -890,7 +890,7 @@ async function fetchSettings() {
 }
 
 async function fetchData(){
-  var DATA_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
+  var DATA_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Corrected";
   try {
     var res = await fetch(DATA_URL, {cache:"no-store", redirect:"follow"});
     if (!res.ok) {
