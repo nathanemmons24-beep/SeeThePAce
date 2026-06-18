@@ -790,7 +790,7 @@ function parseCsv(csv){
       if(seenEnabledIds.has(enabledId)) continue;
       seenEnabledIds.add(enabledId);
     }
-    var score=parseFloat(scoreRaw.replace(/[$,]/g,""));
+    var score=parseFloat(scoreRaw.replace(/[$,]/g,""))*1000;
     if(isNaN(score)||score<=0) continue;
     // Parse date — Apps Script outputs YYYY-MM-DD (after redeploy)
     // or M/D/YYYY where M=actual month, D=actual day
