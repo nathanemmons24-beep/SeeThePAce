@@ -777,11 +777,17 @@ function parseCsv(csv){
   if(lines.length<2) return null;
   var today=new Date(); today.setHours(0,0,0,0);
   var data={total:0,teams:{}};
+  var seenEnabledIds=new Set(); // deduplicate rows by enabledId
   for(var i=1;i<lines.length;i++){
     var cols=parseCsvLine(lines[i]).map(function(c){return c.replace(/^\"|\"$/g,"").trim();});
     var store=cols[0],name=cols[1],scoreRaw=cols[2],dateRaw=cols[3]||"",enabledId=cols[4]||"",cancelled=cols[5]||"";
     if(!store||!name||!scoreRaw) continue;
     if(cancelled.toLowerCase()==='yes') continue;
+    // Deduplicate by enabledId — if the same deal ID appears more than once, skip it
+    if(enabledId && enabledId !== '' && enabledId !== 'undefined'){
+      if(seenEnabledIds.has(enabledId)) continue;
+      seenEnabledIds.add(enabledId);
+    }
     var score=parseFloat(scoreRaw.replace(/[$,]/g,""));
     if(isNaN(score)||score<=0) continue;
     // Parse date — Apps Script outputs YYYY-MM-DD (after redeploy)
