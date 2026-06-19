@@ -1717,7 +1717,8 @@ function render(){
         (t.reps||[]).forEach(function(r){ bd2.allReps.push({name:r.name,amount:r.amount,store:t.display||'',color:t.color}); });
       });
       bd2.allReps.sort(function(a,b){return b.amount-a.amount;});
-      bracketSection.innerHTML = renderBlitzBracketsNew(bd2);
+      var bd2Final = blitzShowRookiesOnly ? filterBlitzRookies(bd2) : bd2;
+      bracketSection.innerHTML = renderBlitzBracketsNew(bd2Final);
     }
     // Always render panels when blitz active (regardless of bracketSection)
     (function() {
@@ -1735,7 +1736,8 @@ function render(){
         (team.reps||[]).forEach(function(r){ bd3.allReps.push({name:r.name,amount:r.amount,color:team.color}); });
       });
       bd3.allReps.sort(function(a,b){return b.amount-a.amount;});
-      renderBlitzPanels(bd3);
+      var bd3Final = blitzShowRookiesOnly ? filterBlitzRookies(bd3) : bd3;
+      renderBlitzPanels(bd3Final);
       var panelsRow = document.getElementById('blitz-panels-row');
       if (panelsRow) panelsRow.style.display = 'flex';
     })();
@@ -3424,32 +3426,29 @@ var BLITZ_MILESTONES = [
 
 // Populate ROOKIE_NAMES (declared at top of script)
 ROOKIE_NAMES = new Set([
-  "Adrian Greenidge","Aftan Marie Burnett","Amber Gravely","Andrew Haubner","Andrew Lane","Ben Laney","Brian Bonner","Bryan Kleppe",
-  "Chad Dulin","Cody Clearman","Colton Schlenz","Dan Silvernail","Daniel Blood","Daniel Emmons","David Russell","Dorian Altamirano",
-  "Elizabeth Kennedy","Eric Good","Ethan Deitzer","Ethan Young","Femi Adedoyin","George Mars","Hunter Sikes","Ibrahim Kladnjak",
-  "James Ringler","Jameson Evans","Jason Lee","Jennifer Townsend","Jerry Eck","Jesse Hamadi","Jimmy Outler","John Evans",
-  "Jose Gonzalez","Joseph Varrone","Kevin Upton","Kris Woodward","Krystal Wilbanks","Larry Strunk","Lee Jackson","Linda Campanelli",
-  "Mac Isibor","Marcus Santos","Maria Duarte","Mark Hall","Matthew Dicks","Matthew Tipton","Michael Osheroff","Mike Manashirov",
-  "Mitchell Clark","Mo Elshafie","Nathan McIntyre","Nick Quinn","Paul Guetter","Peter Doscas","Peter Nantista","Rand Strollo",
-  "Randy Niswonger","Renata Vaughn","Richard Horancia","Rob MacLean","Ryan Nicaragua","Ryan Parr","Sheefat Kazi","Sina Faridnia",
-  "Tacoma Vaught","Traci Kubach","Wes Eigenauer","Wes Milstead","Whitney Kent","Will Ray","Zachary King"
+  "Alishia Richards","Sunshine Richards","Robert Caruso","Julia Padgett","Joe Powers","Tamara Thompson",
+  "Brice Blocker","Stephane Alexandre","Daniel Fordham","Austin Davis","Monty White","Jeff DeRosa",
+  "Jesse Hamadi","Wes Eigenauer","Amber Gravely","Traci Kubach","Brian Bonner","Mark Hall",
+  "Daniel Emmons","Zachary King","Jennifer Townsend","Krystal Wilbanks","Jimmy Outler","Maria Duarte",
+  "Matt Davis","Andrew Haubner","Ethan Young","Will Ray","Ben Laney","Matthew Dicks",
+  "Larry Strunk","Whitney Kent","Andrea O'Campo","Omar Mhamdi","Dustin Ravenscraft","Marcus Staples",
+  "Ethan Deitzer","Chad Dulin","Dan Silvernail","Kyle Spence","Alec Dietz","Travis Bruner",
+  "Corey Landon","Justin Stillson","Kris Woodward","Jose Gonzalez","Joseph Varrone","Daniel Blood",
+  "Matthew Tipton","David Russell","Wes Milstead","Jameson Evans","Andrew Lane","Cody Clearman",
+  "Gerasimos Vangelatos","Jean Jourdain","William Hawrey","Michael Hill","Gage Afanasiew","Daniel Hersey",
+  "Rand Strollo","Paul Guetter","Kevin Upton","Peter Nantista","John Hanifin","Dana Zadah",
+  "Nathan McIntyre","Nick Quinn","Michael Osheroff","Ryan Parr","Mitchell Clark","Jason Lee",
+  "Matthew Jones","Chris Patkochis","Roberto Rios","Stanislav Faynerman","Barry Gasmer","Adhem Sharkawy",
+  "Kimberley Prasad","Mike Manashirov","Adrian Greenidge","Mac Isibor","Bryan Kleppe","Femi Adedoyin",
+  "Linda Campanelli","Mo Elshafie","Blake Gallick","Alexander Victoria","Sergio Velez","Sarah Prentice",
+  "Adel Awad","Aftan Marie Burnett","Hunter Sikes","Dorian Altamirano","Dario Altamirano","John Evans",
+  "Sina Faridnia","Marcus Santos","Randy Niswonger","Tacoma Vaught","Chris Andrews","Rasim Samardzic",
+  "Jerry Eck","Renata Vaughn","George Mars","Eric Good","Richard Horancia","Chris Bovell",
+  "Vicky Bhardwaj","Frank Al Taweel","Terry Harvey","James Ringler","Elizabeth Kennedy","Ibrahim Kladnjak",
+  "Rob MacLean","Lee Jackson","Sheefat Kazi","Ryan Slavin","Peter Doscas"
 ]);
 
-// Also fetch live from New Hires sheet tab to stay current
-(function(){
-  var url = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=New Hires";
-  fetch(url, {cache:"no-store", redirect:"follow"}).then(function(r){ return r.text(); }).then(function(csv){
-    var lines = csv.trim().split("\n").filter(Boolean);
-    if(lines.length < 2) return;
-    var fresh = new Set();
-    for(var i=1;i<lines.length;i++){
-      var cols = lines[i].split(",");
-      var name = cols[1] ? cols[1].replace(/^"|"$/g,"").trim() : "";
-      if(name && !name.startsWith("X -") && name !== "Sales Rep") fresh.add(name);
-    }
-    if(fresh.size > 0){ ROOKIE_NAMES = fresh; render(); }
-  }).catch(function(){});
-})();
+// Rookie names are hardcoded above from the New Hires sheet - update manually when sheet changes
 var blitzShowRookiesOnly = false;
 var blitzScrollActive = false;
 var blitzScrollTimer = null;
