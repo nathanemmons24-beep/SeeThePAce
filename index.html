@@ -1664,7 +1664,14 @@ function render(){
         var blitzDeals = (rep.dealObjs||[]).filter(function(d) {
           if (!d.date) return false;
           var dt = d.date instanceof Date ? d.date : new Date(d.date);
-          return dt >= BLITZ_START && dt <= BLITZ_END;
+          if (!(dt >= BLITZ_START && dt <= BLITZ_END)) return false;
+          // Also apply day filter if active
+          if (filterDay) {
+            var dk = new Date(dt); dk.setHours(0,0,0,0);
+            var dKey = dk.getFullYear()+'-'+(dk.getMonth()+1)+'-'+dk.getDate();
+            if (dKey !== filterDay) return false;
+          }
+          return true;
         });
         if (blitzDeals.length === 0) return;
         var repTotal = blitzDeals.reduce(function(s,d){ return s+d.amount; }, 0);
@@ -2300,6 +2307,7 @@ function toggleBigFont() {
 function toggleDayFilter(key) {
   filterDay = (filterDay === key) ? null : key;
   render();
+  if (blitzUnlocked) renderBlitz();
 }
 
 // ══ DAY BREAKDOWN ═════════════════════════════════════════════════════════════
