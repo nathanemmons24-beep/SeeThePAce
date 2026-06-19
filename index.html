@@ -3416,19 +3416,32 @@ var BLITZ_MILESTONES = [
 
 // Populate ROOKIE_NAMES (declared at top of script)
 ROOKIE_NAMES = new Set([
-  "Matt Davis","Alishia Sunshine Richards","Brice Blocker","Daniel Fordham","Grady Flowers","Joe Powers","Julia Padgett","Len Konecny","Monty White","Robert Caruso","Tamara Thompson",
-  "Alec Dietz","Justin Stillson","Kyle Spence","Joseph Varrone","Whitney Kent","Gage Afanasiew","Gerasimos Vangelatos","Jean Jourdain","Michael Hill","William Hawrey",
-  "Dana Zadah","John Hanifin","Nick Quinn","Adhem Sharkawy","Barry Gasmer","Christopher Patkochis","Matthew Jones","Roberto Rios","Stanislav Faynerman",
-  "Andrea O'Campo","Omar Mhamdi","Alexander Victoria","Blake Gallick","Sergio Velez","Chris Andrews","Rasim Samardzic","Chris Bovell","Terry Harvey","Ryan Slavin",
-  "Andrew Haubner","Ben Laney","Ethan Young","Will Ray","Amber Gravely","Austin Davis","Jeff DeRosa","Jesse Hamadi","Stephane Alexandre","Wes Eigenauer",
-  "Corey Landon","Dan Silvernail","Kris Woodward","Travis Bruner","Daniel Blood","David Russell","Jameson Evans","Matthew Tipton","Wes Milstead","Daniel Hersey",
-  "Onelio Veloz","Michael Osheroff","Nathan McIntyre","Kimberley Prasad","Marcus Staples","Stephanie VanBenschoten","Adel Awad","Aftan Marie Burnett","Dorian Altamirano","Hunter Sikes","John Evans","Sarah Prentice","Tiffany Chan",
-  "Eric Good","George Mars","Jerry Eck","Renata Vaughn","Elizabeth Kennedy","Frank Al Taweel","James Ringler","John Ball","Vicky Bhardwaj",
-  "Larry Strunk","Matthew Dicks","Brian Bonner","Daniel Emmons","Jennifer Townsend","Jimmy Outler","Krystal Wilbanks","Maria Duarte","Mark Hall","Traci Kubach","Zachary Deal","Zachary King",
-  "Jose Gonzalez","Andrew Lane","Cody Clearman","Kevin Upton","Paul Guetter","Peter Nantista","Rand Strollo Jr.","Jason Lee","Mitchell Clark","Ryan Parr",
-  "Adrian Greenidge Jr.","Bryan Kleppe","Femi Adedoyin","Linda Campanelli","Mac McDavis Isibor","Mike Manashirov","Mo Elshafie","Chad Dulin",
-  "Marcus Santos","Randy Niswonger","Sina Faridnia","Tacoma Vaught","Richard Horancia","Ibrahim Kladnjak","Lee Jackson","Sheefat Kazi"
+  "Adrian Greenidge","Aftan Marie Burnett","Amber Gravely","Andrew Haubner","Andrew Lane","Ben Laney","Brian Bonner","Bryan Kleppe",
+  "Chad Dulin","Cody Clearman","Colton Schlenz","Dan Silvernail","Daniel Blood","Daniel Emmons","David Russell","Dorian Altamirano",
+  "Elizabeth Kennedy","Eric Good","Ethan Deitzer","Ethan Young","Femi Adedoyin","George Mars","Hunter Sikes","Ibrahim Kladnjak",
+  "James Ringler","Jameson Evans","Jason Lee","Jennifer Townsend","Jerry Eck","Jesse Hamadi","Jimmy Outler","John Evans",
+  "Jose Gonzalez","Joseph Varrone","Kevin Upton","Kris Woodward","Krystal Wilbanks","Larry Strunk","Lee Jackson","Linda Campanelli",
+  "Mac Isibor","Marcus Santos","Maria Duarte","Mark Hall","Matthew Dicks","Matthew Tipton","Michael Osheroff","Mike Manashirov",
+  "Mitchell Clark","Mo Elshafie","Nathan McIntyre","Nick Quinn","Paul Guetter","Peter Doscas","Peter Nantista","Rand Strollo",
+  "Randy Niswonger","Renata Vaughn","Richard Horancia","Rob MacLean","Ryan Nicaragua","Ryan Parr","Sheefat Kazi","Sina Faridnia",
+  "Tacoma Vaught","Traci Kubach","Wes Eigenauer","Wes Milstead","Whitney Kent","Will Ray","Zachary King"
 ]);
+
+// Also fetch live from New Hires sheet tab to stay current
+(function(){
+  var url = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=New Hires";
+  fetch(url, {cache:"no-store", redirect:"follow"}).then(function(r){ return r.text(); }).then(function(csv){
+    var lines = csv.trim().split("\n").filter(Boolean);
+    if(lines.length < 2) return;
+    var fresh = new Set();
+    for(var i=1;i<lines.length;i++){
+      var cols = lines[i].split(",");
+      var name = cols[1] ? cols[1].replace(/^"|"$/g,"").trim() : "";
+      if(name && !name.startsWith("X -") && name !== "Sales Rep") fresh.add(name);
+    }
+    if(fresh.size > 0){ ROOKIE_NAMES = fresh; render(); }
+  }).catch(function(){});
+})();
 var blitzShowRookiesOnly = false;
 var blitzScrollActive = false;
 var blitzScrollTimer = null;
