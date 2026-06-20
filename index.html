@@ -2946,7 +2946,12 @@ function toggleBlitzEvent() {
       ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill();
       ctx.restore();
     }
-    raf=requestAnimationFrame(tick);
+    if(particles.length>0){
+      raf=requestAnimationFrame(tick);
+    } else {
+      if(canvas){ ctx.clearRect(0,0,canvas.width,canvas.height); canvas.remove(); canvas=null; }
+      ctx=null; raf=null;
+    }
   }
   function start(){
     if(!isLastDay()) return;
@@ -2962,8 +2967,13 @@ function toggleBlitzEvent() {
     ctx=canvas.getContext('2d');
     particles=[];
     window.addEventListener('resize',resize);
-    launch();
-    timer=setInterval(function(){ launch(); if(Math.random()<0.45) launch(); },900);
+    // Fire 5 bursts over 3 seconds, then stop launching
+    var bursts=0;
+    launch(); launch(); bursts=2;
+    timer=setInterval(function(){
+      launch(); bursts++;
+      if(bursts>=5){ clearInterval(timer); timer=null; }
+    },600);
     raf=requestAnimationFrame(tick);
   }
   function stop(){
