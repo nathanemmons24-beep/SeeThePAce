@@ -3221,6 +3221,8 @@ function getBlitzTopsByBracket(blitzData) {
     Object.entries(b.teams).forEach(function(e) {
       var team = e[1];
       (team.reps||[]).forEach(function(rep) {
+        var dealCount = (rep.dealObjs||rep.deals||[]).length;
+        if (dealCount < 3) return; // must have at least 3 sales to rank
         var isRookie = ROOKIE_NAMES && ROOKIE_NAMES.has(rep.name);
         var entry = { name:rep.name, amount:rep.amount, color:team.color, isRookie:isRookie, dealObjs:rep.dealObjs||[] };
         result[bName].all.push(entry);
