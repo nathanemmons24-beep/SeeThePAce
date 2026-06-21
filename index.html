@@ -3224,7 +3224,8 @@ function getBlitzTopsByBracket(blitzData) {
         var dealCount = (rep.dealObjs||rep.deals||[]).length;
         if (dealCount < 3) return; // must have at least 3 sales to rank
         var isRookie = ROOKIE_NAMES && ROOKIE_NAMES.has(rep.name);
-        var entry = { name:rep.name, amount:rep.amount, color:team.color, isRookie:isRookie, dealObjs:rep.dealObjs||[] };
+        var market = team.display || e[0];
+        var entry = { name:rep.name, amount:rep.amount, color:team.color, isRookie:isRookie, dealObjs:rep.dealObjs||[], market:market };
         result[bName].all.push(entry);
         if (isRookie) result[bName].rookies.push(entry);
       });
@@ -3310,7 +3311,7 @@ function renderBlitzPanels(blitzData) {
       else html += '<span class="hunt-badge">\u26A1 HUNT</span>';
       if (isTopRookie) html += '<span class="top-rookie-badge">R</span>';
       else if (isRookie) html += '<span class="rookie-star" style="animation:none;width:14px;height:14px;font-size:7px">R</span>';
-      html += '<span style="flex:1;font-family:\'Exo 2\',sans-serif;font-size:12px;color:#CBD5E1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;cursor:help" class="blitz-rep-name-wrap">'+rep.name+buildBlitzDealTooltip(rep)+'</span>';
+      html += '<span style="flex:1;font-family:\'Exo 2\',sans-serif;font-size:12px;color:#CBD5E1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;cursor:help" class="blitz-rep-name-wrap">'+rep.name+'<span style="font-family:Orbitron,monospace;font-size:8px;color:#475569;margin-left:5px;vertical-align:middle">'+( rep.market||'' )+'</span>'+buildBlitzDealTooltip(rep)+'</span>';
       html += '<span style="font-family:Orbitron,monospace;font-size:10px;color:#E2E8F0;flex-shrink:0">'+fmtB(rep.amount)+'</span>';
       if (gap) html += '<span style="font-family:Orbitron,monospace;font-size:8px;color:#475569;flex-shrink:0;min-width:52px;text-align:right">'+gap+'</span>';
       html += '</div>';
