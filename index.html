@@ -602,6 +602,21 @@ if (new URLSearchParams(window.location.search).get('tv') === '1') {
   </div>
 </div>
 
+<!-- ROOKIE 100 — COMING SOON MODAL -->
+<div id="rookie-modal-overlay" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);align-items:center;justify-content:center">
+  <div style="background:rgba(10,18,35,0.97);border:1px solid rgba(168,85,247,0.4);border-radius:16px;padding:36px 40px;text-align:center;min-width:280px;max-width:340px">
+    <div style="font-size:40px;margin-bottom:12px">🔒</div>
+    <div style="font-family:Orbitron,monospace;font-size:16px;font-weight:900;color:#A855F7;letter-spacing:3px;margin-bottom:8px">COMING SOON</div>
+    <div style="font-size:13px;color:#94A3B8;margin-bottom:24px;line-height:1.6">Something big is on the way. Stay tuned.</div>
+    <input id="rookie-modal-pass" type="password" placeholder="Access code..." onkeydown="if(event.key==='Enter')checkRookiePw()" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(168,85,247,0.2);border-radius:8px;color:#E2E8F0;font-family:'Exo 2',sans-serif;font-size:14px;padding:10px 14px;outline:none;margin-bottom:12px;box-sizing:border-box;text-align:center"/>
+    <div id="rookie-modal-err" style="color:#FF4444;font-size:11px;font-family:Orbitron,monospace;margin-bottom:10px;display:none">ACCESS DENIED</div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button onclick="checkRookiePw()" style="background:rgba(168,85,247,0.2);border:1px solid rgba(168,85,247,0.5);border-radius:8px;color:#A855F7;font-family:Orbitron,monospace;font-size:11px;font-weight:700;letter-spacing:1px;padding:10px 20px;cursor:pointer">ENTER</button>
+      <button onclick="closeRookieModal()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#475569;font-family:Orbitron,monospace;font-size:11px;padding:10px 20px;cursor:pointer">CLOSE</button>
+    </div>
+  </div>
+</div>
+
 <!-- ADMIN PANEL -->
 <div id="admin-panel" style="display:none">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
@@ -624,7 +639,12 @@ if (new URLSearchParams(window.location.search).get('tv') === '1') {
     <button onclick="loadPasted()" class="btn-sync" style="width:100%;margin-top:8px">LOAD CSV</button>
   </div>
   <div style="margin-top:16px">
-    <label class="admin-label">TEST SOUNDS</label>
+    <label class="admin-label">SUPABASE SYNC</label>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button onclick="syncToSupabase()" class="btn-sync" style="flex:1;background:rgba(168,85,247,0.15);border-color:rgba(168,85,247,0.4);color:#A855F7">🗄️ SYNC DASHBOARD → SUPABASE</button>
+    </div>
+    <div id="supabase-sync-status" style="font-size:11px;color:#475569;margin-top:6px;font-family:Orbitron,monospace;letter-spacing:1px"></div>
+  </div>
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
       <button onclick="testSound('Just the Basics')" class="btn-sync" style="flex:1;min-width:120px;font-size:10px;padding:8px 6px;background:rgba(100,116,139,0.2);border-color:rgba(100,116,139,0.5);color:#94A3B8">&#x1F31F; Just the Basics</button>
       <button onclick="testSound('Deal Maker')" class="btn-sync" style="flex:1;min-width:120px;font-size:10px;padding:8px 6px;background:rgba(255,107,53,0.15);border-color:rgba(255,107,53,0.4);color:#FF6B35">&#x1F525; Deal Maker</button>
@@ -932,6 +952,24 @@ async function fetchData(){
       else{ seedBadgeState(parsed); seedKnownDeals(parsed); }
       updateStreaks(parsed);
       state.data=parsed; state.status="live"; state.lastUpdated=new Date().toLocaleTimeString();
+      // Write rep deal data to localStorage for Rookie 100 board
+      try {
+        var dealMap = {};
+        Object.values(parsed.teams).forEach(function(team) {
+          team.reps.forEach(function(rep) {
+            var key = rep.name;
+            if (!dealMap[key]) dealMap[key] = [];
+            (rep.dealObjs||[]).forEach(function(d) {
+              dealMap[key].push({
+                amount: d.amount,
+                date: d.date ? (d.date instanceof Date ? d.date.toISOString().slice(0,10) : String(d.date)) : null,
+                store: team.display || team.name || ''
+              });
+            });
+          });
+        });
+        localStorage.setItem('stp_deals', JSON.stringify(dealMap));
+      } catch(e) { console.warn('localStorage deal write failed:', e); }
       var lo=document.getElementById("loading-overlay");
       if(lo&&lo.style.display!=="none"){lo.style.opacity="0";setTimeout(function(){lo.style.display="none";},600);}
       render(); resetCountdown();
@@ -3545,30 +3583,33 @@ var BLITZ_MILESTONES = [
 ];
 
 // Populate ROOKIE_NAMES (declared at top of script)
-ROOKIE_NAMES = new Set([
-  "Alishia Richards","Sunshine Richards","Robert Caruso","Julia Padgett","Joe Powers","Tamara Thompson",
-  "Brice Blocker","Stephane Alexandre","Daniel Fordham","Austin Davis","Monty White","Jeff DeRosa",
-  "Jesse Hamadi","Wes Eigenauer","Amber Gravely","Traci Kubach","Brian Bonner","Mark Hall",
-  "Daniel Emmons","Zachary King","Jennifer Townsend","Krystal Wilbanks","Jimmy Outler","Maria Duarte",
-  "Matt Davis","Andrew Haubner","Ethan Young","Will Ray","Ben Laney","Matthew Dicks",
-  "Larry Strunk","Whitney Kent","Andrea O'Campo","Omar Mhamdi","Dustin Ravenscraft","Marcus Staples",
-  "Ethan Deitzer","Chad Dulin","Dan Silvernail","Kyle Spence","Alec Dietz","Travis Bruner",
-  "Corey Landon","Justin Stillson","Kris Woodward","Jose Gonzalez","Joseph Varrone","Daniel Blood",
-  "Matthew Tipton","David Russell","Wes Milstead","Jameson Evans","Andrew Lane","Cody Clearman",
-  "Gerasimos Vangelatos","Jean Jourdain","William Hawrey","Michael Hill","Gage Afanasiew","Daniel Hersey",
-  "Rand Strollo","Paul Guetter","Kevin Upton","Peter Nantista","John Hanifin","Dana Zadah",
-  "Nathan McIntyre","Nick Quinn","Michael Osheroff","Ryan Parr","Mitchell Clark","Jason Lee",
-  "Matthew Jones","Chris Patkochis","Roberto Rios","Stanislav Faynerman","Barry Gasmer","Adhem Sharkawy",
-  "Kimberley Prasad","Mike Manashirov","Adrian Greenidge","Mac Isibor","Bryan Kleppe","Femi Adedoyin",
-  "Linda Campanelli","Mo Elshafie","Blake Gallick","Alexander Victoria","Sergio Velez","Sarah Prentice",
-  "Adel Awad","Aftan Marie Burnett","Hunter Sikes","Dorian Altamirano","Dario Altamirano","John Evans",
-  "Sina Faridnia","Marcus Santos","Randy Niswonger","Tacoma Vaught","Chris Andrews","Rasim Samardzic",
-  "Jerry Eck","Renata Vaughn","George Mars","Eric Good","Richard Horancia","Chris Bovell",
-  "Vicky Bhardwaj","Frank Al Taweel","Terry Harvey","James Ringler","Elizabeth Kennedy","Ibrahim Kladnjak",
-  "Rob MacLean","Lee Jackson","Sheefat Kazi","Ryan Slavin","Peter Doscas"
-]);
+ROOKIE_NAMES = new Set(); // populated dynamically from New Hires tab
 
-// Rookie names are hardcoded above from the New Hires sheet - update manually when sheet changes
+// Fetch rookie names from the New Hires sheet tab
+// Col A = Class, Col B = Sales Rep (after you add Class column)
+async function fetchRookieNames() {
+  var url = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=New%20Hires";
+  try {
+    var res = await fetch(url, {cache:"no-store"});
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    var csv = await res.text();
+    if (!csv || csv.trim().startsWith("<")) throw new Error("bad response");
+    var lines = csv.trim().split("\n").filter(Boolean);
+    var newSet = new Set();
+    for (var i = 1; i < lines.length; i++) { // skip header
+      var cols = parseCsvLine(lines[i]).map(function(c){ return c.replace(/^"|"$/g,"").trim(); });
+      // Col A = Class (col index 0), Col B = Sales Rep (col index 1)
+      var name = cols[1] ? cols[1].trim() : "";
+      if (name) newSet.add(name);
+    }
+    if (newSet.size > 0) {
+      ROOKIE_NAMES = newSet;
+      console.log("fetchRookieNames: loaded " + newSet.size + " rookies from New Hires tab");
+    }
+  } catch(e) {
+    console.warn("fetchRookieNames failed, keeping existing list:", e.message);
+  }
+}
 var blitzShowRookiesOnly = false;
 var blitzScrollActive = false;
 var blitzScrollTimer = null;
@@ -3579,6 +3620,11 @@ function toggleBlitzRookies() {
 }
 function toggleBlitzScroll() {
   blitzScrollActive = !blitzScrollActive;
+  // Hide/show chat button during autoscroll
+  var chatBtn = document.getElementById('stp-chat-btn');
+  var chatPanel = document.getElementById('stp-chat-panel');
+  if (chatBtn) chatBtn.style.display = blitzScrollActive ? 'none' : 'flex';
+  if (blitzScrollActive && chatPanel) { chatPanel.classList.remove('open'); }
   updateBlitzMenuStates();
   if (blitzScrollActive) runBlitzScroll(); else clearTimeout(blitzScrollTimer);
 }
@@ -4608,6 +4654,7 @@ function createMenu(){
   panel += '<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;letter-spacing:2px;padding:6px 12px 4px">CONTROLS</div>';
   // ADMIN hidden from menu — access via URL only
   panel += '<button class="menu-item" id="blitz-event-btn" onclick="toggleBlitzEvent();toggleMenu()" style="color:#FFD700">&#x26A1; BLITZ 2026</button>';
+  panel += '<button class="menu-item" onclick="openRookie100();toggleMenu()" style="color:#475569">🔒 COMING SOON</button>';
   panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
 
   // — DISPLAY —
@@ -4685,6 +4732,68 @@ function clearMarketFilter() {
 createMenu();
 loadSettings();
 renderBadgeLegend();
+
+// ── SUPABASE SYNC ────────────────────────────────────────────────────────────
+async function syncToSupabase() {
+  var btn = event.target;
+  var status = document.getElementById('supabase-sync-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ SYNCING...';
+  status.textContent = 'Pushing data to Supabase...';
+  status.style.color = '#A855F7';
+  try {
+    var appsScriptUrl = SHEET_URL.replace('?tab=Dashboard','').replace('tab=Dashboard','');
+    var base = appsScriptUrl.split('?')[0];
+    var res = await fetch(base, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({signal:'sync_supabase'})
+    });
+    var text = await res.text();
+    var data = {};
+    try { data = JSON.parse(text); } catch(e) {}
+    if (data.synced !== undefined) {
+      status.textContent = '✓ SYNCED ' + data.synced + ' ROWS (' + data.errors + ' errors)';
+      status.style.color = data.errors > 0 ? '#FF6B35' : '#00FF88';
+    } else {
+      status.textContent = 'Response: ' + text.substring(0,80);
+      status.style.color = '#FF6B35';
+    }
+  } catch(e) {
+    status.textContent = 'Error: ' + e.message;
+    status.style.color = '#FF4444';
+  }
+  btn.disabled = false;
+  btn.textContent = '🗄️ SYNC DASHBOARD → SUPABASE';
+}
+// ─────────────────────────────────────────────────────────────────────────────
+var ROOKIE_PW = "Rookie100";
+function openRookie100() {
+  var overlay = document.getElementById('rookie-modal-overlay');
+  if (overlay) { overlay.style.display = 'flex'; setTimeout(function(){ document.getElementById('rookie-modal-pass').focus(); }, 100); }
+}
+function closeRookieModal() {
+  var overlay = document.getElementById('rookie-modal-overlay');
+  if (overlay) { overlay.style.display = 'none'; }
+  var inp = document.getElementById('rookie-modal-pass');
+  if (inp) inp.value = '';
+  var err = document.getElementById('rookie-modal-err');
+  if (err) err.style.display = 'none';
+}
+function checkRookiePw() {
+  var inp = document.getElementById('rookie-modal-pass');
+  var err = document.getElementById('rookie-modal-err');
+  if (!inp) return;
+  if (inp.value === ROOKIE_PW || inp.value === ADMIN_PW) {
+    closeRookieModal();
+    window.open('rookie_100.html', '_blank');
+  } else {
+    if (err) { err.style.display = 'block'; }
+    inp.value = '';
+    inp.focus();
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 render();
 // Clock started inline in updateClock definition
 // Seed badge state immediately so first real sync doesn't fire for existing deals
@@ -4696,6 +4805,7 @@ if (state.data && state.data.teams) seedBadgeState(state.data);
 resetCountdown();
 // Load settings in background
 fetchSettings().then(function(){ render(); }).catch(function(){});
+fetchRookieNames();
 
 
 
@@ -4798,6 +4908,147 @@ var firedBadges={};
       });
     }
   </script>
+
+<!-- ── CHATBOT ──────────────────────────────────────────────────────────── -->
+<div id="stp-chat-btn" onclick="stpChatToggle()" style="position:fixed;bottom:24px;left:24px;z-index:9800;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#00D4FF,#A855F7);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 20px rgba(0,212,255,0.5);font-size:22px;transition:transform 0.2s" title="Ask about the data">💬</div>
+
+<div id="stp-chat-panel" style="position:fixed;bottom:88px;left:24px;z-index:9800;width:340px;max-width:calc(100vw - 48px);background:rgba(4,8,20,0.97);border:1px solid rgba(0,212,255,0.3);border-radius:16px;box-shadow:0 0 40px rgba(0,212,255,0.2);font-family:'Exo 2',sans-serif;overflow:hidden;flex-direction:column">
+  <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div style="font-family:Orbitron,monospace;font-size:11px;font-weight:700;color:#00D4FF;letter-spacing:2px">ASK THE DATA</div>
+      <div style="font-size:10px;color:#475569;margin-top:2px">Powered by Claude AI</div>
+    </div>
+    <button onclick="stpChatToggle()" style="background:none;border:none;color:#475569;font-size:18px;cursor:pointer;padding:0;line-height:1">✕</button>
+  </div>
+  <div id="stp-chat-messages" style="height:300px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px">
+    <div class="stp-msg stp-msg-ai">👋 Ask me anything about the leaderboard! Try <em>"Who's leading today?"</em> or <em>"How many deals has NJ closed?"</em></div>
+  </div>
+  <div style="padding:10px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:8px">
+    <input id="stp-chat-input" type="text" placeholder="Ask a question..." onkeydown="if(event.key==='Enter')stpChatSend()" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#E2E8F0;font-family:'Exo 2',sans-serif;font-size:13px;padding:8px 12px;outline:none"/>
+    <button onclick="stpChatSend()" id="stp-chat-send" style="background:linear-gradient(135deg,#00D4FF,#A855F7);border:none;border-radius:8px;color:#fff;font-family:Orbitron,monospace;font-size:10px;font-weight:700;padding:8px 14px;cursor:pointer;letter-spacing:1px">ASK</button>
+  </div>
+</div>
+
+<style>
+.stp-msg{padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;max-width:90%;word-break:break-word}
+.stp-msg-ai{background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.15);color:#CBD5E1;align-self:flex-start}
+.stp-msg-user{background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:#E2E8F0;align-self:flex-end;text-align:right}
+.stp-msg-thinking{color:#475569;font-style:italic;align-self:flex-start;font-size:12px}
+#stp-chat-panel{display:none}
+#stp-chat-panel.open{display:flex}
+</style>
+
+<script>
+var _stpChatHistory = [];
+
+function stpChatToggle() {
+  var panel = document.getElementById('stp-chat-panel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    setTimeout(function(){ document.getElementById('stp-chat-input').focus(); }, 100);
+  }
+}
+
+function stpBuildContext() {
+  if (!state.data || !state.data.teams) return "No data loaded yet.";
+  var lines = [];
+  var blitzData = getBlitzData();
+  var totalAll = 0;
+
+  // Overall blitz total
+  if (blitzData && blitzData.total) {
+    lines.push("=== BLITZ TOTAL (Jun 18-20) ===");
+    lines.push("Total: $" + (blitzData.total/1000).toFixed(1) + "K");
+  }
+
+  // Per-team and per-rep breakdown
+  lines.push("\n=== ALL REPS (full period) ===");
+  Object.entries(mergeAlways(state.data).teams).forEach(function(e) {
+    var teamName = e[0], team = e[1];
+    var display = team.display || teamName;
+    var teamTotal = 0;
+    team.reps.forEach(function(rep){ teamTotal += rep.amount; });
+    lines.push("\nMarket: " + display + " | Total: $" + (teamTotal/1000).toFixed(1) + "K");
+    team.reps.slice().sort(function(a,b){return b.amount-a.amount;}).forEach(function(rep){
+      var deals = (rep.dealObjs||[]).length;
+      lines.push("  " + rep.name + ": $" + (rep.amount/1000).toFixed(1) + "K (" + deals + " deals)");
+    });
+    totalAll += teamTotal;
+  });
+
+  lines.push("\n=== GRAND TOTAL ===");
+  lines.push("$" + (totalAll/1000).toFixed(1) + "K across all markets");
+  lines.push("Last updated: " + (state.lastUpdated || "unknown"));
+  lines.push("Today's date: " + new Date().toLocaleDateString());
+
+  return lines.join("\n");
+}
+
+async function stpChatSend() {
+  var input = document.getElementById('stp-chat-input');
+  var q = input.value.trim();
+  if (!q) return;
+
+  var messages = document.getElementById('stp-chat-messages');
+  var sendBtn = document.getElementById('stp-chat-send');
+
+  // Add user message
+  var userDiv = document.createElement('div');
+  userDiv.className = 'stp-msg stp-msg-user';
+  userDiv.textContent = q;
+  messages.appendChild(userDiv);
+  input.value = '';
+  sendBtn.disabled = true;
+  sendBtn.textContent = '...';
+
+  // Thinking indicator
+  var thinkDiv = document.createElement('div');
+  thinkDiv.className = 'stp-msg stp-msg-thinking';
+  thinkDiv.textContent = 'Thinking...';
+  messages.appendChild(thinkDiv);
+  messages.scrollTop = messages.scrollHeight;
+
+  // Build conversation history
+  _stpChatHistory.push({ role: "user", content: q });
+
+  var context = stpBuildContext();
+  var systemPrompt = "You are a helpful sales data analyst for See The Pace, a leaderboard dashboard for Renewal by Andersen sales reps. Answer questions clearly and concisely based only on the data provided. Format dollar amounts clearly. Here is the current leaderboard data:\n\n" + context;
+
+  try {
+    var base = SHEET_URL.split('?')[0];
+    var response = await fetch(base, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: systemPrompt, messages: _stpChatHistory })
+    });
+
+    var data = await response.json();
+    var reply = data.reply || "Sorry, I couldn't get a response. Try again.";
+
+    _stpChatHistory.push({ role: "assistant", content: reply });
+    if (_stpChatHistory.length > 20) _stpChatHistory = _stpChatHistory.slice(-20);
+
+    thinkDiv.remove();
+    var aiDiv = document.createElement('div');
+    aiDiv.className = 'stp-msg stp-msg-ai';
+    aiDiv.textContent = reply;
+    messages.appendChild(aiDiv);
+
+  } catch(err) {
+    thinkDiv.remove();
+    var errDiv = document.createElement('div');
+    errDiv.className = 'stp-msg stp-msg-ai';
+    errDiv.textContent = "Error connecting to AI. Check your connection.";
+    messages.appendChild(errDiv);
+    _stpChatHistory.pop();
+  }
+
+  sendBtn.disabled = false;
+  sendBtn.textContent = 'ASK';
+  messages.scrollTop = messages.scrollHeight;
+}
+</script>
+<!-- ── END CHATBOT ──────────────────────────────────────────────────────── -->
 
 </body>
 </html>
