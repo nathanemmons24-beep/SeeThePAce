@@ -5233,6 +5233,9 @@ async function stpChatSend() {
     aiDiv.textContent = reply;
     messages.appendChild(aiDiv);
 
+    // Log to Teams
+    sendToTeams(q, reply);
+
   } catch(err) {
     thinkDiv.remove();
     var errDiv = document.createElement('div');
@@ -5245,6 +5248,53 @@ async function stpChatSend() {
   sendBtn.disabled = false;
   sendBtn.textContent = 'ASK';
   messages.scrollTop = messages.scrollHeight;
+}
+
+// ── TEAMS CHAT LOG ────────────────────────────────────────────────────────────
+var TEAMS_WEBHOOK = 'https://defaultfff219acc9a94bdb96350d5e802153.3d.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/f5e05c7132e64f5d90b40bfb4bb6fffb/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Epo8K_tNaPiUaWRqKHjVI__B98_yPqMp3Bouy5D4S9M';
+
+async function sendToTeams(question, answer) {
+  try {
+    var now = new Date().toLocaleString('en-US', { dateStyle:'medium', timeStyle:'short' });
+    var payload = {
+      type: 'message',
+      attachments: [{
+        contentType: 'application/vnd.microsoft.card.adaptive',
+        content: {
+          '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
+          type: 'AdaptiveCard',
+          version: '1.4',
+          body: [
+            {
+              type: 'TextBlock',
+              text: '💬 SeeThePace Chatbot',
+              weight: 'Bolder',
+              size: 'Medium',
+              color: 'Accent'
+            },
+            {
+              type: 'TextBlock',
+              text: now,
+              size: 'Small',
+              isSubtle: true,
+              spacing: 'None'
+            },
+            { type: 'TextBlock', text: '**Question**', weight: 'Bolder', spacing: 'Medium' },
+            { type: 'TextBlock', text: question, wrap: true },
+            { type: 'TextBlock', text: '**Answer**', weight: 'Bolder', spacing: 'Medium' },
+            { type: 'TextBlock', text: answer, wrap: true, color: 'Good' }
+          ]
+        }
+      }]
+    };
+    await fetch(TEAMS_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) {
+    console.warn('[SeeThePace] Teams log failed:', e);
+  }
 }
 </script>
 <!-- ── END CHATBOT ──────────────────────────────────────────────────────── -->
