@@ -20,23 +20,69 @@
     body{background:#060B18;color:#E2E8F0;font-family:"Exo 2",sans-serif;min-height:100vh;overflow-x:hidden}
     /* ── LIGHT MODE ─────────────────────────────── */
     body.light-mode{background:#F0F4F8;color:#1E293B}
-    body.light-mode .leader-board{background:rgba(255,255,255,0.85);border-color:rgba(0,0,0,0.08)}
-    body.light-mode .leader-board-header{color:#1E293B;border-bottom-color:rgba(0,0,0,0.08)}
-    body.light-mode .leader-row{border-bottom-color:rgba(0,0,0,0.05)}
-    body.light-mode .leader-row:hover{background:rgba(0,0,0,0.03)}
+    /* Cards & boards */
+    body.light-mode .leader-board{background:rgba(255,255,255,0.92);border-color:rgba(0,0,0,0.1)}
+    body.light-mode .leader-board-header{color:#0F172A;border-bottom-color:rgba(0,0,0,0.08)}
+    body.light-mode .leader-row{border-bottom-color:rgba(0,0,0,0.06)}
+    body.light-mode .leader-row:hover{background:rgba(0,0,0,0.04)}
+    body.light-mode .leader-row.rank1{background:linear-gradient(90deg,rgba(255,180,0,0.12),transparent)}
+    body.light-mode .leader-row.rank2{background:linear-gradient(90deg,rgba(100,100,100,0.07),transparent)}
+    body.light-mode .leader-row.rank3{background:linear-gradient(90deg,rgba(160,82,30,0.07),transparent)}
+    /* Leaderboard text */
+    body.light-mode .leader-name{color:#0F172A !important}
+    body.light-mode .leader-store{color:#2563EB !important}
+    body.light-mode .leader-amt{color:#0F172A !important}
+    body.light-mode .leader-num{color:#64748B !important}
+    /* Rank chips */
+    body.light-mode .rank-chip .rank-name{color:#0F172A !important}
+    body.light-mode .rank-chip .rank-total{color:#334155 !important}
+    /* Rep rows */
+    body.light-mode .rep-name{color:#0F172A !important}
+    body.light-mode .rep-row{border-color:rgba(0,0,0,0.07) !important}
+    body.light-mode .rep-row.rank1{background:linear-gradient(90deg,rgba(255,180,0,0.1),transparent) !important}
+    /* Misc UI */
     body.light-mode #subtitle{color:#64748B}
     body.light-mode #refresh-label,body.light-mode #last-updated span{color:#64748B}
     body.light-mode #last-updated{color:#64748B}
     body.light-mode #sync-track{background:rgba(0,0,0,0.08)}
+    body.light-mode #sync-fill{background:linear-gradient(90deg,#2563EB,#0EA5E9)}
     body.light-mode #milestone-section,body.light-mode #bar-wrap{color:#1E293B}
+    body.light-mode #total-display{color:#B45309}
     body.light-mode #total-display span{color:#64748B}
     body.light-mode #bar-track{background:rgba(0,0,0,0.08)}
-    body.light-mode .store-card{background:rgba(255,255,255,0.85)!important;border-color:rgba(0,0,0,0.1)!important}
-    body.light-mode .store-card *{color:#1E293B!important}
-    body.light-mode #menu-panel{background:rgba(240,244,248,0.97)!important;border-color:rgba(0,0,0,0.1)!important}
-    body.light-mode .menu-item{color:#334155!important}
-    body.light-mode .menu-item:hover{background:rgba(0,0,0,0.06)!important;color:#0F172A!important}
-    body.light-mode .menu-item.active{color:#6D28D9!important;background:rgba(109,40,217,0.08)!important}
+    body.light-mode #store-rankings h3{color:#334155}
+    /* Store cards */
+    body.light-mode .store-card{background:rgba(255,255,255,0.92) !important;border-color:rgba(0,0,0,0.1) !important}
+    body.light-mode .store-card *{color:#1E293B !important}
+    /* Menu */
+    body.light-mode #menu-panel{background:rgba(240,244,248,0.97) !important;border-color:rgba(0,0,0,0.1) !important}
+    body.light-mode .menu-item{color:#334155 !important}
+    body.light-mode .menu-item:hover{background:rgba(0,0,0,0.06) !important;color:#0F172A !important}
+    body.light-mode .menu-item.active{color:#6D28D9 !important;background:rgba(109,40,217,0.08) !important}
+    /* Inline style overrides for dark-coded colors */
+    body.light-mode [style*="color:#CBD5E1"]{color:#1E293B !important}
+    body.light-mode [style*="color:#94A3B8"]{color:#334155 !important}
+    body.light-mode [style*="color:#E2E8F0"]{color:#0F172A !important}
+    body.light-mode [style*="color:#64748B"]{color:#475569 !important}
+    body.light-mode [style*="color:#475569"]{color:#334155 !important}
+    body.light-mode [style*="color:#334155"]{color:#475569 !important}
+    body.light-mode [style*="color:#1E293B"]{color:#0F172A !important}
+    body.light-mode [style*="background:rgba(15"]{background:rgba(255,255,255,0.85) !important}
+    body.light-mode [style*="background:rgba(10"]{background:rgba(240,244,248,0.95) !important}
+    /* Store card rep amounts — hardcoded dark colors need overrides */
+    body.light-mode .rep-amt{color:#0F172A !important}
+    body.light-mode .rep-row.rank1 .rep-amt{color:#B45309 !important}
+    body.light-mode .team-card-total{color:#0F172A !important}
+    body.light-mode .team-card-reps{background:rgba(255,255,255,0.5)}
+    body.light-mode .store-card,body.light-mode .team-card{background:rgba(255,255,255,0.92) !important;border-color:rgba(0,0,0,0.1) !important}
+    body.light-mode .rep-row{background:transparent !important;border-bottom-color:rgba(0,0,0,0.06) !important}
+    body.light-mode .rep-row.rank1{background:linear-gradient(90deg,rgba(255,180,0,0.12),transparent) !important}
+    /* Deal tooltip light mode */
+    body.light-mode .deal-tooltip{background:rgba(255,255,255,0.98) !important;border-color:rgba(0,0,0,0.12) !important;box-shadow:0 8px 32px rgba(0,0,0,0.15) !important}
+    body.light-mode .deal-tooltip-header{color:#64748B !important}
+    body.light-mode .deal-tooltip-row{color:#0F172A !important;border-bottom-color:rgba(0,0,0,0.06) !important}
+    body.light-mode .deal-tooltip-row span[style*="color:#94A3B8"]{color:#334155 !important}
+    body.light-mode .deal-tooltip-amt{color:#0F172A !important}
     body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);background-size:60px 60px;animation:gridMove 10s linear infinite}
     @keyframes gridMove{from{transform:translateY(0)}to{transform:translateY(60px)}}
     @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
