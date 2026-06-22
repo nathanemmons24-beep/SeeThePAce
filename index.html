@@ -1038,6 +1038,8 @@ async function fetchData(){
       var lo=document.getElementById("loading-overlay");
       if(lo&&lo.style.display!=="none"){lo.style.opacity="0";setTimeout(function(){lo.style.display="none";},600);}
       render(); resetCountdown();
+      // ── AUTO SYNC TO SUPABASE (once per day) ──────────────────────────────
+      autoSyncSupabaseIfDue(parsed);
     } else {
       console.warn("fetchData: parseCsv returned null. Raw CSV sample:\n" + csv.substring(0, 500));
       state.status = "error: could not parse data";
@@ -1045,6 +1047,67 @@ async function fetchData(){
   } catch(err) {
     console.error("fetchData error:", err);
     state.status = "error: " + err.message;
+  }
+}
+
+// ── ONCE-A-DAY SUPABASE AUTO SYNC ────────────────────────────────────────────
+async function autoSyncSupabaseIfDue(parsed) {
+  try {
+    var SB_URL_AUTO = 'https://jowacrfeekwlguapzvkc.supabase.co';
+    var SB_KEY_AUTO = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impvd2FjcmZlZWt3bGd1YXB6dmtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNDAwODgsImV4cCI6MjA5NzcxNjA4OH0.SunLbSoQCUpyf6QrCzDsxlEKmQx0fDj9v5DU6X7nRqQ';
+    var today = new Date().toISOString().slice(0, 10); // e.g. "2025-06-22"
+    var lastSync = null;
+    try { lastSync = localStorage.getItem('stp_supabase_last_sync'); } catch(e) {}
+    if (lastSync === today) return; // already synced today
+
+    // Build rows
+    var rows = [];
+    if (parsed && parsed.teams) {
+      Object.values(parsed.teams).forEach(function(team) {
+        (team.reps || []).forEach(function(rep) {
+          (rep.dealObjs || []).forEach(function(deal) {
+            if (!deal.amount || deal.amount <= 0) return;
+            var row = {
+              rep_name: rep.name,
+              store: team.display || '',
+              amount: Math.round(deal.amount),
+              deal_date: deal.date || null
+            };
+            if (deal.apptId && /^\d{6,}$/.test(String(deal.apptId))) row.appt_id = parseInt(deal.apptId);
+            rows.push(row);
+          });
+        });
+      });
+    }
+    if (!rows.length) return;
+
+    // Push in batches of 500
+    var batchSize = 500, errors = 0;
+    for (var i = 0; i < rows.length; i += batchSize) {
+      var batch = rows.slice(i, i + batchSize);
+      try {
+        var res = await fetch(SB_URL_AUTO + '/rest/v1/historical_deals', {
+          method: 'POST',
+          headers: {
+            'apikey': SB_KEY_AUTO,
+            'Authorization': 'Bearer ' + SB_KEY_AUTO,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates,return=minimal'
+          },
+          body: JSON.stringify(batch)
+        });
+        if (!res.ok) errors++;
+      } catch(e) { errors++; }
+    }
+
+    if (errors === 0) {
+      try { localStorage.setItem('stp_supabase_last_sync', today); } catch(e) {}
+      console.log('[SeeThePace] Auto-synced ' + rows.length + ' rows to Supabase on ' + today);
+    } else {
+      console.warn('[SeeThePace] Auto-sync had ' + errors + ' errors — will retry next refresh');
+    }
+  } catch(e) {
+    console.warn('[SeeThePace] Auto-sync failed:', e);
   }
 }
 var LANDING_PW = "Rba123";
