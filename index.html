@@ -18,6 +18,25 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html{overflow-y:scroll;scroll-behavior:auto}
     body{background:#060B18;color:#E2E8F0;font-family:"Exo 2",sans-serif;min-height:100vh;overflow-x:hidden}
+    /* ── LIGHT MODE ─────────────────────────────── */
+    body.light-mode{background:#F0F4F8;color:#1E293B}
+    body.light-mode .leader-board{background:rgba(255,255,255,0.85);border-color:rgba(0,0,0,0.08)}
+    body.light-mode .leader-board-header{color:#1E293B;border-bottom-color:rgba(0,0,0,0.08)}
+    body.light-mode .leader-row{border-bottom-color:rgba(0,0,0,0.05)}
+    body.light-mode .leader-row:hover{background:rgba(0,0,0,0.03)}
+    body.light-mode #subtitle{color:#64748B}
+    body.light-mode #refresh-label,body.light-mode #last-updated span{color:#64748B}
+    body.light-mode #last-updated{color:#64748B}
+    body.light-mode #sync-track{background:rgba(0,0,0,0.08)}
+    body.light-mode #milestone-section,body.light-mode #bar-wrap{color:#1E293B}
+    body.light-mode #total-display span{color:#64748B}
+    body.light-mode #bar-track{background:rgba(0,0,0,0.08)}
+    body.light-mode .store-card{background:rgba(255,255,255,0.85)!important;border-color:rgba(0,0,0,0.1)!important}
+    body.light-mode .store-card *{color:#1E293B!important}
+    body.light-mode #menu-panel{background:rgba(240,244,248,0.97)!important;border-color:rgba(0,0,0,0.1)!important}
+    body.light-mode .menu-item{color:#334155!important}
+    body.light-mode .menu-item:hover{background:rgba(0,0,0,0.06)!important;color:#0F172A!important}
+    body.light-mode .menu-item.active{color:#6D28D9!important;background:rgba(109,40,217,0.08)!important}
     body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);background-size:60px 60px;animation:gridMove 10s linear infinite}
     @keyframes gridMove{from{transform:translateY(0)}to{transform:translateY(60px)}}
     @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
@@ -1056,6 +1075,7 @@ function storeAuth() {
 })();
 
 function enterDashboard(goToBlitz) {
+  // API key removed — chat routes through Apps Script
   var btn  = document.getElementById('stp-enter-btn');
   var wrap = document.getElementById('stp-pw-wrap');
   var ring = document.getElementById('stp-loading-ring');
@@ -2371,6 +2391,18 @@ function computeTitles(data) {
   return { crownKey: crownKey, rocketKeys: rocketKeys, rocketDealAmt: rocketDealAmt, fireKeys: fireKeys, fireLevel: fireLevel };
 }
 
+// ══ LIGHT / DARK MODE ═══════════════════════════════════════════════════════
+var lightMode = false;
+function toggleDarkMode() {
+  lightMode = !lightMode;
+  document.body.classList.toggle('light-mode', lightMode);
+  try { localStorage.setItem('stp_light_mode', lightMode ? '1' : '0'); } catch(e){}
+  updateMenuStates();
+}
+(function(){
+  try { if (localStorage.getItem('stp_light_mode') === '1') { lightMode = true; document.body.classList.add('light-mode'); } } catch(e){}
+})();
+
 // ══ SPOTLIGHT ═══════════════════════════════════════════════════════════════════════
 // ══ TV BIG FONT MODE ══════════════════════════════════════════════════════════
 var tvBigFont = false;
@@ -2864,6 +2896,8 @@ function updateMenuStates() {
   if (tBtn) { tBtn.classList.toggle('active', filterToday); tBtn.innerHTML = filterToday ? '&#x1F4C5; TODAY ONLY &#x2713;' : '&#x1F4C5; TODAY ONLY'; }
   if (rBtn) { rBtn.classList.toggle('active', filterRookies); rBtn.innerHTML = filterRookies ? '&#x2B50; ROOKIES ONLY &#x2713;' : '&#x2B50; ROOKIES ONLY'; }
   if (cBtn) { cBtn.classList.toggle('active', filterConsolidated); cBtn.innerHTML = filterConsolidated ? '&#x1F5FA; CONSOLIDATED &#x2713;' : '&#x1F5FA; CONSOLIDATED'; }
+  var dmBtn = document.getElementById('darkmode-btn');
+  if (dmBtn) { dmBtn.classList.toggle('active', lightMode); dmBtn.innerHTML = lightMode ? '&#x1F319; DARK MODE' : '&#x263C; LIGHT MODE'; }
 }
 
 // ══ FULLSCREEN ══════════════════════════════════════════════════════════════════
@@ -4677,6 +4711,7 @@ function createMenu(){
   panel += '<button class="menu-item" onclick="toggleFullscreen();toggleMenu()">&#x26F6; FULLSCREEN</button>';
   panel += '<button class="menu-item" id="bigfont-btn" onclick="toggleBigFont()">&#x1F4FA; TV MODE</button>';
   panel += '<button class="menu-item" id="scroll-btn" onclick="toggleScroll()">&#x21C5; AUTO SCROLL</button>';
+  panel += '<button class="menu-item" id="darkmode-btn" onclick="toggleDarkMode()">&#x263C; LIGHT MODE</button>';
   panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
 
   // — FILTERS —
@@ -4839,7 +4874,7 @@ function checkRookiePw() {
   if (!inp) return;
   if (inp.value === ROOKIE_PW || inp.value === ADMIN_PW) {
     closeRookieModal();
-    window.open('rookie_100.html', '_blank');
+    window.location.href = 'rookie_100.html';
   } else {
     if (err) { err.style.display = 'block'; }
     inp.value = '';
@@ -5068,11 +5103,13 @@ async function stpChatSend() {
   var systemPrompt = "You are a helpful sales data analyst for See The Pace, a leaderboard dashboard for Renewal by Andersen sales reps. Answer questions clearly and concisely based only on the data provided. Format dollar amounts clearly. Here is the current leaderboard data:\n\n" + context;
 
   try {
-    var base = SHEET_URL.split('?')[0];
-    var response = await fetch(base, {
+    var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
+    var response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ system: systemPrompt, messages: _stpChatHistory })
+      body: JSON.stringify({
+        system: systemPrompt,
+        messages: _stpChatHistory
+      })
     });
 
     var data = await response.json();
