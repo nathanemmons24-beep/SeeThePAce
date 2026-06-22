@@ -73,9 +73,9 @@ body:not(.light) #hdr-title{background:linear-gradient(135deg,#00D4FF,#00FF88);-
 #rcount{font-size:11px;color:var(--text3);margin-left:auto;font-weight:600}
 
 /* TABLE */
-#wrap{padding:12px 20px 40px;overflow-x:auto}
+#wrap{padding:12px 20px 40px}
 table{width:100%;border-collapse:collapse;min-width:1000px}
-thead th{font-size:10px;letter-spacing:0.5px;color:var(--th-color);font-weight:700;text-transform:uppercase;padding:9px 8px;text-align:center;border-bottom:2px solid var(--border2);background:var(--th-bg);white-space:nowrap;transition:color 0.15s;user-select:none}
+thead th{font-size:10px;letter-spacing:0.5px;color:var(--th-color);font-weight:700;text-transform:uppercase;padding:9px 8px;text-align:center;border-bottom:1px solid var(--border2);background:var(--th-bg);white-space:nowrap;transition:color 0.15s;user-select:none}
 thead th:hover{color:var(--th-hover);cursor:pointer}
 tbody tr{border-bottom:1px solid var(--border2);transition:background 0.1s}
 tbody tr:hover{background:var(--row-hover)}
@@ -117,6 +117,79 @@ body.light .deal-tip{box-shadow:0 4px 24px rgba(0,0,0,0.12)}
 .deal-tip-amt{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--accent)}
 .deal-tip-date{color:var(--text3);font-size:11px}
 .deal-tip-none{color:var(--text3);font-style:italic;font-size:11px}
+
+/* AVG ROW */
+#avg-row td{background:rgba(0,212,255,0.06);font-size:11px;padding:6px 8px;border-top:2px solid rgba(0,212,255,0.2);border-bottom:2px solid rgba(0,212,255,0.2)}
+#avg-row td.avg-lbl{font-family:Orbitron,monospace;font-size:9px;color:var(--accent2);letter-spacing:1px;font-weight:700;text-align:left}
+#avg-row td.avg-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--accent)}
+#avg-row td.avg-dim{color:var(--text3)}
+body.light #avg-row td{background:rgba(3,105,161,0.05);border-color:rgba(3,105,161,0.2)}
+body.light #avg-row td.avg-val{color:var(--accent)}
+
+
+
+/* STICKY HEADER ROWS */
+#tbl-scroll{
+  overflow-x:auto;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  background:var(--bg2);
+}
+/* Data rows stay below sticky headers */
+#tbody tr td, #tbody tr th { position:relative; z-index:1; }
+thead tr:first-child th{
+  position:sticky;
+  top:0;
+  z-index:40;
+  will-change:transform;
+}
+thead tr:nth-child(2) th{
+  position:sticky;
+  top:35px;
+  z-index:39;
+  will-change:transform;
+}
+#avg-row-wrap tr td{
+  position:sticky;
+  top:63px;
+  z-index:38;
+  will-change:transform;
+  border-top:2px solid rgba(0,212,255,0.3);
+}
+body.light #avg-row-wrap tr td{
+  border-top:2px solid rgba(3,105,161,0.25);
+}
+
+/* ── Column header tints (solid, theme-aware) ── */
+/* Dark mode */
+thead tr:first-child th { background:#060F1E; }
+thead tr:nth-child(2) th { background:#060F1E; }
+#avg-row-wrap tr td     { background:#060F1E; }
+
+/* Slate (0-20) */
+thead th[style*="color:#64748B"] { background:#131C2A; }
+/* Blue (21-40) */
+thead th[style*="color:#3B82F6"] { background:#0D1E3A; }
+/* Purple (41-60) */
+thead th[style*="color:#8B5CF6"] { background:#171638; }
+/* Pink (61-80) */
+thead th[style*="color:#EC4899"] { background:#251330; }
+/* Amber (81-100) */
+thead th[style*="color:#F59E0B"] { background:#251E10; }
+/* Cyan (Total) */
+thead th[style*="color:#00D4FF"] { background:#042838; }
+
+/* Light mode overrides — very soft pastel tints */
+body.light thead tr:first-child th { background:#F1F5F9; }
+body.light thead tr:nth-child(2) th { background:#F1F5F9; }
+body.light #avg-row-wrap tr td     { background:#F1F5F9; }
+
+body.light thead th[style*="color:#64748B"] { background:#E8ECF0; }
+body.light thead th[style*="color:#3B82F6"] { background:#E3EEFB; }
+body.light thead th[style*="color:#8B5CF6"] { background:#EDE9FB; }
+body.light thead th[style*="color:#EC4899"] { background:#FCE7F3; }
+body.light thead th[style*="color:#F59E0B"] { background:#FEF3C7; }
+body.light thead th[style*="color:#00D4FF"] { background:#E0F2FE; }
 </style>
 </head>
 <body>
@@ -179,10 +252,15 @@ body.light .deal-tip{box-shadow:0 4px 24px rgba(0,0,0,0.12)}
     <option value="class">By Class</option>
   </select>
   <input type="text" id="srch" placeholder="Search rep..." oninput="render()">
+  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2);user-select:none;margin-left:4px">
+    <input type="checkbox" id="f-inactive" onchange="render()" style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer">
+    <span>Include Inactive</span>
+  </label>
   <span id="rcount"></span>
 </div>
 
 <div id="wrap">
+<div id="tbl-scroll">
 <table>
 <thead>
 <tr>
@@ -190,28 +268,28 @@ body.light .deal-tip{box-shadow:0 4px 24px rgba(0,0,0,0.12)}
   <th style="text-align:left;width:160px" onclick="setSort('name-a')">REP NAME</th>
   <th style="width:110px" onclick="setSort('class')">CLASS</th>
   <th style="width:110px" onclick="setSort('appts-d')">APPTS / 100</th>
-  <th colspan="2" style="background:rgba(100,116,139,0.1);color:#64748B;border-left:1px solid rgba(100,116,139,0.2);cursor:pointer" onclick="setSort('b1cr-d')">0–20</th>
-  <th colspan="2" style="background:rgba(59,130,246,0.1);color:#3B82F6;border-left:1px solid rgba(59,130,246,0.2);cursor:pointer" onclick="setSort('b2cr-d')">21–40</th>
-  <th colspan="2" style="background:rgba(139,92,246,0.1);color:#8B5CF6;border-left:1px solid rgba(139,92,246,0.2);cursor:pointer" onclick="setSort('b3cr-d')">41–60</th>
-  <th colspan="2" style="background:rgba(236,72,153,0.1);color:#EC4899;border-left:1px solid rgba(236,72,153,0.2);cursor:pointer" onclick="setSort('b4cr-d')">61–80</th>
-  <th colspan="2" style="background:rgba(245,158,11,0.1);color:#F59E0B;border-left:1px solid rgba(245,158,11,0.2);cursor:pointer" onclick="setSort('b5cr-d')">81–100</th>
-  <th colspan="2" style="background:rgba(0,212,255,0.1);color:#00D4FF;border-left:1px solid rgba(0,212,255,0.2);cursor:pointer" onclick="setSort('cr-d')">TOTAL</th>
+  <th colspan="2" style="color:#64748B;border-left:1px solid currentColor;cursor:pointer" onclick="setSort('b1cr-d')">0–20</th>
+  <th colspan="2" style="color:#3B82F6;border-left:1px solid currentColor;cursor:pointer" onclick="setSort('b2cr-d')">21–40</th>
+  <th colspan="2" style="color:#8B5CF6;border-left:1px solid currentColor;cursor:pointer" onclick="setSort('b3cr-d')">41–60</th>
+  <th colspan="2" style="color:#EC4899;border-left:1px solid currentColor;cursor:pointer" onclick="setSort('b4cr-d')">61–80</th>
+  <th colspan="2" style="color:#F59E0B;border-left:1px solid currentColor;cursor:pointer" onclick="setSort('b5cr-d')">81–100</th>
+  <th colspan="2" style="color:#00D4FF;border-left:1px solid currentColor;cursor:pointer" onclick="setSort('cr-d')">TOTAL</th>
   <th style="font-size:7px;cursor:pointer" onclick="setSort('rr-d')">RESP<br>RATE</th>
 </tr>
 <tr>
   <th></th><th></th><th></th><th></th>
-  <th style="background:rgba(100,116,139,0.06);color:#64748B;font-size:7px;cursor:pointer" onclick="setSort('b1cr-d')">CR</th><th style="background:rgba(100,116,139,0.06);color:#64748B;font-size:7px;cursor:pointer" onclick="setSort('b1rpa-d')">RPA</th>
-  <th style="background:rgba(59,130,246,0.06);color:#3B82F6;font-size:7px;cursor:pointer" onclick="setSort('b2cr-d')">CR</th><th style="background:rgba(59,130,246,0.06);color:#3B82F6;font-size:7px;cursor:pointer" onclick="setSort('b2rpa-d')">RPA</th>
-  <th style="background:rgba(139,92,246,0.06);color:#8B5CF6;font-size:7px;cursor:pointer" onclick="setSort('b3cr-d')">CR</th><th style="background:rgba(139,92,246,0.06);color:#8B5CF6;font-size:7px;cursor:pointer" onclick="setSort('b3rpa-d')">RPA</th>
-  <th style="background:rgba(236,72,153,0.06);color:#EC4899;font-size:7px;cursor:pointer" onclick="setSort('b4cr-d')">CR</th><th style="background:rgba(236,72,153,0.06);color:#EC4899;font-size:7px;cursor:pointer" onclick="setSort('b4rpa-d')">RPA</th>
-  <th style="background:rgba(245,158,11,0.06);color:#F59E0B;font-size:7px;cursor:pointer" onclick="setSort('b5cr-d')">CR</th><th style="background:rgba(245,158,11,0.06);color:#F59E0B;font-size:7px;cursor:pointer" onclick="setSort('b5rpa-d')">RPA</th>
-  <th style="background:rgba(0,212,255,0.06);color:#00D4FF;font-size:7px;cursor:pointer" onclick="setSort('cr-d')">CR</th><th style="background:rgba(0,212,255,0.06);color:#00D4FF;font-size:7px;cursor:pointer" onclick="setSort('rpa-d')">RPA</th>
+  <th style="color:#64748B;font-size:7px;cursor:pointer" onclick="setSort('b1cr-d')">CR</th><th style="color:#64748B;font-size:7px;cursor:pointer" onclick="setSort('b1rpa-d')">RPA</th>
+  <th style="color:#3B82F6;font-size:7px;cursor:pointer" onclick="setSort('b2cr-d')">CR</th><th style="color:#3B82F6;font-size:7px;cursor:pointer" onclick="setSort('b2rpa-d')">RPA</th>
+  <th style="color:#8B5CF6;font-size:7px;cursor:pointer" onclick="setSort('b3cr-d')">CR</th><th style="color:#8B5CF6;font-size:7px;cursor:pointer" onclick="setSort('b3rpa-d')">RPA</th>
+  <th style="color:#EC4899;font-size:7px;cursor:pointer" onclick="setSort('b4cr-d')">CR</th><th style="color:#EC4899;font-size:7px;cursor:pointer" onclick="setSort('b4rpa-d')">RPA</th>
+  <th style="color:#F59E0B;font-size:7px;cursor:pointer" onclick="setSort('b5cr-d')">CR</th><th style="color:#F59E0B;font-size:7px;cursor:pointer" onclick="setSort('b5rpa-d')">RPA</th>
+  <th style="color:#00D4FF;font-size:7px;cursor:pointer" onclick="setSort('cr-d')">CR</th><th style="color:#00D4FF;font-size:7px;cursor:pointer" onclick="setSort('rpa-d')">RPA</th>
   <th></th>
 </tr>
 </thead>
-<tbody id="tbody"></tbody>
+<tbody id="avg-row-wrap"><tr id="avg-row" style="display:none"><td class="avg-lbl" colspan="4">AVG (filtered)</td><td class="avg-val" id="av-b1cr"></td><td class="avg-val" id="av-b1rpa"></td><td class="avg-val" id="av-b2cr"></td><td class="avg-val" id="av-b2rpa"></td><td class="avg-val" id="av-b3cr"></td><td class="avg-val" id="av-b3rpa"></td><td class="avg-val" id="av-b4cr"></td><td class="avg-val" id="av-b4rpa"></td><td class="avg-val" id="av-b5cr"></td><td class="avg-val" id="av-b5rpa"></td><td class="avg-val" id="av-tcr"></td><td class="avg-val" id="av-trpa"></td><td class="avg-dim" id="av-rr"></td></tr></tbody><tbody id="tbody"></tbody>
 </table>
-</div>
+</div><!-- tbl-scroll -->
 
 <script>
 // NOTE: When Class column is added as col A in the sheet, re-export this JSON
@@ -325,7 +403,10 @@ function getFiltered(){
   var stage=document.getElementById('f-stage').value;
   var sort=document.getElementById('f-sort').value;
   var srch=document.getElementById('srch').value.toLowerCase();
+  var showInactive=document.getElementById('f-inactive').checked;
   return DATA.filter(function(r){
+    var isX=r.name.startsWith('X - ');
+    if(isX && !showInactive) return false;        // hide inactive unless toggled
     if(mkt&&r.store!==mkt)return false;
     if(srch&&!r.name.toLowerCase().includes(srch))return false;
     if(cls&&r.cls!==cls)return false;
@@ -366,17 +447,37 @@ function getFiltered(){
   });
 }
 
+// Track which column is "active" for avg highlighting
+var activeAvgCol = null;
+
+function setAvgCol(col) {
+  activeAvgCol = col;
+  render();
+}
+
 function render(){
   var rows=getFiltered();
   var sort=document.getElementById('f-sort').value;
+  var mkt=document.getElementById('f-market').value;
+  var cls=document.getElementById('f-class').value;
+  var srch=document.getElementById('srch').value.trim();
+  var stageFilter=document.getElementById('f-stage').value;
   document.getElementById('rcount').textContent=rows.length+' REPS';
   var lastMkt=null, html='';
+
+  // ── ACTIVE (non-inactive) rows for averages ──
+  var activeRows=rows.filter(function(r){return !r.name.startsWith('X - ');});
+
+  // ── TOP PERFORMER: identify for inline highlight ──
+  var topRep = activeRows.length > 0
+    ? activeRows.slice().sort(function(a,b){return (b.total_cr||0)-(a.total_cr||0);})[0].name
+    : null;
 
   rows.forEach(function(r){
     var a=r.appts||0, pct=Math.min(a/100,1), col=progColor(a);
     var mc=mktColors[r.store]||'#475569';
-    var nameDisp=r.name.replace(/^X - /,'');
     var isX=r.name.startsWith('X - ');
+    var nameDisp=isX?r.name.replace(/^X - /,'')+'<span style="font-size:9px;color:var(--text3);margin-left:4px;font-family:Orbitron,monospace;letter-spacing:0.5px">INACTIVE</span>':r.name;
 
     if(sort==='market'&&r.store!==lastMkt){
       lastMkt=r.store;
@@ -391,9 +492,18 @@ function render(){
       ?'<span class="cls-badge" style="background:'+cc+'18;border-color:'+cc+'55;color:'+cc+'">'+r.cls+'</span>'
       :'<span style="color:var(--text3);font-size:11px">—</span>';
 
-    html+='<tr style="opacity:'+(isX?0.5:1)+'">';
+    // Market tint (very subtle background)
+    var mktTint = isX ? 'transparent' : (mc+'08');
+
+    var isTop = !isX && r.name === topRep;
+    var rowBg = isTop ? 'linear-gradient(90deg,rgba(255,215,0,0.06) 0%,'+mktTint+' 60%)' : mktTint;
+    var rowBorder = isX ? '3px solid rgba(100,116,139,0.3)' : isTop ? '3px solid rgba(255,215,0,0.5)' : '3px solid '+mc+'40';
+    html+='<tr style="opacity:'+(isX?0.45:1)+';border-left:'+rowBorder+';background:'+rowBg+'">';
     html+='<td><span style="display:inline-flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:'+mc+';display:inline-block;flex-shrink:0"></span><span style="font-size:10px;color:var(--text3)">'+shortMkt(r.store)+'</span></span></td>';
-    html+=nameTipCell(nameDisp, r.name, ms, isX);
+    // Add crown badge to top performer name
+    var topBadge = isTop ? '<span style="font-size:9px;font-family:Orbitron,monospace;font-weight:700;color:var(--gold);background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.35);border-radius:20px;padding:1px 7px;margin-left:5px">👑 TOP CR</span>' : '';
+    var nameDispTop = isTop ? nameDisp + topBadge : nameDisp;
+    html+=nameTipCell(nameDispTop, r.name, ms, isX);
     html+='<td>'+cb+'</td>';
     html+='<td><div style="display:flex;flex-direction:column;gap:2px"><div style="display:flex;align-items:center;gap:4px"><span style="font-family:Orbitron,monospace;font-size:13px;font-weight:700;color:'+col+'">'+a+'</span><span style="color:var(--text3);font-size:10px">/100</span></div><div class="prog-wrap"><div class="prog-fill" style="width:'+Math.round(pct*100)+'%;background:'+col+'"></div></div></div></td>';
     html+=bracketCell(r.b1_cr,r.b1_rpa,r.name,1,20,'0–20','rgba(100,116,139,0.04)');
@@ -408,19 +518,75 @@ function render(){
 
   document.getElementById('tbody').innerHTML=html;
 
-  // Summary stats
-  var done=rows.filter(function(r){return(r.appts||0)>=100;}).length;
-  var wCR=rows.filter(function(r){return r.total_cr>0;});
+  // Show inactive banner if toggle is on
+  var banner = document.getElementById('inactive-banner');
+  var showInactiveNow = document.getElementById('f-inactive').checked;
+  if(!banner){
+    banner = document.createElement('div');
+    banner.id = 'inactive-banner';
+    banner.style.cssText = 'padding:6px 20px;font-size:11px;color:var(--text3);background:rgba(100,116,139,0.07);border-bottom:1px solid var(--border2);display:none;';
+    banner.textContent = '⚠️ Inactive reps (X -) are shown at reduced opacity and excluded from averages.';
+    document.getElementById('wrap').parentNode.insertBefore(banner, document.getElementById('wrap'));
+  }
+  banner.style.display = showInactiveNow ? 'block' : 'none';
+
+  // ── COLUMN AVERAGES ROW ──
+  function colAvg(field) {
+    var vals = activeRows.map(function(r){return r[field];}).filter(function(v){return v!=null && v>0;});
+    return vals.length ? vals.reduce(function(s,v){return s+v;},0)/vals.length : null;
+  }
+  var avgRow = document.getElementById('avg-row');
+  if(activeRows.length > 0) {
+    avgRow.style.display = '';
+    document.getElementById('av-b1cr').innerHTML  = fCR(colAvg('b1_cr'));
+    document.getElementById('av-b1rpa').innerHTML = fRPA(colAvg('b1_rpa'));
+    document.getElementById('av-b2cr').innerHTML  = fCR(colAvg('b2_cr'));
+    document.getElementById('av-b2rpa').innerHTML = fRPA(colAvg('b2_rpa'));
+    document.getElementById('av-b3cr').innerHTML  = fCR(colAvg('b3_cr'));
+    document.getElementById('av-b3rpa').innerHTML = fRPA(colAvg('b3_rpa'));
+    document.getElementById('av-b4cr').innerHTML  = fCR(colAvg('b4_cr'));
+    document.getElementById('av-b4rpa').innerHTML = fRPA(colAvg('b4_rpa'));
+    document.getElementById('av-b5cr').innerHTML  = fCR(colAvg('b5_cr'));
+    document.getElementById('av-b5rpa').innerHTML = fRPA(colAvg('b5_rpa'));
+    document.getElementById('av-tcr').innerHTML   = fCR(colAvg('total_cr'));
+    document.getElementById('av-trpa').innerHTML  = fRPA(colAvg('total_rpa'));
+    var rrVals = activeRows.map(function(r){return r.response_rate;}).filter(function(v){return v!=null;});
+    var avgRR = rrVals.length ? rrVals.reduce(function(s,v){return s+v;},0)/rrVals.length : null;
+    document.getElementById('av-rr').textContent = avgRR!=null ? Math.round(avgRR*100)+'%' : '—';
+    // Highlight active sort column in avg row
+    var avgCells = document.querySelectorAll('#avg-row td.avg-val, #avg-row td.avg-dim');
+    avgCells.forEach(function(td){td.style.background='';td.style.color='';});
+    var sortMap={'b1cr-d':'av-b1cr','b1rpa-d':'av-b1rpa','b2cr-d':'av-b2cr','b2rpa-d':'av-b2rpa','b3cr-d':'av-b3cr','b3rpa-d':'av-b3rpa','b4cr-d':'av-b4cr','b4rpa-d':'av-b4rpa','b5cr-d':'av-b5cr','b5rpa-d':'av-b5rpa','cr-d':'av-tcr','rpa-d':'av-trpa','rr-d':'av-rr'};
+    var activeId = sortMap[document.getElementById('f-sort').value];
+    if(activeId) {
+      var el = document.getElementById(activeId);
+      if(el){ el.style.background='rgba(0,212,255,0.18)'; el.style.color='var(--accent)'; }
+    }
+  } else {
+    avgRow.style.display = 'none';
+  }
+
+  // Summary stats — averages always exclude inactive reps
+  var activeRows=rows.filter(function(r){return !r.name.startsWith('X - ');});
+  var done=activeRows.filter(function(r){return(r.appts||0)>=100;}).length;
+  var wCR=activeRows.filter(function(r){return r.total_cr>0;});
   var aCR=wCR.length?wCR.reduce(function(s,r){return s+r.total_cr;},0)/wCR.length:0;
-  var wRPA=rows.filter(function(r){return r.total_rpa>0;});
+  var wRPA=activeRows.filter(function(r){return r.total_rpa>0;});
   var aRPA=wRPA.length?wRPA.reduce(function(s,r){return s+r.total_rpa;},0)/wRPA.length:0;
-  document.getElementById('st-reps').textContent=rows.length;
+  var inactiveCount = rows.length - activeRows.length;
+  document.getElementById('st-reps').textContent = activeRows.length;
+  var repsEl = document.getElementById('st-reps');
+  if(inactiveCount > 0) {
+    repsEl.innerHTML = activeRows.length + '<span style="font-size:9px;color:var(--text3);display:block;margin-top:1px;font-family:Inter,sans-serif;font-weight:500">+'+inactiveCount+' inactive</span>';
+  } else {
+    repsEl.textContent = activeRows.length;
+  }
   document.getElementById('st-done').textContent=done;
   document.getElementById('st-cr').textContent=aCR>0?Math.round(aCR*100)+'%':'—';
   document.getElementById('st-rpa').textContent=aRPA>0?'$'+(aRPA/1000).toFixed(1)+'K':'—';
 
   var stages=[0,0,0,0,0,0];
-  rows.forEach(function(r){var a=r.appts||0;if(a>=100)stages[5]++;else if(a>=80)stages[4]++;else if(a>=60)stages[3]++;else if(a>=40)stages[2]++;else if(a>=20)stages[1]++;else stages[0]++;});
+  activeRows.forEach(function(r){var a=r.appts||0;if(a>=100)stages[5]++;else if(a>=80)stages[4]++;else if(a>=60)stages[3]++;else if(a>=40)stages[2]++;else if(a>=20)stages[1]++;else stages[0]++;});
   var slbls=['0–20','21–40','41–60','61–80','81–99','100+'];
   var scols=['var(--text3)','var(--purple)','var(--accent)','var(--phi)','var(--gold)','var(--gold)'];
   var sh='';
@@ -430,6 +596,41 @@ function render(){
 
 buildClassFilter();
 render();
+
+// ── STICKY HEADER OFFSET CALCULATION ──────────────────────────────────────
+function updateStickyOffsets() {
+  // Within #tbl-scroll, sticky top:0 = top of scroll container
+  // Row1 is at top:0
+  var row1Ths = document.querySelectorAll('thead tr:first-child th');
+  row1Ths.forEach(function(th){ th.style.top = '0px'; });
+
+  var row1El = document.querySelector('thead tr:first-child');
+  var row1H = row1El ? Math.ceil(row1El.getBoundingClientRect().height) : 35;
+
+  var row2Ths = document.querySelectorAll('thead tr:nth-child(2) th');
+  row2Ths.forEach(function(th){ th.style.top = row1H + 'px'; });
+
+  var row2El = document.querySelector('thead tr:nth-child(2)');
+  var row2H = row2El ? Math.ceil(row2El.getBoundingClientRect().height) : 28;
+
+  var avgTds = document.querySelectorAll('#avg-row-wrap tr td');
+  avgTds.forEach(function(td){ td.style.top = (row1H + row2H) + 'px'; });
+
+  // Adjust the scroll container height based on how much space is above it
+  var tblScroll = document.getElementById('tbl-scroll');
+  var wrap = document.getElementById('wrap');
+  if (tblScroll && wrap) {
+    var wrapTop = wrap.getBoundingClientRect().top;
+    tblScroll.style.height = (window.innerHeight - wrapTop - 20) + 'px';
+  }
+}
+
+window.addEventListener('load', function(){ setTimeout(updateStickyOffsets, 50); });
+window.addEventListener('resize', updateStickyOffsets);
+var _r2 = render;
+render = function() { _r2.apply(this, arguments); setTimeout(updateStickyOffsets, 0); };
+
+
 </script>
 </body>
 </html>
