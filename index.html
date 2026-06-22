@@ -2157,8 +2157,23 @@ function renderBadgeLegend(){
 function openAdmin(){document.getElementById("modal-overlay").classList.add("open");document.getElementById("modal-pass").focus();}
 function closeModal(){document.getElementById("modal-overlay").classList.remove("open");document.getElementById("modal-pass").value="";document.getElementById("modal-pass").classList.remove("error");document.getElementById("modal-error").style.display="none";}
 function checkPass(){var pw=document.getElementById("modal-pass").value;if(pw===ADMIN_PW||pw===""){closeModal();showAdminPanel();}else{document.getElementById("modal-pass").classList.add("error");document.getElementById("modal-error").style.display="block";}}
-function showAdminPanel(){document.getElementById("admin-panel").style.display="block";document.getElementById("top-bar").innerHTML='<button class="btn btn-back" onclick="hideAdminPanel()">\u2190 AUDIENCE VIEW</button>';}
-function hideAdminPanel(){document.getElementById("admin-panel").style.display="none";document.getElementById("top-bar").innerHTML='<button class="btn btn-admin" onclick="openAdmin()">ADMIN</button>';}
+function showAdminPanel(){
+  document.getElementById("admin-panel").style.display="block";
+  document.getElementById("header").style.display="none";
+  document.getElementById("blitz-clock").style.display="none";
+  document.getElementById("top-bar").innerHTML=
+    '<div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:8px 0">'
+    +'<div style="font-family:Orbitron,monospace;font-size:20px;font-weight:900;background:linear-gradient(135deg,#00D4FF,#A855F7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:4px">SEE THE PACE</div>'
+    +'<div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:2px">ADMIN PANEL</div>'
+    +'<button class="btn btn-back" onclick="hideAdminPanel()">\u2190 DASHBOARD</button>'
+    +'</div>';
+}
+function hideAdminPanel(){
+  document.getElementById("admin-panel").style.display="none";
+  document.getElementById("header").style.display="";
+  document.getElementById("blitz-clock").style.display="";
+  document.getElementById("top-bar").innerHTML='<button class="btn btn-admin" onclick="openAdmin()">ADMIN</button>';
+}
 function applySettings(){state.sheetUrl=document.getElementById("inp-url").value.trim()||state.sheetUrl;state.title=document.getElementById("inp-title").value.trim()||state.title;state.goal=parseFloat(document.getElementById("inp-goal").value.replace(/[^0-9.]/g,""))||state.goal;saveSettings();startPolling();render();}
 function loadPasted(){var csv=document.getElementById("csv-paste").value.trim();if(!csv)return;var parsed=parseCsv(csv);if(parsed&&Object.keys(parsed.teams).length>0){checkBadgeUpgrades(parsed);state.data=parsed;state.status="live";state.lastUpdated=new Date().toLocaleTimeString()+" (manual)";render();resetCountdown();}}
 
@@ -4734,35 +4749,73 @@ loadSettings();
 renderBadgeLegend();
 
 // ── SUPABASE SYNC ────────────────────────────────────────────────────────────
+var SB_URL = 'https://jowacrfeekwlguapzvkc.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impvd2FjcmZlZWt3bGd1YXB6dmtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNDAwODgsImV4cCI6MjA5NzcxNjA4OH0.SunLbSoQCUpyf6QrCzDsxlEKmQx0fDj9v5DU6X7nRqQ';
+
 async function syncToSupabase() {
   var btn = event.target;
   var status = document.getElementById('supabase-sync-status');
   btn.disabled = true;
   btn.textContent = '⏳ SYNCING...';
-  status.textContent = 'Pushing data to Supabase...';
+  status.textContent = 'Building rows from dashboard data...';
   status.style.color = '#A855F7';
-  try {
-    var appsScriptUrl = SHEET_URL.replace('?tab=Dashboard','').replace('tab=Dashboard','');
-    var base = appsScriptUrl.split('?')[0];
-    var res = await fetch(base, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({signal:'sync_supabase'})
+
+  // Build rows from current dashboard state
+  var rows = [];
+  if (state.data && state.data.teams) {
+    Object.values(state.data.teams).forEach(function(team) {
+      (team.reps || []).forEach(function(rep) {
+        (rep.dealObjs || []).forEach(function(deal) {
+          if (!deal.amount || deal.amount <= 0) return;
+          var row = {
+            rep_name: rep.name,
+            store: team.display || '',
+            amount: Math.round(deal.amount),
+            deal_date: deal.date || null
+          };
+          if (deal.apptId && /^\d{6,}$/.test(String(deal.apptId))) row.appt_id = parseInt(deal.apptId);
+          rows.push(row);
+        });
+      });
     });
-    var text = await res.text();
-    var data = {};
-    try { data = JSON.parse(text); } catch(e) {}
-    if (data.synced !== undefined) {
-      status.textContent = '✓ SYNCED ' + data.synced + ' ROWS (' + data.errors + ' errors)';
-      status.style.color = data.errors > 0 ? '#FF6B35' : '#00FF88';
-    } else {
-      status.textContent = 'Response: ' + text.substring(0,80);
-      status.style.color = '#FF6B35';
-    }
-  } catch(e) {
-    status.textContent = 'Error: ' + e.message;
-    status.style.color = '#FF4444';
   }
+
+  if (rows.length === 0) {
+    status.textContent = 'No deal data found — make sure dashboard is loaded';
+    status.style.color = '#FF6B35';
+    btn.disabled = false;
+    btn.textContent = '🗄️ SYNC DASHBOARD → SUPABASE';
+    return;
+  }
+
+  status.textContent = 'Pushing ' + rows.length + ' rows to Supabase...';
+
+  var batchSize = 500, synced = 0, errors = 0;
+  for (var i = 0; i < rows.length; i += batchSize) {
+    var batch = rows.slice(i, i + batchSize);
+    try {
+      var res = await fetch(SB_URL + '/rest/v1/historical_deals', {
+        method: 'POST',
+        headers: {
+          'apikey': SB_KEY,
+          'Authorization': 'Bearer ' + SB_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates,return=minimal'
+        },
+        body: JSON.stringify(batch)
+      });
+      if (res.ok) { synced += batch.length; }
+      else { errors++; console.error('Supabase batch error:', res.status, await res.text()); }
+    } catch(e) {
+      errors++;
+      console.error('Supabase fetch error:', e);
+    }
+  }
+
+  status.textContent = errors === 0
+    ? '✓ SYNCED ' + synced + ' ROWS SUCCESSFULLY'
+    : '⚠ SYNCED ' + synced + ' ROWS · ' + errors + ' ERRORS';
+  status.style.color = errors === 0 ? '#00FF88' : '#FF6B35';
   btn.disabled = false;
   btn.textContent = '🗄️ SYNC DASHBOARD → SUPABASE';
 }
