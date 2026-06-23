@@ -686,6 +686,22 @@ if (new URLSearchParams(window.location.search).get('tv') === '1') {
   </div>
 </div>
 
+<!-- DOOR BOARD — PASSWORD MODAL -->
+<div id="door-modal-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);align-items:center;justify-content:center">
+  <div style="background:linear-gradient(135deg,#06091A,#0A1040,#1A0615);border:2px solid #FF3355;border-radius:20px;padding:36px 40px;text-align:center;width:320px;box-shadow:0 0 60px rgba(255,51,85,0.4)">
+    <div style="font-size:48px;margin-bottom:12px">🚪</div>
+    <div style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;background:linear-gradient(90deg,#FF6680,#FFFFFF,#6699FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;margin-bottom:4px">KNOCK KNOCK</div>
+    
+    <input id="door-modal-pass" type="password" placeholder="Who's there?" onkeydown="if(event.key==='Enter')checkDoorPw()"
+      style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-family:Inter,sans-serif;font-size:14px;padding:10px 14px;outline:none;margin-bottom:10px;box-sizing:border-box"/>
+    <div id="door-modal-err" style="display:none;color:#FF3355;font-size:11px;margin-bottom:10px">Wrong answer. Try again.</div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closeDoorModal()" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#8DA0C0;font-family:Orbitron,monospace;font-size:10px;font-weight:700;padding:10px;cursor:pointer;letter-spacing:1px">CANCEL</button>
+      <button onclick="checkDoorPw()" style="flex:1;background:linear-gradient(90deg,#B22234,#FF3355);border:none;border-radius:10px;color:#fff;font-family:Orbitron,monospace;font-size:10px;font-weight:700;padding:10px;cursor:pointer;letter-spacing:1px">ENTER</button>
+    </div>
+  </div>
+</div>
+
 <!-- ROOKIE 100 — COMING SOON MODAL -->
 <div id="rookie-modal-overlay" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);align-items:center;justify-content:center">
   <div style="background:rgba(10,18,35,0.97);border:1px solid rgba(168,85,247,0.4);border-radius:16px;padding:36px 40px;text-align:center;min-width:280px;max-width:340px">
@@ -2541,7 +2557,18 @@ function toggleDarkMode() {
   updateMenuStates();
 }
 (function(){
-  try { if (localStorage.getItem('stp_light_mode') === '1') { lightMode = true; document.body.classList.add('light-mode'); } } catch(e){}
+  try {
+    var saved = localStorage.getItem('stp_light_mode');
+    // Default is dark — only apply light if explicitly saved as '1'
+    if (saved === '1') {
+      lightMode = true;
+      document.body.classList.add('light-mode');
+    } else {
+      // Ensure dark mode is clean on first load
+      lightMode = false;
+      document.body.classList.remove('light-mode');
+    }
+  } catch(e){}
 })();
 
 // ══ SPOTLIGHT ═══════════════════════════════════════════════════════════════════════
@@ -4845,6 +4872,7 @@ function createMenu(){
   // ADMIN hidden from menu — access via URL only
   panel += '<button class="menu-item" id="blitz-event-btn" onclick="toggleBlitzEvent();toggleMenu()" style="color:#FFD700">&#x26A1; BLITZ 2026</button>';
   panel += '<button class="menu-item" onclick="openRookie100();toggleMenu()" style="color:#475569">🔒 COMING SOON</button>';
+  panel += '<button class="menu-item" onclick="openDoorBoard();toggleMenu()" style="color:#FF6680">🚪 KNOCK KNOCK</button>';
   panel += '<div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px"></div>';
 
   // — DISPLAY —
@@ -4996,7 +5024,34 @@ async function syncToSupabase() {
   btn.textContent = '🗄️ SYNC DASHBOARD → SUPABASE';
 }
 // ─────────────────────────────────────────────────────────────────────────────
-var ROOKIE_PW = "Rookie100";
+var ROOKIE_PW  = "Rookie100";
+var DOOR_PW    = "whoisit";
+
+function openDoorBoard() {
+  var overlay = document.getElementById('door-modal-overlay');
+  if (overlay) { overlay.style.display = 'flex'; setTimeout(function(){ document.getElementById('door-modal-pass').focus(); }, 100); }
+}
+function closeDoorModal() {
+  var overlay = document.getElementById('door-modal-overlay');
+  if (overlay) { overlay.style.display = 'none'; }
+  var inp = document.getElementById('door-modal-pass');
+  if (inp) inp.value = '';
+  var err = document.getElementById('door-modal-err');
+  if (err) err.style.display = 'none';
+}
+function checkDoorPw() {
+  var inp = document.getElementById('door-modal-pass');
+  var err = document.getElementById('door-modal-err');
+  if (!inp) return;
+  if (inp.value.toLowerCase() === DOOR_PW || inp.value === ADMIN_PW) {
+    closeDoorModal();
+    window.open('door_board.html', '_blank');
+  } else {
+    if (err) { err.style.display = 'block'; }
+    inp.value = '';
+    inp.focus();
+  }
+}
 function openRookie100() {
   var overlay = document.getElementById('rookie-modal-overlay');
   if (overlay) { overlay.style.display = 'flex'; setTimeout(function(){ document.getElementById('rookie-modal-pass').focus(); }, 100); }
