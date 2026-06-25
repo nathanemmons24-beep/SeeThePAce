@@ -1548,7 +1548,7 @@ function checkBadgeUpgrades(newData) {
 
     // New rep we haven't seen before
     if (!prev) {
-      if (curr.badge) upgrades.push({ rep: key.split("|")[0], lbl: curr.badge.label, amount: curr.amount });
+      if (curr.badge && curr.amount >= 1000) upgrades.push({ rep: key.split("|")[0], lbl: curr.badge.label, amount: curr.amount });
       return;
     }
 
@@ -1561,7 +1561,11 @@ function checkBadgeUpgrades(newData) {
       console.log("Deal removed:", key, prev.amount, "->", curr.amount);
       return;
     }
-    // Badge fires on the INDIVIDUAL DEAL amount only
+    // Badge fires on the INDIVIDUAL DEAL amount only — minimum $1000
+    if (addedAmount < 1000) {
+      console.log("Deal too small for badge:", key, addedAmount);
+      return;
+    }
     var dealBadge = getBadge(addedAmount);
     if (dealBadge) {
       upgrades.push({ rep: key.split("|")[0], lbl: dealBadge.label, amount: addedAmount });
