@@ -24,23 +24,25 @@
 }
 
 /* ── LIGHT (Clean) theme ── */
-body.light{
-  --bg:#F8FAFC;--bg2:#FFFFFF;--bg3:#F1F5F9;
-  --accent:#0369A1;--accent2:#059669;--gold:#B45309;--purple:#7C3AED;
-  --text:#0F172A;--text2:#475569;--text3:#94A3B8;
-  --card:#FFFFFF;--border:rgba(3,105,161,0.2);--border2:rgba(0,0,0,0.07);
-  --row-hover:#EFF6FF;
-  --th-bg:#F1F5F9;--th-color:#475569;--th-hover:#0369A1;
-  --mkt-bg:#EFF6FF;--mkt-color:#1D4ED8;--mkt-border:#BFDBFE;
-  --prog-bg:#E2E8F0;
-  --phi:#059669;--pmi:#0369A1;--plo:#94A3B8;
+body.light {
+  --bg:#FFFFFF;--bg2:#F5F5F5;--bg3:#EAEAEA;
+  --accent:#4A9B4B;--accent2:#2D6B2E;--gold:#4A9B4B;
+  --text:#1A1A1A;--text2:#333333;--text3:#666666;
+  --card:#FFFFFF;--border:rgba(74,155,75,0.25);--border2:rgba(0,0,0,0.1);
+  --row-hover:rgba(74,155,75,0.05);
+  --th-bg:#F5F5F5;--th-color:#666666;--th-hover:#4A9B4B;
+  --mkt-bg:rgba(74,155,75,0.06);--mkt-color:#2D6B2E;--mkt-border:rgba(74,155,75,0.25);
+  --prog-bg:rgba(0,0,0,0.08);
+  --phi:#4A9B4B;--pmi:#2D6B2E;--plo:#999999;
   --input-bg:#FFFFFF;
+  background:#F5F5F5 !important;
+  color:#1A1A1A !important;
 }
 
 body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;font-size:14px;line-height:1.5;transition:background 0.3s,color 0.3s}
 
 /* HEADER */
-#hdr{position:sticky;top:0;z-index:100;background:var(--bg2);backdrop-filter:blur(12px);border-bottom:1px solid var(--border2);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+#hdr{margin-top:48px;top:48px;position:sticky;top:0;z-index:100;background:var(--bg2);backdrop-filter:blur(12px);border-bottom:1px solid var(--border2);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
 #hdr-title{font-family:Orbitron,monospace;font-size:clamp(13px,2vw,18px);font-weight:900;color:var(--accent);letter-spacing:3px}
 body:not(.light) #hdr-title{background:linear-gradient(135deg,#00D4FF,#00FF88);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 #hdr-sub{font-size:10px;color:var(--text3);margin-top:1px;letter-spacing:1px;font-weight:500}
@@ -190,9 +192,174 @@ body.light thead th[style*="color:#8B5CF6"] { background:#EDE9FB; }
 body.light thead th[style*="color:#EC4899"] { background:#FCE7F3; }
 body.light thead th[style*="color:#F59E0B"] { background:#FEF3C7; }
 body.light thead th[style*="color:#00D4FF"] { background:#E0F2FE; }
+
+
+
+/* ── FULLSCREEN PEEK NAV ── */
+:fullscreen #stp-nav,:-webkit-full-screen #stp-nav {
+  display:flex!important;position:fixed!important;
+  top:-48px;left:0;right:0;z-index:9999;
+  transition:top 0.2s ease;
+}
+:fullscreen #stp-nav.peek,:-webkit-full-screen #stp-nav.peek { top:0!important; }
+
+/* ── RBA LIGHT MODE ── */
+body.light { background:#F5F5F5 !important; }
+body.light #hdr { background:linear-gradient(135deg,#FFFFFF,#F0F0F0) !important; border-bottom:2px solid rgba(74,155,75,0.3) !important; }
+body.light #hdr-title { color:#1A1A1A !important; }
+body.light #hdr-sub { color:#4A9B4B !important; }
+body.light .hstat-v { color:#2D6B2E !important; }
+body.light .hstat-l { color:#666666 !important; }
+body.light table { background:#FFFFFF !important; }
+body.light thead th { background:#F5F5F5 !important; color:#333333 !important; border-color:rgba(0,0,0,0.08) !important; }
+body.light thead th:hover { color:#4A9B4B !important; }
+body.light tbody tr { border-color:rgba(0,0,0,0.06) !important; }
+body.light tbody tr:hover { background:rgba(74,155,75,0.04) !important; }
+body.light td { color:#1A1A1A !important; border-color:rgba(0,0,0,0.06) !important; }
+body.light .milestone { background:rgba(74,155,75,0.1) !important; color:#2D6B2E !important; border-color:rgba(74,155,75,0.3) !important; }
+body.light #tbl-scroll { background:#FFFFFF !important; border:1px solid rgba(0,0,0,0.1) !important; }
+body.light #ctrl { background:#FFFFFF !important; border-color:rgba(0,0,0,0.1) !important; }
+body.light .rsel { background:#FFFFFF !important; color:#1A1A1A !important; border-color:rgba(74,155,75,0.3) !important; }
+body.light .rsel:focus { border-color:#4A9B4B !important; box-shadow:0 0 0 2px rgba(74,155,75,0.15) !important; }
+body.light #summary { background:#FFFFFF !important; border-color:rgba(0,0,0,0.1) !important; }
+body.light .avg-val { color:#4A9B4B !important; }
+/* Nav light */
+body.light #stp-nav { background:linear-gradient(135deg,#FFFFFF,#F0FAF0,#FFFFFF) !important; border-color:rgba(74,155,75,0.4) !important; box-shadow:0 2px 16px rgba(74,155,75,0.12) !important; }
+body.light .stp-link { color:#1A1A1A !important; }
+body.light .stp-link:hover { color:#2D6B2E !important; background:rgba(74,155,75,0.1) !important; }
+body.light .stp-drop-btn { color:#1A1A1A !important; }
+body.light #stp-wordmark { background:linear-gradient(90deg,#2D6B2E,#4A9B4B,#2D6B2E) !important; -webkit-background-clip:text !important; background-clip:text !important; -webkit-text-fill-color:transparent !important; }
+body.light #stp-bolt { filter:drop-shadow(0 0 8px #4A9B4B) !important; }
+body.light .stp-drop-menu { background:#FFFFFF !important; border-color:rgba(74,155,75,0.2) !important; box-shadow:0 8px 32px rgba(0,0,0,0.12) !important; }
+body.light .stp-drop-item { color:#1A1A1A !important; }
+body.light .stp-drop-item:hover { background:rgba(74,155,75,0.08) !important; color:#2D6B2E !important; }
+body.light .stp-drop-label { color:rgba(74,155,75,0.6) !important; }
+body.light .stp-drop-active { color:#2D6B2E !important; border-color:#4A9B4B !important; background:rgba(74,155,75,0.08) !important; }
+
+/* ── RBA DARK MODE ── */
+body:not(.light) { background:#111111 !important; }
+body:not(.light) #hdr { background:linear-gradient(135deg,#1A1A1A,#111111) !important; border-bottom:2px solid rgba(74,155,75,0.3) !important; }
+body:not(.light) #hdr-title { color:#FFFFFF !important; }
+body:not(.light) #hdr-sub { color:#4A9B4B !important; }
+body:not(.light) .hstat-v { color:#4A9B4B !important; text-shadow:0 0 12px rgba(74,155,75,0.4) !important; }
+body:not(.light) .hstat-l { color:rgba(255,255,255,0.45) !important; }
+body:not(.light) table { background:#1A1A1A !important; }
+body:not(.light) thead th { background:#222222 !important; color:rgba(255,255,255,0.5) !important; border-color:rgba(255,255,255,0.06) !important; }
+body:not(.light) thead th:hover { color:#4A9B4B !important; }
+body:not(.light) tbody tr { border-color:rgba(255,255,255,0.05) !important; }
+body:not(.light) tbody tr:hover { background:rgba(74,155,75,0.06) !important; }
+body:not(.light) td { color:#FFFFFF !important; border-color:rgba(255,255,255,0.05) !important; }
+body:not(.light) .milestone { background:rgba(74,155,75,0.15) !important; color:#4A9B4B !important; border-color:rgba(74,155,75,0.4) !important; }
+body:not(.light) #tbl-scroll { background:#1A1A1A !important; border:1px solid rgba(255,255,255,0.06) !important; }
+body:not(.light) #ctrl { background:#1A1A1A !important; border-color:rgba(255,255,255,0.08) !important; }
+body:not(.light) .rsel { background:#222222 !important; color:#FFFFFF !important; border-color:rgba(74,155,75,0.3) !important; }
+body:not(.light) #summary { background:#1A1A1A !important; border-color:rgba(255,255,255,0.06) !important; }
+body:not(.light) .avg-val { color:#4A9B4B !important; }
+/* Accent color for all numeric highlights */
+body:not(.light) [style*="color:#00D4FF"],[style*="color: #00D4FF"] { color:#4A9B4B !important; }
+body:not(.light) [style*="color:#A855F7"],[style*="color: #A855F7"] { color:#4A9B4B !important; }
+/* Nav dark - already handled by existing nav CSS */
+
+
+:fullscreen #hdr, :-webkit-full-screen #hdr { margin-top:0 !important; }
 </style>
 </head>
-<body>
+<body class="light">
+<!-- ── SEE THE PACE NAV BAR ── -->
+<nav id="stp-nav" class="stp-nav-hidden">
+  <a onclick="history.length>1?history.back():location.href='dashboard.html'" id="stp-brand" style="cursor:pointer"><span id="stp-bolt">⚡</span><span id="stp-wordmark">SEE THE PACE</span></a>
+  <div id="stp-links">
+    <a onclick="history.length>1?history.back():location.href='dashboard.html'" class="stp-link" style="cursor:pointer">PACE</a>
+    <div class="stp-dropdown">
+      <button class="stp-link stp-drop-btn">CONTESTS ▾</button>
+      <div class="stp-drop-menu">
+        <div class="stp-drop-label">CONTESTS</div>
+        <a class="stp-drop-item" onclick="stpGoToBlitz();return false" style="cursor:pointer">⚡ Blitz 2026</a>
+        <a class="stp-drop-item" onclick="stpGoToContest('record_setters.html');return false" style="cursor:pointer">🏆 August 2026</a>
+        <a class="stp-drop-item stp-drop-active" style="cursor:default">⭐ September 2026</a>
+      </div>
+    </div>
+    <div class="stp-dropdown">
+      <button class="stp-link stp-drop-btn">HELP ▾</button>
+      <div class="stp-drop-menu" style="min-width:220px">
+        <div class="stp-drop-label">SUPPORT</div>
+        <a class="stp-drop-item" onclick="stpOpenChat();return false" style="cursor:pointer">💬 Talk To The Data</a>
+        <a class="stp-drop-item" onclick="stpShowGuide();return false" style="cursor:pointer">📊 How To Read This</a>
+      </div>
+    </div>
+    <div class="stp-dropdown">
+      <button class="stp-link stp-drop-btn">⚙ SETTINGS</button>
+      <div class="stp-drop-menu" style="min-width:230px">
+        <div class="stp-drop-label">DISPLAY</div>
+        <a class="stp-drop-item" onclick="stpFs();return false" style="cursor:pointer">⛶ Fullscreen</a>
+        <a class="stp-drop-item" onclick="stpTv();return false" style="cursor:pointer">📺 TV Mode</a>
+        <a class="stp-drop-item" onclick="stpScroll();return false" style="cursor:pointer">⇅ Auto Scroll</a>
+        <a class="stp-drop-item" id="nav-scroll-speed" onclick="stpScrollSpeed();return false" style="cursor:pointer">⏩ Scroll Speed: Medium</a>
+        <a class="stp-drop-item" onclick="toggleDarkMode();return false" style="cursor:pointer">☀ Light / Dark</a>
+        <a class="stp-drop-item" id="nav-sound-btn" onclick="stpToggleSound();return false" style="cursor:pointer">🔔 Sound: On</a>
+        <div class="stp-drop-divider"></div>
+        <div class="stp-drop-label">DATA</div>
+        <a class="stp-drop-item" onclick="stpRefresh();return false" style="cursor:pointer">🔄 Refresh Now</a>
+        <div class="stp-drop-divider"></div>
+        <div class="stp-drop-label">FILTERS</div>
+        <a class="stp-drop-item" onclick="stpRookies();return false" style="cursor:pointer">⭐ Rookies Only</a>
+        <a class="stp-drop-item" onclick="stpConsolidated();return false" style="cursor:pointer">🗺 Consolidated</a>
+        <a class="stp-drop-item" onclick="stpClearFilters();return false" style="cursor:pointer">↺ Clear All Filters</a>
+      </div>
+    </div>
+    <a class="stp-link" id="nav-today-btn" onclick="stpTodayFilter();return false" style="cursor:pointer;font-size:9px">📅 TODAY</a>
+    <button class="stp-link" onclick="stpSignOut()" style="margin-left:4px">EXIT</button>
+  </div>
+</nav>
+
+
+
+
+<style>
+/* ── STP NAV — dark theme for Rookie 100 ── */
+#stp-nav{position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:48px;background:linear-gradient(135deg,#0A1A0A 0%,#0F2A0F 50%,#0A1A0A 100%);border-bottom:2px solid rgba(74,155,75,0.45);box-shadow:0 2px 20px rgba(74,155,75,0.12);font-family:'Orbitron',monospace;}
+
+/* ── NAV: LIGHT MODE ── */
+body.light #stp-nav{
+  background:linear-gradient(135deg,#F8FAFC 0%,#EEF2FF 50%,#F8FAFC 100%) !important;
+  border-bottom:2px solid rgba(124,58,237,0.3) !important;
+  box-shadow:0 2px 16px rgba(124,58,237,0.1) !important;
+}
+body.light .stp-link{color:rgba(88,28,220,0.75) !important}
+body.light .stp-link:hover{color:#7C3AED !important;background:rgba(124,58,237,0.08) !important}
+body.light .stp-drop-btn{color:rgba(88,28,220,0.75) !important}
+body.light #stp-wordmark{
+  background:linear-gradient(90deg,#7C3AED,#5B21B6,#7C3AED) !important;
+  -webkit-background-clip:text !important;background-clip:text !important;
+  -webkit-text-fill-color:transparent !important;
+}
+body.light #stp-bolt{filter:drop-shadow(0 0 8px #7C3AED) !important}
+body.light .stp-drop-menu{background:#F8FAFC !important;border-color:rgba(124,58,237,0.2) !important;box-shadow:0 8px 32px rgba(124,58,237,0.1) !important}
+body.light .stp-drop-item{color:rgba(55,25,150,0.85) !important}
+body.light .stp-drop-item:hover{background:rgba(124,58,237,0.08) !important;color:#7C3AED !important}
+body.light .stp-drop-label{color:rgba(124,58,237,0.5) !important}
+body.light .stp-drop-active{color:#7C3AED !important;border-color:#7C3AED !important;background:rgba(124,58,237,0.06) !important}
+#stp-brand{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0}
+#stp-bolt{font-size:20px;filter:drop-shadow(0 0 8px #A855F7);animation:boltPulse 2s ease-in-out infinite}
+@keyframes boltPulse{0%,100%{filter:drop-shadow(0 0 6px #A855F7)}50%{filter:drop-shadow(0 0 16px #A855F7)}}
+#stp-wordmark{font-family:'Orbitron',monospace;font-weight:900;font-size:14px;letter-spacing:3px;background:linear-gradient(90deg,#4A9B4B,#7DC87E,#4A9B4B);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+@keyframes wmarkShimmer{to{background-position:200% center}}
+#stp-links{display:flex;align-items:center;gap:4px}
+.stp-link{color:rgba(200,240,200,0.75);font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-decoration:none;padding:6px 14px;border-radius:8px;border:none;background:transparent;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.stp-link:hover{color:#4A9B4B;background:rgba(74,155,75,0.12)}
+.stp-dropdown{position:relative}
+.stp-drop-btn{color:rgba(255,255,255,0.65)}
+.stp-drop-menu{display:none;position:absolute;top:calc(100% + 2px);right:0;background:#0F1F0F;border:1px solid rgba(74,155,75,0.3);border-radius:12px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:9600}
+.stp-drop-menu.open{display:block}
+.stp-drop-label{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:rgba(168,85,247,0.5);padding:4px 10px 2px;text-transform:uppercase}
+.stp-drop-divider{height:1px;background:rgba(168,85,247,0.15);margin:6px 4px}
+.stp-drop-item{display:block;padding:8px 12px;border-radius:8px;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;cursor:pointer;transition:all 0.12s;font-family:'Inter',sans-serif;font-weight:500;white-space:nowrap}
+.stp-drop-item:hover{background:rgba(74,155,75,0.1);color:#4A9B4B}
+.stp-drop-active{color:#A855F7 !important;background:rgba(168,85,247,0.08);border-left:2px solid #A855F7;padding-left:10px}
+.stp-drop-disabled{color:rgba(255,255,255,0.3) !important;cursor:not-allowed}
+.stp-drop-disabled:hover{background:transparent !important;color:rgba(255,255,255,0.3) !important}
+:fullscreen #hdr,:-webkit-full-screen #hdr{top:0 !important}
+</style>
 
 <div id="hdr">
   <div><div id="hdr-title">ROOKIE 100</div><div id="hdr-sub">NEW HIRES · FIRST 100 APPOINTMENTS</div></div>
@@ -201,8 +368,8 @@ body.light thead th[style*="color:#00D4FF"] { background:#E0F2FE; }
   <div class="hstat"><div class="hstat-v" id="st-cr">—</div><div class="hstat-l">AVG CLOSE RATE</div></div>
   <div class="hstat"><div class="hstat-v" id="st-rpa">—</div><div class="hstat-l">AVG RPA</div></div>
   <div id="hdr-r">
-    <button id="theme-btn" onclick="toggleTheme()">☀️ LIGHT MODE</button>
-    <a href="https://seethepace.com/" class="back-btn">&#x2190; DASHBOARD</a>
+    
+    
   </div>
 </div>
 
@@ -322,13 +489,22 @@ function buildTipRows(deals, label) {
   return header+rows;
 }
 
-function showTip(el, name, bMin, bMax, label) {
+function showTip(el, name, bMin, bMax, label, bStart, bCount) {
   var tip = el.querySelector('.deal-tip');
   if(!tip){ tip=document.createElement('div'); tip.className='deal-tip'; el.appendChild(tip); }
   tip.style.display='block';
   tip.innerHTML = '<div class="deal-tip-hdr">'+label+'</div><div class="deal-tip-empty">Loading...</div>';
   fetchDeals(name, function(all){
-    var slice = (bMin===null) ? all.slice().reverse().slice(0,10) : all.slice(bMin-1, bMax);
+    var slice;
+    if(bMin===null) {
+      // Name cell or total: show last 10 deals
+      slice = all.slice().reverse().slice(0, 10);
+    } else {
+      // Bracket cell: use pre-calculated start index and count
+      slice = (bStart!=null && bCount!=null)
+        ? all.slice(bStart, bStart + bCount)
+        : all.slice(bMin-1, bMax);
+    }
     tip.innerHTML = buildTipRows(slice, label);
   });
 }
@@ -338,11 +514,11 @@ function hideTip(el) {
   if(tip) tip.style.display='none';
 }
 
-function bracketCell(cr, rpa, name, bMin, bMax, label, bg){
+function bracketCell(cr, rpa, name, bMin, bMax, label, bg, bStart, bCount){
   var crStr=fCR(cr), rpaStr=fRPA(rpa);
   if(cr==null&&rpa==null) return '<td style="background:'+bg+'">'+crStr+'</td><td style="background:'+bg+'">'+rpaStr+'</td>';
   var safen=name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  var mkAttr='onmouseenter="showTip(this,\''+safen+'\','+bMin+','+bMax+',\''+label+' deals\')" onmouseleave="hideTip(this)"';
+  var mkAttr='onmouseenter="showTip(this,\''+safen+'\','+bMin+','+bMax+',\''+label+' deals\','+bStart+','+bCount+')" onmouseleave="hideTip(this)"';
   return '<td style="background:'+bg+';position:relative;cursor:default" '+mkAttr+'>'+crStr+'</td>'
        + '<td style="background:'+bg+';position:relative;cursor:default" '+mkAttr+'>'+rpaStr+'</td>';
 }
@@ -374,14 +550,14 @@ function progColor(a){if(a>=100)return'var(--gold)';if(a>=75)return'var(--phi)';
 
 function toggleTheme(){
   var isLight=document.body.classList.toggle('light');
-  document.getElementById('theme-btn').textContent=isLight?'🎮 DARK MODE':'☀️ LIGHT MODE';
+  var tb=document.getElementById('theme-btn');if(tb)tb.textContent=isLight?'🎮 DARK MODE':'☀️ LIGHT MODE';
   try{localStorage.setItem('rk_theme',isLight?'light':'dark');}catch(e){}
 }
 (function(){
   try{
     if(localStorage.getItem('rk_theme')==='light'){
       document.body.classList.add('light');
-      document.getElementById('theme-btn').textContent='🎮 DARK MODE';
+      var tb2=document.getElementById('theme-btn');if(tb2)tb2.textContent='🎮 DARK MODE';
     }
   }catch(e){}
 })();
@@ -506,11 +682,17 @@ function render(){
     html+=nameTipCell(nameDispTop, r.name, ms, isX);
     html+='<td>'+cb+'</td>';
     html+='<td><div style="display:flex;flex-direction:column;gap:2px"><div style="display:flex;align-items:center;gap:4px"><span style="font-family:Orbitron,monospace;font-size:13px;font-weight:700;color:'+col+'">'+a+'</span><span style="color:var(--text3);font-size:10px">/100</span></div><div class="prog-wrap"><div class="prog-fill" style="width:'+Math.round(pct*100)+'%;background:'+col+'"></div></div></div></td>';
-    html+=bracketCell(r.b1_cr,r.b1_rpa,r.name,1,20,'0–20','rgba(100,116,139,0.04)');
-    html+=bracketCell(r.b2_cr,r.b2_rpa,r.name,21,40,'21–40','rgba(59,130,246,0.04)');
-    html+=bracketCell(r.b3_cr,r.b3_rpa,r.name,41,60,'41–60','rgba(139,92,246,0.04)');
-    html+=bracketCell(r.b4_cr,r.b4_rpa,r.name,61,80,'61–80','rgba(236,72,153,0.04)');
-    html+=bracketCell(r.b5_cr,r.b5_rpa,r.name,81,100,'81–100','rgba(245,158,11,0.04)');
+    // Calculate deal counts per bracket (cr * 20 appointments each)
+    var d1=r.b1_cr!=null?Math.round(r.b1_cr*20):0;
+    var d2=r.b2_cr!=null?Math.round(r.b2_cr*20):0;
+    var d3=r.b3_cr!=null?Math.round(r.b3_cr*20):0;
+    var d4=r.b4_cr!=null?Math.round(r.b4_cr*20):0;
+    var d5=r.b5_cr!=null?Math.round(r.b5_cr*20):0;
+    html+=bracketCell(r.b1_cr,r.b1_rpa,r.name,1,20,'0–20','rgba(100,116,139,0.04)',0,d1);
+    html+=bracketCell(r.b2_cr,r.b2_rpa,r.name,21,40,'21–40','rgba(59,130,246,0.04)',d1,d2);
+    html+=bracketCell(r.b3_cr,r.b3_rpa,r.name,41,60,'41–60','rgba(139,92,246,0.04)',d1+d2,d3);
+    html+=bracketCell(r.b4_cr,r.b4_rpa,r.name,61,80,'61–80','rgba(236,72,153,0.04)',d1+d2+d3,d4);
+    html+=bracketCell(r.b5_cr,r.b5_rpa,r.name,81,100,'81–100','rgba(245,158,11,0.04)',d1+d2+d3+d4,d5);
     html+=totalCell(r.total_cr,r.total_rpa,r.name);
     html+='<td>'+fRR(r.response_rate)+'</td>';
     html+='</tr>';
@@ -632,5 +814,286 @@ render = function() { _r2.apply(this, arguments); setTimeout(updateStickyOffsets
 
 
 </script>
-</body>
-</html>
+
+function stpNavInit() {
+  document.querySelectorAll('.stp-dropdown').forEach(function(dd) {
+    var btn = dd.querySelector('.stp-drop-btn');
+    var menu = dd.querySelector('.stp-drop-menu');
+    if (!btn || !menu) return;
+    dd.addEventListener('mouseenter', function() {
+      document.querySelectorAll('.stp-drop-menu.open').forEach(function(m) {
+        if (m !== menu) m.classList.remove('open');
+      });
+      menu.classList.add('open');
+    });
+    dd.addEventListener('mouseleave', function() {
+      setTimeout(function() {
+        if (!dd.matches(':hover')) menu.classList.remove('open');
+      }, 120);
+    });
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      menu.classList.toggle('open');
+    });
+  });
+  // Close on click outside — but not on menu items themselves
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.stp-dropdown')) {
+      document.querySelectorAll('.stp-drop-menu.open').forEach(function(m) {
+        m.classList.remove('open');
+      });
+    }
+  });
+  // Let menu item onclick fire before closing
+  document.querySelectorAll('.stp-drop-item').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.stopPropagation();
+      setTimeout(function() {
+        document.querySelectorAll('.stp-drop-menu.open').forEach(function(m) {
+          m.classList.remove('open');
+        });
+      }, 50);
+    });
+  });
+}
+document.addEventListener('DOMContentLoaded', stpNavInit);
+
+// ── TALK TO THE DATA ────────────────────────────────────────────────────────
+var _chatHideTimer = null;
+var _chatLastMsg = 0;
+
+function stpOpenChat() {
+  document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){ m.classList.remove('open'); });
+  var btn = document.getElementById('cb-btn') || document.getElementById('stp-chat-btn');
+  if (btn) btn.style.display = 'flex';
+  if (typeof cbToggle === 'function') { cbToggle(); }
+  else if (typeof stpChatToggle === 'function') { stpChatToggle(); }
+  else {
+    var panel = document.getElementById('cb-panel') || document.getElementById('stp-chat-panel');
+    if (panel) { panel.style.display = 'flex'; panel.classList.add('open'); }
+  }
+  _chatLastMsg = Date.now();
+  startChatHideTimer();
+}
+
+function startChatHideTimer() {
+  if (_chatHideTimer) clearInterval(_chatHideTimer);
+  _chatHideTimer = setInterval(function() {
+    if (Date.now() - _chatLastMsg > 5 * 60 * 1000) hideChatBtn();
+  }, 30000);
+}
+
+function hideChatBtn() {
+  var btn = document.getElementById('cb-btn') || document.getElementById('stp-chat-btn');
+  var panel = document.getElementById('cb-panel') || document.getElementById('stp-chat-panel');
+  if (btn) btn.style.display = 'none';
+  if (panel) { panel.style.display = 'none'; panel.classList.remove('open'); }
+  if (_chatHideTimer) { clearInterval(_chatHideTimer); _chatHideTimer = null; }
+}
+
+function _trackChatActivity() { _chatLastMsg = Date.now(); }
+
+function stpSignOut() {
+  try { sessionStorage.clear(); } catch(e) {}
+  try { localStorage.removeItem('stp_auth'); } catch(e) {}
+  window.location.href = 'dashboard.html?signout=1';
+}
+</script>
+
+
+<script>
+
+function toggleDarkMode() {
+  if (typeof toggleTheme === 'function') {
+    toggleTheme();
+    // Sync to shared theme storage
+    var isLight = document.body.classList.contains('light');
+    try { localStorage.setItem('stp_theme', isLight ? 'light' : 'dark'); } catch(e) {}
+  }
+}
+(function(){
+  var saved=''; try{saved=localStorage.getItem('stp_theme')||'';}catch(e){}
+  // Default LIGHT — apply light class unless dark was explicitly saved
+  document.addEventListener('DOMContentLoaded', function(){
+    if(saved!=='dark') {
+      if(!document.body.classList.contains('light')) {
+        document.body.classList.add('light');
+        if(typeof toggleTheme==='function' && !document.body.classList.contains('light')) toggleTheme();
+      }
+    }
+    // If saved dark, ensure light class is removed
+    if(saved==='dark') document.body.classList.remove('light');
+  });
+})();
+
+function stpGoToBlitz(){window.location.href='dashboard.html?blitz=1';}
+function stpFs(){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen();}
+function stpTv(){document.body.style.fontSize=document.body.style.fontSize?'':'125%';}
+function stpScroll(){}
+function stpRookies(){}
+function stpConsolidated(){var s=document.getElementById('f-market');if(s){s.value='';if(typeof render==='function')render();}}
+function stpClearFilters(){var s=document.getElementById('f-market');if(s)s.value='';var s2=document.getElementById('f-cr');if(s2)s2.value='';if(typeof render==='function')render();}
+
+function stpNavInit(){
+  document.querySelectorAll('.stp-dropdown').forEach(function(dd){
+    var btn=dd.querySelector('.stp-drop-btn'),menu=dd.querySelector('.stp-drop-menu');
+    if(!btn||!menu)return;
+    dd.addEventListener('mouseenter',function(){
+      document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){if(m!==menu)m.classList.remove('open');});
+      menu.classList.add('open');
+    });
+    dd.addEventListener('mouseleave',function(){setTimeout(function(){if(!dd.matches(':hover'))menu.classList.remove('open');},150);});
+    btn.addEventListener('click',function(e){e.stopPropagation();menu.classList.toggle('open');});
+  });
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('.stp-dropdown'))document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){m.classList.remove('open');});
+  });
+}
+document.addEventListener('DOMContentLoaded',stpNavInit);
+var _chatTimer=null,_chatLast=0;
+function stpOpenChat(){
+  document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){m.classList.remove('open');});
+  var btn=document.getElementById('cb-btn')||document.getElementById('stp-chat-btn');
+  if(btn)btn.style.display='flex';
+  if(typeof cbToggle==='function')cbToggle();
+  else if(typeof stpChatToggle==='function')stpChatToggle();
+  else{var p=document.getElementById('cb-panel')||document.getElementById('stp-chat-panel');if(p){p.style.display='flex';p.classList.add('open');}}
+  _chatLast=Date.now();
+  if(_chatTimer)clearInterval(_chatTimer);
+  _chatTimer=setInterval(function(){if(Date.now()-_chatLast>300000){var b=document.getElementById('cb-btn')||document.getElementById('stp-chat-btn');var p=document.getElementById('cb-panel')||document.getElementById('stp-chat-panel');if(b)b.style.display='none';if(p){p.style.display='none';p.classList.remove('open');}clearInterval(_chatTimer);_chatTimer=null;}},30000);
+}
+function _trackChatActivity(){_chatLast=Date.now();}
+function stpSignOut(){try{sessionStorage.clear();}catch(e){}try{localStorage.removeItem('stp_auth');}catch(e){}window.location.href='dashboard.html?signout=1';}
+
+</script>
+
+
+<script>
+// ── FULLSCREEN PEEK NAV ──────────────────────────────────────────────────────
+(function(){
+  var nav,hideTimer,peeking=false;
+  function getNav(){return nav||(nav=document.getElementById('stp-nav'));}
+  function isFs(){return !!(document.fullscreenElement||document.webkitFullscreenElement);}
+  function setPeek(show){
+    var n=getNav();if(!n)return;
+    peeking=show;
+    if(show) n.classList.add('peek');
+    else n.classList.remove('peek');
+  }
+  document.addEventListener('mousemove',function(e){
+    if(!isFs())return;
+    if(e.clientY<=30){
+      if(!peeking)setPeek(true);
+      if(hideTimer){clearTimeout(hideTimer);hideTimer=null;}
+    } else if(e.clientY>56){
+      if(peeking&&!hideTimer)hideTimer=setTimeout(function(){setPeek(false);hideTimer=null;},800);
+    } else {
+      if(hideTimer){clearTimeout(hideTimer);hideTimer=null;}
+    }
+  },{passive:true,capture:true});
+  function onFsChange(){setPeek(false);}
+  document.addEventListener('fullscreenchange',onFsChange);
+  document.addEventListener('webkitfullscreenchange',onFsChange);
+var _stpSoundEnabled=true;
+function stpToggleSound(){_stpSoundEnabled=!_stpSoundEnabled;try{localStorage.setItem("stp_sound",_stpSoundEnabled?"1":"0");}catch(e){}var b=document.getElementById("nav-sound-btn");if(b)b.textContent=_stpSoundEnabled?"\uD83D\uDD14 Sound: On":"\uD83D\uDD15 Sound: Off";}
+(function(){try{if(localStorage.getItem("stp_sound")==="0"){_stpSoundEnabled=false;setTimeout(function(){var b=document.getElementById("nav-sound-btn");if(b)b.textContent="\uD83D\uDD15 Sound: Off";},600);}}catch(e){}})();
+var _scrollSpeedLabels=["Slow","Medium","Fast"],_scrollSpeedIdx=1,_scrollSpeedPx=[0.5,1.5,3.0];
+function stpScrollSpeed(){_scrollSpeedIdx=(_scrollSpeedIdx+1)%3;var b=document.getElementById("nav-scroll-speed");if(b)b.textContent="\u23E9 Scroll Speed: "+_scrollSpeedLabels[_scrollSpeedIdx];}
+function stpRefresh(){document.querySelectorAll(".stp-drop-menu.open").forEach(function(m){m.classList.remove("open");});if(typeof fetchData==="function")fetchData();else if(typeof render==="function")render();var b=document.querySelectorAll('[onclick*="stpRefresh"]')[0];if(b){var o=b.textContent;b.textContent="\uD83D\uDD04 Refreshing...";setTimeout(function(){b.textContent=o;},2000);}}
+function stpTodayFilter(){var btn=document.getElementById("nav-today-btn");window._todayActive=!window._todayActive;setTimeout(function(){var active=typeof filterToday!=="undefined"?filterToday:!!window._todayActive;if(btn)btn.style.color=active?"#00FF88":"";if(typeof render==="function")render();},50);}
+function stpShowGuide(){
+  document.querySelectorAll(".stp-drop-menu.open").forEach(function(m){m.classList.remove("open");});
+  var ex=document.getElementById("stp-guide-modal");
+  if(ex){ex.style.display="flex";return;}
+  var modal=document.createElement("div");
+  modal.id="stp-guide-modal";
+  modal.style.cssText="position:fixed;inset:0;z-index:99998;background:rgba(2,11,24,0.95);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;";
+  var items=[
+    ["#FFD700","&#x1F4B0; AMOUNTS","Revenue per sale."],
+    ["#00FF88","&#x1F4CA; PROGRESS BAR","vs monthly goal. Green = at or above."],
+    ["#A855F7","&#x2B50; ROOKIE","First-year rep."],
+    ["#00D4FF","&#x1F3C6; LEADER","#1 rep in their market."],
+    ["#FF6B00","&#x1F48E; BIG DEAL","Above market threshold."],
+    ["#FFD700","&#x1F680; MOVER","Biggest rank jump."],
+    ["#00FF88","&#x1F4C5; TODAY button","Filter to today. Turns green when active."],
+    ["#E2E8F0","&#x1F504; AUTO-SYNC","Refreshes every 10 seconds."],
+    ["#94A3B8","&#x21C5; AUTO SCROLL","TV display. Mouse pauses 10s."],
+    ["#94A3B8","&#x23E9; SCROLL SPEED","Slow / Medium / Fast."]
+  ];
+  var rows=items.map(function(it){return "<div><b style=\"color:"+it[0]+"\">"+it[1]+"</b> \u2014 "+it[2]+"</div>";}).join("");
+  modal.innerHTML="<div style=\"background:#0A1628;border:1px solid rgba(0,212,255,0.2);border-radius:20px;padding:32px;max-width:620px;width:90%;max-height:80vh;overflow-y:auto;position:relative\">"
+    +"<button onclick=\"this.closest(\'#stp-guide-modal\').style.display=\'none\">\" style=\"position:absolute;top:16px;right:16px;background:transparent;border:none;color:#475569;font-size:22px;cursor:pointer\">&#x2715;</button>"
+    +"<div style=\"font-family:Orbitron,monospace;font-size:15px;font-weight:900;color:#00D4FF;letter-spacing:4px;margin-bottom:20px\">&#x1F4CA; HOW TO READ THIS</div>"
+    +"<div style=\"font-family:sans-serif;font-size:13px;color:#94A3B8;line-height:2;display:grid;gap:8px\">"+rows+"</div>"
+    +"</div>";
+  modal.addEventListener("click",function(e){if(e.target===modal)modal.style.display="none";});
+  document.body.appendChild(modal);
+}
+
+
+})();
+
+</script>
+
+<!-- ── CONTEST PASSWORD MODAL ── -->
+<div id="contest-pw-modal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(2,11,24,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;flex-direction:column;gap:20px">
+  <div style="font-family:Orbitron,monospace;font-size:22px;font-weight:900;color:#00D4FF;letter-spacing:4px;text-shadow:0 0 20px rgba(0,212,255,0.5)">🏆 CONTESTS</div>
+  <div style="font-family:Orbitron,monospace;font-size:10px;color:#475569;letter-spacing:3px">ENTER PASSWORD TO CONTINUE</div>
+  <input id="contest-pw-input" type="password" placeholder="Password" maxlength="30"
+    style="background:rgba(255,255,255,0.05);border:1px solid rgba(0,212,255,0.3);border-radius:10px;padding:12px 24px;color:#fff;font-family:Orbitron,monospace;font-size:16px;width:240px;text-align:center;outline:none;letter-spacing:4px"
+    onkeydown="if(event.key==='Enter')checkContestPw()"/>
+  <div style="display:flex;gap:12px">
+    <button onclick="checkContestPw()" style="padding:10px 32px;border-radius:20px;background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.4);color:#00D4FF;font-family:Orbitron,monospace;font-size:12px;cursor:pointer;letter-spacing:2px">ENTER</button>
+    <button onclick="closeContestModal()" style="padding:10px 20px;border-radius:20px;background:transparent;border:1px solid rgba(255,255,255,0.1);color:#475569;font-family:Orbitron,monospace;font-size:11px;cursor:pointer">CANCEL</button>
+  </div>
+  <div id="contest-pw-err" style="color:#FF4444;font-family:Orbitron,monospace;font-size:10px;display:none;letter-spacing:2px">INCORRECT PASSWORD</div>
+</div>
+
+<script>
+// ── CONTEST PASSWORD ──────────────────────────────────────────────────────────
+var _contestDest = '';
+var CONTEST_PW = 'Orion';
+
+function stpGoToContest(url) {
+  _contestDest = url;
+  var modal = document.getElementById('contest-pw-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    setTimeout(function(){ var i=document.getElementById('contest-pw-input'); if(i){i.value='';i.focus();} }, 50);
+  }
+  document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){m.classList.remove('open');});
+}
+
+function checkContestPw() {
+  var inp = document.getElementById('contest-pw-input');
+  var err = document.getElementById('contest-pw-err');
+  if (!inp) return;
+  if (inp.value.trim().toLowerCase() === CONTEST_PW.toLowerCase()) {
+    closeContestModal();
+    window.location.href = _contestDest;
+  } else {
+    if (err) err.style.display = 'block';
+    inp.value = '';
+    inp.focus();
+  }
+}
+
+function closeContestModal() {
+  var modal = document.getElementById('contest-pw-modal');
+  if (modal) modal.style.display = 'none';
+  var err = document.getElementById('contest-pw-err');
+  if (err) err.style.display = 'none';
+  var inp = document.getElementById('contest-pw-input');
+  if (inp) inp.value = '';
+  _contestDest = '';
+}
+
+document.addEventListener('click', function(e) {
+  var modal = document.getElementById('contest-pw-modal');
+  if (modal && e.target === modal) closeContestModal();
+});
+</script>
+
+<script>
+
+// ── SOUND TOGGLE ─────────────────────────────────────────────────────────────
