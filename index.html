@@ -531,6 +531,7 @@ if (new URLSearchParams(window.location.search).get('tv') === '1') {
       <div class="stp-drop-menu">
         <div class="stp-drop-label">CONTESTS</div>
         <a class="stp-drop-item stp-drop-active" href="#" onclick="stpGoToBlitz();return false">⚡ Blitz 2026</a>
+        <a class="stp-drop-item" onclick="openWinnersBoard();return false" style="cursor:pointer">🏆 Winners Board</a>
         <a class="stp-drop-item" onclick="stpGoToContest('record_setters.html');return false" style="cursor:pointer">🏆 August 2026</a>
         <a class="stp-drop-item" onclick="stpGoToContest('rookie_100.html');return false" style="cursor:pointer">⭐ September 2026</a>
       </div>
@@ -573,6 +574,7 @@ if (new URLSearchParams(window.location.search).get('tv') === '1') {
   <!-- HEADER -->
   <div id="header">
     <div id="blitz-title">SEE THE PACE JUNE</div>
+
 
     <div id="subtitle">RENEWAL BY ANDERSEN &mdash; SEETHEPACE.COM <span id="status-dot" class="loading">&#x25CF; CONNECTING&hellip;</span></div>
   </div>
@@ -5474,6 +5476,18 @@ document.addEventListener('click', function(e) {
   var modal = document.getElementById('contest-pw-modal');
   if (modal && e.target === modal) closeContestModal();
 });
+
+
+// ── BLITZ WINNERS BOARD ───────────────────────────────────────────────────────
+function openWinnersBoard() {
+  var pw = prompt('Enter password to access Winners Board:');
+  if (!pw) return;
+  if (pw.trim() === 'Blitz2026') {
+    window.open('blitz_winners.html', '_blank');
+  } else {
+    alert('Incorrect password.');
+  }
+}
 
 function stpGoToBlitz(){
   var lo=document.getElementById('loading-overlay');
