@@ -3,1097 +3,634 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rookie 100 — See The Pace</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<title>SeeThePace · Rookie 100</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
+body{background:#0A0F0A;color:#E2E8F0;font-family:"Exo 2",sans-serif;min-height:100vh}
+body.light{background:#F4F7F4;color:#1A2E1A}
 
-/* ── DARK (Video Game) theme ── */
-:root{
-  --bg:#020B18;--bg2:#060F1E;--bg3:#0A1628;
-  --accent:#00D4FF;--accent2:#00FF88;--gold:#FFD700;--purple:#A855F7;
-  --text:#E2E8F0;--text2:#94A3B8;--text3:#64748B;
-  --card:#0D1B2E;--border:rgba(0,212,255,0.15);--border2:rgba(255,255,255,0.06);
-  --row-hover:rgba(0,212,255,0.04);
-  --th-bg:#060F1E;--th-color:#64748B;--th-hover:#00D4FF;
-  --mkt-bg:rgba(0,212,255,0.05);--mkt-color:#00D4FF;--mkt-border:rgba(0,212,255,0.2);
-  --prog-bg:rgba(255,255,255,0.07);
-  --phi:#00FF88;--pmi:#00D4FF;--plo:#64748B;
-  --input-bg:rgba(255,255,255,0.06);
-  --font-body:'Inter',sans-serif;
-}
+/* ── NAV ── */
+#stp-nav{position:fixed;top:0;left:0;right:0;height:48px;z-index:9999;
+  background:linear-gradient(135deg,#061006,#0A1A0A,#061006);
+  border-bottom:2px solid rgba(74,155,75,0.45);
+  box-shadow:0 2px 20px rgba(74,155,75,0.12);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;font-family:Orbitron,monospace}
+#stp-brand{display:flex;align-items:center;gap:8px;text-decoration:none;cursor:pointer}
+#stp-bolt{font-size:20px;filter:drop-shadow(0 0 8px #4A9B4B)}
+#stp-wordmark{font-family:Orbitron,monospace;font-weight:900;font-size:14px;letter-spacing:3px;
+  background:linear-gradient(90deg,#4A9B4B,#7DC87E,#4A9B4B);background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#stp-links{display:flex;align-items:center;gap:4px}
+.stp-link{color:rgba(200,240,200,0.75);font-family:Orbitron,monospace;font-size:10px;font-weight:700;
+  letter-spacing:1.5px;text-decoration:none;padding:6px 14px;border-radius:8px;
+  border:none;background:transparent;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.stp-link:hover{color:#4A9B4B;background:rgba(74,155,75,0.12)}
+.stp-dropdown{position:relative}
+.stp-drop-btn{color:rgba(200,240,200,0.75);font-family:Orbitron,monospace;font-size:10px;
+  font-weight:700;letter-spacing:1.5px;border:none;background:transparent;cursor:pointer;padding:6px 14px}
+.stp-drop-menu{display:none;position:absolute;top:calc(100% + 2px);right:0;
+  background:#0A1A0A;border:1px solid rgba(74,155,75,0.3);border-radius:12px;
+  padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:9600}
+.stp-drop-menu.open{display:block}
+.stp-drop-label{font-family:Orbitron,monospace;font-size:8px;letter-spacing:2px;
+  color:rgba(74,155,75,0.6);padding:4px 10px 2px;text-transform:uppercase}
+.stp-drop-divider{height:1px;background:rgba(74,155,75,0.15);margin:6px 4px}
+.stp-drop-item{display:block;padding:8px 12px;border-radius:8px;font-size:12px;
+  color:rgba(200,240,200,0.85);text-decoration:none;cursor:pointer;transition:all 0.12s;
+  font-family:"Exo 2",sans-serif;font-weight:500;white-space:nowrap}
+.stp-drop-item:hover{background:rgba(74,155,75,0.1);color:#4A9B4B}
+.stp-drop-active{color:#4A9B4B!important;background:rgba(74,155,75,0.1);
+  border-left:2px solid #4A9B4B;padding-left:10px}
 
-/* ── LIGHT (Clean) theme ── */
-body.light {
-  --bg:#FFFFFF;--bg2:#F5F5F5;--bg3:#EAEAEA;
-  --accent:#4A9B4B;--accent2:#2D6B2E;--gold:#4A9B4B;
-  --text:#1A1A1A;--text2:#333333;--text3:#666666;
-  --card:#FFFFFF;--border:rgba(74,155,75,0.25);--border2:rgba(0,0,0,0.1);
-  --row-hover:rgba(74,155,75,0.05);
-  --th-bg:#F5F5F5;--th-color:#666666;--th-hover:#4A9B4B;
-  --mkt-bg:rgba(74,155,75,0.06);--mkt-color:#2D6B2E;--mkt-border:rgba(74,155,75,0.25);
-  --prog-bg:rgba(0,0,0,0.08);
-  --phi:#4A9B4B;--pmi:#2D6B2E;--plo:#999999;
-  --input-bg:#FFFFFF;
-  background:#F5F5F5 !important;
-  color:#1A1A1A !important;
-}
+/* ── LIGHT NAV ── */
+body.light #stp-nav{background:linear-gradient(135deg,#FFFFFF,#F0FAF0,#FFFFFF)!important;
+  border-color:rgba(74,155,75,0.4)!important;box-shadow:0 2px 16px rgba(74,155,75,0.12)!important}
+body.light .stp-link,.stp-drop-btn{color:#1A1A1A!important}
+body.light .stp-link:hover{color:#2D6B2E!important;background:rgba(74,155,75,0.1)!important}
+body.light #stp-wordmark{background:linear-gradient(90deg,#2D6B2E,#4A9B4B,#2D6B2E)!important;
+  -webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important}
+body.light #stp-bolt{filter:drop-shadow(0 0 8px #4A9B4B)!important}
+body.light .stp-drop-menu{background:#FFFFFF!important;border-color:rgba(74,155,75,0.2)!important}
+body.light .stp-drop-item{color:#1A1A1A!important}
+body.light .stp-drop-item:hover{background:rgba(74,155,75,0.08)!important;color:#2D6B2E!important}
 
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;font-size:14px;line-height:1.5;transition:background 0.3s,color 0.3s}
+/* ── PAGE ── */
+#app{padding:68px 20px 60px;max-width:1400px;margin:0 auto}
 
-/* HEADER */
-#hdr{margin-top:48px;top:48px;position:sticky;top:0;z-index:100;background:var(--bg2);backdrop-filter:blur(12px);border-bottom:1px solid var(--border2);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
-#hdr-title{font-family:Orbitron,monospace;font-size:clamp(13px,2vw,18px);font-weight:900;color:var(--accent);letter-spacing:3px}
-body:not(.light) #hdr-title{background:linear-gradient(135deg,#00D4FF,#00FF88);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-#hdr-sub{font-size:10px;color:var(--text3);margin-top:1px;letter-spacing:1px;font-weight:500}
-.hstat{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:5px 14px;text-align:center}
-.hstat-v{font-family:Orbitron,monospace;font-size:15px;font-weight:700;color:var(--accent)}
-.hstat-l{font-size:9px;color:var(--text3);letter-spacing:1px;margin-top:1px;font-weight:600;text-transform:uppercase}
-#hdr-r{margin-left:auto;display:flex;gap:8px;align-items:center}
+/* ── HEADER ── */
+#page-hdr{text-align:center;margin-bottom:28px}
+#page-title{font-family:Orbitron,monospace;font-weight:900;font-size:clamp(22px,3vw,36px);
+  letter-spacing:4px;color:#4A9B4B;text-shadow:0 0 20px rgba(74,155,75,0.3);margin-bottom:4px}
+#page-sub{font-size:11px;letter-spacing:3px;color:#475569;text-transform:uppercase}
 
-/* THEME TOGGLE */
-#theme-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-size:11px;font-weight:600;padding:7px 14px;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;white-space:nowrap}
-#theme-btn:hover{border-color:var(--accent);color:var(--accent)}
+/* ── SUMMARY CARDS ── */
+#summary-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.sum-card{background:rgba(15,25,15,0.8);border:1px solid rgba(74,155,75,0.15);border-radius:12px;padding:14px;text-align:center}
+.sum-card-val{font-family:Orbitron,monospace;font-size:22px;font-weight:900;color:#4A9B4B}
+.sum-card-lbl{font-size:10px;letter-spacing:2px;color:#475569;margin-top:4px;text-transform:uppercase}
+body.light .sum-card{background:#FFFFFF;border-color:rgba(74,155,75,0.2)}
+body.light .sum-card-lbl{color:#666}
 
-.back-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--accent);font-size:11px;font-weight:700;letter-spacing:0.5px;padding:7px 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:all 0.2s}
-.back-btn:hover{border-color:var(--accent);background:var(--mkt-bg)}
+/* ── CONTROLS ── */
+#controls{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
 
-/* SUMMARY CARDS */
-#summary{padding:12px 20px;display:flex;gap:10px;flex-wrap:wrap}
-.scard{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;flex:1;min-width:110px}
-.scard-v{font-family:Orbitron,monospace;font-size:17px;font-weight:700}
-.scard-l{font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:0.5px;font-weight:600;text-transform:uppercase}
+/* ── FILTER TABS ── */
+#filter-tabs{display:flex;gap:0;background:rgba(0,0,0,0.3);border-radius:10px;padding:3px;border:1px solid rgba(74,155,75,0.2)}
+body.light #filter-tabs{background:rgba(0,0,0,0.06)}
+.ftab{font-family:Orbitron,monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;
+  padding:7px 18px;border-radius:8px;border:none;cursor:pointer;transition:all 0.15s;background:transparent;
+  color:#475569}
+.ftab.active{color:#fff}
+.ftab.hire.active{background:#4A9B4B;color:#fff}
+.ftab.train.active{background:#3B82F6;color:#fff}
+.ftab.develop.active{background:#A855F7;color:#fff}
 
-/* CONTROLS */
-#ctrl{padding:10px 20px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);background:var(--bg2)}
-.rsel{background:var(--input-bg);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:var(--font-body);font-size:13px;padding:7px 10px;outline:none;cursor:pointer;transition:border-color 0.15s}
-.rsel:focus,.rsel:hover{border-color:var(--accent)}
-.rsel.cls-hi{border-color:var(--purple);background:var(--input-bg)}
-#srch{background:var(--input-bg);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:var(--font-body);font-size:13px;padding:7px 12px;outline:none;width:160px;transition:border-color 0.15s}
-#srch::placeholder{color:var(--text3)}
-#srch:focus{border-color:var(--accent)}
-#rcount{font-size:11px;color:var(--text3);margin-left:auto;font-weight:600}
+/* ── OTHER CONTROLS ── */
+select,input[type=text]{background:rgba(15,25,15,0.8);border:1px solid rgba(74,155,75,0.2);
+  border-radius:8px;padding:6px 12px;color:#E2E8F0;font-family:"Exo 2",sans-serif;font-size:12px;outline:none}
+select:focus,input:focus{border-color:#4A9B4B}
+body.light select,body.light input[type=text]{background:#fff;border-color:rgba(74,155,75,0.3);color:#1A1A1A}
+#search-box{min-width:180px}
+#ctrl-right{display:flex;gap:8px;margin-left:auto;align-items:center}
+.ctrl-btn{font-family:Orbitron,monospace;font-size:9px;letter-spacing:1px;padding:6px 14px;
+  border-radius:8px;border:1px solid rgba(74,155,75,0.3);background:transparent;
+  color:#4A9B4B;cursor:pointer;transition:all 0.15s}
+.ctrl-btn:hover{background:rgba(74,155,75,0.1)}
+.ctrl-btn.active{background:rgba(74,155,75,0.15);border-color:#4A9B4B}
 
-/* TABLE */
-#wrap{padding:12px 20px 40px}
-table{width:100%;border-collapse:collapse;min-width:1000px}
-thead th{font-size:10px;letter-spacing:0.5px;color:var(--th-color);font-weight:700;text-transform:uppercase;padding:9px 8px;text-align:center;border-bottom:1px solid var(--border2);background:var(--th-bg);white-space:nowrap;transition:color 0.15s;user-select:none}
-thead th:hover{color:var(--th-hover);cursor:pointer}
-tbody tr{border-bottom:1px solid var(--border2);transition:background 0.1s}
-tbody tr:hover{background:var(--row-hover)}
-td{padding:9px 8px;font-size:13px;text-align:center;vertical-align:middle;color:var(--text)}
-td:nth-child(1),td:nth-child(2),td:nth-child(3){text-align:left}
-td:nth-child(2){font-size:13px;font-weight:600;color:var(--text)}
+/* ── TABLE ── */
+#tbl-wrap{background:rgba(15,25,15,0.6);border:1px solid rgba(74,155,75,0.15);border-radius:16px;overflow:hidden}
+body.light #tbl-wrap{background:#FFFFFF;border-color:rgba(74,155,75,0.2)}
+#tbl-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:700px}
+thead th{padding:10px 14px;font-family:Orbitron,monospace;font-size:9px;font-weight:700;
+  letter-spacing:1.5px;color:#475569;text-align:left;border-bottom:1px solid rgba(74,155,75,0.12);
+  background:rgba(74,155,75,0.04);cursor:pointer;white-space:nowrap;user-select:none}
+thead th:hover{color:#4A9B4B}
+thead th.sorted{color:#4A9B4B}
+tbody tr{border-bottom:1px solid rgba(74,155,75,0.06);transition:background 0.1s}
+tbody tr:hover{background:rgba(74,155,75,0.05)}
+tbody tr:last-child{border-bottom:none}
+td{padding:10px 14px;font-size:13px}
+body.light thead th{background:#F5F5F5;color:#666;border-color:rgba(0,0,0,0.06)}
+body.light tbody tr{border-color:rgba(0,0,0,0.04)}
+body.light tbody tr:hover{background:rgba(74,155,75,0.04)}
+body.light td{color:#1A1A1A}
 
-/* MARKET DIVIDER */
-.mkt-row td{background:var(--mkt-bg);font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--mkt-color);padding:5px 10px;border-top:1px solid var(--mkt-border);border-bottom:1px solid var(--mkt-border);text-transform:uppercase}
+/* ── CELLS ── */
+.td-name{font-weight:600;color:#E2E8F0}
+body.light .td-name{color:#1A1A1A}
+.td-green{color:#4A9B4B;font-weight:700;font-family:Orbitron,monospace;font-size:12px}
+.td-muted{color:#475569;font-size:12px}
+.td-num{font-family:Orbitron,monospace;font-size:12px;font-weight:700}
 
-/* STAT CELLS */
-.pct{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600}
-.phi{color:var(--phi)}.pmi{color:var(--pmi)}.plo{color:var(--text3)}
+/* ── STATUS BADGE ── */
+.status-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;letter-spacing:1px}
+.status-active{background:rgba(74,155,75,0.15);color:#4A9B4B;border:1px solid rgba(74,155,75,0.3)}
+.status-term1{background:rgba(255,165,0,0.12);color:#FFA500;border:1px solid rgba(255,165,0,0.3)}
+.status-term2{background:rgba(255,100,0,0.12);color:#FF6400;border:1px solid rgba(255,100,0,0.3)}
+.status-term100{background:rgba(255,68,68,0.12);color:#FF4444;border:1px solid rgba(255,68,68,0.3)}
 
-/* PROGRESS BAR */
-.prog-wrap{width:100%;background:var(--prog-bg);border-radius:3px;height:5px;overflow:hidden;margin-top:4px}
-.prog-fill{height:100%;border-radius:3px}
+/* ── PROGRESS BAR ── */
+.mini-bar{height:4px;background:rgba(74,155,75,0.1);border-radius:2px;margin-top:4px;overflow:hidden}
+.mini-bar-fill{height:100%;border-radius:2px;background:#4A9B4B}
 
-/* BADGES */
-.milestone{display:inline-flex;align-items:center;gap:3px;background:rgba(180,83,9,0.12);border:1px solid rgba(180,83,9,0.3);border-radius:20px;padding:2px 8px;font-size:9px;color:var(--gold);font-family:Orbitron,monospace;font-weight:700}
-body.light .milestone{background:rgba(180,83,9,0.1);color:#92400E;border-color:rgba(180,83,9,0.3)}
-.cls-badge{display:inline-flex;align-items:center;border-radius:20px;padding:2px 9px;font-size:10px;font-weight:600;letter-spacing:0.3px;border:1px solid;white-space:nowrap}
+/* ── CLASS BADGE ── */
+.class-badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600}
+.class-dec{background:rgba(0,212,255,0.1);color:#00D4FF}
+.class-feb{background:rgba(255,215,0,0.1);color:#FFD700}
+.class-mar{background:rgba(168,85,247,0.1);color:#A855F7}
+.class-may{background:rgba(249,115,22,0.1);color:#F97316}
 
-/* DEAL TOOLTIP */
-.deal-tip-wrap{position:relative;cursor:default}
-.deal-tip-wrap:hover .deal-tip{display:block}
-.deal-tip{display:none;position:absolute;z-index:9999;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);min-width:190px;max-width:240px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;box-shadow:0 4px 24px rgba(0,0,0,0.3);pointer-events:none;text-align:left}
-.deal-tip-hdr{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;border-bottom:1px solid var(--border2);padding-bottom:5px}
-.deal-tip-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:3px 0;font-size:12px}
-.deal-tip-amt{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--phi)}
-.deal-tip-date{color:var(--text3);font-size:11px}
-.deal-tip-empty{font-size:11px;color:var(--text3);font-style:italic}
+/* ── TRAIN PLACEHOLDER ── */
+#train-placeholder{text-align:center;padding:80px 20px;color:#475569}
+#train-placeholder .tp-icon{font-size:48px;margin-bottom:16px}
+#train-placeholder h2{font-family:Orbitron,monospace;font-size:18px;letter-spacing:3px;margin-bottom:8px;color:#3B82F6}
+#train-placeholder p{font-size:13px;line-height:1.6;max-width:400px;margin:0 auto}
 
-/* DEAL TOOLTIP */
-.deal-tip{position:absolute;z-index:9999;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--text);min-width:200px;max-width:280px;pointer-events:none;box-shadow:0 4px 24px rgba(0,0,0,0.3);display:none}
-body.light .deal-tip{box-shadow:0 4px 24px rgba(0,0,0,0.12)}
-.deal-tip-hdr{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;border-bottom:1px solid var(--border2);padding-bottom:5px}
-.deal-tip-row{display:flex;justify-content:space-between;gap:12px;padding:2px 0;font-size:12px}
-.deal-tip-amt{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--accent)}
-.deal-tip-date{color:var(--text3);font-size:11px}
-.deal-tip-none{color:var(--text3);font-style:italic;font-size:11px}
+/* ── LOADING ── */
+#loading{text-align:center;padding:80px;font-family:Orbitron,monospace;font-size:14px;color:#4A9B4B;letter-spacing:3px}
 
-/* AVG ROW */
-#avg-row td{background:rgba(0,212,255,0.06);font-size:11px;padding:6px 8px;border-top:2px solid rgba(0,212,255,0.2);border-bottom:2px solid rgba(0,212,255,0.2)}
-#avg-row td.avg-lbl{font-family:Orbitron,monospace;font-size:9px;color:var(--accent2);letter-spacing:1px;font-weight:700;text-align:left}
-#avg-row td.avg-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--accent)}
-#avg-row td.avg-dim{color:var(--text3)}
-body.light #avg-row td{background:rgba(3,105,161,0.05);border-color:rgba(3,105,161,0.2)}
-body.light #avg-row td.avg-val{color:var(--accent)}
-
-
-
-/* STICKY HEADER ROWS */
-#tbl-scroll{
-  overflow-x:auto;
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-  background:var(--bg2);
-}
-/* Data rows stay below sticky headers */
-#tbody tr td, #tbody tr th { position:relative; z-index:1; }
-thead tr:first-child th{
-  position:sticky;
-  top:0;
-  z-index:40;
-  will-change:transform;
-}
-thead tr:nth-child(2) th{
-  position:sticky;
-  top:35px;
-  z-index:39;
-  will-change:transform;
-}
-#avg-row-wrap tr td{
-  position:sticky;
-  top:63px;
-  z-index:38;
-  will-change:transform;
-  border-top:2px solid rgba(0,212,255,0.3);
-}
-body.light #avg-row-wrap tr td{
-  border-top:2px solid rgba(3,105,161,0.25);
-}
-
-/* ── Column header tints (solid, theme-aware) ── */
-/* Dark mode */
-thead tr:first-child th { background:#060F1E; }
-thead tr:nth-child(2) th { background:#060F1E; }
-#avg-row-wrap tr td     { background:#060F1E; }
-
-/* Slate (0-20) */
-thead th[style*="color:#64748B"] { background:#131C2A; }
-/* Blue (21-40) */
-thead th[style*="color:#3B82F6"] { background:#0D1E3A; }
-/* Purple (41-60) */
-thead th[style*="color:#8B5CF6"] { background:#171638; }
-/* Pink (61-80) */
-thead th[style*="color:#EC4899"] { background:#251330; }
-/* Amber (81-100) */
-thead th[style*="color:#F59E0B"] { background:#251E10; }
-/* Cyan (Total) */
-thead th[style*="color:#00D4FF"] { background:#042838; }
-
-/* Light mode overrides — very soft pastel tints */
-body.light thead tr:first-child th { background:#F1F5F9; }
-body.light thead tr:nth-child(2) th { background:#F1F5F9; }
-body.light #avg-row-wrap tr td     { background:#F1F5F9; }
-
-body.light thead th[style*="color:#64748B"] { background:#E8ECF0; }
-body.light thead th[style*="color:#3B82F6"] { background:#E3EEFB; }
-body.light thead th[style*="color:#8B5CF6"] { background:#EDE9FB; }
-body.light thead th[style*="color:#EC4899"] { background:#FCE7F3; }
-body.light thead th[style*="color:#F59E0B"] { background:#FEF3C7; }
-body.light thead th[style*="color:#00D4FF"] { background:#E0F2FE; }
-
-
-
-/* ── FULLSCREEN PEEK NAV ── */
-:fullscreen #stp-nav,:-webkit-full-screen #stp-nav {
-  display:flex!important;position:fixed!important;
-  top:-48px;left:0;right:0;z-index:9999;
-  transition:top 0.2s ease;
-}
-:fullscreen #stp-nav.peek,:-webkit-full-screen #stp-nav.peek { top:0!important; }
-
-/* ── RBA LIGHT MODE ── */
-body.light { background:#F5F5F5 !important; }
-body.light #hdr { background:linear-gradient(135deg,#FFFFFF,#F0F0F0) !important; border-bottom:2px solid rgba(74,155,75,0.3) !important; }
-body.light #hdr-title { color:#1A1A1A !important; }
-body.light #hdr-sub { color:#4A9B4B !important; }
-body.light .hstat-v { color:#2D6B2E !important; }
-body.light .hstat-l { color:#666666 !important; }
-body.light table { background:#FFFFFF !important; }
-body.light thead th { background:#F5F5F5 !important; color:#333333 !important; border-color:rgba(0,0,0,0.08) !important; }
-body.light thead th:hover { color:#4A9B4B !important; }
-body.light tbody tr { border-color:rgba(0,0,0,0.06) !important; }
-body.light tbody tr:hover { background:rgba(74,155,75,0.04) !important; }
-body.light td { color:#1A1A1A !important; border-color:rgba(0,0,0,0.06) !important; }
-body.light .milestone { background:rgba(74,155,75,0.1) !important; color:#2D6B2E !important; border-color:rgba(74,155,75,0.3) !important; }
-body.light #tbl-scroll { background:#FFFFFF !important; border:1px solid rgba(0,0,0,0.1) !important; }
-body.light #ctrl { background:#FFFFFF !important; border-color:rgba(0,0,0,0.1) !important; }
-body.light .rsel { background:#FFFFFF !important; color:#1A1A1A !important; border-color:rgba(74,155,75,0.3) !important; }
-body.light .rsel:focus { border-color:#4A9B4B !important; box-shadow:0 0 0 2px rgba(74,155,75,0.15) !important; }
-body.light #summary { background:#FFFFFF !important; border-color:rgba(0,0,0,0.1) !important; }
-body.light .avg-val { color:#4A9B4B !important; }
-/* Nav light */
-body.light #stp-nav { background:linear-gradient(135deg,#FFFFFF,#F0FAF0,#FFFFFF) !important; border-color:rgba(74,155,75,0.4) !important; box-shadow:0 2px 16px rgba(74,155,75,0.12) !important; }
-body.light .stp-link { color:#1A1A1A !important; }
-body.light .stp-link:hover { color:#2D6B2E !important; background:rgba(74,155,75,0.1) !important; }
-body.light .stp-drop-btn { color:#1A1A1A !important; }
-body.light #stp-wordmark { background:linear-gradient(90deg,#2D6B2E,#4A9B4B,#2D6B2E) !important; -webkit-background-clip:text !important; background-clip:text !important; -webkit-text-fill-color:transparent !important; }
-body.light #stp-bolt { filter:drop-shadow(0 0 8px #4A9B4B) !important; }
-body.light .stp-drop-menu { background:#FFFFFF !important; border-color:rgba(74,155,75,0.2) !important; box-shadow:0 8px 32px rgba(0,0,0,0.12) !important; }
-body.light .stp-drop-item { color:#1A1A1A !important; }
-body.light .stp-drop-item:hover { background:rgba(74,155,75,0.08) !important; color:#2D6B2E !important; }
-body.light .stp-drop-label { color:rgba(74,155,75,0.6) !important; }
-body.light .stp-drop-active { color:#2D6B2E !important; border-color:#4A9B4B !important; background:rgba(74,155,75,0.08) !important; }
-
-/* ── RBA DARK MODE ── */
-body:not(.light) { background:#111111 !important; }
-body:not(.light) #hdr { background:linear-gradient(135deg,#1A1A1A,#111111) !important; border-bottom:2px solid rgba(74,155,75,0.3) !important; }
-body:not(.light) #hdr-title { color:#FFFFFF !important; }
-body:not(.light) #hdr-sub { color:#4A9B4B !important; }
-body:not(.light) .hstat-v { color:#4A9B4B !important; text-shadow:0 0 12px rgba(74,155,75,0.4) !important; }
-body:not(.light) .hstat-l { color:rgba(255,255,255,0.45) !important; }
-body:not(.light) table { background:#1A1A1A !important; }
-body:not(.light) thead th { background:#222222 !important; color:rgba(255,255,255,0.5) !important; border-color:rgba(255,255,255,0.06) !important; }
-body:not(.light) thead th:hover { color:#4A9B4B !important; }
-body:not(.light) tbody tr { border-color:rgba(255,255,255,0.05) !important; }
-body:not(.light) tbody tr:hover { background:rgba(74,155,75,0.06) !important; }
-body:not(.light) td { color:#FFFFFF !important; border-color:rgba(255,255,255,0.05) !important; }
-body:not(.light) .milestone { background:rgba(74,155,75,0.15) !important; color:#4A9B4B !important; border-color:rgba(74,155,75,0.4) !important; }
-body:not(.light) #tbl-scroll { background:#1A1A1A !important; border:1px solid rgba(255,255,255,0.06) !important; }
-body:not(.light) #ctrl { background:#1A1A1A !important; border-color:rgba(255,255,255,0.08) !important; }
-body:not(.light) .rsel { background:#222222 !important; color:#FFFFFF !important; border-color:rgba(74,155,75,0.3) !important; }
-body:not(.light) #summary { background:#1A1A1A !important; border-color:rgba(255,255,255,0.06) !important; }
-body:not(.light) .avg-val { color:#4A9B4B !important; }
-/* Accent color for all numeric highlights */
-body:not(.light) [style*="color:#00D4FF"],[style*="color: #00D4FF"] { color:#4A9B4B !important; }
-body:not(.light) [style*="color:#A855F7"],[style*="color: #A855F7"] { color:#4A9B4B !important; }
-/* Nav dark - already handled by existing nav CSS */
-
-
-:fullscreen #hdr, :-webkit-full-screen #hdr { margin-top:0 !important; }
+/* ── FULLSCREEN PEEK ── */
+#stp-nav{transition:top 0.2s ease}
+:fullscreen #stp-nav,:-webkit-full-screen #stp-nav{top:-48px}
+:fullscreen #stp-nav.peek,:-webkit-full-screen #stp-nav.peek{top:0!important}
 </style>
 </head>
 <body class="light">
-<!-- ── SEE THE PACE NAV BAR ── -->
-<nav id="stp-nav" class="stp-nav-hidden">
-  <a onclick="history.length>1?history.back():location.href='dashboard.html'" id="stp-brand" style="cursor:pointer"><span id="stp-bolt">⚡</span><span id="stp-wordmark">SEE THE PACE</span></a>
+
+<nav id="stp-nav">
+  <a onclick="history.length>1?history.back():location.href='dashboard.html'" id="stp-brand" style="cursor:pointer">
+    <span id="stp-bolt">⚡</span><span id="stp-wordmark">SEE THE PACE</span>
+  </a>
   <div id="stp-links">
     <a onclick="history.length>1?history.back():location.href='dashboard.html'" class="stp-link" style="cursor:pointer">PACE</a>
     <div class="stp-dropdown">
       <button class="stp-link stp-drop-btn">CONTESTS ▾</button>
       <div class="stp-drop-menu">
         <div class="stp-drop-label">CONTESTS</div>
-        <a class="stp-drop-item" onclick="stpGoToBlitz();return false" style="cursor:pointer">⚡ Blitz 2026</a>
         <a class="stp-drop-item" onclick="stpGoToContest('record_setters.html');return false" style="cursor:pointer">🏆 August 2026</a>
-        <a class="stp-drop-item stp-drop-active" style="cursor:default">⭐ September 2026</a>
+        <a class="stp-drop-item stp-drop-active" style="cursor:default">⭐ Rookie 100</a>
       </div>
     </div>
     <div class="stp-dropdown">
       <button class="stp-link stp-drop-btn">HELP ▾</button>
-      <div class="stp-drop-menu" style="min-width:220px">
+      <div class="stp-drop-menu" style="min-width:210px">
         <div class="stp-drop-label">SUPPORT</div>
-        <a class="stp-drop-item" onclick="stpOpenChat();return false" style="cursor:pointer">💬 Talk To The Data</a>
+        <a class="stp-drop-item" onclick="stpOpenChat&&stpOpenChat();return false" style="cursor:pointer">💬 Talk To The Data</a>
         <a class="stp-drop-item" onclick="stpShowGuide();return false" style="cursor:pointer">📊 How To Read This</a>
+        <a class="stp-drop-item" href="historical.html" style="cursor:pointer">📈 Historical</a>
       </div>
     </div>
     <div class="stp-dropdown">
       <button class="stp-link stp-drop-btn">⚙ SETTINGS</button>
-      <div class="stp-drop-menu" style="min-width:230px">
+      <div class="stp-drop-menu" style="min-width:220px">
         <div class="stp-drop-label">DISPLAY</div>
         <a class="stp-drop-item" onclick="stpFs();return false" style="cursor:pointer">⛶ Fullscreen</a>
-        <a class="stp-drop-item" onclick="stpTv();return false" style="cursor:pointer">📺 TV Mode</a>
-        <a class="stp-drop-item" onclick="stpScroll();return false" style="cursor:pointer">⇅ Auto Scroll</a>
-        <a class="stp-drop-item" id="nav-scroll-speed" onclick="stpScrollSpeed();return false" style="cursor:pointer">⏩ Scroll Speed: Medium</a>
         <a class="stp-drop-item" onclick="toggleDarkMode();return false" style="cursor:pointer">☀ Light / Dark</a>
-        <a class="stp-drop-item" id="nav-sound-btn" onclick="stpToggleSound();return false" style="cursor:pointer">🔔 Sound: On</a>
-        <div class="stp-drop-divider"></div>
-        <div class="stp-drop-label">DATA</div>
-        <a class="stp-drop-item" onclick="stpRefresh();return false" style="cursor:pointer">🔄 Refresh Now</a>
         <div class="stp-drop-divider"></div>
         <div class="stp-drop-label">FILTERS</div>
-        <a class="stp-drop-item" onclick="stpRookies();return false" style="cursor:pointer">⭐ Rookies Only</a>
-        <a class="stp-drop-item" onclick="stpConsolidated();return false" style="cursor:pointer">🗺 Consolidated</a>
-        <a class="stp-drop-item" onclick="stpClearFilters();return false" style="cursor:pointer">↺ Clear All Filters</a>
+        <a class="stp-drop-item" id="nav-sound-btn" onclick="stpToggleSound();return false" style="cursor:pointer">🔔 Sound: On</a>
+        <a class="stp-drop-item" onclick="stpRefresh();return false" style="cursor:pointer">🔄 Refresh Now</a>
       </div>
     </div>
-    <a class="stp-link" id="nav-today-btn" onclick="stpTodayFilter();return false" style="cursor:pointer;font-size:9px">📅 TODAY</a>
-    <button class="stp-link" onclick="stpSignOut()" style="margin-left:4px">EXIT</button>
+    <a class="stp-link" id="nav-today-btn" onclick="stpTodayFilter&&stpTodayFilter();return false" style="cursor:pointer">📅 TODAY</a>
+    <button class="stp-link" onclick="stpSignOut&&stpSignOut()">EXIT</button>
   </div>
 </nav>
 
+<div id="app">
+  <div id="page-hdr">
+    <div id="page-title">⭐ ROOKIE 100</div>
+    <div id="page-sub">First 100 Appointments — New Hire Development Tracker</div>
+  </div>
 
+  <div id="summary-row">
+    <div class="sum-card"><div class="sum-card-val" id="s-total">—</div><div class="sum-card-lbl">Total Rookies</div></div>
+    <div class="sum-card"><div class="sum-card-val" id="s-active">—</div><div class="sum-card-lbl">Active</div></div>
+    <div class="sum-card"><div class="sum-card-val" id="s-revenue">—</div><div class="sum-card-lbl">Total YTD Revenue</div></div>
+    <div class="sum-card"><div class="sum-card-val" id="s-avg-rpa">—</div><div class="sum-card-lbl">Avg RPA</div></div>
+    <div class="sum-card"><div class="sum-card-val" id="s-avg-cr">—</div><div class="sum-card-lbl">Avg Close %</div></div>
+  </div>
 
+  <div id="controls">
+    <div id="filter-tabs">
+      <button class="ftab hire active" onclick="setFilter('hire')">🟢 HIRE</button>
+      <button class="ftab train" onclick="setFilter('train')">🔵 TRAIN</button>
+      <button class="ftab develop" onclick="setFilter('develop')">🟣 DEVELOP</button>
+    </div>
+    <select id="class-filter" onchange="applyFilters()">
+      <option value="">All Classes</option>
+      <option value="December 2025">December 2025</option>
+      <option value="February 2026">February 2026</option>
+      <option value="March 2026">March 2026</option>
+      <option value="May 2026">May 2026</option>
+    </select>
+    <select id="market-filter" onchange="applyFilters()">
+      <option value="">All Markets</option>
+    </select>
+    <select id="status-filter" onchange="applyFilters()">
+      <option value="">All Status</option>
+      <option value="Active">Active Only</option>
+      <option value="Terminated">Terminated</option>
+    </select>
+    <div id="ctrl-right">
+      <input type="text" id="search-box" placeholder="Search rep name..." oninput="applyFilters()">
+      <button class="ctrl-btn" onclick="exportCSV()">⬇ EXPORT</button>
+    </div>
+  </div>
 
-<style>
-/* ── STP NAV — dark theme for Rookie 100 ── */
-#stp-nav{position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:48px;background:linear-gradient(135deg,#0A1A0A 0%,#0F2A0F 50%,#0A1A0A 100%);border-bottom:2px solid rgba(74,155,75,0.45);box-shadow:0 2px 20px rgba(74,155,75,0.12);font-family:'Orbitron',monospace;}
-
-/* ── NAV: LIGHT MODE ── */
-body.light #stp-nav{
-  background:linear-gradient(135deg,#F8FAFC 0%,#EEF2FF 50%,#F8FAFC 100%) !important;
-  border-bottom:2px solid rgba(124,58,237,0.3) !important;
-  box-shadow:0 2px 16px rgba(124,58,237,0.1) !important;
-}
-body.light .stp-link{color:rgba(88,28,220,0.75) !important}
-body.light .stp-link:hover{color:#7C3AED !important;background:rgba(124,58,237,0.08) !important}
-body.light .stp-drop-btn{color:rgba(88,28,220,0.75) !important}
-body.light #stp-wordmark{
-  background:linear-gradient(90deg,#7C3AED,#5B21B6,#7C3AED) !important;
-  -webkit-background-clip:text !important;background-clip:text !important;
-  -webkit-text-fill-color:transparent !important;
-}
-body.light #stp-bolt{filter:drop-shadow(0 0 8px #7C3AED) !important}
-body.light .stp-drop-menu{background:#F8FAFC !important;border-color:rgba(124,58,237,0.2) !important;box-shadow:0 8px 32px rgba(124,58,237,0.1) !important}
-body.light .stp-drop-item{color:rgba(55,25,150,0.85) !important}
-body.light .stp-drop-item:hover{background:rgba(124,58,237,0.08) !important;color:#7C3AED !important}
-body.light .stp-drop-label{color:rgba(124,58,237,0.5) !important}
-body.light .stp-drop-active{color:#7C3AED !important;border-color:#7C3AED !important;background:rgba(124,58,237,0.06) !important}
-#stp-brand{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0}
-#stp-bolt{font-size:20px;filter:drop-shadow(0 0 8px #A855F7);animation:boltPulse 2s ease-in-out infinite}
-@keyframes boltPulse{0%,100%{filter:drop-shadow(0 0 6px #A855F7)}50%{filter:drop-shadow(0 0 16px #A855F7)}}
-#stp-wordmark{font-family:'Orbitron',monospace;font-weight:900;font-size:14px;letter-spacing:3px;background:linear-gradient(90deg,#4A9B4B,#7DC87E,#4A9B4B);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-@keyframes wmarkShimmer{to{background-position:200% center}}
-#stp-links{display:flex;align-items:center;gap:4px}
-.stp-link{color:rgba(200,240,200,0.75);font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-decoration:none;padding:6px 14px;border-radius:8px;border:none;background:transparent;cursor:pointer;transition:all 0.15s;white-space:nowrap}
-.stp-link:hover{color:#4A9B4B;background:rgba(74,155,75,0.12)}
-.stp-dropdown{position:relative}
-.stp-drop-btn{color:rgba(255,255,255,0.65)}
-.stp-drop-menu{display:none;position:absolute;top:calc(100% + 2px);right:0;background:#0F1F0F;border:1px solid rgba(74,155,75,0.3);border-radius:12px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:9600}
-.stp-drop-menu.open{display:block}
-.stp-drop-label{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:rgba(168,85,247,0.5);padding:4px 10px 2px;text-transform:uppercase}
-.stp-drop-divider{height:1px;background:rgba(168,85,247,0.15);margin:6px 4px}
-.stp-drop-item{display:block;padding:8px 12px;border-radius:8px;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;cursor:pointer;transition:all 0.12s;font-family:'Inter',sans-serif;font-weight:500;white-space:nowrap}
-.stp-drop-item:hover{background:rgba(74,155,75,0.1);color:#4A9B4B}
-.stp-drop-active{color:#A855F7 !important;background:rgba(168,85,247,0.08);border-left:2px solid #A855F7;padding-left:10px}
-.stp-drop-disabled{color:rgba(255,255,255,0.3) !important;cursor:not-allowed}
-.stp-drop-disabled:hover{background:transparent !important;color:rgba(255,255,255,0.3) !important}
-:fullscreen #hdr,:-webkit-full-screen #hdr{top:0 !important}
-</style>
-
-<div id="hdr">
-  <div><div id="hdr-title">ROOKIE 100</div><div id="hdr-sub">NEW HIRES · FIRST 100 APPOINTMENTS</div></div>
-  <div class="hstat"><div class="hstat-v" id="st-reps">211</div><div class="hstat-l">REPS</div></div>
-  <div class="hstat"><div class="hstat-v" id="st-done">—</div><div class="hstat-l">100+ APPTS</div></div>
-  <div class="hstat"><div class="hstat-v" id="st-cr">—</div><div class="hstat-l">AVG CLOSE RATE</div></div>
-  <div class="hstat"><div class="hstat-v" id="st-rpa">—</div><div class="hstat-l">AVG RPA</div></div>
-  <div id="hdr-r">
-    
-    
+  <div id="loading">⭐ LOADING ROOKIE DATA...</div>
+  <div id="train-placeholder" style="display:none">
+    <div class="tp-icon">🔵</div>
+    <h2>TRAIN — COMING SOON</h2>
+    <p>Training metrics will appear here once connected to the assessment database. This will include skills evaluations, product knowledge scores, and manager feedback.</p>
+  </div>
+  <div id="tbl-wrap" style="display:none">
+    <div id="tbl-scroll">
+      <table>
+        <thead id="tbl-head"></thead>
+        <tbody id="tbl-body"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
-<div id="summary"></div>
-
-<div id="ctrl">
-  <select class="rsel" id="f-market" onchange="render()">
-    <option value="">All Markets</option>
-    <option>Atlanta, GA (930)</option>
-    <option>Chattanooga, TN (792)</option>
-    <option>Cincinnati-Dayton OH (576)</option>
-    <option>Indianapolis, IN (867)</option>
-    <option>Knoxville, TN (790)</option>
-    <option>Long Island, NY (800)</option>
-    <option>Nashville, TN (791)</option>
-    <option>New Jersey-New York Metro (535)</option>
-    <option>San Francisco, CA (890)</option>
-    <option>South Bend, IN (868)</option>
-    <option>Toronto, Ontario (914)</option>
-    <option>Westchester, NY (534)</option>
-  </select>
-  <select class="rsel cls-hi" id="f-class" onchange="render()">
-    <option value="">All Classes</option>
-  </select>
-  <select class="rsel" id="f-stage" onchange="render()">
-    <option value="">All Stages</option>
-    <option value="0-20">Stage 1 (0–20)</option>
-    <option value="21-40">Stage 2 (21–40)</option>
-    <option value="41-60">Stage 3 (41–60)</option>
-    <option value="61-80">Stage 4 (61–80)</option>
-    <option value="81-100">Stage 5 (81–100)</option>
-    <option value="100+">100+ Appts</option>
-  </select>
-  <select class="rsel" id="f-sort" onchange="render()">
-    <option value="appts-d">Most Appointments</option>
-    <option value="appts-a">Fewest Appointments</option>
-    <option value="cr-d">Best Total Close Rate</option>
-    <option value="rpa-d">Highest Total RPA</option>
-    <option value="rr-d">Best Response Rate</option>
-    <option value="b1cr-d">Best 0–20 CR</option>
-    <option value="b2cr-d">Best 21–40 CR</option>
-    <option value="b3cr-d">Best 41–60 CR</option>
-    <option value="b4cr-d">Best 61–80 CR</option>
-    <option value="b5cr-d">Best 81–100 CR</option>
-    <option value="name-a">Name A–Z</option>
-    <option value="market">By Market</option>
-    <option value="class">By Class</option>
-  </select>
-  <input type="text" id="srch" placeholder="Search rep..." oninput="render()">
-  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2);user-select:none;margin-left:4px">
-    <input type="checkbox" id="f-inactive" onchange="render()" style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer">
-    <span>Include Inactive</span>
-  </label>
-  <span id="rcount"></span>
-</div>
-
-<div id="wrap">
-<div id="tbl-scroll">
-<table>
-<thead>
-<tr>
-  <th style="text-align:left;width:90px" onclick="setSort('market')">MARKET</th>
-  <th style="text-align:left;width:160px" onclick="setSort('name-a')">REP NAME</th>
-  <th style="width:110px" onclick="setSort('class')">CLASS</th>
-  <th style="width:110px" onclick="setSort('appts-d')">APPTS / 100</th>
-  <th colspan="2" style="color:#64748B;border-left:1px solid currentColor;cursor:pointer" onclick="setSort('b1cr-d')">0–20</th>
-  <th colspan="2" style="color:#3B82F6;border-left:1px solid currentColor;cursor:pointer" onclick="setSort('b2cr-d')">21–40</th>
-  <th colspan="2" style="color:#8B5CF6;border-left:1px solid currentColor;cursor:pointer" onclick="setSort('b3cr-d')">41–60</th>
-  <th colspan="2" style="color:#EC4899;border-left:1px solid currentColor;cursor:pointer" onclick="setSort('b4cr-d')">61–80</th>
-  <th colspan="2" style="color:#F59E0B;border-left:1px solid currentColor;cursor:pointer" onclick="setSort('b5cr-d')">81–100</th>
-  <th colspan="2" style="color:#00D4FF;border-left:1px solid currentColor;cursor:pointer" onclick="setSort('cr-d')">TOTAL</th>
-  <th style="font-size:7px;cursor:pointer" onclick="setSort('rr-d')">RESP<br>RATE</th>
-</tr>
-<tr>
-  <th></th><th></th><th></th><th></th>
-  <th style="color:#64748B;font-size:7px;cursor:pointer" onclick="setSort('b1cr-d')">CR</th><th style="color:#64748B;font-size:7px;cursor:pointer" onclick="setSort('b1rpa-d')">RPA</th>
-  <th style="color:#3B82F6;font-size:7px;cursor:pointer" onclick="setSort('b2cr-d')">CR</th><th style="color:#3B82F6;font-size:7px;cursor:pointer" onclick="setSort('b2rpa-d')">RPA</th>
-  <th style="color:#8B5CF6;font-size:7px;cursor:pointer" onclick="setSort('b3cr-d')">CR</th><th style="color:#8B5CF6;font-size:7px;cursor:pointer" onclick="setSort('b3rpa-d')">RPA</th>
-  <th style="color:#EC4899;font-size:7px;cursor:pointer" onclick="setSort('b4cr-d')">CR</th><th style="color:#EC4899;font-size:7px;cursor:pointer" onclick="setSort('b4rpa-d')">RPA</th>
-  <th style="color:#F59E0B;font-size:7px;cursor:pointer" onclick="setSort('b5cr-d')">CR</th><th style="color:#F59E0B;font-size:7px;cursor:pointer" onclick="setSort('b5rpa-d')">RPA</th>
-  <th style="color:#00D4FF;font-size:7px;cursor:pointer" onclick="setSort('cr-d')">CR</th><th style="color:#00D4FF;font-size:7px;cursor:pointer" onclick="setSort('rpa-d')">RPA</th>
-  <th></th>
-</tr>
-</thead>
-<tbody id="avg-row-wrap"><tr id="avg-row" style="display:none"><td class="avg-lbl" colspan="4">AVG (filtered)</td><td class="avg-val" id="av-b1cr"></td><td class="avg-val" id="av-b1rpa"></td><td class="avg-val" id="av-b2cr"></td><td class="avg-val" id="av-b2rpa"></td><td class="avg-val" id="av-b3cr"></td><td class="avg-val" id="av-b3rpa"></td><td class="avg-val" id="av-b4cr"></td><td class="avg-val" id="av-b4rpa"></td><td class="avg-val" id="av-b5cr"></td><td class="avg-val" id="av-b5rpa"></td><td class="avg-val" id="av-tcr"></td><td class="avg-val" id="av-trpa"></td><td class="avg-dim" id="av-rr"></td></tr></tbody><tbody id="tbody"></tbody>
-</table>
-</div><!-- tbl-scroll -->
-
 <script>
-// NOTE: When Class column is added as col A in the sheet, re-export this JSON
-// with cls populated. The filter and sort already support it.
-var DATA = [{"id": 0, "cls": null, "store": "Atlanta, GA (930)", "name": "Alishia Richards", "appts": 150.0, "b1_cr": 0.2, "b1_rpa": 6281.0, "b2_cr": 0.15, "b2_rpa": 3277.0, "b3_cr": 0.2, "b3_rpa": 5267.0, "b4_cr": 0.2, "b4_rpa": 3884.0, "b5_cr": 0.25, "b5_rpa": 2281.0, "total_cr": 0.2, "total_rpa": 4198.0, "response_rate": 0.714}, {"id": 1, "cls": null, "store": "Atlanta, GA (930)", "name": "Robert Caruso", "appts": 134.0, "b1_cr": 0.15, "b1_rpa": 6431.0, "b2_cr": 0.25, "b2_rpa": 10444.0, "b3_cr": 0.35, "b3_rpa": 11267.0, "b4_cr": 0.2, "b4_rpa": 7228.0, "b5_cr": 0.2, "b5_rpa": 3973.0, "total_cr": 0.23, "total_rpa": 7869.0, "response_rate": 0.545}, {"id": 2, "cls": null, "store": "Atlanta, GA (930)", "name": "Julia Padgett", "appts": 133.0, "b1_cr": 0.05, "b1_rpa": 761.0, "b2_cr": 0.1, "b2_rpa": 2245.0, "b3_cr": 0.1, "b3_rpa": 5908.0, "b4_cr": 0.05, "b4_rpa": 681.0, "b5_cr": 0.2, "b5_rpa": 5064.0, "total_cr": 0.1, "total_rpa": 2931.0, "response_rate": 0.75}, {"id": 3, "cls": null, "store": "Atlanta, GA (930)", "name": "Joe Powers", "appts": 127.0, "b1_cr": 0.05, "b1_rpa": 651.0, "b2_cr": 0.15, "b2_rpa": 3470.0, "b3_cr": 0.2, "b3_rpa": 8068.0, "b4_cr": 0.25, "b4_rpa": 6242.0, "b5_cr": 0.25, "b5_rpa": 7131.0, "total_cr": 0.18, "total_rpa": 5112.0, "response_rate": 0.636}, {"id": 4, "cls": null, "store": "Atlanta, GA (930)", "name": "Tamara Thompson", "appts": 125.0, "b1_cr": 0.1, "b1_rpa": 1225.0, "b2_cr": 0.15, "b2_rpa": 3850.0, "b3_cr": 0.15, "b3_rpa": 2396.0, "b4_cr": 0.3, "b4_rpa": 8450.0, "b5_cr": 0.15, "b5_rpa": 1377.0, "total_cr": 0.17, "total_rpa": 3460.0, "response_rate": 0.556}, {"id": 5, "cls": null, "store": "Atlanta, GA (930)", "name": "Brice Blocker", "appts": 123.0, "b1_cr": 0.2, "b1_rpa": 6599.0, "b2_cr": 0.25, "b2_rpa": 9427.0, "b3_cr": 0.2, "b3_rpa": 13663.0, "b4_cr": 0.2, "b4_rpa": 5114.0, "b5_cr": 0.3, "b5_rpa": 7377.0, "total_cr": 0.23, "total_rpa": 8436.0, "response_rate": 0.714}, {"id": 6, "cls": null, "store": "Atlanta, GA (930)", "name": "Stephane Alexandre", "appts": 116.0, "b1_cr": 0.1, "b1_rpa": 1398.0, "b2_cr": 0.2, "b2_rpa": 7523.0, "b3_cr": 0.2, "b3_rpa": 5329.0, "b4_cr": 0.35, "b4_rpa": 5398.0, "b5_cr": 0.3, "b5_rpa": 8127.0, "total_cr": 0.23, "total_rpa": 5555.0, "response_rate": 0.4}, {"id": 7, "cls": null, "store": "Atlanta, GA (930)", "name": "Daniel Fordham", "appts": 111.0, "b1_cr": 0.05, "b1_rpa": 1282.0, "b2_cr": 0.35, "b2_rpa": 10349.0, "b3_cr": 0.15, "b3_rpa": 4920.0, "b4_cr": 0.4, "b4_rpa": 19502.0, "b5_cr": 0.2, "b5_rpa": 4443.0, "total_cr": 0.23, "total_rpa": 8099.0, "response_rate": 0.364}, {"id": 8, "cls": null, "store": "Atlanta, GA (930)", "name": "Austin Davis", "appts": 109.0, "b1_cr": 0.2, "b1_rpa": 1728.0, "b2_cr": 0.2, "b2_rpa": 4490.0, "b3_cr": 0.2, "b3_rpa": 1563.0, "b4_cr": 0.1, "b4_rpa": 4607.0, "b5_cr": 0.2, "b5_rpa": 4726.0, "total_cr": 0.18, "total_rpa": 3423.0, "response_rate": 0.889}, {"id": 9, "cls": null, "store": "Atlanta, GA (930)", "name": "Monty White", "appts": 109.0, "b1_cr": 0.25, "b1_rpa": 10901.0, "b2_cr": 0.2, "b2_rpa": 3928.0, "b3_cr": 0.35, "b3_rpa": 16611.0, "b4_cr": 0.35, "b4_rpa": 8781.0, "b5_cr": 0.25, "b5_rpa": 7385.0, "total_cr": 0.28, "total_rpa": 9521.0, "response_rate": 0.846}, {"id": 10, "cls": null, "store": "Atlanta, GA (930)", "name": "Jeff DeRosa", "appts": 102.0, "b1_cr": 0.1, "b1_rpa": 1305.0, "b2_cr": 0.45, "b2_rpa": 13711.0, "b3_cr": 0.1, "b3_rpa": 3151.0, "b4_cr": 0.35, "b4_rpa": 10749.0, "b5_cr": 0.2, "b5_rpa": 3446.0, "total_cr": 0.24, "total_rpa": 6472.0, "response_rate": 0.5}, {"id": 129, "cls": null, "store": "Toronto, Ontario (914)", "name": "Other", "appts": 107.0, "b1_cr": 0.071, "b1_rpa": 2284.0, "b2_cr": 0.073, "b2_rpa": 2360.0, "b3_cr": 0.072, "b3_rpa": 2089.0, "b4_cr": 0.073, "b4_rpa": 1555.0, "b5_cr": 0.184, "b5_rpa": 4450.0, "total_cr": 0.079, "total_rpa": 2264.0, "response_rate": 0.6}, {"id": 12, "cls": null, "store": "Atlanta, GA (930)", "name": "Jesse Hamadi", "appts": 97.0, "b1_cr": 0.1, "b1_rpa": 1751.0, "b2_cr": 0.2, "b2_rpa": 5045.0, "b3_cr": 0.15, "b3_rpa": 1991.0, "b4_cr": 0.1, "b4_rpa": 1882.0, "b5_cr": 0.118, "b5_rpa": 1820.0, "total_cr": 0.134, "total_rpa": 2519.0, "response_rate": 0.4}, {"id": 13, "cls": null, "store": "Atlanta, GA (930)", "name": "Wes Eigenauer", "appts": 95.0, "b1_cr": 0.0, "b1_rpa": 0.0, "b2_cr": 0.2, "b2_rpa": 3622.0, "b3_cr": 0.15, "b3_rpa": 3513.0, "b4_cr": 0.2, "b4_rpa": 6972.0, "b5_cr": 0.067, "b5_rpa": 236.0, "total_cr": 0.126, "total_rpa": 3007.0, "response_rate": 0.5}, {"id": 14, "cls": null, "store": "Atlanta, GA (930)", "name": "Amber Gravely", "appts": 86.0, "b1_cr": 0.1, "b1_rpa": 1847.0, "b2_cr": 0.2, "b2_rpa": 4032.0, "b3_cr": 0.25, "b3_rpa": 3267.0, "b4_cr": 0.2, "b4_rpa": 4091.0, "b5_cr": 0.333, "b5_rpa": 4881.0, "total_cr": 0.198, "total_rpa": 3419.0, "response_rate": 1.0}, {"id": 15, "cls": null, "store": "Atlanta, GA (930)", "name": "Traci Kubach", "appts": 50.0, "b1_cr": 0.35, "b1_rpa": 9556.0, "b2_cr": 0.2, "b2_rpa": 3798.0, "b3_cr": 0.1, "b3_rpa": 2433.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.24, "total_rpa": 5828.0, "response_rate": null}, {"id": 16, "cls": null, "store": "Atlanta, GA (930)", "name": "Brian Bonner", "appts": 43.0, "b1_cr": 0.35, "b1_rpa": 10611.0, "b2_cr": 0.15, "b2_rpa": 4520.0, "b3_cr": 0.0, "b3_rpa": 0.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.233, "total_rpa": 7038.0, "response_rate": null}, {"id": 17, "cls": null, "store": "Atlanta, GA (930)", "name": "Mark Hall", "appts": 43.0, "b1_cr": 0.1, "b1_rpa": 1382.0, "b2_cr": 0.15, "b2_rpa": 2524.0, "b3_cr": 0.333, "b3_rpa": 11012.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.14, "total_rpa": 2585.0, "response_rate": null}, {"id": 18, "cls": null, "store": "Atlanta, GA (930)", "name": "Daniel Emmons", "appts": 41.0, "b1_cr": 0.05, "b1_rpa": 957.0, "b2_cr": 0.05, "b2_rpa": 1891.0, "b3_cr": 0.0, "b3_rpa": 0.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.049, "total_rpa": 1389.0, "response_rate": null}, {"id": 19, "cls": null, "store": "Atlanta, GA (930)", "name": "Zachary King", "appts": 41.0, "b1_cr": 0.1, "b1_rpa": 1693.0, "b2_cr": 0.15, "b2_rpa": 3086.0, "b3_cr": 0.0, "b3_rpa": 0.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.122, "total_rpa": 2331.0, "response_rate": null}, {"id": 20, "cls": null, "store": "Atlanta, GA (930)", "name": "Jennifer Townsend", "appts": 39.0, "b1_cr": 0.25, "b1_rpa": 6076.0, "b2_cr": 0.105, "b2_rpa": 1542.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.179, "total_rpa": 3867.0, "response_rate": null}, {"id": 21, "cls": null, "store": "Atlanta, GA (930)", "name": "Krystal Wilbanks", "appts": 39.0, "b1_cr": 0.1, "b1_rpa": 993.0, "b2_cr": 0.0, "b2_rpa": 0.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.051, "total_rpa": 509.0, "response_rate": null}, {"id": 22, "cls": null, "store": "Atlanta, GA (930)", "name": "Jimmy Outler", "appts": 34.0, "b1_cr": 0.05, "b1_rpa": 1122.0, "b2_cr": 0.286, "b2_rpa": 9029.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.147, "total_rpa": 4378.0, "response_rate": null}, {"id": 23, "cls": null, "store": "Atlanta, GA (930)", "name": "Maria Duarte", "appts": 34.0, "b1_cr": 0.15, "b1_rpa": 2409.0, "b2_cr": 0.143, "b2_rpa": 4763.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.147, "total_rpa": 3378.0, "response_rate": null}, {"id": 24, "cls": null, "store": "Chattanooga, TN (792)", "name": "Matt Davis", "appts": 120.0, "b1_cr": 0.3, "b1_rpa": 4229.0, "b2_cr": 0.2, "b2_rpa": 5285.0, "b3_cr": 0.25, "b3_rpa": 6310.0, "b4_cr": 0.2, "b4_rpa": 5629.0, "b5_cr": 0.25, "b5_rpa": 8591.0, "total_cr": 0.24, "total_rpa": 6009.0, "response_rate": 0.615}, {"id": 25, "cls": null, "store": "Chattanooga, TN (792)", "name": "Andrew Haubner", "appts": 72.0, "b1_cr": 0.05, "b1_rpa": 1353.0, "b2_cr": 0.1, "b2_rpa": 665.0, "b3_cr": 0.25, "b3_rpa": 6407.0, "b4_cr": 0.167, "b4_rpa": 2469.0, "b5_cr": null, "b5_rpa": null, "total_cr": 0.139, "total_rpa": 2752.0, "response_rate": 1.0}, {"id": 26, "cls": null, "store": "Chattanooga, TN (792)", "name": "Ethan Young", "appts": 72.0, "b1_cr": 0.1, "b1_rpa": 2557.0, "b2_cr": 0.1, "b2_rpa": 1109.0, "b3_cr": 0.25, "b3_rpa": 6888.0, "b4_cr": 0.083, "b4_rpa": 903.0, "b5_cr": null, "b5_rpa": null, "total_cr": 0.139, "total_rpa": 3082.0, "response_rate": 0.0}, {"id": 27, "cls": null, "store": "Chattanooga, TN (792)", "name": "Will Ray", "appts": 70.0, "b1_cr": 0.15, "b1_rpa": 2441.0, "b2_cr": 0.2, "b2_rpa": 3087.0, "b3_cr": 0.15, "b3_rpa": 3092.0, "b4_cr": 0.3, "b4_rpa": 3405.0, "b5_cr": null, "b5_rpa": null, "total_cr": 0.186, "total_rpa": 2949.0, "response_rate": 0.25}, {"id": 28, "cls": null, "store": "Chattanooga, TN (792)", "name": "Ben Laney", "appts": 64.0, "b1_cr": 0.1, "b1_rpa": 2096.0, "b2_cr": 0.1, "b2_rpa": 1934.0, "b3_cr": 0.25, "b3_rpa": 5474.0, "b4_cr": 0.0, "b4_rpa": 0.0, "b5_cr": null, "b5_rpa": null, "total_cr": 0.141, "total_rpa": 2970.0, "response_rate": 0.667}, {"id": 29, "cls": null, "store": "Chattanooga, TN (792)", "name": "Matthew Dicks", "appts": 32.0, "b1_cr": 0.2, "b1_rpa": 6866.0, "b2_cr": 0.167, "b2_rpa": 2868.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.188, "total_rpa": 5367.0, "response_rate": null}, {"id": 30, "cls": null, "store": "Chattanooga, TN (792)", "name": "Larry Strunk", "appts": 25.0, "b1_cr": 0.1, "b1_rpa": 2966.0, "b2_cr": 0.0, "b2_rpa": 0.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.08, "total_rpa": 2373.0, "response_rate": null}, {"id": 59, "cls": null, "store": "Knoxville, TN (790)", "name": "Whitney Kent", "appts": 83.0, "b1_cr": 0.2, "b1_rpa": 2909.0, "b2_cr": 0.3, "b2_rpa": 12268.0, "b3_cr": 0.05, "b3_rpa": 687.0, "b4_cr": 0.45, "b4_rpa": 10421.0, "b5_cr": 0.333, "b5_rpa": 5967.0, "total_cr": 0.253, "total_rpa": 6549.0, "response_rate": 0.571}, {"id": 32, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "Andrea O'Campo", "appts": 150.0, "b1_cr": 0.15, "b1_rpa": 4393.0, "b2_cr": 0.1, "b2_rpa": 3497.0, "b3_cr": 0.2, "b3_rpa": 3519.0, "b4_cr": 0.2, "b4_rpa": 3576.0, "b5_cr": 0.15, "b5_rpa": 1529.0, "total_cr": 0.16, "total_rpa": 3303.0, "response_rate": 0.8}, {"id": 33, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "Omar Mhamdi", "appts": 148.0, "b1_cr": 0.25, "b1_rpa": 2542.0, "b2_cr": 0.15, "b2_rpa": 1345.0, "b3_cr": 0.2, "b3_rpa": 4998.0, "b4_cr": 0.25, "b4_rpa": 4038.0, "b5_cr": 0.25, "b5_rpa": 5398.0, "total_cr": 0.22, "total_rpa": 3664.0, "response_rate": 0.643}, {"id": 34, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "Dustin Ravenscraft", "appts": 120.0, "b1_cr": 0.25, "b1_rpa": 9685.0, "b2_cr": 0.2, "b2_rpa": 2493.0, "b3_cr": 0.25, "b3_rpa": 5123.0, "b4_cr": 0.45, "b4_rpa": 10784.0, "b5_cr": 0.45, "b5_rpa": 24803.0, "total_cr": 0.32, "total_rpa": 10578.0, "response_rate": 0.5}, {"id": 35, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "Marcus Staples", "appts": 120.0, "b1_cr": 0.2, "b1_rpa": 4966.0, "b2_cr": 0.05, "b2_rpa": 422.0, "b3_cr": 0.2, "b3_rpa": 2308.0, "b4_cr": 0.3, "b4_rpa": 6052.0, "b5_cr": 0.35, "b5_rpa": 8587.0, "total_cr": 0.22, "total_rpa": 4467.0, "response_rate": 1.0}, {"id": 36, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "X - Stephanie VanBenschoten", "appts": 93.0, "b1_cr": 0.15, "b1_rpa": 5448.0, "b2_cr": 0.15, "b2_rpa": 2176.0, "b3_cr": 0.15, "b3_rpa": 1336.0, "b4_cr": 0.2, "b4_rpa": 2720.0, "b5_cr": 0.077, "b5_rpa": 518.0, "total_cr": 0.151, "total_rpa": 2584.0, "response_rate": 0.833}, {"id": 37, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "X - Beth Bennett", "appts": 42.0, "b1_cr": 0.2, "b1_rpa": 6391.0, "b2_cr": 0.05, "b2_rpa": 574.0, "b3_cr": 0.0, "b3_rpa": 0.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.119, "total_rpa": 3317.0, "response_rate": 1.0}, {"id": 38, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "Ethan Deitzer", "appts": 37.0, "b1_cr": 0.1, "b1_rpa": 1863.0, "b2_cr": 0.235, "b2_rpa": 2758.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.162, "total_rpa": 2275.0, "response_rate": null}, {"id": 39, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "Chad Dulin", "appts": 30.0, "b1_cr": 0.15, "b1_rpa": 2279.0, "b2_cr": 0.0, "b2_rpa": 0.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.1, "total_rpa": 1520.0, "response_rate": null}, {"id": 40, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "X - Aaron Bales", "appts": 30.0, "b1_cr": 0.15, "b1_rpa": 1913.0, "b2_cr": 0.0, "b2_rpa": 0.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.1, "total_rpa": 1275.0, "response_rate": 0.667}, {"id": 41, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "X - JT Johnson", "appts": 29.0, "b1_cr": 0.05, "b1_rpa": 538.0, "b2_cr": 0.0, "b2_rpa": 0.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.034, "total_rpa": 371.0, "response_rate": 1.0}, {"id": 42, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "X - Joseph Ebright", "appts": 13.0, "b1_cr": 0.0, "b1_rpa": 0.0, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.0, "total_rpa": 0.0, "response_rate": null}, {"id": 43, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "X - Melissa Sparks", "appts": 4.0, "b1_cr": 0.0, "b1_rpa": 0.0, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.0, "total_rpa": 0.0, "response_rate": null}, {"id": 50, "cls": null, "store": "Indianapolis, IN (867)", "name": "Dan Silvernail", "appts": 99.0, "b1_cr": 0.2, "b1_rpa": 4837.0, "b2_cr": 0.2, "b2_rpa": 4579.0, "b3_cr": 0.35, "b3_rpa": 13803.0, "b4_cr": 0.05, "b4_rpa": 556.0, "b5_cr": 0.263, "b5_rpa": 6242.0, "total_cr": 0.212, "total_rpa": 6001.0, "response_rate": 0.6}, {"id": 45, "cls": null, "store": "Indianapolis, IN (867)", "name": "Kyle Spence", "appts": 128.0, "b1_cr": 0.15, "b1_rpa": 2167.0, "b2_cr": 0.4, "b2_rpa": 12390.0, "b3_cr": 0.2, "b3_rpa": 2802.0, "b4_cr": 0.25, "b4_rpa": 12114.0, "b5_cr": 0.3, "b5_rpa": 9590.0, "total_cr": 0.26, "total_rpa": 7812.0, "response_rate": 0.571}, {"id": 46, "cls": null, "store": "Indianapolis, IN (867)", "name": "Alec Dietz", "appts": 119.0, "b1_cr": 0.2, "b1_rpa": 6830.0, "b2_cr": 0.1, "b2_rpa": 1369.0, "b3_cr": 0.3, "b3_rpa": 5684.0, "b4_cr": 0.1, "b4_rpa": 1738.0, "b5_cr": 0.3, "b5_rpa": 2309.0, "total_cr": 0.2, "total_rpa": 3586.0, "response_rate": 0.7}, {"id": 47, "cls": null, "store": "Indianapolis, IN (867)", "name": "Travis Bruner", "appts": 108.0, "b1_cr": 0.3, "b1_rpa": 9305.0, "b2_cr": 0.35, "b2_rpa": 14787.0, "b3_cr": 0.4, "b3_rpa": 10942.0, "b4_cr": 0.25, "b4_rpa": 11974.0, "b5_cr": 0.2, "b5_rpa": 8840.0, "total_cr": 0.3, "total_rpa": 11170.0, "response_rate": 0.636}, {"id": 48, "cls": null, "store": "Indianapolis, IN (867)", "name": "Corey Landon", "appts": 107.0, "b1_cr": 0.35, "b1_rpa": 9422.0, "b2_cr": 0.3, "b2_rpa": 9555.0, "b3_cr": 0.25, "b3_rpa": 5548.0, "b4_cr": 0.15, "b4_rpa": 3421.0, "b5_cr": 0.25, "b5_rpa": 9015.0, "total_cr": 0.26, "total_rpa": 7392.0, "response_rate": 0.7}, {"id": 49, "cls": null, "store": "Indianapolis, IN (867)", "name": "Justin Stillson", "appts": 101.0, "b1_cr": 0.1, "b1_rpa": 1321.0, "b2_cr": 0.3, "b2_rpa": 5631.0, "b3_cr": 0.2, "b3_rpa": 2124.0, "b4_cr": 0.25, "b4_rpa": 5247.0, "b5_cr": 0.15, "b5_rpa": 3471.0, "total_cr": 0.2, "total_rpa": 3559.0, "response_rate": 0.714}, {"id": 51, "cls": null, "store": "Indianapolis, IN (867)", "name": "Kris Woodward", "appts": 90.0, "b1_cr": 0.3, "b1_rpa": 6095.0, "b2_cr": 0.2, "b2_rpa": 6071.0, "b3_cr": 0.3, "b3_rpa": 9169.0, "b4_cr": 0.3, "b4_rpa": 16397.0, "b5_cr": 0.2, "b5_rpa": 6467.0, "total_cr": 0.267, "total_rpa": 9104.0, "response_rate": 0.4}, {"id": 52, "cls": null, "store": "Indianapolis, IN (867)", "name": "Jose Gonzalez", "appts": 32.0, "b1_cr": 0.2, "b1_rpa": 2308.0, "b2_cr": 0.333, "b2_rpa": 5937.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.25, "total_rpa": 3669.0, "response_rate": null}, {"id": 53, "cls": null, "store": "Indianapolis, IN (867)", "name": "X - Gary Tallent", "appts": 29.0, "b1_cr": 0.15, "b1_rpa": 1832.0, "b2_cr": 0.111, "b2_rpa": 4608.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.138, "total_rpa": 2693.0, "response_rate": 0.5}, {"id": 54, "cls": null, "store": "Indianapolis, IN (867)", "name": "X - David Bowers", "appts": 19.0, "b1_cr": 0.105, "b1_rpa": 583.0, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.105, "total_rpa": 583.0, "response_rate": 1.0}, {"id": 55, "cls": null, "store": "Indianapolis, IN (867)", "name": "X - Karen O'Neill", "appts": 14.0, "b1_cr": 0.143, "b1_rpa": 3907.0, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.143, "total_rpa": 3907.0, "response_rate": 0.5}, {"id": 56, "cls": null, "store": "Indianapolis, IN (867)", "name": "X - Steven Ferrando", "appts": 10.0, "b1_cr": 0.0, "b1_rpa": 0.0, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.0, "total_rpa": 0.0, "response_rate": null}, {"id": 57, "cls": null, "store": "Indianapolis, IN (867)", "name": "X - PJ Vaught", "appts": 6.0, "b1_cr": 0.0, "b1_rpa": 0.0, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.0, "total_rpa": 0.0, "response_rate": null}, {"id": 58, "cls": null, "store": "Knoxville, TN (790)", "name": "Joseph Varrone", "appts": 83.0, "b1_cr": 0.15, "b1_rpa": 4838.0, "b2_cr": 0.25, "b2_rpa": 6240.0, "b3_cr": 0.15, "b3_rpa": 3007.0, "b4_cr": 0.05, "b4_rpa": 122.0, "b5_cr": 0.0, "b5_rpa": 0.0, "total_cr": 0.145, "total_rpa": 3423.0, "response_rate": 0.625}, {"id": 60, "cls": null, "store": "Knoxville, TN (790)", "name": "Daniel Blood", "appts": 69.0, "b1_cr": 0.2, "b1_rpa": 2675.0, "b2_cr": 0.25, "b2_rpa": 2905.0, "b3_cr": 0.25, "b3_rpa": 5714.0, "b4_cr": 0.444, "b4_rpa": 7019.0, "b5_cr": null, "b5_rpa": null, "total_cr": 0.261, "total_rpa": 4189.0, "response_rate": 1.0}, {"id": 61, "cls": null, "store": "Knoxville, TN (790)", "name": "Matthew Tipton", "appts": 65.0, "b1_cr": 0.25, "b1_rpa": 2446.0, "b2_cr": 0.2, "b2_rpa": 6520.0, "b3_cr": 0.2, "b3_rpa": 5394.0, "b4_cr": 0.0, "b4_rpa": 0.0, "b5_cr": null, "b5_rpa": null, "total_cr": 0.2, "total_rpa": 4418.0, "response_rate": 0.75}, {"id": 62, "cls": null, "store": "Knoxville, TN (790)", "name": "David Russell", "appts": 59.0, "b1_cr": 0.1, "b1_rpa": 1554.0, "b2_cr": 0.1, "b2_rpa": 307.0, "b3_cr": 0.158, "b3_rpa": 6624.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.119, "total_rpa": 2764.0, "response_rate": 1.0}, {"id": 63, "cls": null, "store": "Knoxville, TN (790)", "name": "Wes Milstead", "appts": 50.0, "b1_cr": 0.1, "b1_rpa": 2175.0, "b2_cr": 0.2, "b2_rpa": 4417.0, "b3_cr": 0.1, "b3_rpa": 444.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.14, "total_rpa": 2725.0, "response_rate": null}, {"id": 64, "cls": null, "store": "Knoxville, TN (790)", "name": "Jameson Evans", "appts": 37.0, "b1_cr": 0.1, "b1_rpa": 404.0, "b2_cr": 0.118, "b2_rpa": 1217.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.108, "total_rpa": 778.0, "response_rate": 1.0}, {"id": 65, "cls": null, "store": "Knoxville, TN (790)", "name": "Andrew Lane", "appts": 34.0, "b1_cr": 0.1, "b1_rpa": 2040.0, "b2_cr": 0.286, "b2_rpa": 5607.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.176, "total_rpa": 3509.0, "response_rate": null}, {"id": 66, "cls": null, "store": "Knoxville, TN (790)", "name": "Cody Clearman", "appts": 26.0, "b1_cr": 0.25, "b1_rpa": 3803.0, "b2_cr": 0.167, "b2_rpa": 0.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.231, "total_rpa": 2925.0, "response_rate": 0.0}, {"id": 67, "cls": null, "store": "Long Island, NY (800)", "name": "Gerasimos Vangelatos", "appts": 204.0, "b1_cr": 0.45, "b1_rpa": 14943.0, "b2_cr": 0.35, "b2_rpa": 12464.0, "b3_cr": 0.4, "b3_rpa": 22104.0, "b4_cr": 0.1, "b4_rpa": 2799.0, "b5_cr": 0.4, "b5_rpa": 10349.0, "total_cr": 0.34, "total_rpa": 12532.0, "response_rate": 0.698}, {"id": 68, "cls": null, "store": "Long Island, NY (800)", "name": "Jean Jourdain", "appts": 191.0, "b1_cr": 0.2, "b1_rpa": 2913.0, "b2_cr": 0.15, "b2_rpa": 3528.0, "b3_cr": 0.2, "b3_rpa": 7170.0, "b4_cr": 0.25, "b4_rpa": 3625.0, "b5_cr": 0.25, "b5_rpa": 4330.0, "total_cr": 0.21, "total_rpa": 4313.0, "response_rate": 0.4}, {"id": 69, "cls": null, "store": "Long Island, NY (800)", "name": "William Hawrey", "appts": 189.0, "b1_cr": 0.1, "b1_rpa": 1752.0, "b2_cr": 0.15, "b2_rpa": 4663.0, "b3_cr": 0.25, "b3_rpa": 3967.0, "b4_cr": 0.15, "b4_rpa": 2000.0, "b5_cr": 0.25, "b5_rpa": 3568.0, "total_cr": 0.18, "total_rpa": 3190.0, "response_rate": 0.789}, {"id": 70, "cls": null, "store": "Long Island, NY (800)", "name": "Michael Hill", "appts": 186.0, "b1_cr": 0.15, "b1_rpa": 1384.0, "b2_cr": 0.1, "b2_rpa": 4160.0, "b3_cr": 0.4, "b3_rpa": 15455.0, "b4_cr": 0.3, "b4_rpa": 8550.0, "b5_cr": 0.35, "b5_rpa": 7845.0, "total_cr": 0.26, "total_rpa": 7479.0, "response_rate": 0.385}, {"id": 71, "cls": null, "store": "Long Island, NY (800)", "name": "Gage Afanasiew", "appts": 183.0, "b1_cr": 0.2, "b1_rpa": 2822.0, "b2_cr": 0.05, "b2_rpa": 595.0, "b3_cr": 0.3, "b3_rpa": 4761.0, "b4_cr": 0.2, "b4_rpa": 3225.0, "b5_cr": 0.05, "b5_rpa": 369.0, "total_cr": 0.16, "total_rpa": 2354.0, "response_rate": 0.667}, {"id": 72, "cls": null, "store": "Long Island, NY (800)", "name": "Daniel Hersey", "appts": 137.0, "b1_cr": 0.3, "b1_rpa": 4381.0, "b2_cr": 0.15, "b2_rpa": 3888.0, "b3_cr": 0.1, "b3_rpa": 1908.0, "b4_cr": 0.25, "b4_rpa": 2753.0, "b5_cr": 0.3, "b5_rpa": 8119.0, "total_cr": 0.22, "total_rpa": 4210.0, "response_rate": 0.5}, {"id": 74, "cls": null, "store": "Long Island, NY (800)", "name": "Rand Strollo", "appts": 51.0, "b1_cr": 0.15, "b1_rpa": 1322.0, "b2_cr": 0.2, "b2_rpa": 2694.0, "b3_cr": 0.091, "b3_rpa": 1690.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.157, "total_rpa": 1940.0, "response_rate": null}, {"id": 75, "cls": null, "store": "Long Island, NY (800)", "name": "Paul Guetter", "appts": 49.0, "b1_cr": 0.5, "b1_rpa": 17351.0, "b2_cr": 0.3, "b2_rpa": 12988.0, "b3_cr": 0.0, "b3_rpa": 0.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.327, "total_rpa": 12383.0, "response_rate": 0.333}, {"id": 76, "cls": null, "store": "Long Island, NY (800)", "name": "Kevin Upton", "appts": 48.0, "b1_cr": 0.1, "b1_rpa": 907.0, "b2_cr": 0.15, "b2_rpa": 4739.0, "b3_cr": 0.25, "b3_rpa": 2934.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.146, "total_rpa": 2842.0, "response_rate": null}, {"id": 77, "cls": null, "store": "Long Island, NY (800)", "name": "Peter Nantista", "appts": 44.0, "b1_cr": 0.2, "b1_rpa": 2333.0, "b2_cr": 0.1, "b2_rpa": 910.0, "b3_cr": 0.5, "b3_rpa": 11707.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.182, "total_rpa": 2538.0, "response_rate": null}, {"id": 78, "cls": null, "store": "Nashville, TN (791)", "name": "John Hanifin", "appts": 127.0, "b1_cr": 0.15, "b1_rpa": 4292.0, "b2_cr": 0.05, "b2_rpa": 1561.0, "b3_cr": 0.25, "b3_rpa": 5316.0, "b4_cr": 0.25, "b4_rpa": 5749.0, "b5_cr": 0.2, "b5_rpa": 5317.0, "total_cr": 0.18, "total_rpa": 4447.0, "response_rate": 0.778}, {"id": 79, "cls": null, "store": "Nashville, TN (791)", "name": "Dana Zadah", "appts": 120.0, "b1_cr": 0.35, "b1_rpa": 6739.0, "b2_cr": 0.3, "b2_rpa": 3133.0, "b3_cr": 0.15, "b3_rpa": 2842.0, "b4_cr": 0.25, "b4_rpa": 6529.0, "b5_cr": 0.2, "b5_rpa": 3226.0, "total_cr": 0.25, "total_rpa": 4494.0, "response_rate": 0.789}, {"id": 80, "cls": null, "store": "Nashville, TN (791)", "name": "Nathan McIntyre", "appts": 83.0, "b1_cr": 0.4, "b1_rpa": 9409.0, "b2_cr": 0.1, "b2_rpa": 4147.0, "b3_cr": 0.3, "b3_rpa": 12377.0, "b4_cr": 0.25, "b4_rpa": 3120.0, "b5_cr": 0.333, "b5_rpa": 19039.0, "total_cr": 0.265, "total_rpa": 7689.0, "response_rate": 0.571}, {"id": 81, "cls": null, "store": "Nashville, TN (791)", "name": "Nick Quinn", "appts": 71.0, "b1_cr": 0.25, "b1_rpa": 7768.0, "b2_cr": 0.3, "b2_rpa": 11728.0, "b3_cr": 0.2, "b3_rpa": 10899.0, "b4_cr": 0.273, "b4_rpa": 2337.0, "b5_cr": null, "b5_rpa": null, "total_cr": 0.254, "total_rpa": 8924.0, "response_rate": 0.556}, {"id": 82, "cls": null, "store": "Nashville, TN (791)", "name": "Michael Osheroff", "appts": 57.0, "b1_cr": 0.3, "b1_rpa": 8631.0, "b2_cr": 0.05, "b2_rpa": 552.0, "b3_cr": 0.118, "b3_rpa": 1191.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.158, "total_rpa": 3577.0, "response_rate": 0.8}, {"id": 83, "cls": null, "store": "Nashville, TN (791)", "name": "Ryan Parr", "appts": 25.0, "b1_cr": 0.1, "b1_rpa": 1235.0, "b2_cr": 0.4, "b2_rpa": 7056.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.16, "total_rpa": 2399.0, "response_rate": null}, {"id": 84, "cls": null, "store": "Nashville, TN (791)", "name": "X - Matt Josa", "appts": 24.0, "b1_cr": 0.1, "b1_rpa": 3707.0, "b2_cr": 0.25, "b2_rpa": 4225.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.125, "total_rpa": 3793.0, "response_rate": 1.0}, {"id": 85, "cls": null, "store": "Nashville, TN (791)", "name": "Mitchell Clark", "appts": 20.0, "b1_cr": 0.1, "b1_rpa": 679.0, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.1, "total_rpa": 679.0, "response_rate": null}, {"id": 86, "cls": null, "store": "Nashville, TN (791)", "name": "Jason Lee", "appts": 19.0, "b1_cr": 0.053, "b1_rpa": 0.0, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.053, "total_rpa": 0.0, "response_rate": null}, {"id": 87, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Matthew Jones", "appts": 193.0, "b1_cr": 0.35, "b1_rpa": 13777.0, "b2_cr": 0.25, "b2_rpa": 5454.0, "b3_cr": 0.1, "b3_rpa": 2637.0, "b4_cr": 0.35, "b4_rpa": 6662.0, "b5_cr": 0.25, "b5_rpa": 5779.0, "total_cr": 0.26, "total_rpa": 6862.0, "response_rate": 0.536}, {"id": 88, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Chris Patkochis", "appts": 186.0, "b1_cr": 0.3, "b1_rpa": 3999.0, "b2_cr": 0.3, "b2_rpa": 4089.0, "b3_cr": 0.25, "b3_rpa": 3757.0, "b4_cr": 0.3, "b4_rpa": 4072.0, "b5_cr": 0.2, "b5_rpa": 3616.0, "total_cr": 0.27, "total_rpa": 3907.0, "response_rate": 0.48}, {"id": 89, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Roberto Rios", "appts": 180.0, "b1_cr": 0.2, "b1_rpa": 3420.0, "b2_cr": 0.25, "b2_rpa": 3334.0, "b3_cr": 0.3, "b3_rpa": 3803.0, "b4_cr": 0.2, "b4_rpa": 2548.0, "b5_cr": 0.2, "b5_rpa": 2163.0, "total_cr": 0.23, "total_rpa": 3054.0, "response_rate": 0.6}, {"id": 90, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Stanislav Faynerman", "appts": 178.0, "b1_cr": 0.3, "b1_rpa": 6685.0, "b2_cr": 0.2, "b2_rpa": 2211.0, "b3_cr": 0.35, "b3_rpa": 9378.0, "b4_cr": 0.35, "b4_rpa": 21630.0, "b5_cr": 0.35, "b5_rpa": 15220.0, "total_cr": 0.31, "total_rpa": 11025.0, "response_rate": 0.739}, {"id": 91, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Barry Gasmer", "appts": 174.0, "b1_cr": 0.25, "b1_rpa": 3911.0, "b2_cr": 0.2, "b2_rpa": 3280.0, "b3_cr": 0.2, "b3_rpa": 2143.0, "b4_cr": 0.2, "b4_rpa": 1921.0, "b5_cr": 0.1, "b5_rpa": 3008.0, "total_cr": 0.19, "total_rpa": 2853.0, "response_rate": 0.313}, {"id": 92, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Adhem Sharkawy", "appts": 148.0, "b1_cr": 0.1, "b1_rpa": 2244.0, "b2_cr": 0.2, "b2_rpa": 1984.0, "b3_cr": 0.25, "b3_rpa": 3513.0, "b4_cr": 0.25, "b4_rpa": 2422.0, "b5_cr": 0.3, "b5_rpa": 5498.0, "total_cr": 0.22, "total_rpa": 3132.0, "response_rate": 0.533}, {"id": 93, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Kimberley Prasad", "appts": 113.0, "b1_cr": 0.25, "b1_rpa": 2953.0, "b2_cr": 0.3, "b2_rpa": 4787.0, "b3_cr": 0.2, "b3_rpa": 5746.0, "b4_cr": 0.25, "b4_rpa": 2445.0, "b5_cr": 0.15, "b5_rpa": 1198.0, "total_cr": 0.23, "total_rpa": 3426.0, "response_rate": 0.375}, {"id": 94, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Mike Manashirov", "appts": 52.0, "b1_cr": 0.3, "b1_rpa": 4624.0, "b2_cr": 0.3, "b2_rpa": 8688.0, "b3_cr": 0.167, "b3_rpa": 2571.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.269, "total_rpa": 5713.0, "response_rate": 0.0}, {"id": 95, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Adrian Greenidge", "appts": 49.0, "b1_cr": 0.3, "b1_rpa": 3126.0, "b2_cr": 0.35, "b2_rpa": 4106.0, "b3_cr": 0.333, "b3_rpa": 3605.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.327, "total_rpa": 3614.0, "response_rate": null}, {"id": 96, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Mac Isibor", "appts": 46.0, "b1_cr": 0.15, "b1_rpa": 1462.0, "b2_cr": 0.5, "b2_rpa": 9367.0, "b3_cr": 0.333, "b3_rpa": 14543.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.326, "total_rpa": 6605.0, "response_rate": null}, {"id": 97, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Bryan Kleppe", "appts": 44.0, "b1_cr": 0.15, "b1_rpa": 2618.0, "b2_cr": 0.2, "b2_rpa": 4408.0, "b3_cr": 0.25, "b3_rpa": 2338.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.182, "total_rpa": 3406.0, "response_rate": null}, {"id": 98, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Femi Adedoyin", "appts": 42.0, "b1_cr": 0.0, "b1_rpa": 0.0, "b2_cr": 0.2, "b2_rpa": 3955.0, "b3_cr": 0.0, "b3_rpa": 0.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.095, "total_rpa": 1883.0, "response_rate": null}, {"id": 99, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Linda Campanelli", "appts": 42.0, "b1_cr": 0.1, "b1_rpa": 1429.0, "b2_cr": 0.25, "b2_rpa": 4873.0, "b3_cr": 0.0, "b3_rpa": 0.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.167, "total_rpa": 3001.0, "response_rate": null}, {"id": 100, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Mo Elshafie", "appts": 37.0, "b1_cr": 0.25, "b1_rpa": 4285.0, "b2_cr": 0.294, "b2_rpa": 8499.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.27, "total_rpa": 6221.0, "response_rate": 0.0}, {"id": 102, "cls": null, "store": "San Francisco, CA (890)", "name": "Blake Gallick", "appts": 120.0, "b1_cr": 0.25, "b1_rpa": 4507.0, "b2_cr": 0.15, "b2_rpa": 4980.0, "b3_cr": 0.15, "b3_rpa": 1430.0, "b4_cr": 0.15, "b4_rpa": 1303.0, "b5_cr": 0.35, "b5_rpa": 13141.0, "total_cr": 0.21, "total_rpa": 5072.0, "response_rate": 0.333}, {"id": 103, "cls": null, "store": "San Francisco, CA (890)", "name": "Alexander Victoria", "appts": 116.0, "b1_cr": 0.2, "b1_rpa": 10678.0, "b2_cr": 0.25, "b2_rpa": 7378.0, "b3_cr": 0.25, "b3_rpa": 12876.0, "b4_cr": 0.2, "b4_rpa": 6283.0, "b5_cr": 0.25, "b5_rpa": 9891.0, "total_cr": 0.23, "total_rpa": 9421.0, "response_rate": 0.538}, {"id": 104, "cls": null, "store": "San Francisco, CA (890)", "name": "Sergio Velez", "appts": 116.0, "b1_cr": 0.15, "b1_rpa": 4948.0, "b2_cr": 0.1, "b2_rpa": 1528.0, "b3_cr": 0.15, "b3_rpa": 4788.0, "b4_cr": 0.3, "b4_rpa": 18531.0, "b5_cr": 0.05, "b5_rpa": 1457.0, "total_cr": 0.15, "total_rpa": 6251.0, "response_rate": 0.667}, {"id": 105, "cls": null, "store": "San Francisco, CA (890)", "name": "Sarah Prentice", "appts": 102.0, "b1_cr": 0.15, "b1_rpa": 3524.0, "b2_cr": 0.1, "b2_rpa": 2561.0, "b3_cr": 0.25, "b3_rpa": 6987.0, "b4_cr": 0.4, "b4_rpa": 12609.0, "b5_cr": 0.15, "b5_rpa": 9828.0, "total_cr": 0.21, "total_rpa": 7102.0, "response_rate": null}, {"id": 106, "cls": null, "store": "San Francisco, CA (890)", "name": "Adel Awad", "appts": 101.0, "b1_cr": 0.25, "b1_rpa": 8215.0, "b2_cr": 0.2, "b2_rpa": 3587.0, "b3_cr": 0.3, "b3_rpa": 3480.0, "b4_cr": 0.15, "b4_rpa": 5167.0, "b5_cr": 0.2, "b5_rpa": 6485.0, "total_cr": 0.22, "total_rpa": 5387.0, "response_rate": 0.5}, {"id": 107, "cls": null, "store": "San Francisco, CA (890)", "name": "Aftan Marie Burnett", "appts": 74.0, "b1_cr": 0.2, "b1_rpa": 10866.0, "b2_cr": 0.25, "b2_rpa": 6650.0, "b3_cr": 0.2, "b3_rpa": 2912.0, "b4_cr": 0.214, "b4_rpa": 6303.0, "b5_cr": null, "b5_rpa": null, "total_cr": 0.216, "total_rpa": 6714.0, "response_rate": 0.333}, {"id": 108, "cls": null, "store": "San Francisco, CA (890)", "name": "Hunter Sikes", "appts": 70.0, "b1_cr": 0.2, "b1_rpa": 4289.0, "b2_cr": 0.2, "b2_rpa": 4706.0, "b3_cr": 0.2, "b3_rpa": 6162.0, "b4_cr": 0.1, "b4_rpa": 900.0, "b5_cr": null, "b5_rpa": null, "total_cr": 0.186, "total_rpa": 4459.0, "response_rate": 0.667}, {"id": 109, "cls": null, "store": "San Francisco, CA (890)", "name": "Dorian Altamirano", "appts": 69.0, "b1_cr": 0.1, "b1_rpa": 1606.0, "b2_cr": 0.1, "b2_rpa": 1422.0, "b3_cr": 0.15, "b3_rpa": 1985.0, "b4_cr": 0.0, "b4_rpa": 0.0, "b5_cr": null, "b5_rpa": null, "total_cr": 0.101, "total_rpa": 1453.0, "response_rate": 1.0}, {"id": 110, "cls": null, "store": "San Francisco, CA (890)", "name": "John Evans", "appts": 65.0, "b1_cr": 0.1, "b1_rpa": 1216.0, "b2_cr": 0.15, "b2_rpa": 2937.0, "b3_cr": 0.15, "b3_rpa": 3526.0, "b4_cr": 0.0, "b4_rpa": 0.0, "b5_cr": null, "b5_rpa": null, "total_cr": 0.123, "total_rpa": 2363.0, "response_rate": 0.5}, {"id": 112, "cls": null, "store": "San Francisco, CA (890)", "name": "Sina Faridnia", "appts": 44.0, "b1_cr": 0.2, "b1_rpa": 5159.0, "b2_cr": 0.25, "b2_rpa": 5023.0, "b3_cr": 0.0, "b3_rpa": 0.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.205, "total_rpa": 4628.0, "response_rate": 0.0}, {"id": 113, "cls": null, "store": "San Francisco, CA (890)", "name": "Marcus Santos", "appts": 42.0, "b1_cr": 0.2, "b1_rpa": 3565.0, "b2_cr": 0.3, "b2_rpa": 6486.0, "b3_cr": 0.0, "b3_rpa": 0.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.238, "total_rpa": 4786.0, "response_rate": null}, {"id": 114, "cls": null, "store": "San Francisco, CA (890)", "name": "Randy Niswonger", "appts": 36.0, "b1_cr": 0.1, "b1_rpa": 1605.0, "b2_cr": 0.125, "b2_rpa": 967.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.111, "total_rpa": 1322.0, "response_rate": 0.0}, {"id": 115, "cls": null, "store": "San Francisco, CA (890)", "name": "Tacoma Vaught", "appts": 30.0, "b1_cr": 0.1, "b1_rpa": 696.0, "b2_cr": 0.2, "b2_rpa": 9854.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.133, "total_rpa": 3749.0, "response_rate": null}, {"id": 116, "cls": null, "store": "South Bend, IN (868)", "name": "Chris Andrews", "appts": 141.0, "b1_cr": 0.4, "b1_rpa": 11779.0, "b2_cr": 0.25, "b2_rpa": 4785.0, "b3_cr": 0.3, "b3_rpa": 8805.0, "b4_cr": 0.3, "b4_rpa": 5156.0, "b5_cr": 0.35, "b5_rpa": 5945.0, "total_cr": 0.32, "total_rpa": 7294.0, "response_rate": 0.579}, {"id": 117, "cls": null, "store": "South Bend, IN (868)", "name": "Rasim Samardzic", "appts": 121.0, "b1_cr": 0.3, "b1_rpa": 8369.0, "b2_cr": 0.2, "b2_rpa": 4280.0, "b3_cr": 0.35, "b3_rpa": 9889.0, "b4_cr": 0.2, "b4_rpa": 1896.0, "b5_cr": 0.2, "b5_rpa": 5264.0, "total_cr": 0.25, "total_rpa": 5940.0, "response_rate": 0.538}, {"id": 118, "cls": null, "store": "South Bend, IN (868)", "name": "Jerry Eck", "appts": 86.0, "b1_cr": 0.3, "b1_rpa": 4837.0, "b2_cr": 0.15, "b2_rpa": 1235.0, "b3_cr": 0.15, "b3_rpa": 1963.0, "b4_cr": 0.25, "b4_rpa": 4503.0, "b5_cr": 0.333, "b5_rpa": 6162.0, "total_cr": 0.221, "total_rpa": 3346.0, "response_rate": 0.286}, {"id": 119, "cls": null, "store": "South Bend, IN (868)", "name": "Renata Vaughn", "appts": 84.0, "b1_cr": 0.05, "b1_rpa": 272.0, "b2_cr": 0.05, "b2_rpa": 1395.0, "b3_cr": 0.15, "b3_rpa": 1188.0, "b4_cr": 0.1, "b4_rpa": 1712.0, "b5_cr": 0.25, "b5_rpa": 7418.0, "total_cr": 0.095, "total_rpa": 1440.0, "response_rate": 0.0}, {"id": 120, "cls": null, "store": "South Bend, IN (868)", "name": "George Mars", "appts": 78.0, "b1_cr": 0.05, "b1_rpa": 985.0, "b2_cr": 0.05, "b2_rpa": 1039.0, "b3_cr": 0.2, "b3_rpa": 2356.0, "b4_cr": 0.111, "b4_rpa": 830.0, "b5_cr": null, "b5_rpa": null, "total_cr": 0.103, "total_rpa": 1314.0, "response_rate": 1.0}, {"id": 121, "cls": null, "store": "South Bend, IN (868)", "name": "Eric Good", "appts": 53.0, "b1_cr": 0.1, "b1_rpa": 3428.0, "b2_cr": 0.15, "b2_rpa": 1173.0, "b3_cr": 0.077, "b3_rpa": 1737.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.113, "total_rpa": 2162.0, "response_rate": 1.0}, {"id": 122, "cls": null, "store": "South Bend, IN (868)", "name": "X - Nate Parr", "appts": 35.0, "b1_cr": 0.2, "b1_rpa": 4287.0, "b2_cr": 0.067, "b2_rpa": 746.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.143, "total_rpa": 2770.0, "response_rate": 0.6}, {"id": 123, "cls": null, "store": "South Bend, IN (868)", "name": "Richard Horancia", "appts": 29.0, "b1_cr": 0.1, "b1_rpa": 2550.0, "b2_cr": 0.111, "b2_rpa": 3971.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.103, "total_rpa": 2991.0, "response_rate": null}, {"id": 124, "cls": null, "store": "South Bend, IN (868)", "name": "X - Erin Oshesky", "appts": 10.0, "b1_cr": 0.2, "b1_rpa": 3910.0, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.2, "total_rpa": 3910.0, "response_rate": 1.0}, {"id": 125, "cls": null, "store": "South Bend, IN (868)", "name": "X - Tony Weaver", "appts": 4.0, "b1_cr": 0.0, "b1_rpa": 0.0, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.0, "total_rpa": 0.0, "response_rate": null}, {"id": 126, "cls": null, "store": "Toronto, Ontario (914)", "name": "Chris Bovell", "appts": 163.0, "b1_cr": 0.05, "b1_rpa": 1129.0, "b2_cr": 0.2, "b2_rpa": 8028.0, "b3_cr": 0.05, "b3_rpa": 1897.0, "b4_cr": 0.2, "b4_rpa": 3644.0, "b5_cr": 0.15, "b5_rpa": 2683.0, "total_cr": 0.13, "total_rpa": 3476.0, "response_rate": 0.8}, {"id": 127, "cls": null, "store": "Toronto, Ontario (914)", "name": "Vicky Bhardwaj", "appts": 128.0, "b1_cr": 0.05, "b1_rpa": 2818.0, "b2_cr": 0.05, "b2_rpa": 2146.0, "b3_cr": 0.1, "b3_rpa": 1452.0, "b4_cr": 0.1, "b4_rpa": 1528.0, "b5_cr": 0.1, "b5_rpa": 2639.0, "total_cr": 0.08, "total_rpa": 2116.0, "response_rate": 0.75}, {"id": 128, "cls": null, "store": "Toronto, Ontario (914)", "name": "Frank Al Taweel", "appts": 115.0, "b1_cr": 0.05, "b1_rpa": 547.0, "b2_cr": 0.05, "b2_rpa": 683.0, "b3_cr": 0.1, "b3_rpa": 5528.0, "b4_cr": 0.2, "b4_rpa": 3607.0, "b5_cr": 0.15, "b5_rpa": 1914.0, "total_cr": 0.11, "total_rpa": 2456.0, "response_rate": 0.5}, {"id": 130, "cls": null, "store": "Toronto, Ontario (914)", "name": "Terry Harvey", "appts": 104.0, "b1_cr": 0.15, "b1_rpa": 3426.0, "b2_cr": 0.1, "b2_rpa": 1193.0, "b3_cr": 0.15, "b3_rpa": 5532.0, "b4_cr": 0.05, "b4_rpa": 1835.0, "b5_cr": 0.05, "b5_rpa": 616.0, "total_cr": 0.1, "total_rpa": 2520.0, "response_rate": 0.8}, {"id": 131, "cls": null, "store": "Toronto, Ontario (914)", "name": "James Ringler", "appts": 97.0, "b1_cr": 0.15, "b1_rpa": 4480.0, "b2_cr": 0.0, "b2_rpa": 0.0, "b3_cr": 0.1, "b3_rpa": 898.0, "b4_cr": 0.15, "b4_rpa": 4195.0, "b5_cr": 0.118, "b5_rpa": 2813.0, "total_cr": 0.103, "total_rpa": 2467.0, "response_rate": 0.75}, {"id": 132, "cls": null, "store": "Toronto, Ontario (914)", "name": "Elizabeth Kennedy", "appts": 85.0, "b1_cr": 0.05, "b1_rpa": 2071.0, "b2_cr": 0.05, "b2_rpa": 1427.0, "b3_cr": 0.1, "b3_rpa": 1425.0, "b4_cr": 0.1, "b4_rpa": 2354.0, "b5_cr": 0.0, "b5_rpa": 0.0, "total_cr": 0.071, "total_rpa": 1712.0, "response_rate": 1.0}, {"id": 133, "cls": null, "store": "Toronto, Ontario (914)", "name": "Ibrahim Kladnjak", "appts": 48.0, "b1_cr": 0.2, "b1_rpa": 5229.0, "b2_cr": 0.35, "b2_rpa": 10513.0, "b3_cr": 0.125, "b3_rpa": 3570.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.25, "total_rpa": 7154.0, "response_rate": null}, {"id": 134, "cls": null, "store": "Toronto, Ontario (914)", "name": "Rob MacLean", "appts": 42.0, "b1_cr": 0.05, "b1_rpa": 573.0, "b2_cr": 0.0, "b2_rpa": 0.0, "b3_cr": 0.5, "b3_rpa": 10624.0, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.048, "total_rpa": 779.0, "response_rate": null}, {"id": 135, "cls": null, "store": "Toronto, Ontario (914)", "name": "Lee Jackson", "appts": 37.0, "b1_cr": 0.1, "b1_rpa": 2636.0, "b2_cr": 0.059, "b2_rpa": 331.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.081, "total_rpa": 1577.0, "response_rate": null}, {"id": 136, "cls": null, "store": "Toronto, Ontario (914)", "name": "Sheefat Kazi", "appts": 8.0, "b1_cr": 0.0, "b1_rpa": 0.0, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.0, "total_rpa": 0.0, "response_rate": null}, {"id": 137, "cls": null, "store": "Westchester, NY (534)", "name": "Ryan Slavin", "appts": 127.0, "b1_cr": 0.35, "b1_rpa": 7187.0, "b2_cr": 0.2, "b2_rpa": 7088.0, "b3_cr": 0.2, "b3_rpa": 4589.0, "b4_cr": 0.35, "b4_rpa": 9219.0, "b5_cr": 0.25, "b5_rpa": 8316.0, "total_cr": 0.27, "total_rpa": 7280.0, "response_rate": 0.071}, {"id": 138, "cls": null, "store": "Westchester, NY (534)", "name": "Peter Doscas", "appts": 24.0, "b1_cr": 0.1, "b1_rpa": 1424.0, "b2_cr": 0.0, "b2_rpa": 0.0, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": 0.083, "total_rpa": 1187.0, "response_rate": null}, {"id": 139, "cls": null, "store": "Chattanooga, TN (792)", "name": "Bryan Garmon", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 140, "cls": null, "store": "Atlanta, GA (930)", "name": "Bob Sandt", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 141, "cls": null, "store": "Atlanta, GA (930)", "name": "Chris Johnson", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 142, "cls": null, "store": "Atlanta, GA (930)", "name": "David Shilling", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 143, "cls": null, "store": "Atlanta, GA (930)", "name": "Edward Burns", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 144, "cls": null, "store": "Atlanta, GA (930)", "name": "Georgie Price", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 145, "cls": null, "store": "Atlanta, GA (930)", "name": "Heather Shirley", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 146, "cls": null, "store": "Atlanta, GA (930)", "name": "Matthew Ciccone", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 147, "cls": null, "store": "Atlanta, GA (930)", "name": "Matthew Smith", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 148, "cls": null, "store": "Atlanta, GA (930)", "name": "Meniem Naiem", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 149, "cls": null, "store": "Atlanta, GA (930)", "name": "Michael Woodward", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 150, "cls": null, "store": "Atlanta, GA (930)", "name": "Patrick Scarborough", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 151, "cls": null, "store": "Atlanta, GA (930)", "name": "Warren McGrew", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 152, "cls": null, "store": "Indianapolis, IN (867)", "name": "Angelina Finnegan", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 153, "cls": null, "store": "Indianapolis, IN (867)", "name": "Bray McClain", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 154, "cls": null, "store": "Indianapolis, IN (867)", "name": "David Turpin", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 155, "cls": null, "store": "Indianapolis, IN (867)", "name": "Jacob Zoeller", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 156, "cls": null, "store": "Indianapolis, IN (867)", "name": "Jeff Koehrn", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 157, "cls": null, "store": "Indianapolis, IN (867)", "name": "Jon Crum", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 158, "cls": null, "store": "Indianapolis, IN (867)", "name": "Tanner Simpson", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 159, "cls": null, "store": "Indianapolis, IN (867)", "name": "Veronicka Muhammad", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 160, "cls": null, "store": "Knoxville, TN (790)", "name": "Amanda McCarver", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 161, "cls": null, "store": "Knoxville, TN (790)", "name": "Duston Regan", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 162, "cls": null, "store": "Knoxville, TN (790)", "name": "Neal Wyatt", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 163, "cls": null, "store": "Long Island, NY (800)", "name": "Andrew Selanikio", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 164, "cls": null, "store": "Long Island, NY (800)", "name": "Anthony DiSalvio", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 165, "cls": null, "store": "Long Island, NY (800)", "name": "Daniel Schultz", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 166, "cls": null, "store": "Long Island, NY (800)", "name": "George DeLancey", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 167, "cls": null, "store": "Long Island, NY (800)", "name": "Marina Mano", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 168, "cls": null, "store": "Long Island, NY (800)", "name": "William (Shaun) Riley", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 169, "cls": null, "store": "Nashville, TN (791)", "name": "Dustin Karrick", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 170, "cls": null, "store": "Nashville, TN (791)", "name": "Hayden Forrest", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 171, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Anthony Punla", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 172, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "DawnMarie Cabrera", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 173, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "John DiGangi", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 174, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "John Rentoulis", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 175, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Jonathan Manfre", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 176, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Joseph \"Joe\" Synosky III", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 177, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Leticia \"Letty\" Arellano", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 178, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "Mani Ananth", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 179, "cls": null, "store": "New Jersey-New York Metro (535)", "name": "William Kubofcik", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 180, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "Ben Yip", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 181, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "Dan Taylor", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 182, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "George Byrd", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 183, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "Jerrin James", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 184, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "Josh Stanley", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 185, "cls": null, "store": "Cincinnati-Dayton OH (576)", "name": "Justin Long", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 186, "cls": null, "store": "San Francisco, CA (890)", "name": "Brittany Castillo", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 187, "cls": null, "store": "San Francisco, CA (890)", "name": "Dan Foster", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 188, "cls": null, "store": "San Francisco, CA (890)", "name": "James Colucci", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 189, "cls": null, "store": "San Francisco, CA (890)", "name": "Mario Nunez", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 190, "cls": null, "store": "San Francisco, CA (890)", "name": "Mark Chow", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 191, "cls": null, "store": "San Francisco, CA (890)", "name": "Mica Popovich", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 192, "cls": null, "store": "San Francisco, CA (890)", "name": "Mike Benincasa", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 193, "cls": null, "store": "San Francisco, CA (890)", "name": "Mohammad \"Idris\" Osmani", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 194, "cls": null, "store": "San Francisco, CA (890)", "name": "Peter Orlowski", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 195, "cls": null, "store": "San Francisco, CA (890)", "name": "Tom Hu", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 196, "cls": null, "store": "South Bend, IN (868)", "name": "Chad Pfafman", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 197, "cls": null, "store": "South Bend, IN (868)", "name": "Danny Lopez", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 198, "cls": null, "store": "South Bend, IN (868)", "name": "Lorenzo Camacho", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 199, "cls": null, "store": "South Bend, IN (868)", "name": "Michael Cope", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 200, "cls": null, "store": "South Bend, IN (868)", "name": "Mike Roth", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 201, "cls": null, "store": "Toronto, Ontario (914)", "name": "Jon Picard", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 202, "cls": null, "store": "Toronto, Ontario (914)", "name": "Judy Castro", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 203, "cls": null, "store": "Toronto, Ontario (914)", "name": "Kam Malik", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 204, "cls": null, "store": "Toronto, Ontario (914)", "name": "Logan Shannon", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 205, "cls": null, "store": "Toronto, Ontario (914)", "name": "Ryan Cuthbert", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 206, "cls": null, "store": "Toronto, Ontario (914)", "name": "Sham Al-Ammari", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 207, "cls": null, "store": "Westchester, NY (534)", "name": "Adam Jozefiak", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 208, "cls": null, "store": "Westchester, NY (534)", "name": "Reginald Punla", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 209, "cls": null, "store": "Westchester, NY (534)", "name": "Stavro Latos", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}, {"id": 210, "cls": null, "store": "Westchester, NY (534)", "name": "Thomas Wellington", "appts": null, "b1_cr": null, "b1_rpa": null, "b2_cr": null, "b2_rpa": null, "b3_cr": null, "b3_rpa": null, "b4_cr": null, "b4_rpa": null, "b5_cr": null, "b5_rpa": null, "total_cr": null, "total_rpa": null, "response_rate": null}];
-// ── Supabase live deal fetching ───────────────────────────────────────────
-var SB_URL = "https://jowacrfeekwlguapzvkc.supabase.co";
-var SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impvd2FjcmZlZWt3bGd1YXB6dmtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNDAwODgsImV4cCI6MjA5NzcxNjA4OH0.SunLbSoQCUpyf6QrCzDsxlEKmQx0fDj9v5DU6X7nRqQ";
-var _dealCache = {};
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
+var NEW_HIRE_URL = 'https://script.google.com/macros/s/AKfycbxv9S5jPpScS4pjJxFFWJtSXOtl77bPBCdC5zr8_tFLQcqZYr4GFL9AWpi1RYeVNkDs/exec';
+var _allReps = [];
+var _filter = 'hire';
+var _sortCol = 'appts';
+var _sortDir = -1;
 
-function fetchDeals(name, callback) {
-  if (_dealCache[name] !== undefined) { callback(_dealCache[name]); return; }
-  _dealCache[name] = [];
-  var url = SB_URL + '/rest/v1/historical_deals?rep_name=eq.' + encodeURIComponent(name) + '&order=deal_date.asc&select=amount,deal_date';
-  fetch(url, {headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
-    .then(function(r){return r.json();})
-    .then(function(d){_dealCache[name]=Array.isArray(d)?d:[];callback(_dealCache[name]);})
-    .catch(function(){callback([]);});
+function fmt(n) {
+  if (!n || isNaN(n)) return '—';
+  var a = Math.abs(n);
+  if (a >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+  if (a >= 1000)    return '$' + Math.round(n/1000) + 'K';
+  return '$' + Math.round(n).toLocaleString();
+}
+function fmtPct(n) { if (!n || isNaN(n)) return '—'; return (n*100).toFixed(1)+'%'; }
+function fmtNum(n) { if (!n || isNaN(n)) return '—'; return Math.round(n).toLocaleString(); }
+
+function classBadge(cls) {
+  if (!cls) return '';
+  if (cls.includes('December')) return '<span class="class-badge class-dec">Dec 25</span>';
+  if (cls.includes('February')) return '<span class="class-badge class-feb">Feb 26</span>';
+  if (cls.includes('March'))    return '<span class="class-badge class-mar">Mar 26</span>';
+  if (cls.includes('May'))      return '<span class="class-badge class-may">May 26</span>';
+  return '<span class="class-badge" style="background:rgba(255,255,255,0.08);color:#94A3B8">'+cls+'</span>';
 }
 
-function buildTipRows(deals, label) {
-  var header = '<div class="deal-tip-hdr">'+label+'</div>';
-  if(!deals||!deals.length) return header+'<div class="deal-tip-empty">No deals found</div>';
-  var rows = deals.slice(0,10).map(function(d){
-    var amt = d.amount>=1000?'$'+(d.amount/1000).toFixed(1)+'K':'$'+d.amount;
-    var dt = d.deal_date?d.deal_date.slice(5):'—';
-    return '<div class="deal-tip-row"><span class="deal-tip-amt">'+amt+'</span><span class="deal-tip-date">'+dt+'</span></div>';
-  }).join('');
-  if(deals.length>10) rows+='<div class="deal-tip-empty">+'+(deals.length-10)+' more</div>';
-  return header+rows;
+function statusBadge(s) {
+  if (!s) return '';
+  if (s === 'Active') return '<span class="status-badge status-active">Active</span>';
+  if (s.includes('Phase 1')) return '<span class="status-badge status-term1">Term P1</span>';
+  if (s.includes('Phase 2')) return '<span class="status-badge status-term2">Term P2</span>';
+  if (s.includes('Before 100')) return '<span class="status-badge status-term100">Term &lt;100</span>';
+  return '<span class="status-badge" style="background:rgba(255,255,255,0.06);color:#94A3B8">'+s+'</span>';
 }
 
-function showTip(el, name, bMin, bMax, label, bStart, bCount) {
-  var tip = el.querySelector('.deal-tip');
-  if(!tip){ tip=document.createElement('div'); tip.className='deal-tip'; el.appendChild(tip); }
-  tip.style.display='block';
-  tip.innerHTML = '<div class="deal-tip-hdr">'+label+'</div><div class="deal-tip-empty">Loading...</div>';
-  fetchDeals(name, function(all){
-    var slice;
-    if(bMin===null) {
-      // Name cell or total: show last 10 deals
-      slice = all.slice().reverse().slice(0, 10);
-    } else {
-      // Bracket cell: use pre-calculated start index and count
-      slice = (bStart!=null && bCount!=null)
-        ? all.slice(bStart, bStart + bCount)
-        : all.slice(bMin-1, bMax);
-    }
-    tip.innerHTML = buildTipRows(slice, label);
-  });
+function miniBar(val, max) {
+  var pct = max > 0 ? Math.min((val/max)*100, 100) : 0;
+  return '<div class="mini-bar"><div class="mini-bar-fill" style="width:'+pct+'%"></div></div>';
 }
 
-function hideTip(el) {
-  var tip = el.querySelector('.deal-tip');
-  if(tip) tip.style.display='none';
+function setFilter(f) {
+  _filter = f;
+  _sortCol = f === 'develop' ? 'totalRPA' : 'appts';
+  _sortDir = -1;
+  document.querySelectorAll('.ftab').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelector('.ftab.'+f).classList.add('active');
+  var tblWrap = document.getElementById('tbl-wrap');
+  var trainPh = document.getElementById('train-placeholder');
+  if (f === 'train') {
+    tblWrap.style.display = 'none';
+    trainPh.style.display = 'block';
+  } else {
+    tblWrap.style.display = 'block';
+    trainPh.style.display = 'none';
+    renderTable();
+  }
 }
 
-function bracketCell(cr, rpa, name, bMin, bMax, label, bg, bStart, bCount){
-  var crStr=fCR(cr), rpaStr=fRPA(rpa);
-  if(cr==null&&rpa==null) return '<td style="background:'+bg+'">'+crStr+'</td><td style="background:'+bg+'">'+rpaStr+'</td>';
-  var safen=name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  var mkAttr='onmouseenter="showTip(this,\''+safen+'\','+bMin+','+bMax+',\''+label+' deals\','+bStart+','+bCount+')" onmouseleave="hideTip(this)"';
-  return '<td style="background:'+bg+';position:relative;cursor:default" '+mkAttr+'>'+crStr+'</td>'
-       + '<td style="background:'+bg+';position:relative;cursor:default" '+mkAttr+'>'+rpaStr+'</td>';
+function getHeaders() {
+  if (_filter === 'hire') return [
+    {key:'name',label:'REP NAME'},
+    {key:'class',label:'CLASS'},
+    {key:'market',label:'MARKET'},
+    {key:'status',label:'STATUS'},
+    {key:'appts',label:'APPTS'},
+    {key:'rideAlongs',label:'RIDE ALONGS'},
+    {key:'rilla',label:'RILLA REC'},
+    {key:'availSlots',label:'AVAIL SLOTS'},
+  ];
+  if (_filter === 'develop') return [
+    {key:'name',      label:'REP NAME'},
+    {key:'class',     label:'CLASS'},
+    {key:'market',    label:'MARKET'},
+    {key:'appts',     label:'APPTS'},
+    {key:'cr0_20',    label:'0-20 CR'},
+    {key:'rpa0_20',   label:'0-20 RPA'},
+    {key:'cr21_40',   label:'21-40 CR'},
+    {key:'rpa21_40',  label:'21-40 RPA'},
+    {key:'cr41_60',   label:'41-60 CR'},
+    {key:'rpa41_60',  label:'41-60 RPA'},
+    {key:'cr61_80',   label:'61-80 CR'},
+    {key:'rpa61_80',  label:'61-80 RPA'},
+    {key:'cr81_100',  label:'81-100 CR'},
+    {key:'rpa81_100', label:'81-100 RPA'},
+    {key:'totalCR',   label:'TOTAL CR'},
+    {key:'totalRPA',  label:'TOTAL RPA'},
+    {key:'hist_revenue', label:'YTD REV'},
+    {key:'status',    label:'STATUS'},
+  ];
+  return [];
 }
 
-function nameTipCell(nameDisp, name, ms, isX) {
-  var safen=name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  return '<td onmouseenter="showTip(this,\''+safen+'\',null,null,\'Last 10 Deals\')" onmouseleave="hideTip(this)" style="position:relative;cursor:default">'
-    +'<div style="display:flex;align-items:center;gap:5px">'+ms+'<span style="font-weight:600;color:'+(isX?'var(--text3)':'var(--text)')+'">'+nameDisp+'</span></div></td>';
-}
-
-function totalCell(cr, rpa, name) {
-  var safen=name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  var bg1='rgba(0,212,255,0.04)', bg2='rgba(0,212,255,0.04)';
-  var mkAttr='onmouseenter="showTip(this,\''+safen+'\',null,null,\'Last 10 Deals\')" onmouseleave="hideTip(this)"';
-  return '<td style="background:'+bg1+';font-weight:600;position:relative;cursor:default" '+mkAttr+'>'+fCR(cr)+'</td>'
-       + '<td style="background:'+bg2+';font-weight:600;position:relative;cursor:default" '+mkAttr+'>'+fRPA(rpa)+'</td>';
-}
-// ─────────────────────────────────────────────────────────────────────────────
-
-var mktColors={'Atlanta, GA (930)':'#F59E0B','Chattanooga, TN (792)':'#10B981','Cincinnati-Dayton OH (576)':'#3B82F6','Indianapolis, IN (867)':'#8B5CF6','Knoxville, TN (790)':'#EC4899','Long Island, NY (800)':'#00D4FF','Nashville, TN (791)':'#F97316','New Jersey-New York Metro (535)':'#00FF88','San Francisco, CA (890)':'#EF4444','South Bend, IN (868)':'#A855F7','Toronto, Ontario (914)':'#06B6D4','Westchester, NY (534)':'#84CC16'};
-var clsPalette=['#A855F7','#3B82F6','#10B981','#F59E0B','#EF4444','#06B6D4','#F97316','#84CC16','#EC4899','#00FF88','#FFD700','#00D4FF'];
-var clsColors={};
-function clsColor(c){if(!c)return'var(--text3)';if(!clsColors[c]){clsColors[c]=clsPalette[Object.keys(clsColors).length%clsPalette.length];}return clsColors[c];}
-function shortMkt(s){return s.replace('New Jersey-New York Metro (535)','NJ/NY').replace('Atlanta, GA (930)','Atlanta').replace('Chattanooga, TN (792)','Chatt.').replace('Cincinnati-Dayton OH (576)','Cincy').replace('Indianapolis, IN (867)','Indy').replace('Knoxville, TN (790)','Knox.').replace('Long Island, NY (800)','L.Island').replace('Nashville, TN (791)','Nashville').replace('San Francisco, CA (890)','SF').replace('South Bend, IN (868)','S.Bend').replace('Toronto, Ontario (914)','Toronto').replace('Westchester, NY (534)','Westch.');}
-function fCR(v){if(v==null)return'<span style="color:var(--text3)">—</span>';var p=Math.round(v*100);var c=p>=25?'phi':p>=15?'pmi':'plo';return'<span class="pct '+c+'">'+p+'%</span>';}
-function fRPA(v){if(v==null||v===0)return'<span style="color:var(--text3)">—</span>';return v>=1000?'$'+(v/1000).toFixed(1)+'K':'$'+Math.round(v);}
-function fRR(v){if(v==null)return'—';if(typeof v==='string')return v;return Math.round(v*100)+'%';}
-function progColor(a){if(a>=100)return'var(--gold)';if(a>=75)return'var(--phi)';if(a>=50)return'var(--accent)';if(a>=25)return'var(--purple)';return'var(--text3)';}
-
-function toggleTheme(){
-  var isLight=document.body.classList.toggle('light');
-  var tb=document.getElementById('theme-btn');if(tb)tb.textContent=isLight?'🎮 DARK MODE':'☀️ LIGHT MODE';
-  try{localStorage.setItem('rk_theme',isLight?'light':'dark');}catch(e){}
-}
-(function(){
-  try{
-    if(localStorage.getItem('rk_theme')==='light'){
-      document.body.classList.add('light');
-      var tb2=document.getElementById('theme-btn');if(tb2)tb2.textContent='🎮 DARK MODE';
-    }
-  }catch(e){}
-})();
-
-function buildClassFilter(){
-  var classes=[...new Set(DATA.map(function(r){return r.cls;}).filter(Boolean))].sort();
-  var sel=document.getElementById('f-class');
-  var cur=sel.value;
-  sel.innerHTML='<option value="">All Classes</option>';
-  classes.forEach(function(c){sel.innerHTML+='<option'+(c===cur?' selected':'')+'>'+c+'</option>';});
-  if(classes.length===0)sel.innerHTML+='<option disabled style="color:var(--text3)">— add Class column to sheet —</option>';
-}
-
-function setSort(s){document.getElementById('f-sort').value=s;render();}
-
-function getFiltered(){
-  var mkt=document.getElementById('f-market').value;
-  var cls=document.getElementById('f-class').value;
-  var stage=document.getElementById('f-stage').value;
-  var sort=document.getElementById('f-sort').value;
-  var srch=document.getElementById('srch').value.toLowerCase();
-  var showInactive=document.getElementById('f-inactive').checked;
-  return DATA.filter(function(r){
-    var isX=r.name.startsWith('X - ');
-    if(isX && !showInactive) return false;        // hide inactive unless toggled
-    if(mkt&&r.store!==mkt)return false;
-    if(srch&&!r.name.toLowerCase().includes(srch))return false;
-    if(cls&&r.cls!==cls)return false;
-    if(stage){
-      // Show reps who HAVE HAD appointments in this bracket (data exists)
-      if(stage==='0-20'   && r.b1_cr==null && r.b1_rpa==null) return false;
-      if(stage==='21-40'  && r.b2_cr==null && r.b2_rpa==null) return false;
-      if(stage==='41-60'  && r.b3_cr==null && r.b3_rpa==null) return false;
-      if(stage==='61-80'  && r.b4_cr==null && r.b4_rpa==null) return false;
-      if(stage==='81-100' && r.b5_cr==null && r.b5_rpa==null) return false;
-      if(stage==='100+'   && (r.appts||0)<100) return false;
-    }
+function applyFilters() {
+  if (_filter === 'train') return;
+  var cls   = document.getElementById('class-filter').value;
+  var mkt   = document.getElementById('market-filter').value;
+  var stat  = document.getElementById('status-filter').value;
+  var srch  = document.getElementById('search-box').value.toLowerCase();
+  
+  var filtered = _allReps.filter(function(r) {
+    if (cls && r.class !== cls) return false;
+    if (mkt && r.market !== mkt) return false;
+    if (stat === 'Active' && r.status !== 'Active') return false;
+    if (stat === 'Terminated' && r.status === 'Active') return false;
+    if (srch && r.name.toLowerCase().indexOf(srch) < 0) return false;
     return true;
-  }).sort(function(a,b){
-    // Always push 100+ to bottom
-    var a100 = (a.appts||0) >= 100, b100 = (b.appts||0) >= 100;
-    if(a100 && !b100) return 1;
-    if(!a100 && b100) return -1;
-    if(sort==='appts-d') return (b.appts||0)-(a.appts||0);
-    if(sort==='appts-a') return (a.appts||0)-(b.appts||0);
-    if(sort==='cr-d')    return (b.total_cr||0)-(a.total_cr||0);
-    if(sort==='rpa-d')   return (b.total_rpa||0)-(a.total_rpa||0);
-    if(sort==='rr-d')    return (b.response_rate||0)-(a.response_rate||0);
-    if(sort==='b1cr-d')  return (b.b1_cr||0)-(a.b1_cr||0);
-    if(sort==='b1rpa-d') return (b.b1_rpa||0)-(a.b1_rpa||0);
-    if(sort==='b2cr-d')  return (b.b2_cr||0)-(a.b2_cr||0);
-    if(sort==='b2rpa-d') return (b.b2_rpa||0)-(a.b2_rpa||0);
-    if(sort==='b3cr-d')  return (b.b3_cr||0)-(a.b3_cr||0);
-    if(sort==='b3rpa-d') return (b.b3_rpa||0)-(a.b3_rpa||0);
-    if(sort==='b4cr-d')  return (b.b4_cr||0)-(a.b4_cr||0);
-    if(sort==='b4rpa-d') return (b.b4_rpa||0)-(a.b4_rpa||0);
-    if(sort==='b5cr-d')  return (b.b5_cr||0)-(a.b5_cr||0);
-    if(sort==='b5rpa-d') return (b.b5_rpa||0)-(a.b5_rpa||0);
-    if(sort==='name-a')  return a.name.localeCompare(b.name);
-    if(sort==='class')   return (a.cls||'zzz').localeCompare(b.cls||'zzz')||((b.appts||0)-(a.appts||0));
-    if(sort==='market')  return a.store.localeCompare(b.store)||((b.appts||0)-(a.appts||0));
-    return 0;
   });
-}
-
-// Track which column is "active" for avg highlighting
-var activeAvgCol = null;
-
-function setAvgCol(col) {
-  activeAvgCol = col;
-  render();
-}
-
-function render(){
-  var rows=getFiltered();
-  var sort=document.getElementById('f-sort').value;
-  var mkt=document.getElementById('f-market').value;
-  var cls=document.getElementById('f-class').value;
-  var srch=document.getElementById('srch').value.trim();
-  var stageFilter=document.getElementById('f-stage').value;
-  document.getElementById('rcount').textContent=rows.length+' REPS';
-  var lastMkt=null, html='';
-
-  // ── ACTIVE (non-inactive) rows for averages ──
-  var activeRows=rows.filter(function(r){return !r.name.startsWith('X - ');});
-
-  // ── TOP PERFORMER: identify for inline highlight ──
-  var topRep = activeRows.length > 0
-    ? activeRows.slice().sort(function(a,b){return (b.total_cr||0)-(a.total_cr||0);})[0].name
-    : null;
-
-  rows.forEach(function(r){
-    var a=r.appts||0, pct=Math.min(a/100,1), col=progColor(a);
-    var mc=mktColors[r.store]||'#475569';
-    var isX=r.name.startsWith('X - ');
-    var nameDisp=isX?r.name.replace(/^X - /,'')+'<span style="font-size:9px;color:var(--text3);margin-left:4px;font-family:Orbitron,monospace;letter-spacing:0.5px">INACTIVE</span>':r.name;
-
-    if(sort==='market'&&r.store!==lastMkt){
-      lastMkt=r.store;
-      html+='<tr class="mkt-row"><td colspan="18">'+r.store+'</td></tr>';
-    }
-
-    var ms=a>=100?'<span class="milestone">🏆 100+</span>':'';
-
-    // Class badge
-    var cc=clsColor(r.cls);
-    var cb=r.cls
-      ?'<span class="cls-badge" style="background:'+cc+'18;border-color:'+cc+'55;color:'+cc+'">'+r.cls+'</span>'
-      :'<span style="color:var(--text3);font-size:11px">—</span>';
-
-    // Market tint (very subtle background)
-    var mktTint = isX ? 'transparent' : (mc+'08');
-
-    var isTop = !isX && r.name === topRep;
-    var rowBg = isTop ? 'linear-gradient(90deg,rgba(255,215,0,0.06) 0%,'+mktTint+' 60%)' : mktTint;
-    var rowBorder = isX ? '3px solid rgba(100,116,139,0.3)' : isTop ? '3px solid rgba(255,215,0,0.5)' : '3px solid '+mc+'40';
-    html+='<tr style="opacity:'+(isX?0.45:1)+';border-left:'+rowBorder+';background:'+rowBg+'">';
-    html+='<td><span style="display:inline-flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:'+mc+';display:inline-block;flex-shrink:0"></span><span style="font-size:10px;color:var(--text3)">'+shortMkt(r.store)+'</span></span></td>';
-    // Add crown badge to top performer name
-    var topBadge = isTop ? '<span style="font-size:9px;font-family:Orbitron,monospace;font-weight:700;color:var(--gold);background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.35);border-radius:20px;padding:1px 7px;margin-left:5px">👑 TOP CR</span>' : '';
-    var nameDispTop = isTop ? nameDisp + topBadge : nameDisp;
-    html+=nameTipCell(nameDispTop, r.name, ms, isX);
-    html+='<td>'+cb+'</td>';
-    html+='<td><div style="display:flex;flex-direction:column;gap:2px"><div style="display:flex;align-items:center;gap:4px"><span style="font-family:Orbitron,monospace;font-size:13px;font-weight:700;color:'+col+'">'+a+'</span><span style="color:var(--text3);font-size:10px">/100</span></div><div class="prog-wrap"><div class="prog-fill" style="width:'+Math.round(pct*100)+'%;background:'+col+'"></div></div></div></td>';
-    // Calculate deal counts per bracket (cr * 20 appointments each)
-    var d1=r.b1_cr!=null?Math.round(r.b1_cr*20):0;
-    var d2=r.b2_cr!=null?Math.round(r.b2_cr*20):0;
-    var d3=r.b3_cr!=null?Math.round(r.b3_cr*20):0;
-    var d4=r.b4_cr!=null?Math.round(r.b4_cr*20):0;
-    var d5=r.b5_cr!=null?Math.round(r.b5_cr*20):0;
-    html+=bracketCell(r.b1_cr,r.b1_rpa,r.name,1,20,'0–20','rgba(100,116,139,0.04)',0,d1);
-    html+=bracketCell(r.b2_cr,r.b2_rpa,r.name,21,40,'21–40','rgba(59,130,246,0.04)',d1,d2);
-    html+=bracketCell(r.b3_cr,r.b3_rpa,r.name,41,60,'41–60','rgba(139,92,246,0.04)',d1+d2,d3);
-    html+=bracketCell(r.b4_cr,r.b4_rpa,r.name,61,80,'61–80','rgba(236,72,153,0.04)',d1+d2+d3,d4);
-    html+=bracketCell(r.b5_cr,r.b5_rpa,r.name,81,100,'81–100','rgba(245,158,11,0.04)',d1+d2+d3+d4,d5);
-    html+=totalCell(r.total_cr,r.total_rpa,r.name);
-    html+='<td>'+fRR(r.response_rate)+'</td>';
-    html+='</tr>';
+  
+  // Sort
+  filtered.sort(function(a,b) {
+    var av = a[_sortCol]||0, bv = b[_sortCol]||0;
+    if (typeof av === 'string') return _sortDir * av.localeCompare(bv);
+    return _sortDir * (bv - av);
   });
-
-  document.getElementById('tbody').innerHTML=html;
-
-  // Show inactive banner if toggle is on
-  var banner = document.getElementById('inactive-banner');
-  var showInactiveNow = document.getElementById('f-inactive').checked;
-  if(!banner){
-    banner = document.createElement('div');
-    banner.id = 'inactive-banner';
-    banner.style.cssText = 'padding:6px 20px;font-size:11px;color:var(--text3);background:rgba(100,116,139,0.07);border-bottom:1px solid var(--border2);display:none;';
-    banner.textContent = '⚠️ Inactive reps (X -) are shown at reduced opacity and excluded from averages.';
-    document.getElementById('wrap').parentNode.insertBefore(banner, document.getElementById('wrap'));
-  }
-  banner.style.display = showInactiveNow ? 'block' : 'none';
-
-  // ── COLUMN AVERAGES ROW ──
-  function colAvg(field) {
-    var vals = activeRows.map(function(r){return r[field];}).filter(function(v){return v!=null && v>0;});
-    return vals.length ? vals.reduce(function(s,v){return s+v;},0)/vals.length : null;
-  }
-  var avgRow = document.getElementById('avg-row');
-  if(activeRows.length > 0) {
-    avgRow.style.display = '';
-    document.getElementById('av-b1cr').innerHTML  = fCR(colAvg('b1_cr'));
-    document.getElementById('av-b1rpa').innerHTML = fRPA(colAvg('b1_rpa'));
-    document.getElementById('av-b2cr').innerHTML  = fCR(colAvg('b2_cr'));
-    document.getElementById('av-b2rpa').innerHTML = fRPA(colAvg('b2_rpa'));
-    document.getElementById('av-b3cr').innerHTML  = fCR(colAvg('b3_cr'));
-    document.getElementById('av-b3rpa').innerHTML = fRPA(colAvg('b3_rpa'));
-    document.getElementById('av-b4cr').innerHTML  = fCR(colAvg('b4_cr'));
-    document.getElementById('av-b4rpa').innerHTML = fRPA(colAvg('b4_rpa'));
-    document.getElementById('av-b5cr').innerHTML  = fCR(colAvg('b5_cr'));
-    document.getElementById('av-b5rpa').innerHTML = fRPA(colAvg('b5_rpa'));
-    document.getElementById('av-tcr').innerHTML   = fCR(colAvg('total_cr'));
-    document.getElementById('av-trpa').innerHTML  = fRPA(colAvg('total_rpa'));
-    var rrVals = activeRows.map(function(r){return r.response_rate;}).filter(function(v){return v!=null;});
-    var avgRR = rrVals.length ? rrVals.reduce(function(s,v){return s+v;},0)/rrVals.length : null;
-    document.getElementById('av-rr').textContent = avgRR!=null ? Math.round(avgRR*100)+'%' : '—';
-    // Highlight active sort column in avg row
-    var avgCells = document.querySelectorAll('#avg-row td.avg-val, #avg-row td.avg-dim');
-    avgCells.forEach(function(td){td.style.background='';td.style.color='';});
-    var sortMap={'b1cr-d':'av-b1cr','b1rpa-d':'av-b1rpa','b2cr-d':'av-b2cr','b2rpa-d':'av-b2rpa','b3cr-d':'av-b3cr','b3rpa-d':'av-b3rpa','b4cr-d':'av-b4cr','b4rpa-d':'av-b4rpa','b5cr-d':'av-b5cr','b5rpa-d':'av-b5rpa','cr-d':'av-tcr','rpa-d':'av-trpa','rr-d':'av-rr'};
-    var activeId = sortMap[document.getElementById('f-sort').value];
-    if(activeId) {
-      var el = document.getElementById(activeId);
-      if(el){ el.style.background='rgba(0,212,255,0.18)'; el.style.color='var(--accent)'; }
-    }
-  } else {
-    avgRow.style.display = 'none';
-  }
-
-  // Summary stats — averages always exclude inactive reps
-  var activeRows=rows.filter(function(r){return !r.name.startsWith('X - ');});
-  var done=activeRows.filter(function(r){return(r.appts||0)>=100;}).length;
-  var wCR=activeRows.filter(function(r){return r.total_cr>0;});
-  var aCR=wCR.length?wCR.reduce(function(s,r){return s+r.total_cr;},0)/wCR.length:0;
-  var wRPA=activeRows.filter(function(r){return r.total_rpa>0;});
-  var aRPA=wRPA.length?wRPA.reduce(function(s,r){return s+r.total_rpa;},0)/wRPA.length:0;
-  var inactiveCount = rows.length - activeRows.length;
-  document.getElementById('st-reps').textContent = activeRows.length;
-  var repsEl = document.getElementById('st-reps');
-  if(inactiveCount > 0) {
-    repsEl.innerHTML = activeRows.length + '<span style="font-size:9px;color:var(--text3);display:block;margin-top:1px;font-family:Inter,sans-serif;font-weight:500">+'+inactiveCount+' inactive</span>';
-  } else {
-    repsEl.textContent = activeRows.length;
-  }
-  document.getElementById('st-done').textContent=done;
-  document.getElementById('st-cr').textContent=aCR>0?Math.round(aCR*100)+'%':'—';
-  document.getElementById('st-rpa').textContent=aRPA>0?'$'+(aRPA/1000).toFixed(1)+'K':'—';
-
-  var stages=[0,0,0,0,0,0];
-  activeRows.forEach(function(r){var a=r.appts||0;if(a>=100)stages[5]++;else if(a>=80)stages[4]++;else if(a>=60)stages[3]++;else if(a>=40)stages[2]++;else if(a>=20)stages[1]++;else stages[0]++;});
-  var slbls=['0–20','21–40','41–60','61–80','81–99','100+'];
-  var scols=['var(--text3)','var(--purple)','var(--accent)','var(--phi)','var(--gold)','var(--gold)'];
-  var sh='';
-  stages.forEach(function(n,i){sh+='<div class="scard"><div class="scard-v" style="color:'+scols[i]+'">'+n+'</div><div class="scard-l">APPTS '+slbls[i]+'</div></div>';});
-  document.getElementById('summary').innerHTML=sh;
+  
+  renderRows(filtered);
 }
 
-buildClassFilter();
-render();
-
-// ── STICKY HEADER OFFSET CALCULATION ──────────────────────────────────────
-function updateStickyOffsets() {
-  // Within #tbl-scroll, sticky top:0 = top of scroll container
-  // Row1 is at top:0
-  var row1Ths = document.querySelectorAll('thead tr:first-child th');
-  row1Ths.forEach(function(th){ th.style.top = '0px'; });
-
-  var row1El = document.querySelector('thead tr:first-child');
-  var row1H = row1El ? Math.ceil(row1El.getBoundingClientRect().height) : 35;
-
-  var row2Ths = document.querySelectorAll('thead tr:nth-child(2) th');
-  row2Ths.forEach(function(th){ th.style.top = row1H + 'px'; });
-
-  var row2El = document.querySelector('thead tr:nth-child(2)');
-  var row2H = row2El ? Math.ceil(row2El.getBoundingClientRect().height) : 28;
-
-  var avgTds = document.querySelectorAll('#avg-row-wrap tr td');
-  avgTds.forEach(function(td){ td.style.top = (row1H + row2H) + 'px'; });
-
-  // Adjust the scroll container height based on how much space is above it
-  var tblScroll = document.getElementById('tbl-scroll');
-  var wrap = document.getElementById('wrap');
-  if (tblScroll && wrap) {
-    var wrapTop = wrap.getBoundingClientRect().top;
-    tblScroll.style.height = (window.innerHeight - wrapTop - 20) + 'px';
-  }
+function renderTable() {
+  var headers = getHeaders();
+  // Build header
+  var hHtml = '<tr>';
+  headers.forEach(function(h) {
+    var sorted = (h.key === _sortCol);
+    hHtml += '<th data-col="' + h.key + '"' + (sorted ? ' class="sorted"' : '') + '>' + h.label + (sorted ? (_sortDir > 0 ? ' ▲' : ' ▼') : '') + '</th>';
+  });
+  hHtml += '</tr>';
+  document.getElementById('tbl-head').innerHTML = hHtml;
+  Array.from(document.getElementById('tbl-head').querySelectorAll('th')).forEach(function(th) {
+    th.style.cursor = 'pointer';
+    th.addEventListener('click', function() { sortBy(th.dataset.col); });
+  });
+  applyFilters();
 }
 
-window.addEventListener('load', function(){ setTimeout(updateStickyOffsets, 50); });
-window.addEventListener('resize', updateStickyOffsets);
-var _r2 = render;
-render = function() { _r2.apply(this, arguments); setTimeout(updateStickyOffsets, 0); };
+function renderRows(reps) {
+  var html = '';
+  if (reps.length === 0) {
+    html = '<tr><td colspan="12" style="text-align:center;padding:40px;color:#475569;font-family:Orbitron,monospace;font-size:11px;letter-spacing:2px">NO REPS MATCH FILTERS</td></tr>';
+  } else if (_filter === 'hire') {
+    var maxAppts = Math.max.apply(null, reps.map(function(r){return r.appts||0;}));
+    html = reps.map(function(r) {
+      return '<tr>'+
+        '<td class="td-name">'+r.name+'</td>'+
+        '<td>'+classBadge(r.class)+'</td>'+
+        '<td class="td-muted">'+r.market+'</td>'+
+        '<td>'+statusBadge(r.status)+'</td>'+
+        '<td><div class="td-num" style="color:#4A9B4B">'+(r.appts?Math.round(r.appts):'—')+'</div>'+miniBar(r.appts,100)+'</td>'+
+        '<td class="td-num">'+(r.rideAlongs?Math.round(r.rideAlongs):'—')+'</td>'+
+        '<td class="td-num">'+(r.rilla?Math.round(r.rilla):'—')+'</td>'+
+        '<td class="td-num" style="color:'+(r.availSlots>0?'#FFD700':'#475569')+'">'+(r.availSlots?Math.round(r.availSlots):'—')+'</td>'+
+        '</tr>';
+    }).join('');
+  } else if (_filter === 'develop') {
+    var crColor = function(cr, target) {
+      if (!cr || cr === 0) return '#475569';
+      return cr >= target ? '#4A9B4B' : cr >= target * 0.85 ? '#FFD700' : '#FF6B6B';
+    };
+    var maxRev = Math.max.apply(null, reps.map(function(r){return r.hist_revenue||0;}));
+    html = reps.map(function(r) {
+      // Only show bracket columns for brackets the rep has reached
+      var appts = r.appts || r.swimAppts || 0;
+      function crCell(cr, rpa, target, minAppts) {
+        if (appts < minAppts) return '<td class="td-muted" style="opacity:0.3">—</td><td class="td-muted" style="opacity:0.3">—</td>';
+        return '<td class="td-num" style="color:'+crColor(cr,target)+'">'+(cr?fmtPct(cr):'—')+'</td>'+
+               '<td class="td-num" style="color:#94A3B8">'+(rpa?fmt(rpa):'—')+'</td>';
+      }
+      return '<tr>'+
+        '<td class="td-name">'+r.name+'</td>'+
+        '<td>'+classBadge(r.class)+'</td>'+
+        '<td class="td-muted" style="font-size:11px">'+r.market+'</td>'+
+        '<td><div class="td-num" style="color:#4A9B4B">'+(appts?Math.round(appts):'—')+'</div>'+miniBar(appts,100)+'</td>'+
+        crCell(r.cr0_20,   r.rpa0_20,   0.20,  1)  +
+        crCell(r.cr21_40,  r.rpa21_40,  0.20, 21)  +
+        crCell(r.cr41_60,  r.rpa41_60,  0.25, 41)  +
+        crCell(r.cr61_80,  r.rpa61_80,  0.25, 61)  +
+        crCell(r.cr81_100, r.rpa81_100, 0.25, 81)  +
+        '<td class="td-num" style="color:'+(r.totalCR>=0.23?'#4A9B4B':r.totalCR>=0.20?'#FFD700':'#FF6B6B')+';font-weight:900">'+(r.totalCR?fmtPct(r.totalCR):'—')+'</td>'+
+        '<td class="td-num" style="color:#00D4FF;font-weight:900">'+(r.totalRPA?fmt(r.totalRPA):'—')+'</td>'+
+        '<td><div class="td-num" style="color:#4A9B4B">'+fmt(r.hist_revenue)+'</div>'+miniBar(r.hist_revenue,maxRev)+'</td>'+
+        '<td>'+statusBadge(r.status)+'</td>'+
+        '</tr>';
+    }).join('');
+  }
+  document.getElementById('tbl-body').innerHTML = html;
+}
 
+function sortBy(col) {
+  if (_sortCol === col) { _sortDir *= -1; }
+  else { _sortCol = col; _sortDir = -1; }
+  renderTable();
+}
 
-</script>
+function updateSummary(reps) {
+  var active = reps.filter(function(r){ return r.status==='Active'; }).length;
+  var totalRev = reps.reduce(function(s,r){ return s+(r.hist_revenue||r.revenue||0); }, 0);
+  var withAppts = reps.filter(function(r){ return r.appts > 0; });
+  var avgRpa = withAppts.length ? withAppts.reduce(function(s,r){return s+r.rpa;},0)/withAppts.length : 0;
+  var avgCr  = withAppts.length ? withAppts.reduce(function(s,r){return s+r.closeRate;},0)/withAppts.length : 0;
+  document.getElementById('s-total').textContent = reps.length;
+  document.getElementById('s-active').textContent = active;
+  document.getElementById('s-revenue').textContent = fmt(totalRev);
+  document.getElementById('s-avg-rpa').textContent = fmt(avgRpa);
+  document.getElementById('s-avg-cr').textContent = fmtPct(avgCr);
+}
+
+function populateMarketFilter(reps) {
+  var markets = [...new Set(reps.map(function(r){return r.market;}).filter(Boolean))].sort();
+  var sel = document.getElementById('market-filter');
+  sel.innerHTML = '<option value="">All Markets</option>' +
+    markets.map(function(m){ return '<option value="'+m+'">'+m+'</option>'; }).join('');
+}
+
+function exportCSV() {
+  var headers = getHeaders().map(function(h){return h.label;});
+  var rows = _allReps.map(function(r) {
+    if (_filter==='hire') return [r.name,r.class,r.market,r.status,r.appts,r.rideAlongs,r.rilla,r.availSlots];
+    return [r.name,r.class,r.market,r.appts,r.hist_revenue,r.revenue,r.closeRate,r.rpa,r.hist_deals,r.status];
+  });
+  var csv = [headers].concat(rows).map(function(r){return r.join(',');}).join('\n');
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download = 'rookie_100_export.csv';
+  a.click();
+}
+
+function stpShowGuide() {
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(2,11,24,0.95);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = '<div style="background:#0A1628;border:1px solid rgba(74,155,75,0.3);border-radius:20px;padding:32px;max-width:560px;width:90%;position:relative">'+
+    '<button onclick="document.getElementById(\'stp-guide-r100\').remove()" style="position:absolute;top:16px;right:16px;background:transparent;border:none;color:#475569;font-size:22px;cursor:pointer">&#x2715;</button>'+
+    '<div style="font-family:Orbitron,monospace;font-size:15px;font-weight:900;color:#4A9B4B;letter-spacing:3px;margin-bottom:20px">⭐ ROOKIE 100 GUIDE</div>'+
+    '<div style="font-family:sans-serif;font-size:13px;color:#94A3B8;line-height:2;display:grid;gap:8px">'+
+    '<div><b style="color:#4A9B4B">🟢 HIRE</b> — Onboarding data: class, market, appointment count, ride alongs, Rilla recordings</div>'+
+    '<div><b style="color:#3B82F6">🔵 TRAIN</b> — Assessment scores (coming soon)</div>'+
+    '<div><b style="color:#A855F7">🟣 DEVELOP</b> — Sales performance: revenue from Historical, close %, RPA</div>'+
+    '<div><b style="color:#FFD700">APPTS bar</b> — Progress toward 100 appointments milestone</div>'+
+    '<div><b style="color:#4A9B4B">YTD REVENUE</b> — Pulled from Historical database (all archived months)</div>'+
+    '<div><b style="color:#FF6B6B">ROSTER REV</b> — Revenue reported in the New Hire Roster (may differ)</div>'+
+    '</div></div>';
+  modal.id='stp-guide-r100';modal.addEventListener('click', function(e){ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
+function toggleDarkMode() {
+  document.body.classList.toggle('light');
+  try { localStorage.setItem('r100_theme', document.body.classList.contains('light')?'light':'dark'); } catch(e){}
+}
+
+function stpFs() {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen();
+}
+
+function stpToggleSound() {}
+function stpRefresh() { loadData(); }
+
+var CONTEST_PW = 'Orion';
+var _contestDest = '';
+function stpGoToContest(url) {
+  _contestDest = url;
+  var pw = prompt('Enter password to access contests:');
+  if (pw && pw.trim().toLowerCase() === CONTEST_PW.toLowerCase()) {
+    window.location.href = _contestDest;
+  }
+}
 
 function stpNavInit() {
   document.querySelectorAll('.stp-dropdown').forEach(function(dd) {
-    var btn = dd.querySelector('.stp-drop-btn');
-    var menu = dd.querySelector('.stp-drop-menu');
-    if (!btn || !menu) return;
-    dd.addEventListener('mouseenter', function() {
-      document.querySelectorAll('.stp-drop-menu.open').forEach(function(m) {
-        if (m !== menu) m.classList.remove('open');
-      });
-      menu.classList.add('open');
-    });
-    dd.addEventListener('mouseleave', function() {
-      setTimeout(function() {
-        if (!dd.matches(':hover')) menu.classList.remove('open');
-      }, 120);
-    });
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      menu.classList.toggle('open');
-    });
-  });
-  // Close on click outside — but not on menu items themselves
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.stp-dropdown')) {
-      document.querySelectorAll('.stp-drop-menu.open').forEach(function(m) {
-        m.classList.remove('open');
-      });
-    }
-  });
-  // Let menu item onclick fire before closing
-  document.querySelectorAll('.stp-drop-item').forEach(function(item) {
-    item.addEventListener('click', function(e) {
-      e.stopPropagation();
-      setTimeout(function() {
-        document.querySelectorAll('.stp-drop-menu.open').forEach(function(m) {
-          m.classList.remove('open');
-        });
-      }, 50);
-    });
-  });
-}
-document.addEventListener('DOMContentLoaded', stpNavInit);
-
-// ── TALK TO THE DATA ────────────────────────────────────────────────────────
-var _chatHideTimer = null;
-var _chatLastMsg = 0;
-
-function stpOpenChat() {
-  document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){ m.classList.remove('open'); });
-  var btn = document.getElementById('cb-btn') || document.getElementById('stp-chat-btn');
-  if (btn) btn.style.display = 'flex';
-  if (typeof cbToggle === 'function') { cbToggle(); }
-  else if (typeof stpChatToggle === 'function') { stpChatToggle(); }
-  else {
-    var panel = document.getElementById('cb-panel') || document.getElementById('stp-chat-panel');
-    if (panel) { panel.style.display = 'flex'; panel.classList.add('open'); }
-  }
-  _chatLastMsg = Date.now();
-  startChatHideTimer();
-}
-
-function startChatHideTimer() {
-  if (_chatHideTimer) clearInterval(_chatHideTimer);
-  _chatHideTimer = setInterval(function() {
-    if (Date.now() - _chatLastMsg > 5 * 60 * 1000) hideChatBtn();
-  }, 30000);
-}
-
-function hideChatBtn() {
-  var btn = document.getElementById('cb-btn') || document.getElementById('stp-chat-btn');
-  var panel = document.getElementById('cb-panel') || document.getElementById('stp-chat-panel');
-  if (btn) btn.style.display = 'none';
-  if (panel) { panel.style.display = 'none'; panel.classList.remove('open'); }
-  if (_chatHideTimer) { clearInterval(_chatHideTimer); _chatHideTimer = null; }
-}
-
-function _trackChatActivity() { _chatLastMsg = Date.now(); }
-
-function stpSignOut() {
-  try { sessionStorage.clear(); } catch(e) {}
-  try { localStorage.removeItem('stp_auth'); } catch(e) {}
-  window.location.href = 'dashboard.html?signout=1';
-}
-</script>
-
-
-<script>
-
-function toggleDarkMode() {
-  if (typeof toggleTheme === 'function') {
-    toggleTheme();
-    // Sync to shared theme storage
-    var isLight = document.body.classList.contains('light');
-    try { localStorage.setItem('stp_theme', isLight ? 'light' : 'dark'); } catch(e) {}
-  }
-}
-(function(){
-  var saved=''; try{saved=localStorage.getItem('stp_theme')||'';}catch(e){}
-  // Default LIGHT — apply light class unless dark was explicitly saved
-  document.addEventListener('DOMContentLoaded', function(){
-    if(saved!=='dark') {
-      if(!document.body.classList.contains('light')) {
-        document.body.classList.add('light');
-        if(typeof toggleTheme==='function' && !document.body.classList.contains('light')) toggleTheme();
-      }
-    }
-    // If saved dark, ensure light class is removed
-    if(saved==='dark') document.body.classList.remove('light');
-  });
-})();
-
-function stpGoToBlitz(){window.location.href='dashboard.html?blitz=1';}
-function stpFs(){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen();}
-function stpTv(){document.body.style.fontSize=document.body.style.fontSize?'':'125%';}
-function stpScroll(){}
-function stpRookies(){}
-function stpConsolidated(){var s=document.getElementById('f-market');if(s){s.value='';if(typeof render==='function')render();}}
-function stpClearFilters(){var s=document.getElementById('f-market');if(s)s.value='';var s2=document.getElementById('f-cr');if(s2)s2.value='';if(typeof render==='function')render();}
-
-function stpNavInit(){
-  document.querySelectorAll('.stp-dropdown').forEach(function(dd){
-    var btn=dd.querySelector('.stp-drop-btn'),menu=dd.querySelector('.stp-drop-menu');
-    if(!btn||!menu)return;
+    var btn=dd.querySelector('.stp-drop-btn'), menu=dd.querySelector('.stp-drop-menu');
+    if(!btn||!menu) return;
     dd.addEventListener('mouseenter',function(){
       document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){if(m!==menu)m.classList.remove('open');});
       menu.classList.add('open');
     });
-    dd.addEventListener('mouseleave',function(){setTimeout(function(){if(!dd.matches(':hover'))menu.classList.remove('open');},150);});
+    dd.addEventListener('mouseleave',function(){ setTimeout(function(){if(!dd.matches(':hover'))menu.classList.remove('open');},150); });
     btn.addEventListener('click',function(e){e.stopPropagation();menu.classList.toggle('open');});
   });
   document.addEventListener('click',function(e){
-    if(!e.target.closest('.stp-dropdown'))document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){m.classList.remove('open');});
+    if(!e.target.closest('.stp-dropdown')) document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){m.classList.remove('open');});
   });
 }
-document.addEventListener('DOMContentLoaded',stpNavInit);
-var _chatTimer=null,_chatLast=0;
-function stpOpenChat(){
-  document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){m.classList.remove('open');});
-  var btn=document.getElementById('cb-btn')||document.getElementById('stp-chat-btn');
-  if(btn)btn.style.display='flex';
-  if(typeof cbToggle==='function')cbToggle();
-  else if(typeof stpChatToggle==='function')stpChatToggle();
-  else{var p=document.getElementById('cb-panel')||document.getElementById('stp-chat-panel');if(p){p.style.display='flex';p.classList.add('open');}}
-  _chatLast=Date.now();
-  if(_chatTimer)clearInterval(_chatTimer);
-  _chatTimer=setInterval(function(){if(Date.now()-_chatLast>300000){var b=document.getElementById('cb-btn')||document.getElementById('stp-chat-btn');var p=document.getElementById('cb-panel')||document.getElementById('stp-chat-panel');if(b)b.style.display='none';if(p){p.style.display='none';p.classList.remove('open');}clearInterval(_chatTimer);_chatTimer=null;}},30000);
-}
-function _trackChatActivity(){_chatLast=Date.now();}
-function stpSignOut(){try{sessionStorage.clear();}catch(e){}try{localStorage.removeItem('stp_auth');}catch(e){}window.location.href='dashboard.html?signout=1';}
 
-</script>
+async function loadData() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('tbl-wrap').style.display = 'none';
+  try {
+    // Fetch roster and historical in parallel
+    var [rosterRes, histRes] = await Promise.all([
+      fetch(NEW_HIRE_URL + '?action=rookies', {cache:'no-store'}),
+      fetch(APPS_SCRIPT_URL + '?action=historical', {cache:'no-store'})
+    ]);
 
+    if (!rosterRes.ok) throw new Error('Roster HTTP ' + rosterRes.status);
+    var rosterData = await rosterRes.json();
+    console.log('Roster loaded:', rosterData.length, 'reps');
 
-<script>
-// ── FULLSCREEN PEEK NAV ──────────────────────────────────────────────────────
-(function(){
-  var nav,hideTimer,peeking=false;
-  function getNav(){return nav||(nav=document.getElementById('stp-nav'));}
-  function isFs(){return !!(document.fullscreenElement||document.webkitFullscreenElement);}
-  function setPeek(show){
-    var n=getNav();if(!n)return;
-    peeking=show;
-    if(show) n.classList.add('peek');
-    else n.classList.remove('peek');
-  }
-  document.addEventListener('mousemove',function(e){
-    if(!isFs())return;
-    if(e.clientY<=30){
-      if(!peeking)setPeek(true);
-      if(hideTimer){clearTimeout(hideTimer);hideTimer=null;}
-    } else if(e.clientY>56){
-      if(peeking&&!hideTimer)hideTimer=setTimeout(function(){setPeek(false);hideTimer=null;},800);
-    } else {
-      if(hideTimer){clearTimeout(hideTimer);hideTimer=null;}
+    // Build Historical lookup: normalized name → {revenue, deals}
+    var histLookup = {};
+    if (histRes.ok) {
+      var histMonths = await histRes.json();
+      // histMonths is array of monthly aggregates with deals array
+      histMonths.forEach(function(month) {
+        if (!month.deals) return;
+        month.deals.forEach(function(deal) {
+          if (!deal.name || deal.amount <= 0) return;
+          var norm = normalizeName(deal.name);
+          if (!histLookup[norm]) histLookup[norm] = { revenue: 0, deals: 0 };
+          histLookup[norm].revenue += deal.amount;
+          histLookup[norm].deals   += 1;
+        });
+      });
+      console.log('Historical lookup built:', Object.keys(histLookup).length, 'reps');
     }
-  },{passive:true,capture:true});
-  function onFsChange(){setPeek(false);}
-  document.addEventListener('fullscreenchange',onFsChange);
-  document.addEventListener('webkitfullscreenchange',onFsChange);
-var _stpSoundEnabled=true;
-function stpToggleSound(){_stpSoundEnabled=!_stpSoundEnabled;try{localStorage.setItem("stp_sound",_stpSoundEnabled?"1":"0");}catch(e){}var b=document.getElementById("nav-sound-btn");if(b)b.textContent=_stpSoundEnabled?"\uD83D\uDD14 Sound: On":"\uD83D\uDD15 Sound: Off";}
-(function(){try{if(localStorage.getItem("stp_sound")==="0"){_stpSoundEnabled=false;setTimeout(function(){var b=document.getElementById("nav-sound-btn");if(b)b.textContent="\uD83D\uDD15 Sound: Off";},600);}}catch(e){}})();
-var _scrollSpeedLabels=["Slow","Medium","Fast"],_scrollSpeedIdx=1,_scrollSpeedPx=[0.5,1.5,3.0];
-function stpScrollSpeed(){_scrollSpeedIdx=(_scrollSpeedIdx+1)%3;var b=document.getElementById("nav-scroll-speed");if(b)b.textContent="\u23E9 Scroll Speed: "+_scrollSpeedLabels[_scrollSpeedIdx];}
-function stpRefresh(){document.querySelectorAll(".stp-drop-menu.open").forEach(function(m){m.classList.remove("open");});if(typeof fetchData==="function")fetchData();else if(typeof render==="function")render();var b=document.querySelectorAll('[onclick*="stpRefresh"]')[0];if(b){var o=b.textContent;b.textContent="\uD83D\uDD04 Refreshing...";setTimeout(function(){b.textContent=o;},2000);}}
-function stpTodayFilter(){var btn=document.getElementById("nav-today-btn");window._todayActive=!window._todayActive;setTimeout(function(){var active=typeof filterToday!=="undefined"?filterToday:!!window._todayActive;if(btn)btn.style.color=active?"#00FF88":"";if(typeof render==="function")render();},50);}
-function stpShowGuide(){
-  document.querySelectorAll(".stp-drop-menu.open").forEach(function(m){m.classList.remove("open");});
-  var ex=document.getElementById("stp-guide-modal");
-  if(ex){ex.style.display="flex";return;}
-  var modal=document.createElement("div");
-  modal.id="stp-guide-modal";
-  modal.style.cssText="position:fixed;inset:0;z-index:99998;background:rgba(2,11,24,0.95);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;";
-  var items=[
-    ["#FFD700","&#x1F4B0; AMOUNTS","Revenue per sale."],
-    ["#00FF88","&#x1F4CA; PROGRESS BAR","vs monthly goal. Green = at or above."],
-    ["#A855F7","&#x2B50; ROOKIE","First-year rep."],
-    ["#00D4FF","&#x1F3C6; LEADER","#1 rep in their market."],
-    ["#FF6B00","&#x1F48E; BIG DEAL","Above market threshold."],
-    ["#FFD700","&#x1F680; MOVER","Biggest rank jump."],
-    ["#00FF88","&#x1F4C5; TODAY button","Filter to today. Turns green when active."],
-    ["#E2E8F0","&#x1F504; AUTO-SYNC","Refreshes every 10 seconds."],
-    ["#94A3B8","&#x21C5; AUTO SCROLL","TV display. Mouse pauses 10s."],
-    ["#94A3B8","&#x23E9; SCROLL SPEED","Slow / Medium / Fast."]
-  ];
-  var rows=items.map(function(it){return "<div><b style=\"color:"+it[0]+"\">"+it[1]+"</b> \u2014 "+it[2]+"</div>";}).join("");
-  modal.innerHTML="<div style=\"background:#0A1628;border:1px solid rgba(0,212,255,0.2);border-radius:20px;padding:32px;max-width:620px;width:90%;max-height:80vh;overflow-y:auto;position:relative\">"
-    +"<button onclick=\"this.closest(\'#stp-guide-modal\').style.display=\'none\">\" style=\"position:absolute;top:16px;right:16px;background:transparent;border:none;color:#475569;font-size:22px;cursor:pointer\">&#x2715;</button>"
-    +"<div style=\"font-family:Orbitron,monospace;font-size:15px;font-weight:900;color:#00D4FF;letter-spacing:4px;margin-bottom:20px\">&#x1F4CA; HOW TO READ THIS</div>"
-    +"<div style=\"font-family:sans-serif;font-size:13px;color:#94A3B8;line-height:2;display:grid;gap:8px\">"+rows+"</div>"
-    +"</div>";
-  modal.addEventListener("click",function(e){if(e.target===modal)modal.style.display="none";});
-  document.body.appendChild(modal);
+
+    // Merge historical into roster
+    rosterData.forEach(function(rep) {
+      var norm = normalizeName(rep.name);
+      var hist = histLookup[norm] || { revenue: 0, deals: 0 };
+      rep.normalized    = norm;
+      rep.hist_revenue  = hist.revenue;
+      rep.hist_deals    = hist.deals;
+    });
+
+    _allReps = rosterData;
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('tbl-wrap').style.display = 'block';
+    updateSummary(_allReps);
+    populateMarketFilter(_allReps);
+    renderTable();
+  } catch(e) {
+    console.error('Rookie load failed:', e);
+    document.getElementById('loading').textContent = '⚠ Failed to load: ' + e.message;
+  }
 }
 
+function normalizeName(name) {
+  if (!name) return '';
+  var parts = String(name).trim().split(/\s+/);
+  return parts.length >= 2 ? parts[0] + ' ' + parts[parts.length-1] : String(name).trim();
+}
 
+// Theme
+(function(){
+  try { 
+    var t = localStorage.getItem('r100_theme');
+    if (t === 'dark') document.body.classList.remove('light');
+    else document.body.classList.add('light');
+  } catch(e) {}
 })();
 
-</script>
-
-<!-- ── CONTEST PASSWORD MODAL ── -->
-<div id="contest-pw-modal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(2,11,24,0.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;flex-direction:column;gap:20px">
-  <div style="font-family:Orbitron,monospace;font-size:22px;font-weight:900;color:#00D4FF;letter-spacing:4px;text-shadow:0 0 20px rgba(0,212,255,0.5)">🏆 CONTESTS</div>
-  <div style="font-family:Orbitron,monospace;font-size:10px;color:#475569;letter-spacing:3px">ENTER PASSWORD TO CONTINUE</div>
-  <input id="contest-pw-input" type="password" placeholder="Password" maxlength="30"
-    style="background:rgba(255,255,255,0.05);border:1px solid rgba(0,212,255,0.3);border-radius:10px;padding:12px 24px;color:#fff;font-family:Orbitron,monospace;font-size:16px;width:240px;text-align:center;outline:none;letter-spacing:4px"
-    onkeydown="if(event.key==='Enter')checkContestPw()"/>
-  <div style="display:flex;gap:12px">
-    <button onclick="checkContestPw()" style="padding:10px 32px;border-radius:20px;background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.4);color:#00D4FF;font-family:Orbitron,monospace;font-size:12px;cursor:pointer;letter-spacing:2px">ENTER</button>
-    <button onclick="closeContestModal()" style="padding:10px 20px;border-radius:20px;background:transparent;border:1px solid rgba(255,255,255,0.1);color:#475569;font-family:Orbitron,monospace;font-size:11px;cursor:pointer">CANCEL</button>
-  </div>
-  <div id="contest-pw-err" style="color:#FF4444;font-family:Orbitron,monospace;font-size:10px;display:none;letter-spacing:2px">INCORRECT PASSWORD</div>
-</div>
-
-<script>
-// ── CONTEST PASSWORD ──────────────────────────────────────────────────────────
-var _contestDest = '';
-var CONTEST_PW = 'Orion';
-
-function stpGoToContest(url) {
-  _contestDest = url;
-  var modal = document.getElementById('contest-pw-modal');
-  if (modal) {
-    modal.style.display = 'flex';
-    setTimeout(function(){ var i=document.getElementById('contest-pw-input'); if(i){i.value='';i.focus();} }, 50);
-  }
-  document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){m.classList.remove('open');});
-}
-
-function checkContestPw() {
-  var inp = document.getElementById('contest-pw-input');
-  var err = document.getElementById('contest-pw-err');
-  if (!inp) return;
-  if (inp.value.trim().toLowerCase() === CONTEST_PW.toLowerCase()) {
-    closeContestModal();
-    window.location.href = _contestDest;
-  } else {
-    if (err) err.style.display = 'block';
-    inp.value = '';
-    inp.focus();
-  }
-}
-
-function closeContestModal() {
-  var modal = document.getElementById('contest-pw-modal');
-  if (modal) modal.style.display = 'none';
-  var err = document.getElementById('contest-pw-err');
-  if (err) err.style.display = 'none';
-  var inp = document.getElementById('contest-pw-input');
-  if (inp) inp.value = '';
-  _contestDest = '';
-}
-
-document.addEventListener('click', function(e) {
-  var modal = document.getElementById('contest-pw-modal');
-  if (modal && e.target === modal) closeContestModal();
+document.addEventListener('DOMContentLoaded', function() {
+  stpNavInit();
+  loadData();
 });
+
+// Fullscreen peek
+(function(){
+  var peeking = false, hideTimer = null;
+  document.addEventListener('mousemove', function(e) {
+    if (!document.fullscreenElement) return;
+    var nav = document.getElementById('stp-nav');
+    if (!nav) return;
+    if (e.clientY <= 30) {
+      if (!peeking) { peeking=true; nav.classList.add('peek'); }
+      if (hideTimer) { clearTimeout(hideTimer); hideTimer=null; }
+    } else if (e.clientY > 56) {
+      if (peeking && !hideTimer) hideTimer = setTimeout(function(){ peeking=false; nav.classList.remove('peek'); hideTimer=null; }, 800);
+    }
+  }, {passive:true, capture:true});
+  document.addEventListener('fullscreenchange', function(){ peeking=false; var n=document.getElementById('stp-nav'); if(n)n.classList.remove('peek'); });
+})();
 </script>
-
-<script>
-
-// ── SOUND TOGGLE ─────────────────────────────────────────────────────────────
+</body>
+</html>
