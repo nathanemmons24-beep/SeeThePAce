@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SeeThePace · Historical</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060C1A;--surface:rgba(15,23,42,0.8);--border:rgba(255,255,255,0.07);
+  --text:#E2E8F0;--muted:#475569;--accent:#00FF88;--accent2:#00D4FF;
+  --gold:#FFD700;--red:#FF4444;
+}
+body{background:var(--bg);color:var(--text);font-family:"Exo 2",sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,212,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.02) 1px,transparent 1px);
+  background-size:60px 60px;}
+#app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px 20px 60px}
+
+/* NAV */
+#stp-nav{position:fixed;top:0;left:0;right:0;height:48px;background:linear-gradient(135deg,#040810,#080E1A,#040810);
+  border-bottom:2px solid rgba(0,200,255,0.25);display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;z-index:9999;font-family:Orbitron,monospace}
+#stp-brand{display:flex;align-items:center;gap:8px;text-decoration:none;cursor:pointer}
+#stp-bolt{font-size:20px;filter:drop-shadow(0 0 8px #00C8FF)}
+#stp-wordmark{font-family:Orbitron,monospace;font-weight:900;font-size:14px;letter-spacing:3px;
+  background:linear-gradient(90deg,#00C8FF,#E0F8FF,#00C8FF);background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#nav-back{color:rgba(255,255,255,0.6);font-family:Orbitron,monospace;font-size:10px;font-weight:700;
+  letter-spacing:1.5px;text-decoration:none;padding:6px 16px;border-radius:8px;border:1px solid rgba(0,200,255,0.2);
+  background:transparent;cursor:pointer;transition:all 0.15s}
+#nav-back:hover{color:#00C8FF;border-color:rgba(0,200,255,0.5);background:rgba(0,200,255,0.06)}
+
+/* HEADER */
+#page-header{text-align:center;padding:72px 0 32px}
+#page-title{font-family:Orbitron,monospace;font-weight:900;font-size:clamp(24px,4vw,40px);
+  letter-spacing:4px;background:linear-gradient(135deg,#00D4FF,#00FF88,#FFD700);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+#page-sub{font-size:12px;letter-spacing:3px;color:var(--muted);text-transform:uppercase}
+
+/* SUMMARY CARDS */
+#summary-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;text-align:center}
+.stat-card-label{font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;text-transform:uppercase}
+.stat-card-value{font-family:Orbitron,monospace;font-size:22px;font-weight:900}
+
+/* MONTH CARDS */
+#months-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:20px;margin-bottom:40px}
+.month-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;transition:border-color 0.2s}
+.month-card:hover{border-color:rgba(0,200,255,0.25)}
+.month-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.month-name{font-family:Orbitron,monospace;font-size:16px;font-weight:900;letter-spacing:2px;color:var(--accent2)}
+.month-pct{font-family:Orbitron,monospace;font-size:20px;font-weight:900}
+.month-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.month-stat-label{font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:3px;text-transform:uppercase}
+.month-stat-value{font-size:15px;font-weight:700;color:var(--text)}
+.month-bar-wrap{height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;margin-bottom:16px}
+.month-bar-fill{height:100%;border-radius:4px;transition:width 1s ease}
+.month-footer{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:12px}
+
+/* CHART */
+#chart-section{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:32px}
+.section-title{font-family:Orbitron,monospace;font-size:12px;font-weight:700;letter-spacing:3px;color:var(--muted);margin-bottom:20px;text-transform:uppercase}
+#chart-wrap{display:flex;align-items:flex-end;gap:12px;height:200px;overflow-x:auto;padding-bottom:8px}
+.chart-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:80px}
+.chart-bar-wrap{flex:1;display:flex;align-items:flex-end;width:100%}
+.chart-bar{width:100%;border-radius:6px 6px 0 0;transition:height 1s ease;min-height:4px;position:relative}
+.chart-bar-label{font-family:Orbitron,monospace;font-size:10px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap}
+.chart-month-label{font-size:10px;color:var(--muted);text-align:center;white-space:nowrap}
+.chart-goal-line{position:absolute;left:0;right:0;border-top:2px dashed rgba(255,215,0,0.5)}
+
+/* LOADING / EMPTY */
+#loading{text-align:center;padding:80px;font-family:Orbitron,monospace;font-size:14px;color:var(--muted);letter-spacing:3px}
+#empty{text-align:center;padding:80px}
+#empty-title{font-family:Orbitron,monospace;font-size:18px;color:var(--muted);margin-bottom:12px;letter-spacing:3px}
+#empty-sub{font-size:13px;color:var(--muted2);line-height:1.6}
+</style>
+</head>
+<body>
+
+<nav id="stp-nav">
+  <a id="stp-brand" onclick="history.length>1?history.back():location.href='dashboard.html'" style="cursor:pointer">
+    <span id="stp-bolt">⚡</span>
+    <span id="stp-wordmark">SEE THE PACE</span>
+  </a>
+  <button id="nav-back" onclick="history.length>1?history.back():location.href='dashboard.html'">← PACE</button>
+</nav>
+
+<div id="app">
+  <div id="page-header">
+    <div id="page-title">HISTORICAL</div>
+    <div id="page-sub">Month-Over-Month Performance</div>
+  </div>
+
+  <div id="loading">📊 LOADING HISTORICAL DATA...</div>
+  <div id="summary-row" style="display:none"></div>
+  <div id="ytd-bar-section" style="display:none;background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:24px;margin-bottom:24px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <span style="font-family:Orbitron,monospace;font-size:11px;letter-spacing:3px;color:#475569">YEAR TO DATE</span>
+    <span id="ytd-pct-label" style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:#00FF88">—%</span>
+  </div>
+  <div style="height:12px;background:rgba(255,255,255,0.06);border-radius:6px;overflow:hidden;margin-bottom:10px;">
+    <div id="ytd-bar" style="height:100%;border-radius:6px;background:linear-gradient(90deg,#00D4FF,#00FF88);transition:width 1s ease;width:0%"></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:12px;color:#475569;">
+    <span id="ytd-rev-label">$0 revenue</span>
+    <span id="ytd-plan-label">$0 plan</span>
+  </div>
+</div>
+<div id="chart-section" style="display:none">
+    <div class="section-title">📈 Revenue by Month</div>
+    <div id="chart-wrap"></div>
+  </div>
+  <div id="months-grid"></div>
+  <div id="empty" style="display:none">
+    <div id="empty-title">NO HISTORICAL DATA YET</div>
+    <div id="empty-sub">Historical data is automatically archived on the 1st of each month.<br>Check back after the first month-end rollover.</div>
+  </div>
+</div>
+
+<script>
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
+
+function fmt(n) {
+  if (isNaN(n) || n === null) return '$0';
+  var abs = Math.abs(n);
+  if (abs >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+  if (abs >= 1000)    return '$' + (n/1000).toFixed(1) + 'K';
+  return '$' + Math.round(n).toLocaleString();
+}
+
+function pctColor(pct) {
+  if (pct >= 100) return '#00FF88';
+  if (pct >= 90)  return '#FFD700';
+  return '#FF4444';
+}
+
+function barColor(i) {
+  var colors = ['#00D4FF','#00FF88','#FFD700','#FF6B35','#A855F7','#F472B6','#34D399','#60A5FA'];
+  return colors[i % colors.length];
+}
+
+async function loadHistorical() {
+  try {
+    var res = await fetch(APPS_SCRIPT_URL + '?action=historical');
+    var data = await res.json();
+    render(data);
+  } catch(e) {
+    console.error('Historical fetch failed:', e);
+    document.getElementById('loading').textContent = '⚠ Failed to load historical data';
+  }
+}
+
+function render(data) {
+  _histData = data.slice().reverse(); // store for drill-down
+  document.getElementById('loading').style.display = 'none';
+
+  if (!data || data.length === 0) {
+    document.getElementById('empty').style.display = 'block';
+    return;
+  }
+
+  // Sort oldest first for display
+  data.sort(function(a,b){ return new Date(a.month) - new Date(b.month); });
+
+  // ── SUMMARY CARDS ───────────────────────────────────────────────────────────
+  var totalAllTime = data.reduce(function(s,d){ return s + d.revenue; }, 0);
+  var totalAllPlan = data.reduce(function(s,d){ return s + d.goal; }, 0);
+  var avgPct       = data.reduce(function(s,d){ return s + d.pctToGoal; }, 0) / data.length;
+  var bestMonth    = data.reduce(function(p,c){ return c.revenue > p.revenue ? c : p; });
+  var bestPct      = data.reduce(function(p,c){ return c.pctToGoal > p.pctToGoal ? c : p; });
+  var ytdPct       = totalAllPlan > 0 ? (totalAllTime / totalAllPlan * 100) : 0;
+  var ytdColor     = ytdPct >= 100 ? '#00FF88' : ytdPct >= 90 ? '#FFD700' : '#FF4444';
+  var annualGoal   = data[0] && data[0].annualGoal ? data[0].annualGoal : 0;
+
+  var summaryEl = document.getElementById('summary-row');
+  summaryEl.style.display = 'grid';
+  summaryEl.innerHTML = [
+    {label:'Months tracked',     value: data.length,                          color:'#00D4FF'},
+    {label:'YTD revenue',        value: fmt(totalAllTime),                    color:'#00FF88'},
+    {label:'YTD vs plan',        value: ytdPct.toFixed(1)+'%',               color: ytdColor},
+    {label:'YTD plan total',     value: fmt(totalAllPlan),                    color:'#FFD700'},
+    {label:'Best month',         value: bestMonth.month,                      color:'#A855F7'},
+  ].map(function(c){
+    return '<div class="stat-card"><div class="stat-card-label">'+c.label+'</div>'
+           +'<div class="stat-card-value" style="color:'+c.color+'">'+c.value+'</div></div>';
+  }).join('');
+
+  // ── BAR CHART ───────────────────────────────────────────────────────────────
+  var maxRev = Math.max.apply(null, data.map(function(d){ return d.revenue; }));
+  var chartSection = document.getElementById('chart-section');
+  // YTD progress bar
+  var ytdSection = document.getElementById('ytd-bar-section');
+  if (ytdSection) {
+    ytdSection.style.display = 'block';
+    var ytdBarEl = document.getElementById('ytd-bar');
+    var ytdPctEl = document.getElementById('ytd-pct-label');
+    var ytdRevEl = document.getElementById('ytd-rev-label');
+    var ytdPlanEl = document.getElementById('ytd-plan-label');
+    var ytdW = Math.min(ytdPct, 100);
+    if (ytdBarEl) setTimeout(function(){ ytdBarEl.style.width = ytdW + '%'; }, 100);
+    if (ytdPctEl) { ytdPctEl.textContent = ytdPct.toFixed(1) + '%'; ytdPctEl.style.color = ytdColor; }
+    if (ytdRevEl) ytdRevEl.textContent = fmt(totalAllTime) + ' revenue';
+    if (ytdPlanEl) ytdPlanEl.textContent = fmt(totalAllPlan) + ' plan';
+  }
+  chartSection.style.display = 'block';
+  var chartWrap = document.getElementById('chart-wrap');
+  chartWrap.innerHTML = data.map(function(d, i){
+    var heightPct = maxRev > 0 ? (d.revenue / maxRev * 100) : 0;
+    var goalPct   = maxRev > 0 ? (d.goal   / maxRev * 100) : 0;
+    var color = barColor(i);
+    var shortMonth = d.month.replace(/(\w{3})\w+ (\d{4})/, '$1 $2');
+    return '<div class="chart-col">'
+      + '<div class="chart-bar-label">'+fmt(d.revenue)+'</div>'
+      + '<div class="chart-bar-wrap" style="height:160px;width:100%">'
+      + '<div class="chart-bar" style="height:'+heightPct+'%;background:linear-gradient(180deg,'+color+','+color+'88);position:relative">'
+      + '<div class="chart-goal-line" style="bottom:'+((goalPct/heightPct)*100)+'%;display:'+(goalPct<=heightPct?'block':'none')+'"></div>'
+      + '</div></div>'
+      + '<div class="chart-month-label">'+shortMonth+'</div>'
+      + '</div>';
+  }).join('');
+
+  // ── MONTH CARDS ─────────────────────────────────────────────────────────────
+  var grid = document.getElementById('months-grid');
+  grid.innerHTML = data.slice().reverse().map(function(d, i){
+    var pct = d.pctToGoal || 0;
+    var color = pctColor(pct);
+    var barW = Math.min(pct, 100);
+    var diff = d.revenue - d.goal;
+    var diffStr = (diff >= 0 ? '+' : '') + fmt(Math.abs(diff));
+    var diffColor = diff >= 0 ? '#00FF88' : '#FF4444';
+    return '<div class="month-card">'
+      + '<div class="month-card-header">'
+      + '<div class="month-name">'+d.month+'</div>'
+      + '<div class="month-pct" style="color:'+color+'">'+pct+'%</div>'
+      + '</div>'
+      + '<div class="month-bar-wrap"><div class="month-bar-fill" style="width:'+barW+'%;background:linear-gradient(90deg,'+color+'88,'+color+')"></div></div>'
+      + '<div class="month-stats">'
+      + '<div><div class="month-stat-label">Revenue</div><div class="month-stat-value" style="color:#00FF88">'+fmt(d.revenue)+'</div></div>'
+      + '<div><div class="month-stat-label">Goal</div><div class="month-stat-value" style="color:#FFD700">'+fmt(d.goal)+'</div></div>'
+      + '<div><div class="month-stat-label">vs Goal</div><div class="month-stat-value" style="color:'+diffColor+'">'+diffStr+'</div></div>'
+      + '<div><div class="month-stat-label">Deals</div><div class="month-stat-value">'+d.dealCount+'</div></div>'
+      + '<div><div class="month-stat-label">Avg Deal</div><div class="month-stat-value">'+fmt(d.avgDeal)+'</div></div>'
+      + '<div><div class="month-stat-label">Markets</div><div class="month-stat-value">'+d.markets+'</div></div>'
+      + '</div>'
+      + '<div class="month-footer">'
+      + '<span>🏆 '+d.topMarket.replace(/^\d+ - /,'')+'  <strong style="color:#FFD700">'+fmt(d.topMarketRev)+'</strong></span>'
+      + '<span>⭐ '+d.topRep+'  <strong style="color:#00FF88">'+fmt(d.topRepRev)+'</strong></span>'
+      + '</div>'
+      + '<button onclick="showDeals('+i+')" style="margin-top:12px;width:100%;padding:8px;border-radius:8px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);color:#00D4FF;font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;cursor:pointer">VIEW ALL '+d.dealCount+' DEALS ▼</button>'
+      + '</div>';
+  }).join('');
+}
+
+loadHistorical();
+
+var _histData = [];
+
+function showDeals(idx) {
+  var d = _histData[idx];
+  if (!d) return;
+  
+  document.getElementById('deal-modal').style.display = 'block';
+  document.getElementById('modal-title').textContent = d.month.toUpperCase() + ' — ALL DEALS';
+
+  // Market summary cards
+  var markets = {};
+  d.deals.forEach(function(deal) {
+    if (!markets[deal.store]) markets[deal.store] = { rev: 0, count: 0 };
+    markets[deal.store].rev   += deal.amount;
+    markets[deal.store].count += 1;
+  });
+  var mktKeys = Object.keys(markets).sort(function(a,b){ return markets[b].rev - markets[a].rev; });
+  document.getElementById('modal-markets').innerHTML = mktKeys.map(function(mk) {
+    return '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px">'
+      + '<div style="font-size:11px;color:#475569;margin-bottom:4px">'+mk.replace(/^\d+ - /,'')+'</div>'
+      + '<div style="font-family:Orbitron,monospace;font-size:16px;font-weight:900;color:#00FF88">'+fmt(markets[mk].rev)+'</div>'
+      + '<div style="font-size:11px;color:#475569;margin-top:2px">'+markets[mk].count+' deals</div>'
+      + '</div>';
+  }).join('');
+
+  // Sort deals by amount desc
+  var sorted = d.deals.slice().sort(function(a,b){ return b.amount - a.amount; });
+  document.getElementById('modal-deals').innerHTML = sorted.map(function(deal, i) {
+    var bg = i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.02)';
+    return '<div style="display:grid;grid-template-columns:2fr 3fr 1fr 1fr;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.04);'+bg+'">'
+      + '<div style="font-size:12px;color:#94A3B8">'+deal.store.replace(/^\d+ - /,'')+'</div>'
+      + '<div style="font-size:13px;font-weight:600;color:#E2E8F0">'+deal.name+'</div>'
+      + '<div style="font-family:Orbitron,monospace;font-size:12px;font-weight:900;color:#00FF88">'+fmt(deal.amount)+'</div>'
+      + '<div style="font-size:12px;color:#475569">'+deal.date+'</div>'
+      + '</div>';
+  }).join('');
+}
+
+// Close on backdrop click
+document.getElementById('deal-modal').addEventListener('click', function(e) {
+  if (e.target === this) this.style.display = 'none';
+});
+
+</script>
+
+<!-- ── DEAL DRILL-DOWN MODAL ── -->
+<div id="deal-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(2,8,20,0.95);backdrop-filter:blur(12px);overflow-y:auto;padding:24px 16px">
+  <div style="max-width:900px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div id="modal-title" style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:#00D4FF;letter-spacing:3px"></div>
+      <button onclick="document.getElementById('deal-modal').style.display='none'" style="background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#475569;font-size:20px;cursor:pointer;padding:4px 12px">✕</button>
+    </div>
+    <!-- Market summary -->
+    <div id="modal-markets" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:24px"></div>
+    <!-- Deal table -->
+    <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.07);border-radius:16px;overflow:hidden">
+      <div style="display:grid;grid-template-columns:2fr 3fr 1fr 1fr;padding:12px 16px;background:rgba(0,212,255,0.05);border-bottom:1px solid rgba(255,255,255,0.07)">
+        <div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#475569">MARKET</div>
+        <div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#475569">REP</div>
+        <div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#475569">AMOUNT</div>
+        <div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#475569">DATE</div>
+      </div>
+      <div id="modal-deals"></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
