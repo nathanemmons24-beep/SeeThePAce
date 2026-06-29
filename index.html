@@ -5483,7 +5483,7 @@ function openWinnersBoard() {
   var pw = prompt('Enter password to access Winners Board:');
   if (!pw) return;
   if (pw.trim() === 'Blitz2026') {
-    window.open('blitz_winners.html', '_blank');
+    window.location.href = 'blitz_winners.html';
   } else {
     alert('Incorrect password.');
   }
