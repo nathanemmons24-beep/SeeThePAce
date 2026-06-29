@@ -491,6 +491,9 @@ body.tv-mode .tp-name { font-size:16px; }
 body.tv-mode .tp-amt  { font-size:15px; }
 body.tv-mode .tp-store{ font-size:12px; }
 body.tv-mode .tp-date { font-size:12px; }
+/* pace banner */
+#pace-banner{transition:opacity 0.3s}
+body.light-mode #pace-banner{filter:brightness(0.8)}
 </style>
 </head>
 <body onclick="unlockAudio()" onkeydown="unlockAudio()">
@@ -538,6 +541,7 @@ if (new URLSearchParams(window.location.search).get('tv') === '1') {
         <div class="stp-drop-label">SUPPORT</div>
         <a class="stp-drop-item" onclick="stpOpenChat();return false" style="cursor:pointer">💬 Talk To The Data</a>
         <a class="stp-drop-item" onclick="stpShowGuide();return false" style="cursor:pointer">📊 How To Read This</a>
+        <a class="stp-drop-item" href="historical.html" style="cursor:pointer">📈 Historical</a>
       </div>
     </div>
     <div class="stp-dropdown">
@@ -568,7 +572,7 @@ if (new URLSearchParams(window.location.search).get('tv') === '1') {
 <div id="app">
   <!-- HEADER -->
   <div id="header">
-    <div id="blitz-title">Loading...</div>
+    <div id="blitz-title">SEE THE PACE JUNE</div>
 
     <div id="subtitle">RENEWAL BY ANDERSEN &mdash; SEETHEPACE.COM <span id="status-dot" class="loading">&#x25CF; CONNECTING&hellip;</span></div>
   </div>
@@ -663,6 +667,16 @@ if (new URLSearchParams(window.location.search).get('tv') === '1') {
 
   <!-- MTD PROGRESS BAR — always visible -->
   <div id="milestone-section">
+    <div id="pace-banner" style="display:flex;align-items:center;justify-content:center;gap:28px;margin:14px 0 18px;font-family:Orbitron,monospace;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:12px 28px">
+        <span style="font-size:11px;letter-spacing:2px;color:#94A3B8">MONTHLY PACE</span>
+        <span id="pace-status" style="font-size:26px;font-weight:900;letter-spacing:2px">—</span>
+      </div>
+      <div id="pace-detail" style="font-size:18px;color:#CBD5E1;letter-spacing:1px;font-weight:600;display:flex;align-items:center;gap:8px">
+        <span id="pace-detail-static">calculating...</span>
+        <span id="pace-countdown" style="color:#94A3B8;font-size:15px"></span>
+      </div>
+    </div>
     <div id="total-display">$0 <span>of $85.40M</span></div>
     <div id="bar-wrap">
       <div id="bar-track">
@@ -907,8 +921,10 @@ var _saved = (function(){ try{ return JSON.parse(localStorage.getItem("blitz_set
 var SHEET_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Dashboard";
 var state={
   sheetUrl: _saved.sheetUrl || SHEET_URL,
-  goal:     _saved.goal     || 500000,
-  title:    _saved.title    || "Loading...",
+  goal:     _saved.goal     || 85400000,
+  annualGoal: _saved.annualGoal || 85400000,
+  monthlyPlans: _saved.monthlyPlans || {},
+  title:    _saved.title    || "SEE THE PACE JUNE",
   data:     SAMPLE,
   status:   "loading",
   lastUpdated: null
@@ -1051,9 +1067,39 @@ async function fetchSettings() {
         }
         if (key === "goal") {
           var g = parseFloat(val.replace(/[^0-9.]/g,""));
-          if (g) { state.goal = g; console.log("Settings: goal =", g); }
+          if (g) { state.annualGoal = g; console.log("Settings: annual goal =", g); }
+        }
+        // Monthly plans: key = month name (January, February, etc.)
+        var monthNames = ["january","february","march","april","may","june",
+                          "july","august","september","october","november","december"];
+        if (monthNames.indexOf(key.replace(/\s+/g,"")) >= 0) {
+          var planVal = parseFloat(val.replace(/[^0-9.]/g,""));
+          if (!state.monthlyPlans) state.monthlyPlans = {};
+          // Capitalize first letter for consistent key
+          var mKey = key.trim().charAt(0).toUpperCase() + key.trim().slice(1).toLowerCase().replace(/\s+/g,"");
+          // Handle "March " with trailing space
+          mKey = mKey.replace(/\s+/g,"");
+          var fullNames = {"January":"January","February":"February","March":"March",
+            "April":"April","May":"May","June":"June","July":"July","August":"August",
+            "September":"September","October":"October","November":"November","December":"December"};
+          // Find matching full name
+          for (var mn in fullNames) {
+            if (mn.toLowerCase() === key.trim().toLowerCase()) {
+              state.monthlyPlans[mn] = planVal;
+              break;
+            }
+          }
+          console.log("Settings: plan", key.trim(), "=", planVal);
         }
         // Don't override sheetUrl from Settings — we use Apps Script directly
+      }
+      // Set current month goal from monthly plan
+      var now = new Date();
+      var curMonthName = ["January","February","March","April","May","June",
+                          "July","August","September","October","November","December"][now.getMonth()];
+      if (state.monthlyPlans && state.monthlyPlans[curMonthName]) {
+        state.goal = state.monthlyPlans[curMonthName];
+        console.log("Settings: current month plan (" + curMonthName + ") =", state.goal);
       }
       return; // success
     } catch(e) { continue; }
@@ -1663,6 +1709,88 @@ function renderLeaderboards(data){
 }
 
 // \u2550\u2550 RENDER \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+// ── MONTHLY PACE CALCULATOR ───────────────────────────────────────────────────
+
+// Dedicated countdown timer — runs independently of data refresh
+(function(){
+  function tickCountdown() {
+    var el = document.getElementById('pace-countdown');
+    if (!el) return;
+    var now = new Date();
+    var endOfMonth = new Date(now.getFullYear(), now.getMonth()+1, 1, 0, 0, 0);
+    var msLeft = endOfMonth - now;
+    if (msLeft <= 0) { el.textContent = ''; return; }
+    var h = Math.floor(msLeft / (1000*60*60));
+    var m = Math.floor((msLeft % (1000*60*60)) / (1000*60));
+    var s = Math.floor((msLeft % (1000*60)) / 1000);
+    var pad = function(n){ return n < 10 ? '0'+n : String(n); };
+    el.textContent = '(' + h + 'h ' + pad(m) + 'm ' + pad(s) + 's left)';
+  }
+  tickCountdown();
+  setInterval(tickCountdown, 1000);
+})();
+
+function updatePaceBanner(total, goal) {
+  var banner = document.getElementById('pace-status');
+  var detail = document.getElementById('pace-detail');
+  if (!banner || !detail || !goal) return;
+
+  var now = new Date();
+  var daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  var dayOfMonth = now.getDate();
+  // Only count COMPLETED days — exclude today until it's done
+  var completedDays = dayOfMonth - 1;
+  var elapsed = completedDays / daysInMonth;
+
+  // Where we SHOULD be through completed days
+  var expectedTotal = goal * elapsed;
+  var diff = total - expectedTotal;
+  var diffPct = (diff / goal) * 100;
+
+  // Projected month-end at current pace
+  var projected = elapsed > 0.01 ? (total / elapsed) : 0; // pace based on completed days
+  var projDiff = projected - goal;
+
+  var isAhead = diff >= 0;
+  var color = isAhead ? '#00FF88' : '#FF4444';
+  var arrow = isAhead ? '▲' : '▼';
+  var label = isAhead ? 'AHEAD' : 'BEHIND';
+
+  if (isNaN(diff) || !total || !goal) return;
+  banner.textContent = arrow + ' ' + label + ' ' + fmt(Math.abs(diff)) + ' vs plan';
+  banner.style.color = color;
+  banner.style.textShadow = '0 0 12px ' + (isAhead ? 'rgba(0,255,136,0.4)' : 'rgba(255,68,68,0.4)');
+
+  // Detail: projected month-end
+  var projStr = fmt(Math.round(projected));
+  var absProjDiff = Math.abs(Math.round(projDiff));
+  var projDiffStr = (projDiff >= 0 ? '+' : '-') + fmt(absProjDiff);
+  var projColor = projDiff >= 0 ? '#00FF88' : '#FF4444';
+  var projLabel = projDiff >= 0 ? 'on track to finish' : 'projected to miss by';
+  // Countdown to end of month (midnight on last day)
+  var endOfMonth = new Date(now.getFullYear(), now.getMonth()+1, 1, 0, 0, 0); // midnight 1st of next month
+  var msLeft = endOfMonth - now;
+  var daysLeft = msLeft / (1000 * 60 * 60 * 24); // fractional for math
+  var hoursLeft = Math.floor(msLeft / (1000*60*60));
+  var minsLeft  = Math.floor((msLeft % (1000*60*60)) / (1000*60));
+  var secsLeft  = Math.floor((msLeft % (1000*60)) / 1000);
+  var pad = function(n){ return n < 10 ? '0'+n : n; };
+  var countdownStr = hoursLeft + 'h ' + pad(minsLeft) + 'm ' + pad(secsLeft) + 's';
+  var daysLeftDisplay = countdownStr;
+  var remaining = goal - total;
+  var perDayNeeded = daysLeft > 0 ? remaining / daysLeft : 0;
+
+  // Update static part only (countdown has its own timer)
+  var staticEl = document.getElementById('pace-detail-static');
+  if (staticEl) {
+    staticEl.innerHTML = 
+      'Through Day ' + completedDays + ' of ' + daysInMonth +
+      ' &nbsp;·&nbsp; ' +
+      '<span style="color:#FFD700;font-weight:900">' + (isNaN(perDayNeeded)||perDayNeeded<=0 ? '—' : fmt(Math.round(perDayNeeded))) + '/day needed</span>';
+  }
+}
+
 function render(){
   // Safety: ensure these Sets exist even if called before full script parse
   if (!activeMarketFilters) activeMarketFilters = new Set();
@@ -2055,6 +2183,13 @@ function render(){
 
   // Main progress bar — reflects current filtered data
   document.getElementById("total-display").innerHTML=fmt(total)+' <span>of '+fmt(goal)+(filterDay?" daily goal":"")+'</span>';
+  if (!filterDay && typeof updatePaceBanner === "function") {
+    var now2 = new Date();
+    var curMon = ["January","February","March","April","May","June","July","August","September","October","November","December"][now2.getMonth()];
+    var monthGoal = (state.monthlyPlans && state.monthlyPlans[curMon]) ? state.monthlyPlans[curMon] : state.goal;
+    updatePaceBanner(total, monthGoal);
+  }
+  else { var pb=document.getElementById("pace-banner"); if(pb) pb.style.display="none"; }
   document.getElementById("total-display").style.color=total>=goal?"#00FF88":"#FFD700";
   var mtdPct = Math.min((total/goal)*100,100);
   var bf=document.getElementById("bar-fill");
@@ -3747,21 +3882,26 @@ async function fetchRookieNames() {
     var res = await fetch(url, {cache:"no-store"});
     if (!res.ok) throw new Error("HTTP " + res.status);
     var csv = await res.text();
-    if (!csv || csv.trim().startsWith("<")) throw new Error("bad response");
+    console.log("fetchRookieNames raw (first 300):", csv.substring(0,300));
+    if (!csv || csv.trim().startsWith("<")) throw new Error("bad response - got HTML");
     var lines = csv.trim().split("\n").filter(Boolean);
+    console.log("fetchRookieNames: " + lines.length + " lines. Header:", lines[0]);
     var newSet = new Set();
-    for (var i = 1; i < lines.length; i++) { // skip header
+    for (var i = 1; i < lines.length; i++) {
       var cols = parseCsvLine(lines[i]).map(function(c){ return c.replace(/^"|"$/g,"").trim(); });
-      // Col A = Class (col index 0), Col B = Sales Rep (col index 1)
-      var name = cols[1] ? cols[1].trim() : "";
-      if (name) newSet.add(name);
+      // Try col index 1 (B) first, then 0 (A) as fallback
+      var name = (cols[1] && cols[1].trim()) ? cols[1].trim() : (cols[0] ? cols[0].trim() : "");
+      if (name && name.length > 1) newSet.add(name);
     }
     if (newSet.size > 0) {
       ROOKIE_NAMES = newSet;
-      console.log("fetchRookieNames: loaded " + newSet.size + " rookies from New Hires tab");
+      console.log("fetchRookieNames: loaded " + newSet.size + " rookies:", Array.from(newSet).slice(0,5));
+      render(); // re-render with rookie badges now applied
+    } else {
+      console.warn("fetchRookieNames: parsed 0 names from " + lines.length + " lines");
     }
   } catch(e) {
-    console.warn("fetchRookieNames failed, keeping existing list:", e.message);
+    console.warn("fetchRookieNames failed:", e.message);
   }
 }
 var blitzShowRookiesOnly = false;
@@ -5265,7 +5405,17 @@ async function stpChatSend() {
   try{ if(localStorage.getItem("stp_build")!==build){localStorage.removeItem("stp_theme");localStorage.setItem("stp_build",build);} }catch(e){}
   // Dashboard defaults DARK — only apply light if explicitly chosen
   try{ if(localStorage.getItem("stp_theme")==="light"){document.body.classList.add("light-mode");}else{document.body.classList.remove("light-mode");} }catch(e){}
-})();
+
+
+  // ── MONTH ROLLOVER: reset cache on new month ───────────────────────────────
+  (function(){
+    var now=new Date(), mk=now.getFullYear()+'-'+(now.getMonth()+1);
+    try{
+      var lm=localStorage.getItem('stp_active_month');
+      if(lm && lm!==mk){ localStorage.removeItem('stp_deals'); localStorage.removeItem('stp_last_fetch'); }
+      localStorage.setItem('stp_active_month',mk);
+    }catch(e){}
+  })();})();
 
 // ── NAV SHOW AFTER AUTH ──────────────────────────────────────────────────────
 function showNav(){var n=document.getElementById('stp-nav');if(n){n.classList.remove('stp-nav-hidden');}}
@@ -5528,31 +5678,34 @@ function stpShowGuide(){
 })();
 </script>
 
-<script>
-// ── DEBUG: Verify nav functions are reachable ─────────────────────────────────
-(function(){
-  var _orig = {};
-  var fns = ['stpToggleSound','stpScrollSpeed','stpRefresh','stpTodayFilter','stpShowGuide','stpTv','stpScroll'];
-  function patchFn(name){
-    var orig = window[name];
-    window[name] = function(){
-      console.log('[NAV] ' + name + ' called!');
-      if(orig) return orig.apply(this, arguments);
-    };
-  }
-  // Patch after all scripts load
-  window.addEventListener('load', function(){
-    fns.forEach(function(fn){
-      if(typeof window[fn] === 'function') {
-        patchFn(fn);
-        console.log('[NAV] patched: ' + fn);
-      } else {
-        console.warn('[NAV] MISSING: ' + fn);
-      }
-    });
-  });
-})();
-</script>
 
+<script>
+</script>
+<script>
+// ── DAY CHART PREV MONTH ──────────────────────────────────────────────────────
+var _dayChartShowPrev = false;
+
+function dayChartTogglePrev() {
+  _dayChartShowPrev = true;
+  document.getElementById('day-chart-prev').style.display = 'none';
+  document.getElementById('day-chart-cur').style.display = 'inline-block';
+  var lbl = document.getElementById('day-chart-month-label');
+  if (lbl) {
+    var d = new Date(); d.setMonth(d.getMonth()-1);
+    lbl.textContent = d.toLocaleString('default',{month:'long',year:'numeric'}).toUpperCase();
+    lbl.style.display = 'inline';
+  }
+  if (typeof render === 'function') render();
+}
+
+function dayChartToggleCur() {
+  _dayChartShowPrev = false;
+  document.getElementById('day-chart-prev').style.display = 'inline-block';
+  document.getElementById('day-chart-cur').style.display = 'none';
+  var lbl = document.getElementById('day-chart-month-label');
+  if (lbl) lbl.style.display = 'none';
+  if (typeof render === 'function') render();
+}
+</script>
 </body>
 </html>
