@@ -445,24 +445,66 @@ function renderRows(reps) {
       return cr >= target ? '#4A9B4B' : cr >= target * 0.85 ? '#FFD700' : '#FF6B6B';
     };
     var maxRev = Math.max.apply(null, reps.map(function(r){return r.hist_revenue||0;}));
+
+    // Bracket definitions: [label, size, target]
+    var BRACKETS = [
+      {key:'0_20',   size:20, start:0,  target:0.20},
+      {key:'21_40',  size:20, start:20, target:0.20},
+      {key:'41_60',  size:20, start:40, target:0.25},
+      {key:'61_80',  size:20, start:60, target:0.25},
+      {key:'81_100', size:20, start:80, target:0.25},
+    ];
+
+    // Compute which historical deals fall into each bracket for a rep,
+    // based on cumulative deal count implied by close rate * bracket size
+    function dealsForBracket(rep, bracketIdx) {
+      var deals = rep.dealList || [];
+      if (deals.length === 0) return [];
+      // Count how many deals belong to brackets BEFORE this one (cumulative)
+      var dealsBefore = 0;
+      for (var i = 0; i < bracketIdx; i++) {
+        var br = BRACKETS[i];
+        var crKey = 'cr' + br.key;
+        var cr = rep[crKey] || 0;
+        dealsBefore += Math.round(cr * br.size);
+      }
+      var thisBracket = BRACKETS[bracketIdx];
+      var crKeyThis = 'cr' + thisBracket.key;
+      var crThis = rep[crKeyThis] || 0;
+      var dealsInThis = Math.round(crThis * thisBracket.size);
+      return deals.slice(dealsBefore, dealsBefore + dealsInThis);
+    }
+
+    function buildTooltip(deals, bracketLabel) {
+      if (!deals || deals.length === 0) return '';
+      var rows = deals.map(function(d, i) {
+        return (i+1) + '. ' + fmt(d.amount) + (d.date ? ' — ' + d.date : '') + (d.store ? ' (' + d.store.replace(/^\d+\s*-\s*/,'') + ')' : '');
+      }).join('&#10;');
+      return bracketLabel + ' (' + deals.length + ' deal' + (deals.length!==1?'s':'') + '):&#10;' + rows;
+    }
+
     html = reps.map(function(r) {
-      // Only show bracket columns for brackets the rep has reached
       var appts = r.appts || r.swimAppts || 0;
-      function crCell(cr, rpa, target, minAppts) {
+      function crCell(crKey, rpaKey, target, minAppts, bracketIdx, bracketLabel) {
+        var cr = r[crKey], rpa = r[rpaKey];
         if (appts < minAppts) return '<td class="td-muted" style="opacity:0.3">—</td><td class="td-muted" style="opacity:0.3">—</td>';
-        return '<td class="td-num" style="color:'+crColor(cr,target)+'">'+(cr?fmtPct(cr):'—')+'</td>'+
-               '<td class="td-num" style="color:#94A3B8">'+(rpa?fmt(rpa):'—')+'</td>';
+        var deals = dealsForBracket(r, bracketIdx);
+        var tooltip = buildTooltip(deals, bracketLabel);
+        var cursorStyle = deals.length > 0 ? 'cursor:help' : '';
+        var titleAttr = tooltip ? ' title="' + tooltip + '"' : '';
+        return '<td class="td-num" style="color:'+crColor(cr,target)+';'+cursorStyle+'"'+titleAttr+'>'+(cr?fmtPct(cr):'—')+'</td>'+
+               '<td class="td-num" style="color:#94A3B8;'+cursorStyle+'"'+titleAttr+'>'+(rpa?fmt(rpa):'—')+'</td>';
       }
       return '<tr>'+
         '<td class="td-name">'+r.name+'</td>'+
         '<td>'+classBadge(r.class)+'</td>'+
         '<td class="td-muted" style="font-size:11px">'+r.market+'</td>'+
         '<td><div class="td-num" style="color:#4A9B4B">'+(appts?Math.round(appts):'—')+'</div>'+miniBar(appts,100)+'</td>'+
-        crCell(r.cr0_20,   r.rpa0_20,   0.20,  1)  +
-        crCell(r.cr21_40,  r.rpa21_40,  0.20, 21)  +
-        crCell(r.cr41_60,  r.rpa41_60,  0.25, 41)  +
-        crCell(r.cr61_80,  r.rpa61_80,  0.25, 61)  +
-        crCell(r.cr81_100, r.rpa81_100, 0.25, 81)  +
+        crCell('cr0_20',   'rpa0_20',   0.20,  1, 0, '0-20 Appts')  +
+        crCell('cr21_40',  'rpa21_40',  0.20, 21, 1, '21-40 Appts')  +
+        crCell('cr41_60',  'rpa41_60',  0.25, 41, 2, '41-60 Appts')  +
+        crCell('cr61_80',  'rpa61_80',  0.25, 61, 3, '61-80 Appts')  +
+        crCell('cr81_100', 'rpa81_100', 0.25, 81, 4, '81-100 Appts')  +
         '<td class="td-num" style="color:'+(r.totalCR>=0.23?'#4A9B4B':r.totalCR>=0.20?'#FFD700':'#FF6B6B')+';font-weight:900">'+(r.totalCR?fmtPct(r.totalCR):'—')+'</td>'+
         '<td class="td-num" style="color:#00D4FF;font-weight:900">'+(r.totalRPA?fmt(r.totalRPA):'—')+'</td>'+
         '<td><div class="td-num" style="color:#4A9B4B">'+fmt(r.hist_revenue)+'</div>'+miniBar(r.hist_revenue,maxRev)+'</td>'+
@@ -589,19 +631,32 @@ async function loadData() {
       console.log('Sample rep:', rosterData[0]);
     }
 
-    // Build Historical lookup: normalized name → {revenue, deals}
+    // Build Historical lookup: normalized name → { revenue, deals, dealList[] }
     var histLookup = {};
     if (histRes.ok) {
       var histMonths = await histRes.json();
-      // histMonths is array of monthly aggregates with deals array
       histMonths.forEach(function(month) {
         if (!month.deals) return;
         month.deals.forEach(function(deal) {
           if (!deal.name || deal.amount <= 0) return;
           var norm = normalizeName(deal.name);
-          if (!histLookup[norm]) histLookup[norm] = { revenue: 0, deals: 0 };
+          if (!histLookup[norm]) histLookup[norm] = { revenue: 0, deals: 0, dealList: [] };
           histLookup[norm].revenue += deal.amount;
           histLookup[norm].deals   += 1;
+          histLookup[norm].dealList.push({
+            amount: deal.amount,
+            date:   deal.date || '',
+            store:  deal.store || '',
+            month:  month.month || ''
+          });
+        });
+      });
+      // Sort each rep's deals chronologically (oldest first = first deal = appointment #1 territory)
+      Object.keys(histLookup).forEach(function(norm) {
+        histLookup[norm].dealList.sort(function(a, b) {
+          var da = new Date(a.date || a.month + ' 1');
+          var db = new Date(b.date || b.month + ' 1');
+          return da - db;
         });
       });
       console.log('Historical lookup built:', Object.keys(histLookup).length, 'reps');
@@ -610,10 +665,11 @@ async function loadData() {
     // Merge historical into roster
     rosterData.forEach(function(rep) {
       var norm = normalizeName(rep.name);
-      var hist = histLookup[norm] || { revenue: 0, deals: 0 };
+      var hist = histLookup[norm] || { revenue: 0, deals: 0, dealList: [] };
       rep.normalized    = norm;
       rep.hist_revenue  = hist.revenue;
       rep.hist_deals    = hist.deals;
+      rep.dealList      = hist.dealList;
     });
 
     _allReps = rosterData;
