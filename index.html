@@ -2191,7 +2191,14 @@ function render(){
     var monthGoal = (state.monthlyPlans && state.monthlyPlans[curMon]) ? state.monthlyPlans[curMon] : state.goal;
     updatePaceBanner(total, monthGoal);
   }
-  else { var pb=document.getElementById("pace-banner"); if(pb) pb.style.display="none"; }
+  else {
+    var pb=document.getElementById("pace-banner");
+    var ps=document.getElementById("pace-status");
+    var pd=document.getElementById("pace-detail-static");
+    if (pb) pb.style.display="flex";
+    if (ps) { ps.textContent="📅 DAILY VIEW"; ps.style.color="#00D4FF"; }
+    if (pd) pd.innerHTML="Viewing a single day — monthly pace hidden while filtered";
+  }
   document.getElementById("total-display").style.color=total>=goal?"#00FF88":"#FFD700";
   var mtdPct = Math.min((total/goal)*100,100);
   var bf=document.getElementById("bar-fill");
