@@ -489,6 +489,9 @@ function renderRows(reps) {
         var cr = r[crKey], rpa = r[rpaKey];
         if (appts < minAppts) return '<td class="td-muted" style="opacity:0.3">—</td><td class="td-muted" style="opacity:0.3">—</td>';
         var deals = dealsForBracket(r, bracketIdx);
+        if (r.name === 'Michael Hill' && bracketIdx === 0) {
+          console.log('DEBUG Michael Hill bracket 0:', {dealListLength: (r.dealList||[]).length, deals: deals, cr0_20: r.cr0_20});
+        }
         var tooltip = buildTooltip(deals, bracketLabel);
         var cursorStyle = deals.length > 0 ? 'cursor:help' : '';
         var titleAttr = tooltip ? ' title="' + tooltip + '"' : '';
@@ -618,7 +621,7 @@ async function loadData() {
     // Fetch roster and historical in parallel
     var [rosterRes, histRes] = await Promise.all([
       fetch(NEW_HIRE_URL + '?action=rookies', {cache:'no-store'}),
-      fetch(APPS_SCRIPT_URL + '?action=historical', {cache:'no-store'})
+      fetch(APPS_SCRIPT_URL + '?action=historical&deals=1', {cache:'no-store'})
     ]);
 
     if (!rosterRes.ok) throw new Error('Roster HTTP ' + rosterRes.status);
