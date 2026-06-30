@@ -86,6 +86,7 @@ body.light #filter-tabs{background:rgba(0,0,0,0.06)}
 .ftab.hire.active{background:#4A9B4B;color:#fff}
 .ftab.train.active{background:#3B82F6;color:#fff}
 .ftab.develop.active{background:#A855F7;color:#fff}
+.ftab.dash.active{background:#3B82F6;color:#fff}
 
 /* ── OTHER CONTROLS ── */
 select,input[type=text]{background:rgba(15,25,15,0.8);border:1px solid rgba(74,155,75,0.2);
@@ -157,6 +158,28 @@ body.light .td-name{color:#1A1A1A}
 #stp-nav{transition:top 0.2s ease}
 :fullscreen #stp-nav,:-webkit-full-screen #stp-nav{top:-48px}
 :fullscreen #stp-nav.peek,:-webkit-full-screen #stp-nav.peek{top:0!important}
+
+/* ── CLASS DASHBOARD ── */
+.dash-card{background:rgba(15,25,15,0.7);border:1px solid rgba(74,155,75,0.15);border-radius:14px;padding:16px;overflow:hidden}
+body.light .dash-card{background:#FFFFFF;border-color:rgba(74,155,75,0.2)}
+.dash-card-title{font-family:Orbitron,monospace;font-size:11px;font-weight:700;letter-spacing:1.5px;color:#94A3B8;margin-bottom:12px}
+body.light .dash-card-title{color:#444}
+.dash-hero{background:#000;border-radius:10px;padding:18px;text-align:center;margin-bottom:0}
+.dash-hero-label{font-size:11px;letter-spacing:2px;color:#94A3B8;margin-bottom:6px}
+.dash-hero-value{font-family:Orbitron,monospace;font-size:32px;font-weight:900;color:#FFD700}
+.dash-span-2{grid-column:span 2}
+.dash-span-3{grid-column:span 3}
+.dash-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px}
+.dash-bar-label{width:90px;flex-shrink:0;color:#CBD5E1;font-size:11px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.light .dash-bar-label{color:#444}
+.dash-bar-track{flex:1;height:16px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;position:relative}
+body.light .dash-bar-track{background:rgba(0,0,0,0.05)}
+.dash-bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;white-space:nowrap}
+.dash-bar-val{font-size:10px;font-weight:700;color:#fff;position:absolute;right:6px;top:50%;transform:translateY(-50%)}
+@media (max-width: 900px) {
+  #dash-grid{grid-template-columns:1fr !important}
+  .dash-span-2,.dash-span-3{grid-column:span 1 !important}
+}
 </style>
 </head>
 <body class="light">
@@ -220,6 +243,7 @@ body.light .td-name{color:#1A1A1A}
       <button class="ftab hire active" onclick="setFilter('hire')">🟢 HIRE</button>
       <button class="ftab train" onclick="setFilter('train')">🔵 TRAIN</button>
       <button class="ftab develop" onclick="setFilter('develop')">🟣 DEVELOP</button>
+      <button class="ftab dash" onclick="setFilter('dash')">📊 DASHBOARD</button>
     </div>
     <select id="class-filter" onchange="applyFilters()">
       <option value="">All Classes</option>
@@ -247,6 +271,9 @@ body.light .td-name{color:#1A1A1A}
     <div class="tp-icon">🔵</div>
     <h2>TRAIN — COMING SOON</h2>
     <p>Training metrics will appear here once connected to the assessment database. This will include skills evaluations, product knowledge scores, and manager feedback.</p>
+  </div>
+  <div id="class-dash" style="display:none">
+    <div id="dash-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px"></div>
   </div>
   <div id="tbl-wrap" style="display:none">
     <div id="tbl-scroll">
@@ -555,6 +582,12 @@ async function loadData() {
     if (!rosterRes.ok) throw new Error('Roster HTTP ' + rosterRes.status);
     var rosterData = await rosterRes.json();
     console.log('Roster loaded:', rosterData.length, 'reps');
+    if (rosterData.length > 0) {
+      console.log('Sample rep keys:', Object.keys(rosterData[0]));
+      console.log('Has cr0_20:', 'cr0_20' in rosterData[0]);
+      console.log('Has totalRPA:', 'totalRPA' in rosterData[0]);
+      console.log('Sample rep:', rosterData[0]);
+    }
 
     // Build Historical lookup: normalized name → {revenue, deals}
     var histLookup = {};
@@ -609,6 +642,151 @@ function normalizeName(name) {
     else document.body.classList.add('light');
   } catch(e) {}
 })();
+
+
+// ── CLASS DASHBOARD ────────────────────────────────────────────────────────────
+function populateClassDashSelector() {
+  var sel = document.getElementById('dash-class-select');
+  var classes = [...new Set(_allReps.map(function(r){return r.class;}).filter(Boolean))];
+  // Sort chronologically by parsing month/year
+  var monthOrder = {January:1,February:2,March:3,April:4,May:5,June:6,July:7,August:8,September:9,October:10,November:11,December:12};
+  classes.sort(function(a,b){
+    var pa = a.split(' '), pb = b.split(' ');
+    var ya = parseInt(pa[1])||0, yb = parseInt(pb[1])||0;
+    if (ya !== yb) return ya - yb;
+    return (monthOrder[pa[0]]||0) - (monthOrder[pb[0]]||0);
+  });
+  var current = sel.value;
+  sel.innerHTML = classes.map(function(c){ return '<option value="'+c+'">'+c+' Class</option>'; }).join('');
+  if (classes.includes(current)) sel.value = current;
+}
+
+function barColor(pct, good, warn) {
+  if (pct >= good) return '#4A9B4B';
+  if (pct >= warn) return '#FFD700';
+  return '#FF6B6B';
+}
+
+function renderClassDashboard() {
+  var grid = document.getElementById('dash-grid');
+  var reps = _allReps;
+  if (!reps || reps.length === 0) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#475569">No data loaded</div>'; return; }
+
+  // Aggregate by market
+  var marketMap = {};
+  reps.forEach(function(r) {
+    var m = r.market || 'Unknown';
+    if (!marketMap[m]) marketMap[m] = { revenue:0, appts:0, rpaSum:0, rpaCount:0, crSum:0, crCount:0, rideAlongs:0, rilla:0, availSlots:0, active:0, term:0, count:0 };
+    var mk = marketMap[m];
+    mk.revenue += (r.hist_revenue || r.revenue || 0);
+    mk.appts   += (r.appts || 0);
+    if (r.totalRPA) { mk.rpaSum += r.totalRPA; mk.rpaCount++; }
+    if (r.totalCR)  { mk.crSum  += r.totalCR;  mk.crCount++; }
+    mk.rideAlongs += (r.rideAlongs || 0);
+    mk.rilla      += (r.rilla || 0);
+    mk.availSlots += (r.availSlots || 0);
+    mk.count++;
+    if (r.status === 'Active') mk.active++; else mk.term++;
+  });
+
+  var markets = Object.keys(marketMap);
+
+  // Also aggregate by CLASS (since this is now a combined dashboard)
+  var classMap = {};
+  reps.forEach(function(r) {
+    var c = r.class || 'Unknown';
+    if (!classMap[c]) classMap[c] = { revenue:0, appts:0, count:0, active:0 };
+    classMap[c].revenue += (r.hist_revenue || r.revenue || 0);
+    classMap[c].appts   += (r.appts || 0);
+    classMap[c].count++;
+    if (r.status === 'Active') classMap[c].active++;
+  });
+  var classNames = Object.keys(classMap);
+  var totalRevenue = reps.reduce(function(s,r){ return s+(r.hist_revenue||r.revenue||0); }, 0);
+  var totalAppts   = reps.reduce(function(s,r){ return s+(r.appts||0); }, 0);
+  var totalActive  = reps.filter(function(r){ return r.status==='Active'; }).length;
+  var totalTerm    = reps.length - totalActive;
+  var avgRPA = reps.filter(function(r){return r.totalRPA;}).length ?
+    reps.reduce(function(s,r){return s+(r.totalRPA||0);},0) / reps.filter(function(r){return r.totalRPA;}).length : 0;
+  var avgCR = reps.filter(function(r){return r.totalCR;}).length ?
+    reps.reduce(function(s,r){return s+(r.totalCR||0);},0) / reps.filter(function(r){return r.totalCR;}).length : 0;
+
+  function buildBarChart(title, dataFn, formatFn, color, maxOverride) {
+    var rows = markets.map(function(m){ return { market: m, val: dataFn(marketMap[m]) }; });
+    rows.sort(function(a,b){ return b.val - a.val; });
+    var max = maxOverride || Math.max.apply(null, rows.map(function(r){return r.val;}), 1);
+    var html = '<div class="dash-card"><div class="dash-card-title">' + title + '</div>';
+    rows.forEach(function(r) {
+      var pct = max > 0 ? (r.val/max*100) : 0;
+      var shortMkt = r.market.replace(/^\d+\s*-\s*/,'').replace(/\(\d+\)/,'').trim();
+      html += '<div class="dash-bar-row">'
+        + '<div class="dash-bar-label" title="'+r.market+'">'+shortMkt+'</div>'
+        + '<div class="dash-bar-track"><div class="dash-bar-fill" style="width:'+pct+'%;background:'+color+'"></div>'
+        + '<span class="dash-bar-val" style="color:'+(pct>50?'#fff':'#CBD5E1')+'">'+formatFn(r.val)+'</span></div>'
+        + '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  var html = '';
+
+  // Hero cards row
+  html += '<div class="dash-card dash-hero"><div class="dash-hero-label">ALL CLASSES NET REVENUE</div><div class="dash-hero-value">'+fmt(totalRevenue)+'</div></div>';
+  html += '<div class="dash-card dash-hero"><div class="dash-hero-label">APPOINTMENTS ISSUED</div><div class="dash-hero-value" style="color:#4A9B4B">'+fmtNum(totalAppts)+'</div></div>';
+  html += '<div class="dash-card dash-hero"><div class="dash-hero-label">TOTAL REPS</div><div class="dash-hero-value" style="color:#00D4FF">'+reps.length+'</div></div>';
+
+  // Net Volume by class (since this is the combined dashboard)
+  html += '<div class="dash-card"><div class="dash-card-title">NET VOLUME BY CLASS</div>';
+  var classRows = classNames.map(function(c){ return {label:c, val:classMap[c].revenue}; });
+  classRows.sort(function(a,b){return b.val-a.val;});
+  var classMax = Math.max.apply(null, classRows.map(function(r){return r.val;}), 1);
+  classRows.forEach(function(r) {
+    var pct = classMax > 0 ? (r.val/classMax*100) : 0;
+    html += '<div class="dash-bar-row">'
+      + '<div class="dash-bar-label" title="'+r.label+'">'+r.label+'</div>'
+      + '<div class="dash-bar-track"><div class="dash-bar-fill" style="width:'+pct+'%;background:#A855F7"></div>'
+      + '<span class="dash-bar-val" style="color:'+(pct>50?'#fff':'#CBD5E1')+'">'+fmt(r.val)+'</span></div>'
+      + '</div>';
+  });
+  html += '</div>';
+
+  // Net Volume by market
+  html += '<div class="dash-span-2">' + buildBarChart('NET VOLUME BY MARKET', function(mk){return mk.revenue;}, fmt, '#4A9B4B') + '</div>';
+
+  // Retention pie-equivalent (bars: active vs term)
+  html += '<div class="dash-card"><div class="dash-card-title">RETENTION</div>'
+    + '<div style="display:flex;align-items:center;justify-content:center;height:140px;flex-direction:column;gap:8px">'
+    + '<div style="font-family:Orbitron,monospace;font-size:28px;font-weight:900;color:#4A9B4B">' + (reps.length?Math.round(totalActive/reps.length*100):0) + '%</div>'
+    + '<div style="font-size:11px;color:#94A3B8">ACTIVE (' + totalActive + ' of ' + reps.length + ')</div>'
+    + '<div style="display:flex;gap:16px;margin-top:8px">'
+    + '<div style="text-align:center"><div style="font-family:Orbitron,monospace;font-size:16px;color:#4A9B4B">'+totalActive+'</div><div style="font-size:9px;color:#94A3B8">ACTIVE</div></div>'
+    + '<div style="text-align:center"><div style="font-family:Orbitron,monospace;font-size:16px;color:#FF6B6B">'+totalTerm+'</div><div style="font-size:9px;color:#94A3B8">TERMED</div></div>'
+    + '</div></div></div>';
+
+  // RPA by market
+  html += buildBarChart('RPA BY MARKET', function(mk){return mk.rpaCount?mk.rpaSum/mk.rpaCount:0;}, fmt, '#3B82F6');
+
+  // Close% by market
+  html += '<div class="dash-span-2">' + buildBarChart('CLOSE % BY MARKET', function(mk){return mk.crCount?(mk.crSum/mk.crCount*100):0;}, function(v){return v.toFixed(1)+'%';}, '#F97316', 50) + '</div>';
+
+  // Total RPA + Total Close hero pair
+  html += '<div class="dash-card" style="display:flex;flex-direction:column;gap:10px;justify-content:center">'
+    + '<div style="text-align:center"><div style="font-size:11px;color:#94A3B8;letter-spacing:1px">TOTAL RPA</div><div style="font-family:Orbitron,monospace;font-size:22px;font-weight:900;color:#FFD700">'+fmt(avgRPA)+'</div></div>'
+    + '<div style="text-align:center;border-top:1px solid rgba(255,255,255,0.06);padding-top:10px"><div style="font-size:11px;color:#94A3B8;letter-spacing:1px">TOTAL CLOSE RATE</div><div style="font-family:Orbitron,monospace;font-size:22px;font-weight:900;color:#FFD700">'+(avgCR*100).toFixed(2)+'%</div></div>'
+    + '</div>';
+
+  // Rilla Recordings
+  html += buildBarChart('RILLA RECORDINGS', function(mk){return mk.rilla;}, fmtNum, '#FACC15');
+
+  // Capacity Available (slots)
+  html += buildBarChart('CAPACITY AVAILABLE', function(mk){return mk.availSlots;}, fmtNum, '#4A9B4B');
+
+  // Ride Alongs by market
+  html += '<div class="dash-span-3">' + buildBarChart('RIDE ALONGS BY MARKET', function(mk){return mk.rideAlongs;}, fmtNum, '#4A9B4B') + '</div>';
+
+  grid.innerHTML = html;
+}
 
 document.addEventListener('DOMContentLoaded', function() {
   stpNavInit();
