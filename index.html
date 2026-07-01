@@ -775,6 +775,12 @@ if (new URLSearchParams(window.location.search).get('tv') === '1') {
   <!-- BLITZ BRACKET BREAKDOWN — Large/Medium/Small team panels -->
   <div id="blitz-bracket-section" style="display:none;margin-bottom:16px"></div>
 
+  <!-- LAST MONTH'S CHAMPIONS (Champ / Powerlifter / Deal Slayer) -->
+  <div id="prior-champs-tile" style="display:none;background:rgba(15,23,42,0.75);border:1px solid rgba(255,215,0,0.2);border-radius:14px;padding:14px 20px;backdrop-filter:blur(14px);margin-bottom:20px">
+    <h3 id="prior-champs-title" style="font-family:Orbitron,monospace;font-size:11px;color:#FFD700;letter-spacing:2px;margin-bottom:12px">&#x1F3C6; LAST MONTH'S CHAMPIONS</h3>
+    <div id="prior-champs-content"></div>
+  </div>
+
   <!-- TOP 3 MOVERS TILE -->
   <div id="top-movers-tile" style="display:none;background:rgba(15,23,42,0.75);border:1px solid rgba(255,107,53,0.2);border-radius:14px;padding:14px 20px;backdrop-filter:blur(14px);margin-bottom:20px">
     <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#FF6B35;letter-spacing:2px;margin-bottom:12px">&#x1F3C6; TOP MOVERS TODAY</h3>
@@ -1327,6 +1333,7 @@ async function fetchPriorMonthChamps() {
 
     // Re-render so badges show up
     if (typeof render === 'function') render();
+    if (typeof renderPriorMonthChampsTile === 'function') renderPriorMonthChampsTile();
   } catch(e) {
     console.warn('fetchPriorMonthChamps failed:', e.message);
   }
@@ -2622,6 +2629,7 @@ function render(){
   renderSalesTicker(blitzUnlocked && state.data ? mergeAlways(state.data) : data);
   renderLeaderboards(data);
   renderDayBreakdown(data);
+  renderPriorMonthChampsTile();
   updateBiggestMover(data);
   checkMilestoneCelebration(data.total, state.goal);
   var rl=document.getElementById("rankings-list");
@@ -3189,6 +3197,58 @@ function updateBiggestMover(data) {
   });
   html+='</div>';
   mc.innerHTML=html;
+}
+
+// ══ LAST MONTH'S CHAMPIONS (Champ / Powerlifter / Deal Slayer) ═════════════
+function renderPriorMonthChampsTile() {
+  var tile  = document.getElementById('prior-champs-tile');
+  var content = document.getElementById('prior-champs-content');
+  var titleEl = document.getElementById('prior-champs-title');
+  if (!tile || !content) return;
+
+  var entries = [];
+  if (priorMonthChamps.champ && priorMonthChamps.champ.key) {
+    entries.push({
+      icon: '&#x1F3C6;', label: 'CHAMP', name: priorMonthChamps.champ.name,
+      valueText: fmt(priorMonthChamps.champ.amount), caption: 'total sales', color: '#FFD700'
+    });
+  }
+  if (priorMonthChamps.powerlifter && priorMonthChamps.powerlifter.key) {
+    entries.push({
+      icon: '&#x1F3CB;&#xFE0F;', label: 'POWERLIFTER', name: priorMonthChamps.powerlifter.name,
+      valueText: fmt(priorMonthChamps.powerlifter.amount), caption: 'single deal', color: '#A855F7'
+    });
+  }
+  if (priorMonthChamps.dealSlayer && priorMonthChamps.dealSlayer.key) {
+    entries.push({
+      icon: '&#x2694;&#xFE0F;', label: 'DEAL SLAYER', name: priorMonthChamps.dealSlayer.name,
+      valueText: priorMonthChamps.dealSlayer.count + ' deals', caption: 'most deals closed', color: '#FF6B35'
+    });
+  }
+
+  if (entries.length === 0) { tile.style.display = 'none'; return; }
+
+  var monthLabel = (priorMonthChamps.champ && priorMonthChamps.champ.month)
+    || (priorMonthChamps.powerlifter && priorMonthChamps.powerlifter.month)
+    || (priorMonthChamps.dealSlayer && priorMonthChamps.dealSlayer.month) || '';
+  if (titleEl) titleEl.innerHTML = '&#x1F3C6; ' + (monthLabel ? monthLabel.toUpperCase() + ' CHAMPIONS' : "LAST MONTH'S CHAMPIONS");
+
+  var html = '<div style="display:flex;gap:10px;flex-wrap:wrap">';
+  entries.forEach(function(e){
+    html += '<div style="flex:1;min-width:180px;background:rgba(255,255,255,0.04);border:1px solid '+e.color+'33;border-radius:12px;padding:12px 14px;box-shadow:0 0 16px '+e.color+'22">'
+      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+      + '<span style="font-size:20px">'+e.icon+'</span>'
+      + '<div>'
+        + '<div style="font-size:9px;letter-spacing:1px;font-family:Orbitron,monospace;color:'+e.color+';font-weight:700">'+e.label+'</div>'
+        + '<div style="font-size:14px;font-weight:700;color:#E2E8F0">'+e.name+'</div>'
+      + '</div></div>'
+      + '<div style="font-family:Orbitron,monospace;font-size:18px;font-weight:700;color:'+e.color+'">'+e.valueText+'</div>'
+      + '<div style="font-size:10px;color:#475569;margin-top:2px">'+e.caption+'</div>'
+      + '</div>';
+  });
+  html += '</div>';
+  content.innerHTML = html;
+  tile.style.display = 'block';
 }
 
 
