@@ -2394,21 +2394,16 @@ function render(){
       // Use demo day totals if no real data
       if (bd.isDemo && BLITZ_DEMO_DAY_TOTALS) {
         dayTotals = [BLITZ_DEMO_DAY_TOTALS[18], BLITZ_DEMO_DAY_TOTALS[19], BLITZ_DEMO_DAY_TOTALS[20]];
-      } else if (state.data && state.data.teams) {
-        Object.values(state.data.teams).forEach(function(team) {
-          team.reps.forEach(function(rep) {
-            (rep.dealObjs||[]).forEach(function(d) {
-              if (!d.date) return;
-              var dt = d.date instanceof Date ? d.date : new Date(d.date);
-              if (isNaN(dt.getTime())) return;
-              var dy = dt.getDate(), mo = dt.getMonth(), yr = dt.getFullYear();
-              if (yr === 2026 && mo === 5) {
-                if (dy === 18) dayTotals[0] += d.amount;
-                else if (dy === 19) dayTotals[1] += d.amount;
-                else if (dy === 20) dayTotals[2] += d.amount;
-              }
-            });
-          });
+      } else {
+        buildCombinedDealsPool().forEach(function(d) {
+          var dt = d.date;
+          if (!dt || isNaN(dt.getTime())) return;
+          var dy = dt.getDate(), mo = dt.getMonth(), yr = dt.getFullYear();
+          if (yr === 2026 && mo === 5) {
+            if (dy === 18) dayTotals[0] += d.amount;
+            else if (dy === 19) dayTotals[1] += d.amount;
+            else if (dy === 20) dayTotals[2] += d.amount;
+          }
         });
       }
 
@@ -2490,7 +2485,10 @@ function render(){
     data = mergeAlways(data);
   }
 
-  // Blitz filter — uses REAL data filtered to Jun 18-20 2026
+  // Blitz filter — uses the combined live + historical deal pool filtered to
+  // Jun 18-20 2026. Once that window is in the past, the live Dashboard feed
+  // no longer has this data (it's archived to Historical for the new month),
+  // so state.data alone isn't enough here.
   if (blitzUnlocked) {
     var BLITZ_START = new Date(2026, 5, 18); // Jun 18
     var BLITZ_END   = new Date(2026, 5, 20, 23, 59, 59); // Jun 20 end
@@ -2504,44 +2502,42 @@ function render(){
       "Toronto 0914": "Toronto"
     };
     data = { total: 0, teams: {} };
-    // Filter state.data to blitz dates only
-    var rawData = state.data && state.data.teams ? mergeAlways(state.data) : { teams: {} };
-    Object.entries(rawData.teams).forEach(function(e) {
-      var storeName = e[0], team = e[1];
+
+    var blitzColorLookup = {};
+    if (state.data && state.data.teams) {
+      Object.entries(mergeAlways(state.data).teams).forEach(function(e){ blitzColorLookup[e[0]] = e[1].color; });
+    }
+
+    var blitzPool = buildCombinedDealsPool().filter(function(d) {
+      if (!(d.date >= BLITZ_START && d.date <= BLITZ_END)) return false;
+      if (filterDay) {
+        var dk = new Date(d.date); dk.setHours(0,0,0,0);
+        var dKey = dk.getFullYear()+'-'+(dk.getMonth()+1)+'-'+dk.getDate();
+        if (dKey !== filterDay) return false;
+      }
+      return true;
+    });
+
+    blitzPool.forEach(function(d) {
+      var storeName = d.store;
       var display = blitzDisplayMap[storeName] || storeName.split(' - ').slice(1).join(' ').trim() || storeName;
       var existingKey = null;
       Object.keys(data.teams).forEach(function(k){ if(data.teams[k].display===display) existingKey=k; });
       var targetKey = existingKey || storeName;
-      team.reps.forEach(function(rep) {
-        var blitzDeals = (rep.dealObjs||[]).filter(function(d) {
-          if (!d.date) return false;
-          var dt = d.date instanceof Date ? d.date : new Date(d.date);
-          if (!(dt >= BLITZ_START && dt <= BLITZ_END)) return false;
-          // Also apply day filter if active
-          if (filterDay) {
-            var dk = new Date(dt); dk.setHours(0,0,0,0);
-            var dKey = dk.getFullYear()+'-'+(dk.getMonth()+1)+'-'+dk.getDate();
-            if (dKey !== filterDay) return false;
-          }
-          return true;
-        });
-        if (blitzDeals.length === 0) return;
-        var repTotal = blitzDeals.reduce(function(s,d){ return s+d.amount; }, 0);
-        if (!data.teams[targetKey]) {
-          data.teams[targetKey] = { color: team.color, display: display, total: 0, reps: [] };
-        }
-        var target = data.teams[targetKey];
-        var existing = target.reps.find(function(r){ return r.name===rep.name; });
-        if (existing) {
-          existing.amount += repTotal;
-          existing.dealObjs = existing.dealObjs.concat(blitzDeals);
-        } else {
-          target.reps.push({ name: rep.name, amount: repTotal, deals: blitzDeals.map(function(d){return d.amount;}),
-            dealObjs: blitzDeals, todayTotal: rep.todayTotal||0, latestDate: rep.latestDate||null });
-        }
-        target.total += repTotal;
-        data.total += repTotal;
-      });
+      if (!data.teams[targetKey]) {
+        data.teams[targetKey] = { color: blitzColorLookup[storeName] || '#00D4FF', display: display, total: 0, reps: [] };
+      }
+      var target = data.teams[targetKey];
+      var existing = target.reps.find(function(r){ return r.name === d.name; });
+      if (existing) {
+        existing.amount += d.amount;
+        existing.dealObjs.push({ amount: d.amount, date: d.date, isToday: false });
+      } else {
+        target.reps.push({ name: d.name, amount: d.amount, deals: [d.amount],
+          dealObjs: [{ amount: d.amount, date: d.date, isToday: false }], todayTotal: 0, latestDate: d.date });
+      }
+      target.total += d.amount;
+      data.total += d.amount;
     });
     // Re-sort reps within each team
     Object.values(data.teams).forEach(function(t){
@@ -4440,34 +4436,46 @@ function getBlitzCurrentData(data) {
 }
 
 function getBlitzData() {
-  // Use real data filtered to Jun 18-20 2026
+  // Use the combined live + historical deal pool, filtered to Jun 18-20 2026.
+  // Once that window is in the past, the live Dashboard feed no longer has
+  // this data — it's been archived to Historical for the new month — so
+  // state.data alone isn't enough to power this board anymore.
   var BLITZ_START = new Date(2026, 5, 18);
   var BLITZ_END   = new Date(2026, 5, 20, 23, 59, 59);
   var result = { total: 0, brackets: {}, allReps: [] };
-  if (!state.data || !state.data.teams) return result;
-  var rawData = mergeAlways(state.data);
 
   BRACKET_ORDER.forEach(function(bName) {
     result.brackets[bName] = { total: 0, teams: {}, color: BRACKET_COLORS[bName] };
   });
 
-  Object.entries(rawData.teams).forEach(function(e) {
-    var storeName = e[0], team = e[1];
+  var pool = buildCombinedDealsPool();
+  var blitzDeals = pool.filter(function(d){ return d.date >= BLITZ_START && d.date <= BLITZ_END; });
+  if (blitzDeals.length === 0) return result;
+
+  var colorLookup = {};
+  if (state.data && state.data.teams) {
+    Object.entries(state.data.teams).forEach(function(e){ colorLookup[e[0]] = e[1].color; });
+  }
+
+  var byStore = {};
+  blitzDeals.forEach(function(d) {
+    if (!byStore[d.store]) byStore[d.store] = {};
+    if (!byStore[d.store][d.name]) byStore[d.store][d.name] = [];
+    byStore[d.store][d.name].push(d);
+  });
+
+  Object.keys(byStore).forEach(function(storeName) {
     var bName = getBracketForStore(storeName);
     if (!bName) return;
     var display = BLITZ_DISPLAY_NAMES[storeName] || storeName.split(' - ').slice(1).join(' ').trim() || storeName;
+    var teamColor = colorLookup[storeName] || '#00D4FF';
 
     var filteredReps = [];
-    team.reps.forEach(function(rep) {
-      var blitzDeals = (rep.dealObjs||[]).filter(function(d) {
-        if (!d.date) return false;
-        var dt = d.date instanceof Date ? d.date : new Date(d.date);
-        return dt >= BLITZ_START && dt <= BLITZ_END;
-      });
-      if (blitzDeals.length === 0) return;
-      var repTotal = blitzDeals.reduce(function(s,d){ return s+d.amount; }, 0);
-      var repObj = { name: rep.name, amount: repTotal, store: display,
-        color: team.color, bracket: bName, dealObjs: blitzDeals };
+    Object.keys(byStore[storeName]).forEach(function(repName) {
+      var repDeals = byStore[storeName][repName];
+      var repTotal = repDeals.reduce(function(s,d){ return s+d.amount; }, 0);
+      var repObj = { name: repName, amount: repTotal, store: display, color: teamColor, bracket: bName,
+        dealObjs: repDeals.map(function(d){ return { amount: d.amount, date: d.date }; }) };
       filteredReps.push(repObj);
       result.allReps.push(repObj);
     });
@@ -4480,7 +4488,7 @@ function getBlitzData() {
     });
     var tKey = existingTeam || storeName;
     if (!result.brackets[bName].teams[tKey]) {
-      result.brackets[bName].teams[tKey] = { total: 0, display: display, color: team.color, reps: [] };
+      result.brackets[bName].teams[tKey] = { total: 0, display: display, color: teamColor, reps: [] };
     }
     filteredReps.forEach(function(r) {
       var ex = result.brackets[bName].teams[tKey].reps.find(function(x){ return x.name===r.name; });
