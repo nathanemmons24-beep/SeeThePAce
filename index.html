@@ -2322,11 +2322,57 @@ function render(){
   }
 
   // Main progress bar — reflects current filtered data
-  document.getElementById("total-display").innerHTML=fmt(total)+' <span>of '+fmt(goal)+(filterDay?" daily goal":"")+'</span>';
+  var displayGoal = goal;
+  if (!filterDay && activeMarketFilters && activeMarketFilters.size > 0 && state.currentMarketPlans) {
+    var _mktSum = 0;
+    activeMarketFilters.forEach(function(fm) {
+      Object.keys(state.currentMarketPlans).forEach(function(k) {
+        var _kc = k.replace(/.*\(/, '').replace(/\).*/, '');
+        var _mc = fm.replace(/.*\(/, '').replace(/\).*/, '');
+        if (_kc && _mc && _kc === _mc) _mktSum += state.currentMarketPlans[k];
+      });
+    });
+    if (_mktSum > 0) displayGoal = _mktSum;
+  }
+  document.getElementById("total-display").innerHTML=fmt(total)+' <span>of '+fmt(displayGoal)+(filterDay?" daily goal":"")+'</span>';
   if (!filterDay && typeof updatePaceBanner === "function") {
     var now2 = new Date();
     var curMon = ["January","February","March","April","May","June","July","August","September","October","November","December"][now2.getMonth()];
     var monthGoal = (state.monthlyPlans && state.monthlyPlans[curMon]) ? state.monthlyPlans[curMon] : state.goal;
+
+    // If a single market is filtered, switch to that market's plan
+    if (activeMarketFilters && activeMarketFilters.size === 1 && state.currentMarketPlans) {
+      var filteredMarket = Array.from(activeMarketFilters)[0];
+      // Match filtered market name to settings key (match by store code or name)
+      var mktGoal = 0;
+      Object.keys(state.currentMarketPlans).forEach(function(k) {
+        var kCode = (k.match(/\((\d+)\)/)||['',''])[1];
+        var mCode = (filteredMarket.match(/\((\d+)\)/)||['',''])[1] ||
+                    (filteredMarket.match(/(\d{3,4})/)||['',''])[1];
+        if (kCode && mCode && kCode === mCode) mktGoal = state.currentMarketPlans[k];
+        else if (!mktGoal && filteredMarket.toLowerCase().indexOf(k.split(',')[0].toLowerCase()) >= 0) mktGoal = state.currentMarketPlans[k];
+        else if (!mktGoal && k.toLowerCase().indexOf(filteredMarket.split(' ')[0].toLowerCase()) >= 0) mktGoal = state.currentMarketPlans[k];
+      });
+      if (mktGoal > 0) {
+        monthGoal = mktGoal;
+        console.log('Market filter: using plan', fmt(mktGoal), 'for', filteredMarket);
+      }
+    }
+
+    // If multiple markets filtered, sum their plans
+    if (activeMarketFilters && activeMarketFilters.size > 1 && state.currentMarketPlans) {
+      var sumGoal = 0;
+      activeMarketFilters.forEach(function(filteredMarket) {
+        Object.keys(state.currentMarketPlans).forEach(function(k) {
+          var kCode = (k.match(/\((\d+)\)/)||['',''])[1];
+          var mCode = (filteredMarket.match(/\((\d+)\)/)||['',''])[1] ||
+                      (filteredMarket.match(/(\d{3,4})/)||['',''])[1];
+          if (kCode && mCode && kCode === mCode) sumGoal += state.currentMarketPlans[k];
+        });
+      });
+      if (sumGoal > 0) monthGoal = sumGoal;
+    }
+
     updatePaceBanner(total, monthGoal);
   }
   else {
