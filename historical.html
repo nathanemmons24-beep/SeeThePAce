@@ -62,13 +62,18 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
 /* CHART */
 #chart-section{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:32px}
 .section-title{font-family:Orbitron,monospace;font-size:12px;font-weight:700;letter-spacing:3px;color:var(--muted);margin-bottom:20px;text-transform:uppercase}
-#chart-wrap{display:flex;align-items:flex-end;gap:12px;height:200px;overflow-x:auto;padding-bottom:8px}
+#chart-wrap{display:flex;align-items:flex-end;gap:12px;height:300px;overflow-x:auto;overflow-y:visible;padding-bottom:8px;padding-top:8px}
 .chart-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:80px}
-.chart-bar-wrap{flex:1;display:flex;align-items:flex-end;width:100%}
+.chart-bar-wrap{display:flex;align-items:flex-end;width:100%}
 .chart-bar{width:100%;border-radius:6px 6px 0 0;transition:height 1s ease;min-height:4px;position:relative}
 .chart-bar-label{font-family:Orbitron,monospace;font-size:10px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap}
 .chart-month-label{font-size:10px;color:var(--muted);text-align:center;white-space:nowrap}
 .chart-goal-line{position:absolute;left:0;right:0;border-top:2px dashed rgba(255,215,0,0.5)}
+#modal-markets{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+@media (max-width:700px){ #modal-markets{grid-template-columns:repeat(2,1fr)} }
+#modal-deals{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start}
+@media (max-width:1100px){ #modal-deals{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:600px){ #modal-deals{grid-template-columns:1fr} }
 
 /* LOADING / EMPTY */
 #loading{text-align:center;padding:80px;font-family:Orbitron,monospace;font-size:14px;color:var(--muted);letter-spacing:3px}
@@ -108,6 +113,13 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
     <span id="ytd-plan-label">$0 plan</span>
   </div>
 </div>
+<div id="rep-search-section" style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:28px;margin-bottom:24px">
+  <div class="section-title">&#x1F50D; SEARCH BY REP &mdash; MONTH TO MONTH</div>
+  <input type="text" id="rep-search-input" list="rep-search-list" placeholder="Type a rep's name, e.g. Josh Ravano..." oninput="onRepSearchInput()"
+    style="width:100%;padding:12px 16px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.15);color:#E2E8F0;font-family:'Exo 2',sans-serif;font-size:14px;margin-bottom:16px">
+  <datalist id="rep-search-list"></datalist>
+  <div id="rep-search-results"></div>
+</div>
 <div id="chart-section" style="display:none">
     <div class="section-title">📈 Revenue by Month</div>
     <div id="chart-wrap"></div>
@@ -121,6 +133,200 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
 
 <script>
 var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
+
+// Fixed company-wide annual goal — the YTD progress bar tracks against this
+// directly, rather than summing whatever monthly goal values happen to be
+// present in the archived data (which can drift or be incomplete).
+var ANNUAL_GOAL_FIXED = 961345000;
+
+// Per-market monthly plans, keyed by month NAME only (e.g. "June") since
+// plans recur annually — fetched once from Settings, used to compute which
+// market most exceeded ITS OWN plan each month (not just raw revenue).
+var _monthlyMarketPlans = {};
+var MARKET_NAME_ALIASES_H = { indy: 'indianapolis', indianapolis: 'indy' };
+
+async function loadSettingsForHistorical() {
+  try {
+    var res = await fetch(APPS_SCRIPT_URL + '?action=settings');
+    var s = await res.json();
+    if (s && s.marketPlans) _monthlyMarketPlans = s.marketPlans;
+  } catch(e) {
+    console.warn('Settings fetch for historical failed:', e.message);
+  }
+}
+
+// Same fuzzy store-code / name matching approach used on the live dashboard
+// — handles leading-zero code mismatches and Settings names that don't
+// literally contain the dashboard's short city name (e.g. Indy/Indianapolis).
+// Same market-merging rules as the live dashboard — several sub-markets/store
+// code variants roll up into a single combined market (e.g. Atlanta + Eastern
+// GA + Southern GA -> Georgia; Central GTA + Eastern GTA -> Toronto). Without
+// this, historical views show each sub-market as its own separate card.
+var ALWAYS_MERGE_H = {
+  "0914 - Central GTA":              "Toronto",
+  "0914 - Eastern GTA":              "Toronto",
+  "Toronto 0914":                    "Toronto",
+  "Toronto, Ontario (914)":          "Toronto",
+  "Toronto Ontario (914)":           "Toronto",
+  "0535 - Central Northern NJ":      "0535 - New Jersey",
+  "0535 - New Jersey":               "0535 - New Jersey",
+  "New Jersey-New York Metro (535)": "0535 - New Jersey",
+  "New Jersey-New York Metro":       "0535 - New Jersey",
+  "0930 - Atlanta":                  "0930 - Georgia",
+  "0930 - Eastern GA":               "0930 - Georgia",
+  "0930 - Southern GA":              "0930 - Georgia",
+  "0930 - Georgia":                  "0930 - Georgia",
+  "Atlanta, GA (930)":               "0930 - Georgia",
+  "Atlanta, GA":                     "0930 - Georgia",
+  "0868 - So Bend":                  "0868 - South Bend",
+  "0868 - South Bend":               "0868 - South Bend",
+  "South Bend, IN (868)":            "0868 - South Bend",
+  "South Bend, IN":                  "0868 - South Bend",
+  "0790 - Tri-Cities TN":            "0790 - Knoxville",
+  "0790 - Knoxville":                "0790 - Knoxville",
+  "Knoxville, TN (790)":             "0790 - Knoxville",
+  "Knoxville, TN":                   "0790 - Knoxville",
+  "0800 - Long Island":              "0800 - Long Island",
+  "Long Island, NY (800)":           "0800 - Long Island",
+  "Long Island, NY":                 "0800 - Long Island",
+  "0890 - San Francisco":            "0890 - San Francisco",
+  "San Francisco, CA (890)":         "0890 - San Francisco",
+  "San Francisco, CA":               "0890 - San Francisco",
+  "0576 - Cincinnati":               "0576 - Cincinnati",
+  "Cincinnati-Dayton OH (576)":      "0576 - Cincinnati",
+  "Cincinnati-Dayton OH":            "0576 - Cincinnati",
+  "Cincinnati-Dayton O...":          "0576 - Cincinnati",
+  "0867 - Indy":                     "0867 - Indy",
+  "Indianapolis, IN (867)":          "0867 - Indy",
+  "Indianapolis, IN":                "0867 - Indy",
+  "0534 - Westchester":              "0534 - Westchester",
+  "Westchester, NY (534)":           "0534 - Westchester",
+  "Westchester, NY":                 "0534 - Westchester",
+  "0791 - Nashville":                "0791 - Nashville",
+  "Nashville, TN (791)":             "0791 - Nashville",
+  "Nashville, TN":                   "0791 - Nashville",
+  "0792 - Chattanooga":              "0792 - Chattanooga",
+  "Chattanooga, TN (792)":           "0792 - Chattanooga",
+  "Chattanooga, TN":                 "0792 - Chattanooga"
+};
+
+function mergedMarketKey(storeKey) {
+  if (!storeKey) return storeKey;
+  return ALWAYS_MERGE_H[storeKey] || storeKey;
+}
+
+// ── SEARCH BY REP — month-to-month performance ──────────────────────────────
+function buildRepSearchOptions() {
+  var names = new Set();
+  _histData.forEach(function(m){
+    (m.deals||[]).forEach(function(deal){
+      if (deal.name && deal.name.trim().toLowerCase() !== 'other') names.add(deal.name.trim());
+    });
+  });
+  var dl = document.getElementById('rep-search-list');
+  if (dl) dl.innerHTML = Array.from(names).sort().map(function(n){ return '<option value="'+n+'">'; }).join('');
+}
+
+function onRepSearchInput() {
+  var input = document.getElementById('rep-search-input');
+  var resultsEl = document.getElementById('rep-search-results');
+  if (!input || !resultsEl) return;
+  var q = input.value.trim().toLowerCase();
+  if (!q) { resultsEl.innerHTML = ''; return; }
+
+  var monthsSorted = _histData.slice().sort(function(a,b){ return new Date(a.month) - new Date(b.month); });
+  var rows = [];
+  var matchedName = null;
+
+  monthsSorted.forEach(function(m){
+    var rev = 0, count = 0, marketSet = new Set();
+    (m.deals||[]).forEach(function(deal) {
+      if (!deal.name || deal.name.trim().toLowerCase() === 'other') return;
+      if (deal.name.toLowerCase().indexOf(q) >= 0) {
+        rev += deal.amount; count += 1;
+        marketSet.add(mergedMarketKey(deal.store).replace(/^\d+ - /,''));
+        if (!matchedName) matchedName = deal.name;
+      }
+    });
+    if (rev > 0 || count > 0) {
+      var champs = computeMonthChamps(m.deals);
+      var badges = computeMonthBadges(m.deals);
+      var earnedBadges = [];
+      if (matchedName === champs.champ)  earnedBadges.push({icon:'&#x1F451;', label:'Champ'});
+      if (matchedName === champs.slayer) earnedBadges.push({icon:'&#x2694;&#xFE0F;', label:'Deal Slayer'});
+      if (matchedName === champs.power)  earnedBadges.push({icon:'&#x1F3CB;&#xFE0F;', label:'Powerlifter'});
+      if (badges.rocketNames.indexOf(matchedName) >= 0 && badges.rocketAmt > 0) earnedBadges.push({icon:'&#x1F680;', label:'Rocket'});
+      if (matchedName === badges.streakName && badges.streakDays >= 2) earnedBadges.push({icon:'&#x1F525;', label:'Streaker'});
+      if (ROOKIE_NAMES_H.has(matchedName)) earnedBadges.push({icon:'&#x2B50;', label:'Rookie'});
+      rows.push({ month: m.month, revenue: rev, count: count, markets: Array.from(marketSet).join(', '), badges: earnedBadges });
+    }
+  });
+
+  if (!matchedName) {
+    resultsEl.innerHTML = '<div style="text-align:center;padding:20px;color:#475569;font-size:12px">No rep matches "'+q+'"</div>';
+    return;
+  }
+
+  var maxRev = Math.max.apply(null, rows.map(function(r){ return r.revenue; })) || 1;
+
+  var chartHtml = '<div style="display:flex;align-items:flex-end;gap:10px;height:170px;overflow-x:auto;padding:8px 0 0">'
+    + rows.map(function(r){
+        var h = r.revenue > 0 ? Math.max(3, (r.revenue/maxRev)*100) : 3;
+        var shortM = r.month.replace(/(\w{3})\w+ (\d{4})/, '$1 $2');
+        return '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;width:74px">'
+          + '<div style="font-family:Orbitron,monospace;font-size:9px;color:#94A3B8;white-space:nowrap">'+fmt(r.revenue)+'</div>'
+          + '<div style="height:120px;width:100%;display:flex;align-items:flex-end;flex:none">'
+            + '<div style="width:100%;height:'+h+'%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#00D4FF,#0070CC)"></div>'
+          + '</div>'
+          + '<div style="font-size:9px;color:#64748B;white-space:nowrap">'+shortM+'</div>'
+        + '</div>';
+      }).join('')
+    + '</div>';
+
+  var tableHtml = '<div style="background:rgba(0,0,0,0.2);border-radius:12px;overflow:hidden;margin-top:16px">'
+    + '<div style="display:grid;grid-template-columns:1.4fr 1.2fr 1fr 0.8fr 1.6fr;padding:10px 14px;background:rgba(0,212,255,0.06);font-family:Orbitron,monospace;font-size:9px;letter-spacing:1px;color:#475569">'
+      + '<div>MONTH</div><div>MARKET</div><div>REVENUE</div><div>DEALS</div><div>BADGES</div>'
+    + '</div>'
+    + rows.map(function(r){
+        var badgesHtml = r.badges.length
+          ? r.badges.map(function(b){ return '<span title="'+b.label+'" style="margin-right:4px">'+b.icon+'</span>'; }).join('')
+          : '<span style="color:#334155">&mdash;</span>';
+        return '<div style="display:grid;grid-template-columns:1.4fr 1.2fr 1fr 0.8fr 1.6fr;padding:9px 14px;border-top:1px solid rgba(255,255,255,0.04);font-size:12px;align-items:center">'
+          + '<div style="color:#E2E8F0">'+r.month+'</div>'
+          + '<div style="color:#94A3B8;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+r.markets+'</div>'
+          + '<div style="color:#00FF88;font-weight:700;font-family:Orbitron,monospace">'+fmt(r.revenue)+'</div>'
+          + '<div style="color:#94A3B8">'+r.count+'</div>'
+          + '<div>'+badgesHtml+'</div>'
+        + '</div>';
+      }).join('')
+    + '</div>';
+
+  resultsEl.innerHTML = '<div style="font-family:Orbitron,monospace;font-size:16px;font-weight:900;color:#00D4FF;letter-spacing:1px;margin-bottom:12px">'+matchedName+'</div>'
+    + chartHtml + tableHtml;
+}
+
+function getPlanForMarketInMonth(storeKey, monthPlans) {
+  if (!monthPlans || !storeKey) return 0;
+  if (monthPlans[storeKey] != null) return monthPlans[storeKey];
+  var mCodeRaw = (storeKey.match(/\((\d+)\)/)||['',''])[1] || (storeKey.match(/(\d{3,4})/)||['',''])[1];
+  var mCode = mCodeRaw ? parseInt(mCodeRaw, 10) : null;
+  var plan = 0;
+  var storeLower = storeKey.toLowerCase();
+  var shortName = (storeKey.split(' - ')[1] || storeKey.split(' ')[0] || '').toLowerCase().trim();
+  var shortAlias = MARKET_NAME_ALIASES_H[shortName] || '';
+  Object.keys(monthPlans).forEach(function(k) {
+    if (plan) return;
+    var kLower = k.toLowerCase();
+    var kCodeRaw = (k.match(/\((\d+)\)/)||['',''])[1];
+    var kCode = kCodeRaw ? parseInt(kCodeRaw, 10) : null;
+    if (kCode !== null && mCode !== null && kCode === mCode) { plan = monthPlans[k]; return; }
+    if (shortName && kLower.indexOf(shortName) >= 0) { plan = monthPlans[k]; return; }
+    if (shortAlias && kLower.indexOf(shortAlias) >= 0) { plan = monthPlans[k]; return; }
+    var kFirstWord = kLower.split(/[\s,\-]+/)[0];
+    if (kFirstWord && kFirstWord.length > 2 && storeLower.indexOf(kFirstWord) >= 0) { plan = monthPlans[k]; return; }
+  });
+  return plan;
+}
 
 function fmt(n) {
   if (isNaN(n) || n === null) return '$0';
@@ -143,8 +349,12 @@ function barColor(i) {
 
 async function loadHistorical() {
   try {
-    var res = await fetch(APPS_SCRIPT_URL + '?action=historical&deals=1');
-    var data = await res.json();
+    var results = await Promise.all([
+      fetch(APPS_SCRIPT_URL + '?action=historical&deals=1').then(function(r){ return r.json(); }),
+      loadSettingsForHistorical(),
+      loadRookiesForHistorical()
+    ]);
+    var data = results[0];
     render(data);
   } catch(e) {
     console.error('Historical fetch failed:', e);
@@ -152,8 +362,18 @@ async function loadHistorical() {
   }
 }
 
+var ROOKIE_NAMES_H = new Set();
+async function loadRookiesForHistorical() {
+  try {
+    var res = await fetch(APPS_SCRIPT_URL + '?action=rookies');
+    var arr = await res.json();
+    (arr||[]).forEach(function(r){ if (r && r.name) ROOKIE_NAMES_H.add(String(r.name).trim()); });
+  } catch(e) {
+    console.warn('Rookie fetch for historical failed:', e.message);
+  }
+}
+
 function render(data) {
-  _histData = data.slice().reverse(); // store for drill-down
   document.getElementById('loading').style.display = 'none';
 
   if (!data || data.length === 0) {
@@ -166,13 +386,13 @@ function render(data) {
 
   // ── SUMMARY CARDS ───────────────────────────────────────────────────────────
   var totalAllTime = data.reduce(function(s,d){ return s + d.revenue; }, 0);
-  var totalAllPlan = data.reduce(function(s,d){ return s + d.goal; }, 0);
+  var totalAllPlan = ANNUAL_GOAL_FIXED; // fixed company-wide annual goal, not a sum of archived monthly goals
   var avgPct       = data.reduce(function(s,d){ return s + d.pctToGoal; }, 0) / data.length;
   var bestMonth    = data.reduce(function(p,c){ return c.revenue > p.revenue ? c : p; });
   var bestPct      = data.reduce(function(p,c){ return c.pctToGoal > p.pctToGoal ? c : p; });
   var ytdPct       = totalAllPlan > 0 ? (totalAllTime / totalAllPlan * 100) : 0;
   var ytdColor     = ytdPct >= 100 ? '#00FF88' : ytdPct >= 90 ? '#FFD700' : '#FF4444';
-  var annualGoal   = data[0] && data[0].annualGoal ? data[0].annualGoal : 0;
+  var annualGoal   = ANNUAL_GOAL_FIXED;
 
   var summaryEl = document.getElementById('summary-row');
   summaryEl.style.display = 'grid';
@@ -206,15 +426,19 @@ function render(data) {
   }
   chartSection.style.display = 'block';
   var chartWrap = document.getElementById('chart-wrap');
+  console.log('Revenue by Month — max revenue this range:', fmt(maxRev));
   chartWrap.innerHTML = data.map(function(d, i){
-    var heightPct = maxRev > 0 ? (d.revenue / maxRev * 100) : 0;
-    var goalPct   = maxRev > 0 ? (d.goal   / maxRev * 100) : 0;
+    var heightPct = maxRev > 0 ? Math.max(3, Math.round((d.revenue / maxRev) * 1000) / 10) : 3;
+    var goalPct   = maxRev > 0 ? (d.goal / maxRev * 100) : 0;
     var color = barColor(i);
+    var hitPlan = d.revenue >= d.goal;
+    var glowStyle = hitPlan ? 'box-shadow:0 0 24px '+color+', 0 0 48px '+color+'66;' : '';
     var shortMonth = d.month.replace(/(\w{3})\w+ (\d{4})/, '$1 $2');
-    return '<div class="chart-col">'
-      + '<div class="chart-bar-label">'+fmt(d.revenue)+'</div>'
-      + '<div class="chart-bar-wrap" style="height:160px;width:100%">'
-      + '<div class="chart-bar" style="height:'+heightPct+'%;background:linear-gradient(180deg,'+color+','+color+'88);position:relative">'
+    console.log('  ' + d.month + ': ' + fmt(d.revenue) + ' -> ' + heightPct + '% height');
+    return '<div class="chart-col" onclick="showDealsByMonth(\''+d.month.replace(/'/g,"\\'")+'\')" style="cursor:pointer" title="Click to view all deals for '+d.month+'">'
+      + '<div class="chart-bar-label">'+fmt(d.revenue)+(hitPlan?' &#x2728;':'')+'</div>'
+      + '<div class="chart-bar-wrap" style="height:240px;width:100%;flex:none">'
+      + '<div class="chart-bar" style="height:'+heightPct+'%;background:linear-gradient(180deg,'+color+','+color+'88);position:relative;'+glowStyle+'">'
       + '<div class="chart-goal-line" style="bottom:'+((goalPct/heightPct)*100)+'%;display:'+(goalPct<=heightPct?'block':'none')+'"></div>'
       + '</div></div>'
       + '<div class="chart-month-label">'+shortMonth+'</div>'
@@ -223,7 +447,10 @@ function render(data) {
 
   // ── MONTH CARDS ─────────────────────────────────────────────────────────────
   var grid = document.getElementById('months-grid');
-  grid.innerHTML = data.slice().reverse().map(function(d, i){
+  var displayOrder = data.slice().reverse(); // newest-first, for both display and drill-down indexing
+  _histData = displayOrder; // showDeals(i) indexes into this — must match the grid exactly
+  buildRepSearchOptions();
+  grid.innerHTML = displayOrder.map(function(d, i){
     var pct = d.pctToGoal || 0;
     var color = pctColor(pct);
     var barW = Math.min(pct, 100);
@@ -237,6 +464,7 @@ function render(data) {
       var rv={}, rd={};
       d.deals.forEach(function(deal) {
         if (!deal.name || deal.amount<=0) return;
+        if (deal.name.trim().toLowerCase() === 'other') return; // combined terminated DCs — not a real rep
         if (!rv[deal.name]) { rv[deal.name]=0; rd[deal.name]=0; }
         rv[deal.name] += deal.amount;
         rd[deal.name] += 1;
@@ -255,6 +483,38 @@ function render(data) {
       + '</div>'
     ) : '';
 
+    // Top market = the market that beat ITS OWN plan by the largest margin,
+    // not just whichever market had the highest raw revenue.
+    var topMarketDisplay = d.topMarket.replace(/^\d+ - /,'');
+    var topMarketRevDisplay = d.topMarketRev;
+    var topMarketVarianceLabel = '';
+    var monthNameOnly = d.month.split(' ')[0];
+    var monthPlans = _monthlyMarketPlans[monthNameOnly];
+    if (monthPlans && d.deals && d.deals.length > 0) {
+      var mktRevMap = {};
+      d.deals.forEach(function(deal) {
+        if (!deal.store || deal.amount <= 0) return;
+        var mkKey = mergedMarketKey(deal.store);
+        if (!mktRevMap[mkKey]) mktRevMap[mkKey] = 0;
+        mktRevMap[mkKey] += deal.amount;
+      });
+      var bestMk = null, bestVariance = null, bestRev = 0;
+      Object.keys(mktRevMap).forEach(function(mk) {
+        var plan = getPlanForMarketInMonth(mk, monthPlans);
+        if (plan > 0) {
+          var variance = mktRevMap[mk] - plan;
+          if (bestVariance === null || variance > bestVariance) {
+            bestVariance = variance; bestMk = mk; bestRev = mktRevMap[mk];
+          }
+        }
+      });
+      if (bestMk) {
+        topMarketDisplay = bestMk.replace(/^\d+ - /,'');
+        topMarketRevDisplay = bestRev;
+        topMarketVarianceLabel = ' <span style="color:' + (bestVariance >= 0 ? '#00FF88' : '#FF6B6B') + '">(' + (bestVariance >= 0 ? '+' : '') + fmt(bestVariance) + ' vs plan)</span>';
+      }
+    }
+
     return '<div class="month-card">'
       + '<div class="month-card-header">'
         + '<div class="month-name">' + d.month + '</div>'
@@ -270,54 +530,371 @@ function render(data) {
         + '<div><div class="month-stat-label">Markets</div><div class="month-stat-value">' + d.markets + '</div></div>'
       + '</div>'
       + '<div class="month-footer">'
-        + '<span>&#x1F3C6; ' + d.topMarket.replace(/^\d+ - /,'') + '&nbsp;&nbsp;<strong style="color:#FFD700">' + fmt(d.topMarketRev) + '</strong></span>'
+        + '<span>&#x1F3C6; ' + topMarketDisplay + '&nbsp;&nbsp;<strong style="color:#FFD700">' + fmt(topMarketRevDisplay) + '</strong>' + topMarketVarianceLabel + '</span>'
         + '<span>&#x2B50; ' + d.topRep + '&nbsp;&nbsp;<strong style="color:#00FF88">' + fmt(d.topRepRev) + '</strong></span>'
       + '</div>'
       + champRow
-      + '<button onclick="showDeals(' + i + ')" style="margin-top:12px;width:100%;padding:8px;border-radius:8px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);color:#00D4FF;font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;cursor:pointer">VIEW ALL ' + d.dealCount + ' DEALS &#x25BC;</button>'
+      + '<button onclick="showDeals(' + i + ')" style="margin-top:12px;width:100%;padding:8px;border-radius:8px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);color:#00D4FF;font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;cursor:pointer">VIEW MONTH &#x25BC;</button>'
       + '</div>';
   }).join('');
 }
 
-loadHistorical();
-
 var _histData = [];
+
+// ── INTERACTIVE MONTH DRILL-DOWN — day-by-day, market, and rookie filters ──
+var _modalAllDeals = [];
+var _modalDayFilter = null;         // 'YYYY-M-D' or null
+var _modalMarketFilters = new Set(); // Set of store keys — multi-select
+var _modalRookieOnly = false;
+
+var _modalMonthGoal = 0;
+var _modalMonthPlans = null;
+var _modalDaysInMonth = 30;
+var _modalChamps = { champ:'', champAmt:0, slayer:'', slayerCount:0, power:'', powerAmt:0 };
+var _modalBadges = { rocketNames: [], rocketAmt: 0, streakName: '', streakDays: 0 };
+
+// Same criteria as the live dashboard's computeTitles(): Rocket = biggest
+// single deal (can tie), Streaker = longest run of consecutive calendar
+// days with at least one sale that month (threshold of 2+ days, matching
+// the live dashboard's "sl>=2" rule).
+function computeMonthBadges(deals) {
+  var rocketNames = [], rocketAmt = 0;
+  var repDayKeys = {}; // repName -> Set of day keys they sold on
+
+  (deals||[]).forEach(function(deal) {
+    if (!deal.name || deal.amount<=0) return;
+    if (deal.name.trim().toLowerCase() === 'other') return;
+    if (deal.amount > rocketAmt) { rocketAmt = deal.amount; rocketNames = [deal.name]; }
+    else if (deal.amount === rocketAmt && rocketAmt > 0 && rocketNames.indexOf(deal.name) < 0) { rocketNames.push(deal.name); }
+
+    var dk = dealDayKey(deal);
+    if (!dk) return;
+    if (!repDayKeys[deal.name]) repDayKeys[deal.name] = new Set();
+    repDayKeys[deal.name].add(dk);
+  });
+
+  var streakName = '', streakDays = 0;
+  Object.keys(repDayKeys).forEach(function(name) {
+    var days = Array.from(repDayKeys[name]).map(function(k){
+      var p = k.split('-').map(Number);
+      return new Date(p[0], p[1]-1, p[2]).getTime();
+    }).sort(function(a,b){ return a-b; });
+    var longest = days.length ? 1 : 0, current = days.length ? 1 : 0;
+    for (var i = 1; i < days.length; i++) {
+      var dayDiff = Math.round((days[i]-days[i-1]) / 86400000);
+      if (dayDiff === 1) { current++; if (current > longest) longest = current; }
+      else if (dayDiff > 1) { current = 1; }
+    }
+    if (longest > streakDays) { streakDays = longest; streakName = name; }
+  });
+
+  return { rocketNames: rocketNames, rocketAmt: rocketAmt, streakName: streakName, streakDays: streakDays };
+}
+
+function computeMonthChamps(deals) {
+  var champs = { champ:'', champAmt:0, slayer:'', slayerCount:0, power:'', powerAmt:0 };
+  var rv={}, rd={};
+  (deals||[]).forEach(function(deal) {
+    if (!deal.name || deal.amount<=0) return;
+    if (deal.name.trim().toLowerCase() === 'other') return; // combined terminated DCs — not a real rep
+    if (!rv[deal.name]) { rv[deal.name]=0; rd[deal.name]=0; }
+    rv[deal.name] += deal.amount;
+    rd[deal.name] += 1;
+    if (deal.amount > champs.powerAmt) { champs.powerAmt = deal.amount; champs.power = deal.name; }
+  });
+  Object.keys(rv).forEach(function(n) {
+    if (rv[n] > champs.champAmt) { champs.champAmt = rv[n]; champs.champ = n; }
+    if (rd[n] > champs.slayerCount) { champs.slayerCount = rd[n]; champs.slayer = n; }
+  });
+  return champs;
+}
+
+var _modalMonthYear = null;
+var _modalMonthIdx = null;
+
+// Reconstructs a clean calendar date from a deal's date field, tolerating the
+// backend's known bug where dates sometimes arrive as the first 10 chars of
+// a JS Date's toString() (e.g. "Fri Jan 16") instead of an ISO string. In
+// that case the weekday/month token is unreliable, but the trailing day
+// number is not — so we trust the archived month bucket (which is always
+// correct, since revenue/deal totals are keyed off it) for year/month and
+// just pull the day number out of whatever string we got.
+function parseDealDateRobust(dateStr) {
+  if (!dateStr) return null;
+  var iso = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (iso) return new Date(parseInt(iso[1]), parseInt(iso[2])-1, parseInt(iso[3]));
+  var dayNum = (dateStr.match(/(\d{1,2})\s*$/)||[])[1];
+  if (dayNum && _modalMonthYear != null && _modalMonthIdx != null) {
+    return new Date(_modalMonthYear, _modalMonthIdx, parseInt(dayNum, 10));
+  }
+  var fallback = new Date(dateStr);
+  return isNaN(fallback.getTime()) ? null : fallback;
+}
+
+function dealDayKey(deal) {
+  var dt = parseDealDateRobust(deal.date);
+  if (!dt) return null;
+  return dt.getFullYear() + '-' + (dt.getMonth()+1) + '-' + dt.getDate();
+}
+
+// Looks up by month label rather than a raw array index — used by the
+// Revenue by Month chart bars, since that chart iterates a differently-
+// ordered array (oldest-first) than _histData (newest-first). Matching by
+// the actual month string avoids re-introducing the same class of index
+// mismatch bug that caused month tiles to open the wrong month's data.
+function showDealsByMonth(monthLabel) {
+  var idx = _histData.findIndex(function(d){ return d.month === monthLabel; });
+  if (idx >= 0) showDeals(idx);
+}
 
 function showDeals(idx) {
   var d = _histData[idx];
   if (!d) return;
-  
+
+  _modalAllDeals = d.deals || [];
+  _modalDayFilter = null;
+  _modalMarketFilters = new Set();
+  _modalRookieOnly = false;
+  _modalMonthGoal = d.goal || 0;
+  var monthNameOnly = d.month.split(' ')[0];
+  _modalMonthPlans = _monthlyMarketPlans[monthNameOnly] || null;
+  var monthDate = new Date(d.month);
+  _modalDaysInMonth = !isNaN(monthDate.getTime()) ? new Date(monthDate.getFullYear(), monthDate.getMonth()+1, 0).getDate() : 30;
+  _modalMonthYear = !isNaN(monthDate.getTime()) ? monthDate.getFullYear() : null;
+  _modalMonthIdx  = !isNaN(monthDate.getTime()) ? monthDate.getMonth() : null;
+  _modalChamps = computeMonthChamps(_modalAllDeals);
+  _modalBadges = computeMonthBadges(_modalAllDeals);
+
   document.getElementById('deal-modal').style.display = 'block';
   document.getElementById('modal-title').textContent = d.month.toUpperCase() + ' — ALL DEALS';
 
-  // Market summary cards
+  renderModalContent();
+}
+
+function toggleModalDayFilter(key) {
+  _modalDayFilter = (_modalDayFilter === key) ? null : key;
+  renderModalContent();
+}
+
+function toggleModalMarketFilter(store) {
+  if (_modalMarketFilters.has(store)) _modalMarketFilters.delete(store);
+  else _modalMarketFilters.add(store);
+  renderModalContent();
+}
+
+function toggleModalRookieFilter() {
+  _modalRookieOnly = !_modalRookieOnly;
+  renderModalContent();
+}
+
+function clearModalFilters() {
+  _modalDayFilter = null;
+  _modalMarketFilters = new Set();
+  _modalRookieOnly = false;
+  renderModalContent();
+}
+
+function modalDealMatches(deal, opts) {
+  opts = opts || {};
+  if (!opts.skipDay && _modalDayFilter && dealDayKey(deal) !== _modalDayFilter) return false;
+  if (!opts.skipMarket && _modalMarketFilters.size > 0 && !_modalMarketFilters.has(mergedMarketKey(deal.store))) return false;
+  if (_modalRookieOnly && !ROOKIE_NAMES_H.has(String(deal.name||'').trim())) return false;
+  return true;
+}
+
+function renderModalContent() {
+  // ── Day-by-day bar (reflects market + rookie filters, not the day filter
+  // itself, so clicking a day always toggles it correctly). Groups by a
+  // reconstructed calendar-day key (see parseDealDateRobust) rather than the
+  // raw date field, since that field can arrive in a garbled, unsortable
+  // format from the backend — this keeps both grouping and chronological
+  // order correct regardless.
+  var dayTotals = {};
+  _modalAllDeals.forEach(function(deal) {
+    if (!modalDealMatches(deal, {skipDay:true})) return;
+    var dk = dealDayKey(deal);
+    if (!dk) return;
+    if (!dayTotals[dk]) dayTotals[dk] = { total:0, count:0, date: parseDealDateRobust(deal.date) };
+    dayTotals[dk].total += deal.amount;
+    dayTotals[dk].count += 1;
+  });
+  var dayKeys = Object.keys(dayTotals).sort(function(a,b){ return dayTotals[a].date - dayTotals[b].date; });
+  var maxDay = Math.max.apply(null, dayKeys.map(function(k){ return dayTotals[k].total; })) || 1;
+  var dayBarsEl = document.getElementById('modal-day-bars');
+  if (dayBarsEl) {
+    dayBarsEl.innerHTML = dayKeys.map(function(k) {
+      var dt = dayTotals[k].date;
+      var label = (dt && !isNaN(dt.getTime())) ? dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}) : k;
+      var pct = Math.max(6, (dayTotals[k].total / maxDay) * 100);
+      var isSel = _modalDayFilter === k;
+      return '<div onclick="toggleModalDayFilter(\''+k+'\')" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;width:52px">'
+        + '<div style="font-family:Orbitron,monospace;font-size:8px;color:#94A3B8;white-space:nowrap">'+fmt(dayTotals[k].total)+'</div>'
+        + '<div style="width:100%;height:60px;display:flex;align-items:flex-end">'
+          + '<div style="width:100%;height:'+pct+'%;border-radius:4px 4px 2px 2px;background:'+(isSel?'#00D4FF':'rgba(0,212,255,0.4)')+';box-shadow:'+(isSel?'0 0 10px #00D4FF':'none')+';transition:height 0.4s"></div>'
+        + '</div>'
+        + '<div style="font-size:9px;color:'+(isSel?'#00D4FF':'#64748B')+';font-weight:'+(isSel?'700':'400')+'">'+label+'</div>'
+      + '</div>';
+    }).join('');
+  }
+
+  // ── Market cards (reflects day + rookie filters, not the market filter
+  // itself) — clickable, multi-select ───────────────────────────────────────
   var markets = {};
-  d.deals.forEach(function(deal) {
-    if (!markets[deal.store]) markets[deal.store] = { rev: 0, count: 0 };
-    markets[deal.store].rev   += deal.amount;
-    markets[deal.store].count += 1;
+  _modalAllDeals.forEach(function(deal) {
+    if (!modalDealMatches(deal, {skipMarket:true})) return;
+    var mkKey = mergedMarketKey(deal.store);
+    if (!markets[mkKey]) markets[mkKey] = { rev: 0, count: 0 };
+    markets[mkKey].rev   += deal.amount;
+    markets[mkKey].count += 1;
   });
   var mktKeys = Object.keys(markets).sort(function(a,b){ return markets[b].rev - markets[a].rev; });
   document.getElementById('modal-markets').innerHTML = mktKeys.map(function(mk) {
-    return '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px">'
-      + '<div style="font-size:11px;color:#475569;margin-bottom:4px">'+mk.replace(/^\d+ - /,'')+'</div>'
+    var isSel = _modalMarketFilters.has(mk);
+    return '<div onclick="toggleModalMarketFilter(\''+mk.replace(/'/g,"\\'")+'\')" style="cursor:pointer;background:'+(isSel?'rgba(0,212,255,0.12)':'rgba(255,255,255,0.03)')+';border:1px solid '+(isSel?'rgba(0,212,255,0.6)':'rgba(255,255,255,0.07)')+';border-radius:12px;padding:14px;transition:all 0.15s">'
+      + '<div style="font-size:11px;color:'+(isSel?'#00D4FF':'#475569')+';margin-bottom:4px">'+mk.replace(/^\d+ - /,'')+(isSel?' &#x2713;':'')+'</div>'
       + '<div style="font-family:Orbitron,monospace;font-size:16px;font-weight:900;color:#00FF88">'+fmt(markets[mk].rev)+'</div>'
       + '<div style="font-size:11px;color:#475569;margin-top:2px">'+markets[mk].count+' deals</div>'
       + '</div>';
   }).join('');
+  if (mktKeys.length === 0) {
+    document.getElementById('modal-markets').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#475569;font-size:12px">No deals match the current filters</div>';
+  }
 
-  // Sort deals by amount desc
-  var sorted = d.deals.slice().sort(function(a,b){ return b.amount - a.amount; });
-  document.getElementById('modal-deals').innerHTML = sorted.map(function(deal, i) {
-    var bg = i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.02)';
-    return '<div style="display:grid;grid-template-columns:2fr 3fr 1fr 1fr;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.04);'+bg+'">'
-      + '<div style="font-size:12px;color:#94A3B8">'+deal.store.replace(/^\d+ - /,'')+'</div>'
-      + '<div style="font-size:13px;font-weight:600;color:#E2E8F0">'+deal.name+'</div>'
-      + '<div style="font-family:Orbitron,monospace;font-size:12px;font-weight:900;color:#00FF88">'+fmt(deal.amount)+'</div>'
-      + '<div style="font-size:12px;color:#475569">'+deal.date+'</div>'
+  // ── Context-aware progress bar: shows the full month's outcome by
+  // default, and narrows to whichever day/market filters are active (does
+  // NOT factor in the rookie toggle, since plan targets aren't rookie-specific) ──
+  var progressLabel = 'MONTH OUTCOME';
+  var progressTarget = _modalMonthGoal;
+  var scopedDeals = _modalAllDeals.filter(function(deal){
+    if (_modalDayFilter && dealDayKey(deal) !== _modalDayFilter) return false;
+    if (_modalMarketFilters.size > 0 && !_modalMarketFilters.has(mergedMarketKey(deal.store))) return false;
+    return true;
+  });
+  var progressActual = scopedDeals.reduce(function(s,dl){ return s+dl.amount; }, 0);
+
+  if (_modalMarketFilters.size > 0 && _modalMonthPlans) {
+    var combinedMarketPlan = 0;
+    _modalMarketFilters.forEach(function(mk){ combinedMarketPlan += getPlanForMarketInMonth(mk, _modalMonthPlans); });
+    var marketLabel = _modalMarketFilters.size === 1 ? 'MARKET' : _modalMarketFilters.size + ' MARKETS';
+    if (_modalDayFilter) {
+      progressLabel = 'DAY + ' + marketLabel + ' OUTCOME';
+      progressTarget = combinedMarketPlan > 0 ? combinedMarketPlan / _modalDaysInMonth : 0;
+    } else {
+      progressLabel = marketLabel + ' OUTCOME';
+      progressTarget = combinedMarketPlan;
+    }
+  } else if (_modalDayFilter) {
+    progressLabel = 'DAY OUTCOME';
+    progressTarget = _modalMonthGoal > 0 ? _modalMonthGoal / _modalDaysInMonth : 0;
+  }
+
+  var progressPct = progressTarget > 0 ? Math.min(100, (progressActual/progressTarget)*100) : 0;
+  var progressRealPct = progressTarget > 0 ? Math.round((progressActual/progressTarget)*100) : 0;
+  var progressColor = progressRealPct >= 100 ? '#00FF88' : progressRealPct >= 70 ? '#FFD700' : '#FF6B35';
+  var progressGlow = progressRealPct >= 100 ? ';box-shadow:0 0 16px '+progressColor+'99' : '';
+
+  var progBarEl = document.getElementById('modal-progress-bar');
+  if (progBarEl) {
+    progBarEl.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">'
+        + '<span style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#475569">'+progressLabel+'</span>'
+        + '<span style="font-family:Orbitron,monospace;font-size:14px;font-weight:900;color:'+progressColor+'">'+progressRealPct+'%</span>'
+      + '</div>'
+      + '<div style="height:14px;background:rgba(255,255,255,0.06);border-radius:7px;overflow:hidden;margin-bottom:6px">'
+        + '<div style="height:100%;width:'+progressPct+'%;border-radius:7px;background:linear-gradient(90deg,'+progressColor+'88,'+progressColor+');transition:width 0.6s'+progressGlow+'"></div>'
+      + '</div>'
+      + '<div style="display:flex;justify-content:space-between;font-size:11px;color:#64748B">'
+        + '<span>'+fmt(progressActual)+' actual</span>'
+        + '<span>'+(progressTarget>0 ? fmt(progressTarget)+' target' : 'no plan data')+'</span>'
       + '</div>';
+  }
+
+  // ── Market-grouped rep breakdown (replaces the old flat deal-by-deal list)
+  // — grouped by market like the live dashboard's team cards, with month
+  // badge holders (Champ/Slayer/Powerlifter) and rookie stars annotated ────
+  var filtered = _modalAllDeals.filter(function(deal){ return modalDealMatches(deal); });
+  var byMarket = {};
+  filtered.forEach(function(deal) {
+    var mkKey = mergedMarketKey(deal.store);
+    if (!byMarket[mkKey]) byMarket[mkKey] = { total:0, count:0, reps:{} };
+    var mktG = byMarket[mkKey];
+    mktG.total += deal.amount;
+    mktG.count += 1;
+    if (!mktG.reps[deal.name]) mktG.reps[deal.name] = { total:0, count:0 };
+    mktG.reps[deal.name].total += deal.amount;
+    mktG.reps[deal.name].count += 1;
+  });
+  var mktOrder = Object.keys(byMarket).sort(function(a,b){ return byMarket[b].total - byMarket[a].total; });
+
+  document.getElementById('modal-deals').innerHTML = mktOrder.map(function(mk) {
+    var mktG = byMarket[mk];
+    // "Other" (combined terminated DCs) always sorts to the bottom, regardless of total
+    var repOrder = Object.keys(mktG.reps).sort(function(a,b){
+      var aOther = a.trim().toLowerCase() === 'other';
+      var bOther = b.trim().toLowerCase() === 'other';
+      if (aOther && !bOther) return 1;
+      if (!aOther && bOther) return -1;
+      return mktG.reps[b].total - mktG.reps[a].total;
+    });
+    var leaderName = repOrder.find(function(n){ return n.trim().toLowerCase() !== 'other'; });
+    var repsHtml = repOrder.map(function(repName) {
+      var r = mktG.reps[repName];
+      var isRookie = ROOKIE_NAMES_H.has(String(repName).trim());
+      var badges = '';
+      if (repName === leaderName) badges += ' <span title="Market Leader" style="color:#00D4FF">&#x1F3C5;</span>';
+      if (repName === _modalChamps.champ  && _modalChamps.champ)  badges += ' <span title="Champ — '+fmt(_modalChamps.champAmt)+'" style="color:#FFD700">&#x1F451;</span>';
+      if (repName === _modalChamps.slayer && _modalChamps.slayer) badges += ' <span title="Deal Slayer — '+_modalChamps.slayerCount+' deals" style="color:#FF6B6B">&#x2694;&#xFE0F;</span>';
+      if (repName === _modalChamps.power  && _modalChamps.power)  badges += ' <span title="Powerlifter — '+fmt(_modalChamps.powerAmt)+'" style="color:#A855F7">&#x1F3CB;&#xFE0F;</span>';
+      if (_modalBadges.rocketNames.indexOf(repName) >= 0 && _modalBadges.rocketAmt > 0) badges += ' <span title="Rocket — biggest single deal '+fmt(_modalBadges.rocketAmt)+'" style="color:#E2E8F0">&#x1F680;</span>';
+      if (repName === _modalBadges.streakName && _modalBadges.streakDays >= 2) badges += ' <span title="Streaker — '+_modalBadges.streakDays+' day streak" style="color:#FF6B35">&#x1F525;</span>';
+      if (isRookie) badges += ' <span title="Rookie" style="color:#FCD34D">&#x2B50;</span>';
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,0.03)">'
+        + '<div style="font-size:13px;color:#E2E8F0;font-weight:600">'+repName+badges+'</div>'
+        + '<div style="display:flex;gap:14px;align-items:center">'
+          + '<span style="font-size:11px;color:#475569">'+r.count+' deal'+(r.count!==1?'s':'')+'</span>'
+          + '<span style="font-family:Orbitron,monospace;font-size:12px;font-weight:900;color:#00FF88">'+fmt(r.total)+'</span>'
+        + '</div>'
+      + '</div>';
+    }).join('');
+
+    return '<div style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.07);border-radius:16px;overflow:hidden">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(0,212,255,0.04)">'
+        + '<span style="font-family:Orbitron,monospace;font-size:11px;letter-spacing:1px;color:#00D4FF">'+mk.replace(/^\d+ - /,'')+'</span>'
+        + '<span style="font-family:Orbitron,monospace;font-size:12px;font-weight:900;color:#00FF88">'+fmt(mktG.total)+' &middot; '+mktG.count+' deal'+(mktG.count!==1?'s':'')+'</span>'
+      + '</div>'
+      + '<div style="max-height:520px;overflow-y:auto">'
+        + repsHtml
+      + '</div>'
+    + '</div>';
   }).join('');
+
+  if (mktOrder.length === 0) {
+    document.getElementById('modal-deals').innerHTML = '<div style="text-align:center;padding:24px;color:#475569;font-size:12px">No deals match the current filters</div>';
+  }
+
+  // ── Filter status bar ──────────────────────────────────────────────────
+  var filteredTotal = filtered.reduce(function(s,d){ return s+d.amount; }, 0);
+  var statusEl = document.getElementById('modal-filter-status');
+  if (statusEl) {
+    var anyFilter = _modalDayFilter || _modalMarketFilters.size > 0 || _modalRookieOnly;
+    var chips = '';
+    if (_modalDayFilter) chips += '<span style="background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.4);border-radius:20px;padding:3px 10px;font-size:11px;color:#00D4FF">'+_modalDayFilter+'</span>';
+    _modalMarketFilters.forEach(function(mk){
+      chips += '<span style="background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.4);border-radius:20px;padding:3px 10px;font-size:11px;color:#00D4FF">'+mk.replace(/^\d+ - /,'')+'</span>';
+    });
+    if (_modalRookieOnly) chips += '<span style="background:rgba(252,211,77,0.12);border:1px solid rgba(252,211,77,0.4);border-radius:20px;padding:3px 10px;font-size:11px;color:#FCD34D">Rookies only</span>';
+    statusEl.innerHTML = '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+      + '<span style="font-family:Orbitron,monospace;font-size:11px;color:#64748B">' + filtered.length + ' deals &middot; <strong style="color:#00FF88">' + fmt(filteredTotal) + '</strong></span>'
+      + chips
+      + (anyFilter ? '<button onclick="clearModalFilters()" style="background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:3px 10px;font-size:11px;color:#94A3B8;cursor:pointer">Clear filters &#x2715;</button>' : '')
+    + '</div>';
+  }
+
+  var rookieCb = document.getElementById('modal-rookie-toggle');
+  if (rookieCb) rookieCb.checked = _modalRookieOnly;
 }
+
+loadHistorical();
 
 // Close on backdrop click
 document.getElementById('deal-modal').addEventListener('click', function(e) {
@@ -328,23 +905,37 @@ document.getElementById('deal-modal').addEventListener('click', function(e) {
 
 <!-- ── DEAL DRILL-DOWN MODAL ── -->
 <div id="deal-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(2,8,20,0.95);backdrop-filter:blur(12px);overflow-y:auto;padding:24px 16px">
-  <div style="max-width:900px;margin:0 auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <div id="modal-title" style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:#00D4FF;letter-spacing:3px"></div>
       <button onclick="document.getElementById('deal-modal').style.display='none'" style="background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#475569;font-size:20px;cursor:pointer;padding:4px 12px">✕</button>
     </div>
-    <!-- Market summary -->
-    <div id="modal-markets" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:24px"></div>
-    <!-- Deal table -->
-    <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.07);border-radius:16px;overflow:hidden">
-      <div style="display:grid;grid-template-columns:2fr 3fr 1fr 1fr;padding:12px 16px;background:rgba(0,212,255,0.05);border-bottom:1px solid rgba(255,255,255,0.07)">
-        <div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#475569">MARKET</div>
-        <div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#475569">REP</div>
-        <div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#475569">AMOUNT</div>
-        <div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#475569">DATE</div>
-      </div>
-      <div id="modal-deals"></div>
+
+    <!-- Day-by-day bar — click a day to filter everything below -->
+    <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:14px 16px;margin-bottom:16px">
+      <div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;color:#475569;margin-bottom:10px">&#x1F4C5; DAY BY DAY &mdash; click a day to filter</div>
+      <div id="modal-day-bars" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px"></div>
     </div>
+
+    <!-- Context-aware progress bar — full month by default, narrows to active day/market filters -->
+    <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:14px 16px;margin-bottom:16px">
+      <div id="modal-progress-bar"></div>
+    </div>
+
+    <!-- Rookie toggle + filter status -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <div id="modal-filter-status"></div>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:Orbitron,monospace;font-size:10px;letter-spacing:1px;color:#FCD34D">
+        <input type="checkbox" id="modal-rookie-toggle" onchange="toggleModalRookieFilter()" style="accent-color:#FCD34D">
+        ROOKIES ONLY
+      </label>
+    </div>
+
+    <!-- Market summary — click a card to filter everything by that market -->
+    <div id="modal-markets"></div>
+
+    <!-- Market-grouped rep breakdown, with badges for the month's Champ/Slayer/Powerlifter and rookies -->
+    <div id="modal-deals"></div>
   </div>
 </div>
 
