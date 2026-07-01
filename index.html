@@ -2300,8 +2300,23 @@ function render(){
     });
     data = mf;
   }
-  var DAYS_IN_MONTH=30;
-  var goal=filterDay?(state.goal/DAYS_IN_MONTH):state.goal;
+  var DAYS_IN_MONTH = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
+
+  // Determine base goal: use market plan if market is filtered
+  var baseGoal = state.goal;
+  if (activeMarketFilters && activeMarketFilters.size > 0 && state.currentMarketPlans) {
+    var _mktGoalSum = 0;
+    activeMarketFilters.forEach(function(fm) {
+      Object.keys(state.currentMarketPlans).forEach(function(k) {
+        var _kc = k.replace(/.*\(/, '').replace(/\).*/, '');
+        var _mc = fm.replace(/.*\(/, '').replace(/\).*/, '');
+        if (_kc && _mc && _kc === _mc) _mktGoalSum += state.currentMarketPlans[k];
+      });
+    });
+    if (_mktGoalSum > 0) baseGoal = _mktGoalSum;
+  }
+
+  var goal = filterDay ? (baseGoal / DAYS_IN_MONTH) : baseGoal;
   var total=data.total, pct=Math.min((total/goal)*100,115);
 
   // Title changes to SUMMER SALE BLITZ when blitz is active
@@ -2322,19 +2337,8 @@ function render(){
   }
 
   // Main progress bar — reflects current filtered data
-  var displayGoal = goal;
-  if (!filterDay && activeMarketFilters && activeMarketFilters.size > 0 && state.currentMarketPlans) {
-    var _mktSum = 0;
-    activeMarketFilters.forEach(function(fm) {
-      Object.keys(state.currentMarketPlans).forEach(function(k) {
-        var _kc = k.replace(/.*\(/, '').replace(/\).*/, '');
-        var _mc = fm.replace(/.*\(/, '').replace(/\).*/, '');
-        if (_kc && _mc && _kc === _mc) _mktSum += state.currentMarketPlans[k];
-      });
-    });
-    if (_mktSum > 0) displayGoal = _mktSum;
-  }
-  document.getElementById("total-display").innerHTML=fmt(total)+' <span>of '+fmt(displayGoal)+(filterDay?" daily goal":"")+'</span>';
+  // displayGoal already baked into goal via baseGoal above
+  document.getElementById("total-display").innerHTML=fmt(total)+' <span>of '+fmt(goal)+(filterDay?" daily goal":"")+'</span>';
   if (!filterDay && typeof updatePaceBanner === "function") {
     var now2 = new Date();
     var curMon = ["January","February","March","April","May","June","July","August","September","October","November","December"][now2.getMonth()];
