@@ -2319,7 +2319,15 @@ function render(){
         dayFiltered.total+=tt;
       }
     });
-    data=dayFiltered;
+    // Safety net: if the selected day matches zero deals in the live feed
+    // (e.g. filterDay somehow points at a date outside the current month's
+    // data), clear the filter instead of rendering a fully blank dashboard.
+    if (Object.keys(dayFiltered.teams).length === 0) {
+      console.warn('Day filter "' + filterDay + '" matched no live deals — clearing filter instead of rendering blank.');
+      filterDay = null;
+    } else {
+      data = dayFiltered;
+    }
   }
 
   if (filterToday && rawData && rawData.teams) {
@@ -2984,9 +2992,11 @@ function renderDayBreakdown(data) {
   if (!el || !barsEl) return;
 
   // If no deals in current month, show prior month from Historical
+  var usingPriorMonth = false;
   if (days.length === 0) {
     if (window._priorMonthDayData && window._priorMonthDayData.length > 0) {
       days = window._priorMonthDayData;
+      usingPriorMonth = true;
       var priorLabel = document.getElementById('day-breakdown-label');
       if (!priorLabel) {
         var lbl = document.createElement('div');
@@ -3040,7 +3050,14 @@ function renderDayBreakdown(data) {
     var BAR_MAX = 120;
     var flex = useScroll ? 'flex-shrink:0;width:'+BAR_MIN+'px' : 'flex:1;min-width:'+BAR_MIN+'px;max-width:'+BAR_MAX+'px';
 
-    html += '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;'+flex+'" onclick="toggleDayFilter(\'' + key + '\')">'; 
+    // Prior-month bars come from a separate historical snapshot, not the live
+    // feed — clicking to "filter" them would filter the live (empty) data
+    // instead, wiping out the whole dashboard. Only live current-month bars
+    // are clickable.
+    var clickAttr = usingPriorMonth ? '' : ' onclick="toggleDayFilter(\'' + key + '\')"';
+    var cursorStyle = usingPriorMonth ? 'default' : 'pointer';
+
+    html += '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:'+cursorStyle+';'+flex+'"'+clickAttr+'>';
     html += '<div style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#E2E8F0;white-space:nowrap;text-align:center">'+fmt(day.total)+'</div>';
     html += '<div style="width:100%;height:'+barH+'px;border-radius:8px 8px 4px 4px;background:'+color+';'+border+'transition:height 0.5s cubic-bezier(.4,0,.2,1);box-shadow:0 4px 12px rgba(0,0,0,0.3)"></div>';
     html += '<div style="font-family:Orbitron,monospace;font-size:10px;color:'+(isSelected?'#FFD700':'#7DD3FC')+';white-space:nowrap;font-weight:700">'+day.label+'</div>';
