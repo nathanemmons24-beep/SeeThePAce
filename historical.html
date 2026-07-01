@@ -230,25 +230,51 @@ function render(data) {
     var diff = d.revenue - d.goal;
     var diffStr = (diff >= 0 ? '+' : '') + fmt(Math.abs(diff));
     var diffColor = diff >= 0 ? '#00FF88' : '#FF4444';
+
+    // Compute achievement champs for this month from deal-level data
+    var mChamp='', mChampAmt=0, mSlayer='', mSlayerCount=0, mPower='', mPowerAmt=0;
+    if (d.deals && d.deals.length > 0) {
+      var rv={}, rd={};
+      d.deals.forEach(function(deal) {
+        if (!deal.name || deal.amount<=0) return;
+        if (!rv[deal.name]) { rv[deal.name]=0; rd[deal.name]=0; }
+        rv[deal.name] += deal.amount;
+        rd[deal.name] += 1;
+        if (deal.amount > mPowerAmt) { mPowerAmt=deal.amount; mPower=deal.name; }
+      });
+      Object.keys(rv).forEach(function(n) {
+        if (rv[n] > mChampAmt) { mChampAmt=rv[n]; mChamp=n; }
+        if (rd[n] > mSlayerCount) { mSlayerCount=rd[n]; mSlayer=n; }
+      });
+    }
+    var champRow = mChamp ? (
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">'
+      + '<span style="background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.4);border-radius:8px;padding:3px 8px;font-size:11px;color:#FFD700">&#x1F451; ' + mChamp + ' &mdash; ' + fmt(mChampAmt) + '</span>'
+      + '<span style="background:rgba(255,50,50,0.1);border:1px solid rgba(255,80,80,0.4);border-radius:8px;padding:3px 8px;font-size:11px;color:#FF6B6B">&#x2694;&#xFE0F; ' + mSlayer + ' &mdash; ' + mSlayerCount + ' deals</span>'
+      + '<span style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.4);border-radius:8px;padding:3px 8px;font-size:11px;color:#A855F7">&#x1F3CB;&#xFE0F; ' + mPower + ' &mdash; ' + fmt(mPowerAmt) + '</span>'
+      + '</div>'
+    ) : '';
+
     return '<div class="month-card">'
       + '<div class="month-card-header">'
-      + '<div class="month-name">'+d.month+'</div>'
-      + '<div class="month-pct" style="color:'+color+'">'+pct+'%</div>'
+        + '<div class="month-name">' + d.month + '</div>'
+        + '<div class="month-pct" style="color:' + color + '">' + pct + '%</div>'
       + '</div>'
-      + '<div class="month-bar-wrap"><div class="month-bar-fill" style="width:'+barW+'%;background:linear-gradient(90deg,'+color+'88,'+color+')"></div></div>'
+      + '<div class="month-bar-wrap"><div class="month-bar-fill" style="width:' + barW + '%;background:linear-gradient(90deg,' + color + '88,' + color + ')"></div></div>'
       + '<div class="month-stats">'
-      + '<div><div class="month-stat-label">Revenue</div><div class="month-stat-value" style="color:#00FF88">'+fmt(d.revenue)+'</div></div>'
-      + '<div><div class="month-stat-label">Goal</div><div class="month-stat-value" style="color:#FFD700">'+fmt(d.goal)+'</div></div>'
-      + '<div><div class="month-stat-label">vs Goal</div><div class="month-stat-value" style="color:'+diffColor+'">'+diffStr+'</div></div>'
-      + '<div><div class="month-stat-label">Deals</div><div class="month-stat-value">'+d.dealCount+'</div></div>'
-      + '<div><div class="month-stat-label">Avg Deal</div><div class="month-stat-value">'+fmt(d.avgDeal)+'</div></div>'
-      + '<div><div class="month-stat-label">Markets</div><div class="month-stat-value">'+d.markets+'</div></div>'
+        + '<div><div class="month-stat-label">Revenue</div><div class="month-stat-value" style="color:#00FF88">' + fmt(d.revenue) + '</div></div>'
+        + '<div><div class="month-stat-label">Goal</div><div class="month-stat-value" style="color:#FFD700">' + fmt(d.goal) + '</div></div>'
+        + '<div><div class="month-stat-label">vs Goal</div><div class="month-stat-value" style="color:' + diffColor + '">' + diffStr + '</div></div>'
+        + '<div><div class="month-stat-label">Deals</div><div class="month-stat-value">' + d.dealCount + '</div></div>'
+        + '<div><div class="month-stat-label">Avg Deal</div><div class="month-stat-value">' + fmt(d.avgDeal) + '</div></div>'
+        + '<div><div class="month-stat-label">Markets</div><div class="month-stat-value">' + d.markets + '</div></div>'
       + '</div>'
       + '<div class="month-footer">'
-      + '<span>🏆 '+d.topMarket.replace(/^\d+ - /,'')+'  <strong style="color:#FFD700">'+fmt(d.topMarketRev)+'</strong></span>'
-      + '<span>⭐ '+d.topRep+'  <strong style="color:#00FF88">'+fmt(d.topRepRev)+'</strong></span>'
+        + '<span>&#x1F3C6; ' + d.topMarket.replace(/^\d+ - /,'') + '&nbsp;&nbsp;<strong style="color:#FFD700">' + fmt(d.topMarketRev) + '</strong></span>'
+        + '<span>&#x2B50; ' + d.topRep + '&nbsp;&nbsp;<strong style="color:#00FF88">' + fmt(d.topRepRev) + '</strong></span>'
       + '</div>'
-      + '<button onclick="showDeals('+i+')" style="margin-top:12px;width:100%;padding:8px;border-radius:8px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);color:#00D4FF;font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;cursor:pointer">VIEW ALL '+d.dealCount+' DEALS ▼</button>'
+      + champRow
+      + '<button onclick="showDeals(' + i + ')" style="margin-top:12px;width:100%;padding:8px;border-radius:8px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);color:#00D4FF;font-family:Orbitron,monospace;font-size:9px;letter-spacing:2px;cursor:pointer">VIEW ALL ' + d.dealCount + ' DEALS &#x25BC;</button>'
       + '</div>';
   }).join('');
 }
