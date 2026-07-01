@@ -757,21 +757,9 @@ if (new URLSearchParams(window.location.search).get('tv') === '1') {
   <!-- DAY BREAKDOWN -->
   <div id="day-breakdown" style="display:none;background:rgba(15,23,42,0.75);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 20px;backdrop-filter:blur(14px);margin-bottom:20px">
     <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:2px;margin-bottom:12px">&#x1F4C5; DAY BY DAY</h3>
-
-    <div id="day-range-picker" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.06)">
-      <span style="font-family:Orbitron,monospace;font-size:9px;color:#94A3B8;letter-spacing:1px;white-space:nowrap">RANGE:</span>
-      <input type="date" id="range-start-input" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#E2E8F0;font-family:'Exo 2',sans-serif;font-size:12px;padding:5px 8px;color-scheme:dark">
-      <span style="color:#475569;font-size:11px">to</span>
-      <input type="date" id="range-end-input" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#E2E8F0;font-family:'Exo 2',sans-serif;font-size:12px;padding:5px 8px;color-scheme:dark">
-      <button onclick="applyDateRangeFilter()" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;letter-spacing:1px;color:#00D4FF;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);border-radius:6px;padding:6px 14px;cursor:pointer;white-space:nowrap">APPLY</button>
-      <button onclick="clearDateRangeFilter()" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;letter-spacing:1px;color:#94A3B8;background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:6px 14px;cursor:pointer;white-space:nowrap">CLEAR</button>
-      <div id="range-picker-presets" style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap"></div>
-    </div>
-
-    <div id="day-range-summary" style="display:none;margin-bottom:16px"></div>
-
     <div id="day-bars"></div>
   </div>
+
 
 
   <!-- STORE RANKINGS -->
@@ -1118,19 +1106,17 @@ function parseCsv(csv){
   return data;
 }
 
-// ══ DAY-BY-DAY DATE RANGE PICKER ═══════════════════════════════════════════
-// Lets the user select an arbitrary date range (single day, a whole month,
-// or a range spanning multiple months) and see: actual revenue vs the
-// combined daily-prorated plan for those days, a per-market breakdown, and
-// the individual deals sold in that window. Feeds into the same `data`
-// object the rest of the dashboard renders from, so Store Rankings, team
-// cards, and leaderboards below all reflect the selected range too.
+// ══ HISTORICAL DEAL POOL (used by the Blitz board) ══════════════
+// The Blitz event (Jun 18-20, 2026) eventually falls outside the live current
+// month once the calendar moves on, so its data has to come from the
+// archived Historical sheet instead of the live feed alone. These fetch and
+// merge that archive with the live data into one flat deal list.
 
 var MONTH_NAMES_FULL = ["January","February","March","April","May","June",
                          "July","August","September","October","November","December"];
 
-// Fetch ALL archived months (not just the newest one) so ranges can span
-// multiple months. Cached after first successful load.
+// Fetch ALL archived months (not just the newest one). Cached after first
+// successful load.
 var _historicalLoadPromise = null;
 function loadAllHistoricalMonths() {
   if (window._allHistoricalMonths) return Promise.resolve(window._allHistoricalMonths);
@@ -1140,7 +1126,7 @@ function loadAllHistoricalMonths() {
     .then(function(res){ return res.ok ? res.json() : []; })
     .then(function(months){
       window._allHistoricalMonths = months || [];
-      console.log('Range picker: loaded', window._allHistoricalMonths.length, 'historical months');
+      console.log('Loaded', window._allHistoricalMonths.length, 'historical months');
       return window._allHistoricalMonths;
     })
     .catch(function(e){
@@ -1194,218 +1180,8 @@ function buildCombinedDealsPool() {
   return flat;
 }
 
-// Monthly plan lookup — state.monthlyPlans is keyed by month NAME only
-// (e.g. "June"), no year, since plans recur annually per the Settings sheet.
-function getMonthlyPlanByName(monthName) {
-  if (state.monthlyPlans && state.monthlyPlans[monthName] != null) return state.monthlyPlans[monthName];
-  return state.annualGoal ? state.annualGoal / 12 : 0;
-}
-
-// Sums the daily-prorated plan across every day in [start, end], correctly
-// handling ranges that span multiple months (e.g. May 20 – June 10) by
-// using each day's own month's plan / days-in-that-month.
-function getPlanForRange(start, end) {
-  var total = 0;
-  var cur = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-  var last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-  while (cur <= last) {
-    var monthName = MONTH_NAMES_FULL[cur.getMonth()];
-    var plan = getMonthlyPlanByName(monthName);
-    var daysInMonth = new Date(cur.getFullYear(), cur.getMonth()+1, 0).getDate();
-    total += plan / daysInMonth;
-    cur.setDate(cur.getDate() + 1);
-  }
-  return total;
-}
-
-function computeRangeSummary(start, end) {
-  var startMid = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0);
-  var endMid   = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59);
-  var pool = buildCombinedDealsPool();
-  var deals = pool.filter(function(d){ return d.date >= startMid && d.date <= endMid; });
-  var actual = deals.reduce(function(s,d){ return s + d.amount; }, 0);
-  var planTotal = getPlanForRange(startMid, endMid);
-  var pct = planTotal > 0 ? (actual / planTotal) * 100 : 0;
-
-  var byMarket = {};
-  deals.forEach(function(d) {
-    var key = d.store || 'Unknown';
-    if (!byMarket[key]) byMarket[key] = 0;
-    byMarket[key] += d.amount;
-  });
-
-  deals.sort(function(a,b){ return b.date - a.date || b.amount - a.amount; });
-
-  return { actual: actual, plan: planTotal, pct: pct, byMarket: byMarket, deals: deals };
-}
-
-function displayStoreName(store) {
-  if (!store) return 'Unknown';
-  var parts = String(store).split(' - ');
-  return parts.length > 1 ? parts.slice(1).join(' ').trim() : store;
-}
-
-function renderDateRangeSummary(summary, start, end) {
-  var el = document.getElementById('day-range-summary');
-  if (!el) return;
-  el.style.display = 'block';
-
-  var pctStr = summary.pct.toFixed(1) + '%';
-  var pctColor = summary.pct >= 100 ? '#00FF88' : summary.pct >= 85 ? '#FFD700' : '#FF6B35';
-  var diff = summary.actual - summary.plan;
-  var diffStr = (diff >= 0 ? '+' : '') + fmt(diff);
-  var diffColor = diff >= 0 ? '#00FF88' : '#FF6B35';
-
-  var marketEntries = Object.entries(summary.byMarket).sort(function(a,b){ return b[1]-a[1]; });
-  var marketRows = marketEntries.map(function(e){
-    return '<div style="display:flex;justify-content:space-between;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.05)">'
-      + '<span style="font-family:\'Exo 2\',sans-serif;font-size:12px;color:#CBD5E1">' + displayStoreName(e[0]) + '</span>'
-      + '<span style="font-family:Orbitron,monospace;font-size:12px;font-weight:700;color:#00D4FF">' + fmt(e[1]) + '</span>'
-      + '</div>';
-  }).join('');
-
-  var dealRows = summary.deals.slice(0, 300).map(function(d){
-    var dstr = d.date.toLocaleDateString('en-US', {month:'short', day:'numeric'});
-    return '<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 10px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px">'
-      + '<span style="color:#7DD3FC;flex-shrink:0;width:46px">' + dstr + '</span>'
-      + '<span style="color:#CBD5E1;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + d.name + '</span>'
-      + '<span style="color:#64748B;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px">' + displayStoreName(d.store) + '</span>'
-      + '<span style="color:#00FF88;font-weight:700;flex-shrink:0">' + fmt(d.amount) + '</span>'
-      + '</div>';
-  }).join('');
-
-  el.innerHTML =
-    '<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;padding:14px 16px;background:rgba(0,0,0,0.2);border-radius:10px;margin-bottom:14px">'
-      + '<div><div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:1px">ACTUAL</div><div style="font-family:Orbitron,monospace;font-size:20px;font-weight:900;color:#00FF88">' + fmt(summary.actual) + '</div></div>'
-      + '<div><div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:1px">PLAN</div><div style="font-family:Orbitron,monospace;font-size:20px;font-weight:900;color:#94A3B8">' + fmt(summary.plan) + '</div></div>'
-      + '<div><div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:1px">PACE</div><div style="font-family:Orbitron,monospace;font-size:20px;font-weight:900;color:' + pctColor + '">' + pctStr + '</div></div>'
-      + '<div><div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:1px">+/&minus; PLAN</div><div style="font-family:Orbitron,monospace;font-size:20px;font-weight:900;color:' + diffColor + '">' + diffStr + '</div></div>'
-      + '<div style="margin-left:auto;font-family:Orbitron,monospace;font-size:10px;color:#64748B;white-space:nowrap">'
-        + start.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + ' &rarr; ' + end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
-      + '</div>'
-    + '</div>'
-    + '<div style="display:flex;gap:16px;flex-wrap:wrap">'
-      + '<div style="flex:1;min-width:220px;background:rgba(255,255,255,0.02);border-radius:10px;overflow:hidden;align-self:flex-start">'
-        + '<div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:1px;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.06)">BY MARKET</div>'
-        + (marketRows || '<div style="padding:10px;color:#475569;font-size:11px">No deals in this range</div>')
-      + '</div>'
-      + '<div style="flex:1.4;min-width:280px;max-height:260px;overflow-y:auto;background:rgba(255,255,255,0.02);border-radius:10px">'
-        + '<div style="font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:1px;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;background:rgba(15,23,42,0.95)">DEALS (' + summary.deals.length + ')</div>'
-        + (dealRows || '<div style="padding:10px;color:#475569;font-size:11px">No deals in this range</div>')
-      + '</div>'
-    + '</div>';
-}
-
-function toDateInputValue(d) {
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
-
-function applyDateRangeFilter() {
-  var sEl = document.getElementById('range-start-input');
-  var eEl = document.getElementById('range-end-input');
-  if (!sEl || !eEl || !sEl.value || !eEl.value) { alert('Pick both a start and end date.'); return; }
-  var s = new Date(sEl.value + 'T00:00:00');
-  var e = new Date(eEl.value + 'T00:00:00');
-  if (isNaN(s.getTime()) || isNaN(e.getTime())) { alert('Invalid date.'); return; }
-  if (s > e) { var t = s; s = e; e = t; } // swap if entered backwards
-  rangeStart = s; rangeEnd = e;
-  ensureHistoricalReady(function(){ renderRangePresets(); render(); });
-}
-
-// "Clear" resets back to the default view (Current MTD) rather than an
-// empty/no-filter state, since the dashboard should always default to MTD.
-function clearDateRangeFilter() {
-  applyDefaultMTDRange();
-}
-
-// Clicking a bar while a custom range is active narrows the selection to
-// just that single day (still routed through the same safe, combined-pool
-// mechanism — never touches the raw live feed directly, so it can never
-// produce the "filter matched nothing, dashboard goes blank" issue).
-function selectSingleDayFromRange(key) {
-  var parts = key.split('-').map(Number);
-  var d = new Date(parts[0], parts[1]-1, parts[2]);
-  document.getElementById('range-start-input').value = toDateInputValue(d);
-  document.getElementById('range-end-input').value = toDateInputValue(d);
-  rangeStart = new Date(d); rangeEnd = new Date(d);
-  ensureHistoricalReady(function(){ renderRangePresets(); render(); });
-}
-
-function buildDayTotalsForRange(start, end) {
-  var pool = buildCombinedDealsPool();
-  var startMid = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-  var endMid   = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59);
-  var dayTotals = {};
-  pool.forEach(function(d) {
-    if (d.date < startMid || d.date > endMid) return;
-    var dd = new Date(d.date); dd.setHours(0,0,0,0);
-    var key = dd.getFullYear()+'-'+(dd.getMonth()+1)+'-'+dd.getDate();
-    if (!dayTotals[key]) dayTotals[key] = { total:0, deals:0, label: formatShortDate(dd), date: dd };
-    dayTotals[key].total += d.amount;
-    dayTotals[key].deals++;
-  });
-  return Object.entries(dayTotals).sort(function(a,b){ return a[1].date - b[1].date; });
-}
-
-var _rangePresets = [];
-function computePresetRanges() {
-  var now = new Date();
-  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-  var mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  var last30Start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29);
-  var last90Start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 89);
-
-  var lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  var lastMonthStart = new Date(lm.getFullYear(), lm.getMonth(), 1);
-  var lastMonthEnd   = new Date(lm.getFullYear(), lm.getMonth() + 1, 0);
-
-  var ytdStart = new Date(now.getFullYear(), 0, 1);
-
-  return [
-    { key: 'mtd',   label: 'Current MTD',  range: [mtdStart, today] },
-    { key: 'l30',   label: 'Last 30 Days', range: [last30Start, today] },
-    { key: 'l90',   label: 'Last 90 Days', range: [last90Start, today] },
-    { key: 'lm',    label: 'Last Month',   range: [lastMonthStart, lastMonthEnd] },
-    { key: 'ytd',   label: 'YTD',          range: [ytdStart, today] }
-  ];
-}
-
-function renderRangePresets() {
-  var el = document.getElementById('range-picker-presets');
-  if (!el) return;
-  _rangePresets = computePresetRanges();
-
-  el.innerHTML = _rangePresets.map(function(p, i){
-    var isActive = rangeStart && rangeEnd
-      && toDateInputValue(rangeStart) === toDateInputValue(p.range[0])
-      && toDateInputValue(rangeEnd)   === toDateInputValue(p.range[1]);
-    var bg     = isActive ? 'rgba(0,212,255,0.22)' : 'rgba(125,211,252,0.08)';
-    var border = isActive ? 'rgba(0,212,255,0.6)'  : 'rgba(125,211,252,0.2)';
-    var color  = isActive ? '#00D4FF' : '#7DD3FC';
-    return '<button onclick="setRangePreset(' + i + ')" style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:'+color+';background:'+bg+';border:1px solid '+border+';border-radius:6px;padding:5px 10px;cursor:pointer;white-space:nowrap">' + p.label + '</button>';
-  }).join('');
-}
-
-function setRangePreset(i) {
-  var p = _rangePresets[i];
-  if (!p) return;
-  document.getElementById('range-start-input').value = toDateInputValue(p.range[0]);
-  document.getElementById('range-end-input').value = toDateInputValue(p.range[1]);
-  applyDateRangeFilter();
-}
-
-// Applied automatically on page load — Current MTD is the default view.
-function applyDefaultMTDRange() {
-  var presets = computePresetRanges();
-  var mtd = presets[0].range;
-  document.getElementById('range-start-input').value = toDateInputValue(mtd[0]);
-  document.getElementById('range-end-input').value = toDateInputValue(mtd[1]);
-  rangeStart = mtd[0]; rangeEnd = mtd[1];
-  ensureHistoricalReady(function(){ renderRangePresets(); render(); });
-}
-
+// ══ FETCH ══════════════════════════════════════════════════════════════════
+var SETTINGS_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?action=settings";
 // ══ FETCH ══════════════════════════════════════════════════════════════════
 var SETTINGS_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?action=settings";
 
@@ -2594,45 +2370,8 @@ function render(){
     data = consolidateData(data);
   }
 
-  // Apply the day-by-day date range picker (takes precedence over the
-  // legacy single-bar-click filter below). Sources from the combined
-  // live + historical deal pool, so it works across month boundaries and
-  // never depends solely on the (possibly empty) live current-month feed.
-  if (rangeStart && rangeEnd) {
-    var pool = buildCombinedDealsPool();
-    var startMid = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate(), 0, 0, 0);
-    var endMid   = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate(), 23, 59, 59);
-    var rangeDeals = pool.filter(function(d){ return d.date >= startMid && d.date <= endMid; });
-
-    var rangeFiltered = { total: 0, teams: {} };
-    rangeDeals.forEach(function(d) {
-      var tName = d.store || 'Unknown';
-      if (!rangeFiltered.teams[tName]) {
-        var existingColor = (data.teams[tName] && data.teams[tName].color) || '#00D4FF';
-        rangeFiltered.teams[tName] = { total: 0, reps: [], color: existingColor };
-      }
-      var team = rangeFiltered.teams[tName];
-      var rep = team.reps.find(function(r){ return r.name === d.name; });
-      if (!rep) { rep = { name: d.name, amount: 0, deals: [], dealObjs: [], todayTotal: 0, latestDate: null }; team.reps.push(rep); }
-      rep.amount += d.amount;
-      rep.deals.push(d.amount);
-      rep.dealObjs.push({ amount: d.amount, date: d.date, isToday: false });
-      team.total += d.amount;
-      rangeFiltered.total += d.amount;
-    });
-    Object.values(rangeFiltered.teams).forEach(function(t){ t.reps.sort(function(a,b){ return b.amount - a.amount; }); });
-
-    data = rangeFiltered;
-
-    var _rangeSummary = computeRangeSummary(rangeStart, rangeEnd);
-    renderDateRangeSummary(_rangeSummary, rangeStart, rangeEnd);
-  } else {
-    var _summaryEl = document.getElementById('day-range-summary');
-    if (_summaryEl) _summaryEl.style.display = 'none';
-  }
-
   // Apply day filter (from clicking bar chart)
-  if (!rangeStart && filterDay && data && data.teams) {
+  if (filterDay && data && data.teams) {
     var dayFiltered = { total: 0, teams: {} };
     Object.entries(data.teams).forEach(function(e) {
       var tName=e[0],team=e[1];
@@ -3327,17 +3066,8 @@ function renderDayBreakdown(data) {
   var barsEl = document.getElementById('day-bars');
   if (!el || !barsEl) return;
 
-  // If no deals in current month, show prior month from Historical —
-  // but only when no explicit range is selected (a range with zero deals
-  // should say so plainly, not silently swap in an unrelated month).
+  // If no deals in current month, show prior month from Historical
   var usingPriorMonth = false;
-  if (days.length === 0 && rangeStart && rangeEnd) {
-    var priorLabelR = document.getElementById('day-breakdown-label');
-    if (priorLabelR) priorLabelR.remove();
-    el.style.display = 'block';
-    barsEl.innerHTML = '<div style="text-align:center;padding:20px;color:#475569;font-family:Orbitron,monospace;font-size:11px">NO DEALS IN SELECTED RANGE</div>';
-    return;
-  }
   if (days.length === 0) {
     if (window._priorMonthDayData && window._priorMonthDayData.length > 0) {
       days = window._priorMonthDayData;
@@ -3390,28 +3120,15 @@ function renderDayBreakdown(data) {
     var pct = maxVal > 0 ? (day.total / maxVal) : 0;
     var barH = Math.max(12, Math.round(pct * CHART_H));
     var color = COLORS[i % COLORS.length];
-    var isSingleDayRange = rangeStart && rangeEnd && rangeStart.getTime() === rangeEnd.getTime();
-    var isSelected = (filterDay === key) || (isSingleDayRange && toDateInputValue(rangeStart) === (function(){ var p=key.split('-').map(Number); return toDateInputValue(new Date(p[0],p[1]-1,p[2])); })());
+    var isSelected = (filterDay === key);
     var border = isSelected ? 'outline:2px solid #FFD700;outline-offset:2px;' : '';
     var BAR_MAX = 120;
     var flex = useScroll ? 'flex-shrink:0;width:'+BAR_MIN+'px' : 'flex:1;min-width:'+BAR_MIN+'px;max-width:'+BAR_MAX+'px';
 
-    // Prior-month fallback bars (no live data, no active range) aren't
-    // clickable — there's nothing live to filter. When a custom range is
-    // active, clicking narrows to that single day via the same safe,
-    // combined-pool mechanism. Otherwise, fall back to the original
-    // live-current-month single-bar filter.
-    var clickAttr, cursorStyle;
-    if (usingPriorMonth && !(rangeStart && rangeEnd)) {
-      clickAttr = '';
-      cursorStyle = 'default';
-    } else if (rangeStart && rangeEnd) {
-      clickAttr = ' onclick="selectSingleDayFromRange(\'' + key + '\')"';
-      cursorStyle = 'pointer';
-    } else {
-      clickAttr = ' onclick="toggleDayFilter(\'' + key + '\')"';
-      cursorStyle = 'pointer';
-    }
+    // Prior-month fallback bars aren't clickable — there's no live data to
+    // filter. Live current-month bars remain clickable as before.
+    var clickAttr = usingPriorMonth ? '' : ' onclick="toggleDayFilter(\'' + key + '\')"';
+    var cursorStyle = usingPriorMonth ? 'default' : 'pointer';
 
     html += '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:'+cursorStyle+';'+flex+'"'+clickAttr+'>';
     html += '<div style="font-family:Orbitron,monospace;font-size:9px;font-weight:700;color:#E2E8F0;white-space:nowrap;text-align:center">'+fmt(day.total)+'</div>';
@@ -3594,8 +3311,6 @@ function resetMilestone(){lastMilestone=-1;}
 var menuOpen = false;
 var filterToday = false;
 var filterDay = null; // ISO date string "YYYY-MM-DD" or null
-var rangeStart = null; // Date or null — start of the day-by-day date range picker selection
-var rangeEnd   = null; // Date or null — end of the day-by-day date range picker selection (inclusive)
 var filterConsolidated = false;
 var filterRookies = false;
 
@@ -5831,7 +5546,7 @@ resetCountdown();
 fetchSettings().then(function(){ render(); }).catch(function(){});
 fetchPriorMonthChamps();
 loadPriorMonthDayData();
-applyDefaultMTDRange(); // dashboard always defaults to Current MTD on load
+loadAllHistoricalMonths(); // prefetch so the Blitz board's Jun 18-20 data is ready
 fetchRookieNames();
 
 
