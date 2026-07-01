@@ -1230,16 +1230,19 @@ async function fetchData(){
 
     // If no deals yet (new month) — build empty dataset so markets still show
     if (!parsed) {
-      var knownMarkets = (state.data && state.data.teams) ? Object.keys(state.data.teams) : [
-        '0535 - New Jersey','0800 - Long Island','0930 - Atlanta',
-        '0890 - San Francisco','0576 - Cincinnati','0867 - Indy',
-        '0914 - Central GTA','0868 - So Bend','0534 - Westchester',
-        '0791 - Nashville','0790 - Knoxville','0792 - Chattanooga'
-      ];
       var sc=["#00FF88","#00D4FF","#FFD700","#FF6B35","#A855F7","#FF4EFF","#00FFC8","#4ADE80","#38BDF8","#FB923C","#E879F9","#34D399"];
       parsed = { teams:{}, total:0, deals:[] };
-      knownMarkets.forEach(function(m,i){ parsed.teams[m]={total:0,color:sc[i%sc.length],reps:[]}; });
-      console.log('fetchData: no deals yet — showing empty markets for new month');
+      // Use market names from settings (currentMarketPlans keys) — most accurate source
+      var mktSource = [];
+      if (state.currentMarketPlans && Object.keys(state.currentMarketPlans).length > 0) {
+        mktSource = Object.keys(state.currentMarketPlans);
+      } else if (state.data && state.data.teams) {
+        mktSource = Object.keys(state.data.teams);
+      }
+      mktSource.forEach(function(m,i){
+        parsed.teams[m] = { total:0, color:sc[i%sc.length], reps:[], display:m };
+      });
+      console.log('fetchData: no deals yet — showing', mktSource.length, 'empty markets for new month');
     }
 
     if (parsed) {
@@ -1371,8 +1374,20 @@ function enterDashboard(goToBlitz) {
   }
   // Fetch prizes from Sheet Prizes tab
   fetchPrizesFromSheet();
-  fetchData();
-  pollTimer = setInterval(fetchData, POLL_MS);
+  // Ensure settings (market plans) are loaded before first fetchData
+  var _settingsReady = (state.currentMarketPlans && Object.keys(state.currentMarketPlans).length > 0);
+  if (_settingsReady) {
+    fetchData();
+    pollTimer = setInterval(fetchData, POLL_MS);
+  } else {
+    fetchSettings().then(function() {
+      fetchData();
+      pollTimer = setInterval(fetchData, POLL_MS);
+    }).catch(function() {
+      fetchData();
+      pollTimer = setInterval(fetchData, POLL_MS);
+    });
+  }
   // TV mode auto-init
   if (new URLSearchParams(window.location.search).get('tv') === '1') {
     setTimeout(function() {
