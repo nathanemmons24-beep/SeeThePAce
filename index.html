@@ -2655,19 +2655,46 @@ function render(){
     sorted.forEach(function(e,i){
       var rname=e[0],t=e[1],_rm=rname.match(/^(.+?)\s+(\d{4})$/);
       var display = t.display || (rname.includes(" - ") ? rname.split(" - ").slice(1).join(" ").trim() : (_rm ? _rm[1].trim() : rname));
-      var pct=Math.max(8,(t.total/maxTotal)*100);
+
+      // Bar fill stays on a SHARED scale (relative to the top performer) so
+      // rows remain visually comparable to each other. A separate marker
+      // line shows where 100% of THIS market's own plan sits on that same
+      // scale — so you see both "who's biggest" and "who's ahead of their
+      // own target" at a glance.
+      var pct = Math.max(4,(t.total/maxTotal)*100);
+      var marketPlan = getMarketPlanForStore(rname);
+      var markerPct = null, planSubtext = '', markerOffChart = false;
+      if (marketPlan > 0) {
+        markerPct = (marketPlan / maxTotal) * 100;
+        if (markerPct > 100) { markerOffChart = true; markerPct = 100; }
+        var planPct = Math.round((t.total / marketPlan) * 100);
+        planSubtext = planPct + '% of ' + fmt(marketPlan) + ' plan';
+        console.log('Store Rankings plan match:', display, '(' + rname + ') -> plan', fmt(marketPlan), '| actual', fmt(t.total), '| ' + planPct + '%');
+      } else {
+        console.warn('Store Rankings: no plan match found for', display, '(' + rname + ') — check Settings market name/store code alignment');
+      }
+
       var isActive = activeMarketFilters ? activeMarketFilters.has(rname) : false;
       var row=document.createElement("div");
       row.style.cssText="display:flex;align-items:center;gap:10px;margin-bottom:8px;cursor:pointer;border-radius:10px;padding:2px 4px;transition:background 0.15s;border:1px solid "+(isActive?"rgba(124,58,237,0.5)":"transparent")+";background:"+(isActive?"rgba(124,58,237,0.1)":"transparent");
       row.title = isActive ? "Click to clear filter" : "Click to filter by "+display;
       row.onclick = function(){ toggleMarketFilter(rname); };
+      var markerHtml = (markerPct !== null)
+        ? '<div style="position:absolute;top:-3px;bottom:-3px;left:'+markerPct+'%;width:2px;background:'+(markerOffChart?'#FF6B35':'#FFFFFF')+';box-shadow:0 0 6px '+(markerOffChart?'#FF6B35':'#FFFFFF')+'99;border-radius:1px;transform:translateX(-1px)" title="Plan target: '+fmt(marketPlan)+(markerOffChart?' (off chart)':'')+'"></div>'
+        : '';
       row.innerHTML=
         '<div style="width:24px;text-align:center;font-size:'+(i<3?"16":"11")+'px;flex-shrink:0">'+(i<3?rmedals[i]:'<span style="font-family:Orbitron,monospace;font-size:10px;color:#475569">#'+(i+1)+'</span>')+'</div>'+
         '<div style="width:130px;font-size:12px;color:'+(isActive?'#fff':'#CBD5E1')+';font-weight:'+(isActive?'700':'600')+';flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+display+(isActive?' <span style="color:#7C3AED;font-size:11px">&#x2713;</span>':'')+'</div>'+
-        '<div style="flex:1;height:22px;background:rgba(255,255,255,0.04);border-radius:11px;overflow:hidden;">'+
-          '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,'+t.color+','+t.color+'88);border-radius:11px;transition:width 1s;box-shadow:0 0 8px '+t.color+'44"></div>'+
+        '<div style="position:relative;flex:1;height:22px;background:rgba(255,255,255,0.04);border-radius:11px;overflow:visible">'+
+          '<div style="position:absolute;inset:0;border-radius:11px;overflow:hidden">'+
+            '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,'+t.color+','+t.color+'88);border-radius:11px;transition:width 1s;box-shadow:0 0 8px '+t.color+'44"></div>'+
+          '</div>'+
+          markerHtml+
         '</div>'+
-        '<div style="font-family:Orbitron,monospace;font-size:11px;color:'+t.color+';font-weight:700;width:80px;text-align:right;flex-shrink:0">'+fmt(t.total)+'</div>';
+        '<div style="display:flex;flex-direction:column;align-items:flex-end;width:100px;flex-shrink:0">'+
+          '<div style="font-family:Orbitron,monospace;font-size:11px;color:'+t.color+';font-weight:700">'+fmt(t.total)+'</div>'+
+          (planSubtext ? '<div style="font-family:Orbitron,monospace;font-size:9px;color:#00FF88;text-shadow:0 0 6px #00FF8899;margin-top:1px;font-weight:700">'+planSubtext+'</div>' : '')+
+        '</div>';
       row.addEventListener('mouseenter',function(){ if(!isActive) this.style.background='rgba(255,255,255,0.04)'; });
       row.addEventListener('mouseleave',function(){ if(!isActive) this.style.background='transparent'; });
       rl.appendChild(row);
@@ -3325,6 +3352,60 @@ var CHAMP_BADGE_IMAGES = {
   powerlifter: '',  // e.g. 'https://yoursite.com/badges/powerlifter.png'
   dealSlayer: ''    // e.g. 'https://yoursite.com/badges/deal-slayer.png'
 };
+
+// Matches a team/store key (e.g. "0576 - Cincinnati") to its plan in
+// state.currentMarketPlans, whose keys are the long-form Settings names
+// (e.g. "Cincinnati-Dayton OH (576)") — matched by the embedded store code
+// first, falling back to substring name matching. Shared by the main
+// progress bar (when a market filter is active) and the Store Rankings bars.
+// Known abbreviation <-> full-name pairs where the dashboard's short display
+// name doesn't literally appear inside the Settings tab's longer market name
+// (e.g. dashboard says "Indy", Settings says "Indianapolis").
+var MARKET_NAME_ALIASES = {
+  'indy': 'indianapolis',
+  'indianapolis': 'indy'
+};
+
+function getMarketPlanForStore(storeKey) {
+  if (!state.currentMarketPlans || !storeKey) return 0;
+
+  // 1. Exact key match — fastest path, works if Settings headers exactly
+  // match the dashboard's own team key format (e.g. "0576 - Cincinnati").
+  if (state.currentMarketPlans[storeKey] != null) return state.currentMarketPlans[storeKey];
+
+  // 2. Numeric store-code match, normalized so leading zeros never matter
+  // ("576" and "0576" are treated as the same code).
+  var mCodeRaw = (storeKey.match(/\((\d+)\)/)||['',''])[1] || (storeKey.match(/(\d{3,4})/)||['',''])[1];
+  var mCode = mCodeRaw ? parseInt(mCodeRaw, 10) : null;
+
+  var plan = 0;
+  var storeLower = storeKey.toLowerCase();
+  // The short city/market name is whatever comes after "NNNN - " in the
+  // dashboard's own key (e.g. "0867 - Indy" -> "indy"); fall back to the
+  // first space-separated token if that pattern isn't present.
+  var shortName = (storeKey.split(' - ')[1] || storeKey.split(' ')[0] || '').toLowerCase().trim();
+  var shortNameAlias = MARKET_NAME_ALIASES[shortName] || '';
+
+  Object.keys(state.currentMarketPlans).forEach(function(k) {
+    if (plan) return; // already matched — first match wins
+    var kLower = k.toLowerCase();
+    var kCodeRaw = (k.match(/\((\d+)\)/)||['',''])[1];
+    var kCode = kCodeRaw ? parseInt(kCodeRaw, 10) : null;
+
+    if (kCode !== null && mCode !== null && kCode === mCode) { plan = state.currentMarketPlans[k]; return; }
+    // Settings name contains the dashboard's short city name (works whether
+    // or not there's a comma in the Settings name, e.g. both "Nashville, TN"
+    // and "Cincinnati-Dayton OH" contain "nashville"/"cincinnati").
+    if (shortName && kLower.indexOf(shortName) >= 0) { plan = state.currentMarketPlans[k]; return; }
+    // Try the known abbreviation/full-name alias (Indy <-> Indianapolis).
+    if (shortNameAlias && kLower.indexOf(shortNameAlias) >= 0) { plan = state.currentMarketPlans[k]; return; }
+    // Reverse direction: dashboard key contains the Settings name's leading
+    // word (covers odd/short Settings labels).
+    var kFirstWord = kLower.split(/[\s,\-]+/)[0];
+    if (kFirstWord && kFirstWord.length > 2 && storeLower.indexOf(kFirstWord) >= 0) { plan = state.currentMarketPlans[k]; return; }
+  });
+  return plan;
+}
 
 function renderPriorMonthChampsTile() {
   var tile  = document.getElementById('prior-champs-tile');
