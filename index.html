@@ -1172,66 +1172,33 @@ async function fetchPriorMonthChamps() {
 }
 
 async function fetchSettings() {
-  var proxies = [
-    function(u){ return "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?action=settings"; },
-  ];
-  for (var i = 0; i < proxies.length; i++) {
-    try {
-      var res = await fetch(proxies[i](SETTINGS_URL), {cache:"no-store"});
-      if (!res.ok) continue;
-      var csv = await res.text();
-      if (csv.trim().startsWith("<") || csv.includes("Host not in allowlist")) continue;
-      var lines = csv.trim().split("\n").filter(Boolean);
-      // Skip header row, parse Key,Value pairs
-      for (var j = 1; j < lines.length; j++) {
-        var cols = parseCsvLine(lines[j]).map(function(c){ return c.replace(/^"|"$/g,"").trim(); });
-        var key = cols[0] ? cols[0].toLowerCase().trim() : "";
-        var val = cols[1] ? cols[1].trim() : "";
-        if (!key || !val) continue;
-        if (key === "title") {
-          state.title = val;
-          console.log("Settings: title =", val);
-        }
-        if (key === "goal") {
-          var g = parseFloat(val.replace(/[^0-9.]/g,""));
-          if (g) { state.annualGoal = g; console.log("Settings: annual goal =", g); }
-        }
-        // Monthly plans: key = month name (January, February, etc.)
-        var monthNames = ["january","february","march","april","may","june",
-                          "july","august","september","october","november","december"];
-        if (monthNames.indexOf(key.replace(/\s+/g,"")) >= 0) {
-          var planVal = parseFloat(val.replace(/[^0-9.]/g,""));
-          if (!state.monthlyPlans) state.monthlyPlans = {};
-          // Capitalize first letter for consistent key
-          var mKey = key.trim().charAt(0).toUpperCase() + key.trim().slice(1).toLowerCase().replace(/\s+/g,"");
-          // Handle "March " with trailing space
-          mKey = mKey.replace(/\s+/g,"");
-          var fullNames = {"January":"January","February":"February","March":"March",
-            "April":"April","May":"May","June":"June","July":"July","August":"August",
-            "September":"September","October":"October","November":"November","December":"December"};
-          // Find matching full name
-          for (var mn in fullNames) {
-            if (mn.toLowerCase() === key.trim().toLowerCase()) {
-              state.monthlyPlans[mn] = planVal;
-              break;
-            }
-          }
-          console.log("Settings: plan", key.trim(), "=", planVal);
-        }
-        // Don't override sheetUrl from Settings — we use Apps Script directly
-      }
-      // Set current month goal from monthly plan
-      var now = new Date();
-      var curMonthName = ["January","February","March","April","May","June",
-                          "July","August","September","October","November","December"][now.getMonth()];
-      if (state.monthlyPlans && state.monthlyPlans[curMonthName]) {
-        state.goal = state.monthlyPlans[curMonthName];
-        console.log("Settings: current month plan (" + curMonthName + ") =", state.goal);
-      }
-      return; // success
-    } catch(e) { continue; }
+  var SETTINGS_ENDPOINT = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?action=settings";
+  var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  try {
+    var res = await fetch(SETTINGS_ENDPOINT, {cache:"no-store"});
+    if (!res.ok) { console.warn("Settings fetch HTTP", res.status); return; }
+    var text = await res.text();
+    if (!text || text.trim().startsWith("<")) { console.warn("Settings: bad response"); return; }
+    var s = JSON.parse(text);
+    if (s.title)  { state.title = s.title; console.log("Settings: title =", s.title); }
+    if (s.goal)   { state.annualGoal = s.goal; console.log("Settings: annual goal =", s.goal); }
+    if (s.plans)  {
+      state.monthlyPlans = {};
+      MN.forEach(function(mn) {
+        if (s.plans[mn]) { state.monthlyPlans[mn] = s.plans[mn]; console.log("Settings: plan", mn, "=", s.plans[mn]); }
+      });
+    }
+    if (s.marketPlans)        { state.marketPlans = s.marketPlans; }
+    if (s.currentMarketPlans) { state.currentMarketPlans = s.currentMarketPlans; console.log("Settings: market plans loaded:", Object.keys(s.currentMarketPlans).length, "markets"); }
+    if (s.marketNames)        { state.marketNames = s.marketNames; }
+    var curMon = MN[new Date().getMonth()];
+    if (state.monthlyPlans && state.monthlyPlans[curMon]) {
+      state.goal = state.monthlyPlans[curMon];
+      console.log("Settings: current month plan (" + curMon + ") =", state.goal);
+    }
+  } catch(e) {
+    console.warn("Settings fetch failed:", e.message, "— using saved/default values");
   }
-  console.warn("Settings fetch failed — using saved/default values");
 }
 
 async function fetchData(){
