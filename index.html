@@ -777,7 +777,7 @@ if (new URLSearchParams(window.location.search).get('tv') === '1') {
 
   <!-- LAST MONTH'S CHAMPIONS (Champ / Powerlifter / Deal Slayer) -->
   <div id="prior-champs-tile" style="display:none;background:rgba(15,23,42,0.75);border:1px solid rgba(255,215,0,0.2);border-radius:14px;padding:14px 20px;backdrop-filter:blur(14px);margin-bottom:20px">
-    <h3 id="prior-champs-title" style="font-family:Orbitron,monospace;font-size:11px;color:#FFD700;letter-spacing:2px;margin-bottom:12px">&#x1F3C6; LAST MONTH'S CHAMPIONS</h3>
+    <h3 id="prior-champs-title" style="font-family:Orbitron,monospace;font-size:16px;color:#FFD700;letter-spacing:2px;margin-bottom:12px">&#x1F3C6; LAST MONTH'S CHAMPIONS</h3>
     <div id="prior-champs-content"></div>
   </div>
 
@@ -1282,9 +1282,9 @@ async function loadPriorMonthDayData() {
 
 // ── PRIOR MONTH ACHIEVEMENT CHAMPS ───────────────────────────────────────────
 var priorMonthChamps = {
-  champ:       { name: '', key: '', amount: 0, month: '' },  // most volume
-  dealSlayer:  { name: '', key: '', count: 0,  month: '' },  // most deals
-  powerlifter: { name: '', key: '', amount: 0, month: '' },  // biggest single deal
+  champ:       { name: '', store: '', key: '', amount: 0, month: '' },  // most volume
+  dealSlayer:  { name: '', store: '', key: '', count: 0,  month: '' },  // most deals
+  powerlifter: { name: '', store: '', key: '', amount: 0, month: '' },  // biggest single deal
 };
 
 async function fetchPriorMonthChamps() {
@@ -1331,9 +1331,9 @@ async function fetchPriorMonthChamps() {
       if (repDeals[k]  > slayerCount) { slayerCount = repDeals[k]; slayerKey = k; }
     });
 
-    priorMonthChamps.champ       = { name: champKey.split('|')[0],      key: champKey,      amount: champAmt,  month: monthLabel };
-    priorMonthChamps.dealSlayer  = { name: slayerKey.split('|')[0],     key: slayerKey,     count:  slayerCount, month: monthLabel };
-    priorMonthChamps.powerlifter = { name: maxDealName,                  key: maxDealKey,    amount: maxDeal,   month: monthLabel };
+    priorMonthChamps.champ       = { name: champKey.split('|')[0],      store: champKey.split('|')[1]  || '', key: champKey,      amount: champAmt,  month: monthLabel };
+    priorMonthChamps.dealSlayer  = { name: slayerKey.split('|')[0],     store: slayerKey.split('|')[1] || '', key: slayerKey,     count:  slayerCount, month: monthLabel };
+    priorMonthChamps.powerlifter = { name: maxDealName,                  store: maxDealKey.split('|')[1] || '', key: maxDealKey,    amount: maxDeal,   month: monthLabel };
 
     console.log('Prior month champs loaded:', monthLabel,
       '| Champ:', priorMonthChamps.champ.name, champAmt,
@@ -3336,18 +3336,21 @@ function renderPriorMonthChampsTile() {
   if (priorMonthChamps.champ && priorMonthChamps.champ.key) {
     entries.push({
       type: 'champ', icon: '&#x1F3C6;', img: CHAMP_BADGE_IMAGES.champ, label: 'CHAMP', name: priorMonthChamps.champ.name,
+      store: (priorMonthChamps.champ.store || '').split(' - ').slice(1).join(' ').trim() || priorMonthChamps.champ.store,
       valueText: fmt(priorMonthChamps.champ.amount), caption: 'total sales', color: '#FFD700'
     });
   }
   if (priorMonthChamps.powerlifter && priorMonthChamps.powerlifter.key) {
     entries.push({
       type: 'powerlifter', icon: '&#x1F3CB;&#xFE0F;', img: CHAMP_BADGE_IMAGES.powerlifter, label: 'POWERLIFTER', name: priorMonthChamps.powerlifter.name,
+      store: (priorMonthChamps.powerlifter.store || '').split(' - ').slice(1).join(' ').trim() || priorMonthChamps.powerlifter.store,
       valueText: fmt(priorMonthChamps.powerlifter.amount), caption: 'single deal', color: '#A855F7'
     });
   }
   if (priorMonthChamps.dealSlayer && priorMonthChamps.dealSlayer.key) {
     entries.push({
       type: 'dealSlayer', icon: '&#x2694;&#xFE0F;', img: CHAMP_BADGE_IMAGES.dealSlayer, label: 'DEAL SLAYER', name: priorMonthChamps.dealSlayer.name,
+      store: (priorMonthChamps.dealSlayer.store || '').split(' - ').slice(1).join(' ').trim() || priorMonthChamps.dealSlayer.store,
       valueText: priorMonthChamps.dealSlayer.count + ' deals', caption: 'most deals closed', color: '#FF6B35'
     });
   }
@@ -3368,11 +3371,12 @@ function renderPriorMonthChampsTile() {
     html += '<div style="flex:1;min-width:180px;background:rgba(255,255,255,0.04);border:1px solid '+e.color+'55;border-radius:12px;padding:16px 14px;text-align:center;box-shadow:0 0 26px '+e.color+'44, inset 0 0 20px '+e.color+'0d">'
       + '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:8px">'
       + iconHtml
-      + '<div style="font-size:11px;letter-spacing:1.5px;font-family:Orbitron,monospace;color:'+e.color+';font-weight:700">'+e.label+'</div>'
-      + '<div style="font-size:17px;font-weight:700;color:#E2E8F0">'+e.name+'</div>'
+      + '<div style="font-size:16px;letter-spacing:1.5px;font-family:Orbitron,monospace;color:'+e.color+';font-weight:700">'+e.label+'</div>'
+      + '<div style="font-size:22px;font-weight:700;color:#E2E8F0">'+e.name+'</div>'
+      + (e.store ? '<div style="font-size:12px;color:'+e.color+';font-family:Orbitron,monospace;opacity:0.85">'+e.store+'</div>' : '')
       + '</div>'
-      + '<div style="font-family:Orbitron,monospace;font-size:22px;font-weight:700;color:'+e.color+';text-shadow:0 0 12px '+e.color+'88">'+e.valueText+'</div>'
-      + '<div style="font-size:10px;color:#475569;margin-top:3px">'+e.caption+'</div>'
+      + '<div style="font-family:Orbitron,monospace;font-size:27px;font-weight:700;color:'+e.color+';text-shadow:0 0 12px '+e.color+'88">'+e.valueText+'</div>'
+      + '<div style="font-size:15px;color:#475569;margin-top:3px">'+e.caption+'</div>'
       + '</div>';
   });
   html += '</div>';
