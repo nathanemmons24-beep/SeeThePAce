@@ -1117,6 +1117,79 @@ var SETTINGS_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9
   document.head.appendChild(link);
 })();
 
+
+// ── PRIOR MONTH DAY DATA FOR CHART WHEN CURRENT MONTH IS EMPTY ───────────────
+async function loadPriorMonthDayData() {
+  try {
+    var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
+    var res = await fetch(APPS_SCRIPT_URL + '?action=historical&deals=1', {cache:'no-store'});
+    if (!res.ok) return;
+    var months = await res.json();
+    if (!months || months.length === 0) return;
+    var priorMonth = months[0]; // newest archived month
+    if (!priorMonth || !priorMonth.deals || priorMonth.deals.length === 0) return;
+
+    // Build day totals from prior month deals
+    var dayMap = {};
+    var skipped = [];
+    priorMonth.deals.forEach(function(deal) {
+      if (!deal.date || deal.amount <= 0) return;
+      // Parse date safely to avoid UTC timezone shift
+      var raw = String(deal.date).trim();
+      var d;
+      var iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+      var mdy = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+      if (iso) {
+        d = new Date(parseInt(iso[1]), parseInt(iso[2])-1, parseInt(iso[3]));
+      } else if (mdy) {
+        // Same disambiguation logic as parseCsv: don't blindly assume M/D/YYYY —
+        // this sheet has historically exported day-first (D/M/YYYY), and any value
+        // >12 can only be a day, never a month.
+        var p1=parseInt(mdy[1]), p2=parseInt(mdy[2]), yr=parseInt(mdy[3]);
+        if (yr < 100) yr += 2000;
+        var mo, dy;
+        if (p1 > 12) { dy = p1; mo = p2; }        // D/M/YYYY (unambiguous)
+        else if (p2 > 12) { mo = p1; dy = p2; }   // M/D/YYYY (unambiguous)
+        else { dy = p1; mo = p2; }                // ambiguous — evidence favors day-first
+        d = new Date(yr, mo-1, dy);
+      } else {
+        var cleanDate = raw.replace(/GMT[+-]\d{4}.*$/,'').trim();
+        d = new Date(cleanDate);
+      }
+      if (!d || isNaN(d.getTime())) { skipped.push(raw); return; }
+      d.setHours(0,0,0,0);
+      // Sanity guard: this endpoint only ever returns one archived month at a time.
+      // If a parsed date lands outside that month/year, the day/month were almost
+      // certainly swapped upstream — try the flip before giving up on the record.
+      var expectedYear = priorMonth.month ? new Date(priorMonth.month).getFullYear() : d.getFullYear();
+      if (mdy && d.getFullYear() !== expectedYear) {
+        var p1b=parseInt(mdy[1]), p2b=parseInt(mdy[2]), yrb=parseInt(mdy[3]);
+        if (yrb < 100) yrb += 2000;
+        var flipped = new Date(yrb, p1b-1, p2b); // try the opposite order
+        if (!isNaN(flipped.getTime()) && flipped.getFullYear() === expectedYear) {
+          d = flipped; d.setHours(0,0,0,0);
+        }
+      }
+      var key = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+      if (!dayMap[key]) dayMap[key] = { total:0, deals:0, label:formatShortDate(d), date:d };
+      dayMap[key].total += deal.amount;
+      dayMap[key].deals++;
+    });
+
+    if (skipped.length) console.warn('Prior month day data: skipped unparseable dates', skipped);
+
+    window._priorMonthDayData = Object.entries(dayMap)
+      .sort(function(a,b){ return a[1].date - b[1].date; }); // true chronological sort
+    console.log('Prior month day data loaded:', window._priorMonthDayData.length, 'days from', priorMonth.month,
+      window._priorMonthDayData.map(function(e){return e[1].label;}));
+
+    // Re-render the chart
+    if (state.data && typeof renderDayBreakdown === 'function') renderDayBreakdown(state.data);
+  } catch(e) {
+    console.warn('loadPriorMonthDayData failed:', e.message);
+  }
+}
+
 // ── PRIOR MONTH ACHIEVEMENT CHAMPS ───────────────────────────────────────────
 var priorMonthChamps = {
   champ:       { name: '', key: '', amount: 0, month: '' },  // most volume
@@ -2428,8 +2501,9 @@ function render(){
     if(nextM&&total<goal){var needed=Math.round(goal*nextM.value-total);bcl.textContent=fmt(needed)+" to "+nextM.label;}
     else if(total>=goal){bcl.textContent="GOAL!";}
     else{bcl.textContent="";}
-    // Shift left when near right edge to avoid overlapping goal number
-    bcl.style.transform = pctPos > 55 ? 'translateX(-100%)' : 'translateX(-50%)';
+    // Keep the label inside the bar's bounds near either edge instead of
+    // letting translateX(-50%) push it off-screen (body has overflow-x:hidden)
+    bcl.style.transform = pctPos > 55 ? 'translateX(-100%)' : (pctPos < 8 ? 'translateX(0%)' : 'translateX(-50%)');
     bcl.style.left = '0';
   }
 
@@ -2444,6 +2518,10 @@ function render(){
       var reached=total/goal>=m.value;
       var tick=document.createElement("div");
       tick.className="milestone-tick"; tick.style.left=(m.value*100)+"%";
+      // Edge ticks (0% / 100%) would otherwise center via translateX(-50%)
+      // and get clipped by body's overflow-x:hidden — align them inward instead.
+      if (m.value <= 0.02) tick.style.transform = "translateX(0%)";
+      else if (m.value >= 0.98) tick.style.transform = "translateX(-100%)";
       var dotBg    = reached ? m.color : 'transparent';
       var dotBorder= reached ? m.color : 'rgba(255,255,255,0.2)';
       var dotGlow  = reached ? '0 0 8px '+m.color+',0 0 16px '+m.color+'88' : 'none';
@@ -2903,7 +2981,28 @@ function renderDayBreakdown(data) {
   var days = Object.entries(dayTotals).sort(function(a,b){ return new Date(a[0])-new Date(b[0]); });
   var el   = document.getElementById('day-breakdown');
   var barsEl = document.getElementById('day-bars');
-  if (!el || !barsEl || days.length === 0) { if(el) el.style.display='none'; return; }
+  if (!el || !barsEl) return;
+
+  // If no deals in current month, show prior month from Historical
+  if (days.length === 0) {
+    if (window._priorMonthDayData && window._priorMonthDayData.length > 0) {
+      days = window._priorMonthDayData;
+      var priorLabel = document.getElementById('day-breakdown-label');
+      if (!priorLabel) {
+        var lbl = document.createElement('div');
+        lbl.id = 'day-breakdown-label';
+        lbl.style.cssText = 'text-align:center;font-family:Orbitron,monospace;font-size:9px;color:#475569;letter-spacing:2px;margin-bottom:4px';
+        lbl.textContent = 'SHOWING PRIOR MONTH (JUNE 2026) — NO JULY DATA YET';
+        el.insertBefore(lbl, el.firstChild);
+      }
+    } else {
+      el.style.display = 'none';
+      return;
+    }
+  } else {
+    var priorLabel2 = document.getElementById('day-breakdown-label');
+    if (priorLabel2) priorLabel2.remove();
+  }
   el.style.display = 'block';
 
   var maxVal = Math.max.apply(null, days.map(function(d){ return d[1].total; }));
@@ -5344,6 +5443,7 @@ resetCountdown();
 // Load settings in background
 fetchSettings().then(function(){ render(); }).catch(function(){});
 fetchPriorMonthChamps();
+loadPriorMonthDayData();
 fetchRookieNames();
 
 
