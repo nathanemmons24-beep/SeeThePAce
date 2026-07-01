@@ -2,14 +2,14 @@
   "name": "See The Pace",
   "short_name": "SeeThePace",
   "description": "Renewal by Andersen Sales Dashboard",
-  "start_url": "/dashboard.html",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#060B18",
   "theme_color": "#00D4FF",
   "icons": [
     {
-      "src": "https://nathanemmons.github.io/seethepace/icon.png",
-      "sizes": "192x192",
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      "sizes": "1x1",
       "type": "image/png"
     }
   ]
