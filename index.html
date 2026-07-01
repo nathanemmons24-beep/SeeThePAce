@@ -1211,7 +1211,12 @@ async function loadPriorMonthDayData() {
     if (!res.ok) return;
     var months = await res.json();
     if (!months || months.length === 0) return;
-    var priorMonth = months[0]; // newest archived month
+    // Skip the current month — Historical also gets a daily sync of the
+    // in-progress current month, so months[0] can otherwise be "this month"
+    // (partial, still live) instead of the actual last completed month.
+    var now = new Date();
+    var curMonthLabel = MONTH_NAMES_FULL[now.getMonth()] + ' ' + now.getFullYear();
+    var priorMonth = months.find(function(m){ return m.month !== curMonthLabel; });
     if (!priorMonth || !priorMonth.deals || priorMonth.deals.length === 0) return;
 
     // Build day totals from prior month deals
@@ -1290,8 +1295,12 @@ async function fetchPriorMonthChamps() {
     var months = await res.json();
     if (!months || months.length === 0) return;
 
-    // Get the most recent archived month (first in array since sorted newest first)
-    var priorMonth = months[0];
+    // Skip the current month — Historical also gets a daily sync of the
+    // in-progress current month, so months[0] can otherwise be "this month"
+    // (partial, still live) instead of the actual last completed month.
+    var now = new Date();
+    var curMonthLabel = MONTH_NAMES_FULL[now.getMonth()] + ' ' + now.getFullYear();
+    var priorMonth = months.find(function(m){ return m.month !== curMonthLabel; });
     if (!priorMonth || !priorMonth.deals || priorMonth.deals.length === 0) return;
 
     var deals = priorMonth.deals;
