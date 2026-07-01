@@ -3208,7 +3208,124 @@ function updateBiggestMover(data) {
   mc.innerHTML=html;
 }
 
+// ══ 8-BIT ANIMATED BADGE ICONS (Champ / Powerlifter / Deal Slayer) ═════════
+// Hand-drawn pixel-art sprites, animated with CSS steps() keyframes for a
+// chunky retro "frame by frame" feel rather than smooth tweening. Each loop
+// is ~3.6s. Used as the default badge icon unless a custom image URL is set
+// in CHAMP_BADGE_IMAGES below.
+var _csPixelStylesInjected = false;
+function ensureChampPixelStyles() {
+  if (_csPixelStylesInjected) return;
+  _csPixelStylesInjected = true;
+  var style = document.createElement('style');
+  style.textContent =
+    '@keyframes csBounce{0%,50%,100%{transform:translateY(0)}12.5%{transform:translateY(-3px)}25%{transform:translateY(-4px)}37.5%{transform:translateY(-2px)}62.5%{transform:translateY(-2px)}75%{transform:translateY(-1px)}87.5%{transform:translateY(0)}}' +
+    '@keyframes csTwinkleA{0%,20%,45%,100%{opacity:0}25%,35%{opacity:1}}' +
+    '@keyframes csTwinkleB{0%,55%,80%,100%{opacity:0}60%,70%{opacity:1}}' +
+    '@keyframes csLift{0%,25%,100%{transform:translateY(6px)}50%,75%{transform:translateY(-6px)}}' +
+    '@keyframes csFlash{0%,42%,64%,100%{opacity:0}48%,58%{opacity:1}}' +
+    '@keyframes csSwing{0%,45%,100%{transform:rotate(-28deg)}55%,90%{transform:rotate(30deg)}}' +
+    '@keyframes csSlashFlash{0%,48%,70%,100%{opacity:0}54%,62%{opacity:1}}' +
+    '.cs-icon-anim{animation-duration:3.6s;animation-iteration-count:infinite;animation-timing-function:steps(8,jump-none)}' +
+    '.cs-fade{animation-duration:3.6s;animation-iteration-count:infinite;animation-timing-function:steps(4,jump-none)}';
+  document.head.appendChild(style);
+}
+
+function pixelGridToRects(grid, color, px) {
+  px = px || 4;
+  var out = '';
+  for (var r = 0; r < grid.length; r++) {
+    for (var c = 0; c < grid[r].length; c++) {
+      if (grid[r][c] === 'G') {
+        out += '<rect x="'+(c*px)+'" y="'+(r*px)+'" width="'+px+'" height="'+px+'" fill="'+color+'"/>';
+      }
+    }
+  }
+  return out;
+}
+
+// Like pixelGridToRects, but takes a {symbol: color} map so a sprite can use
+// more than one color (e.g. a skin-tone head distinct from the body color).
+function pixelGridToRectsMulti(grid, colorMap, px) {
+  px = px || 4;
+  var out = '';
+  for (var r = 0; r < grid.length; r++) {
+    for (var c = 0; c < grid[r].length; c++) {
+      var ch = grid[r][c];
+      if (ch !== '.' && colorMap[ch]) {
+        out += '<rect x="'+(c*px)+'" y="'+(r*px)+'" width="'+px+'" height="'+px+'" fill="'+colorMap[ch]+'"/>';
+      }
+    }
+  }
+  return out;
+}
+
+var TROPHY_GRID = ['..GGGG..','G.GGGG.G','G.GGGG.G','..GGGG..','...GG...','...GG...','..GGGG..','.GGGGGG.'];
+var WRESTLER_GRID = [
+  '...GGGGGG...',
+  '...G....G...',
+  '...G....G...',
+  '...G.HH.G...',
+  '...G.HH.G...',
+  '...GGGGGG...',
+  '....GGGG....',
+  '....GGGG....',
+  '....GGGG....',
+  '....GGGG....',
+  '....GG.GG...',
+  '....GG.GG...',
+  '....GG.GG...',
+  '...GGG.GGG..'
+];
+var BARBELL_GRID = ['........','........','G......G','GG....GG','GGGGGGGG','GG....GG','G......G','........'];
+var SWORD_GRID   = [
+  '.....GG.....',
+  '.....GG.....',
+  '.....GG.....',
+  '.....GG.....',
+  '.....GG.....',
+  '.....GG.....',
+  '.....GG.....',
+  '..GGGGGGGG..',
+  '.....GG.....',
+  '.....GG.....',
+  '....GGGG....'
+];
+
+function buildAnimatedBadgeSVG(type, color) {
+  ensureChampPixelStyles();
+  if (type === 'champ') {
+    return '<svg viewBox="0 0 32 32" width="40" height="40" style="overflow:visible">'
+      + '<g class="cs-icon-anim" style="animation-name:csBounce;transform-origin:16px 32px">' + pixelGridToRects(TROPHY_GRID, color) + '</g>'
+      + '<rect x="3" y="1" width="3" height="3" fill="#FFFFFF" class="cs-fade" style="animation-name:csTwinkleA"/>'
+      + '<rect x="26" y="6" width="3" height="3" fill="#FFFFFF" class="cs-fade" style="animation-name:csTwinkleB"/>'
+      + '</svg>';
+  }
+  if (type === 'powerlifter') {
+    return '<svg viewBox="0 0 32 40" width="40" height="46" style="overflow:visible">'
+      + '<g class="cs-icon-anim" style="animation-name:csLift;transform-origin:16px 20px">' + pixelGridToRects(BARBELL_GRID, color) + '</g>'
+      + '<rect x="10" y="0" width="12" height="3" fill="#FFFFFF" class="cs-fade" style="animation-name:csFlash"/>'
+      + '</svg>';
+  }
+  if (type === 'dealSlayer') {
+    return '<svg viewBox="0 0 48 44" width="44" height="40" style="overflow:visible">'
+      + '<g class="cs-icon-anim" style="animation-name:csSwing;transform-origin:24px 42px">' + pixelGridToRects(SWORD_GRID, color) + '</g>'
+      + '<rect x="14" y="-4" width="20" height="3" fill="#FFFFFF" class="cs-fade" style="animation-name:csSlashFlash;transform:rotate(-20deg);transform-origin:24px -2.5px"/>'
+      + '</svg>';
+  }
+  return '';
+}
+
 // ══ LAST MONTH'S CHAMPIONS (Champ / Powerlifter / Deal Slayer) ═════════════
+// Optional custom badge images — paste an image URL here for any badge and
+// it'll be used instead of the animated pixel icon. Leave blank ('') to keep
+// the animation. Recommended: square images, at least 80x80px, transparent background.
+var CHAMP_BADGE_IMAGES = {
+  champ: '',        // e.g. 'https://yoursite.com/badges/champ.png'
+  powerlifter: '',  // e.g. 'https://yoursite.com/badges/powerlifter.png'
+  dealSlayer: ''    // e.g. 'https://yoursite.com/badges/deal-slayer.png'
+};
+
 function renderPriorMonthChampsTile() {
   var tile  = document.getElementById('prior-champs-tile');
   var content = document.getElementById('prior-champs-content');
@@ -3218,19 +3335,19 @@ function renderPriorMonthChampsTile() {
   var entries = [];
   if (priorMonthChamps.champ && priorMonthChamps.champ.key) {
     entries.push({
-      icon: '&#x1F3C6;', label: 'CHAMP', name: priorMonthChamps.champ.name,
+      type: 'champ', icon: '&#x1F3C6;', img: CHAMP_BADGE_IMAGES.champ, label: 'CHAMP', name: priorMonthChamps.champ.name,
       valueText: fmt(priorMonthChamps.champ.amount), caption: 'total sales', color: '#FFD700'
     });
   }
   if (priorMonthChamps.powerlifter && priorMonthChamps.powerlifter.key) {
     entries.push({
-      icon: '&#x1F3CB;&#xFE0F;', label: 'POWERLIFTER', name: priorMonthChamps.powerlifter.name,
+      type: 'powerlifter', icon: '&#x1F3CB;&#xFE0F;', img: CHAMP_BADGE_IMAGES.powerlifter, label: 'POWERLIFTER', name: priorMonthChamps.powerlifter.name,
       valueText: fmt(priorMonthChamps.powerlifter.amount), caption: 'single deal', color: '#A855F7'
     });
   }
   if (priorMonthChamps.dealSlayer && priorMonthChamps.dealSlayer.key) {
     entries.push({
-      icon: '&#x2694;&#xFE0F;', label: 'DEAL SLAYER', name: priorMonthChamps.dealSlayer.name,
+      type: 'dealSlayer', icon: '&#x2694;&#xFE0F;', img: CHAMP_BADGE_IMAGES.dealSlayer, label: 'DEAL SLAYER', name: priorMonthChamps.dealSlayer.name,
       valueText: priorMonthChamps.dealSlayer.count + ' deals', caption: 'most deals closed', color: '#FF6B35'
     });
   }
@@ -3244,15 +3361,18 @@ function renderPriorMonthChampsTile() {
 
   var html = '<div style="display:flex;gap:10px;flex-wrap:wrap">';
   entries.forEach(function(e){
-    html += '<div style="flex:1;min-width:180px;background:rgba(255,255,255,0.04);border:1px solid '+e.color+'33;border-radius:12px;padding:12px 14px;box-shadow:0 0 16px '+e.color+'22">'
-      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
-      + '<span style="font-size:20px">'+e.icon+'</span>'
-      + '<div>'
-        + '<div style="font-size:9px;letter-spacing:1px;font-family:Orbitron,monospace;color:'+e.color+';font-weight:700">'+e.label+'</div>'
-        + '<div style="font-size:14px;font-weight:700;color:#E2E8F0">'+e.name+'</div>'
-      + '</div></div>'
-      + '<div style="font-family:Orbitron,monospace;font-size:18px;font-weight:700;color:'+e.color+'">'+e.valueText+'</div>'
-      + '<div style="font-size:10px;color:#475569;margin-top:2px">'+e.caption+'</div>'
+    var iconHtml = e.img
+      ? '<img src="'+e.img+'" style="width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 6px '+e.color+'88)">'
+      : '<div style="filter:drop-shadow(0 0 6px '+e.color+'88)">' + buildAnimatedBadgeSVG(e.type, e.color) + '</div>';
+
+    html += '<div style="flex:1;min-width:180px;background:rgba(255,255,255,0.04);border:1px solid '+e.color+'55;border-radius:12px;padding:16px 14px;text-align:center;box-shadow:0 0 26px '+e.color+'44, inset 0 0 20px '+e.color+'0d">'
+      + '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:8px">'
+      + iconHtml
+      + '<div style="font-size:11px;letter-spacing:1.5px;font-family:Orbitron,monospace;color:'+e.color+';font-weight:700">'+e.label+'</div>'
+      + '<div style="font-size:17px;font-weight:700;color:#E2E8F0">'+e.name+'</div>'
+      + '</div>'
+      + '<div style="font-family:Orbitron,monospace;font-size:22px;font-weight:700;color:'+e.color+';text-shadow:0 0 12px '+e.color+'88">'+e.valueText+'</div>'
+      + '<div style="font-size:10px;color:#475569;margin-top:3px">'+e.caption+'</div>'
       + '</div>';
   });
   html += '</div>';
