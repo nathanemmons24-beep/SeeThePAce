@@ -984,6 +984,9 @@ var state={
   goal:     _saved.goal     || 85400000,
   annualGoal: _saved.annualGoal || 85400000,
   monthlyPlans: _saved.monthlyPlans || {},
+  marketPlans: _saved.marketPlans || {},
+  currentMarketPlans: _saved.currentMarketPlans || {},
+  marketNames: _saved.marketNames || [],
   title:    _saved.title    || "SEE THE PACE JUNE",
   data:     SAMPLE,
   status:   "loading",
@@ -1102,7 +1105,7 @@ function parseCsv(csv){
 }
 
 // \u2550\u2550 FETCH \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-var SETTINGS_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Settings";
+var SETTINGS_URL = "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?action=settings";
 
 
 // ── PRIOR MONTH ACHIEVEMENT CHAMPS ───────────────────────────────────────────
@@ -1170,7 +1173,7 @@ async function fetchPriorMonthChamps() {
 
 async function fetchSettings() {
   var proxies = [
-    function(u){ return "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?tab=Settings"; },
+    function(u){ return "https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec?action=settings"; },
   ];
   for (var i = 0; i < proxies.length; i++) {
     try {
