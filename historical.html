@@ -483,8 +483,10 @@ function render(data) {
       + '</div>'
     ) : '';
 
-    // Top market = the market that beat ITS OWN plan by the largest margin,
-    // not just whichever market had the highest raw revenue.
+    // Top market = the market with the HIGHEST PERCENTAGE of its own plan
+    // (not just the biggest raw dollar surplus — a market with a huge plan
+    // and a modest dollar overage shouldn't outrank one crushing a smaller
+    // plan by a wide percentage margin).
     var topMarketDisplay = d.topMarket.replace(/^\d+ - /,'');
     var topMarketRevDisplay = d.topMarketRev;
     var topMarketVarianceLabel = '';
@@ -498,20 +500,24 @@ function render(data) {
         if (!mktRevMap[mkKey]) mktRevMap[mkKey] = 0;
         mktRevMap[mkKey] += deal.amount;
       });
-      var bestMk = null, bestVariance = null, bestRev = 0;
+      var bestMk = null, bestPct = null, bestRev = 0, bestVariance = 0;
       Object.keys(mktRevMap).forEach(function(mk) {
+        // Sanity guard: a single market's revenue can never legitimately
+        // exceed the whole month's total — if it does, the underlying data
+        // for this row is corrupted and shouldn't be allowed to win.
+        if (mktRevMap[mk] > d.revenue) return;
         var plan = getPlanForMarketInMonth(mk, monthPlans);
         if (plan > 0) {
-          var variance = mktRevMap[mk] - plan;
-          if (bestVariance === null || variance > bestVariance) {
-            bestVariance = variance; bestMk = mk; bestRev = mktRevMap[mk];
+          var pctOfPlan = mktRevMap[mk] / plan;
+          if (bestPct === null || pctOfPlan > bestPct) {
+            bestPct = pctOfPlan; bestMk = mk; bestRev = mktRevMap[mk]; bestVariance = mktRevMap[mk] - plan;
           }
         }
       });
       if (bestMk) {
         topMarketDisplay = bestMk.replace(/^\d+ - /,'');
         topMarketRevDisplay = bestRev;
-        topMarketVarianceLabel = ' <span style="color:' + (bestVariance >= 0 ? '#00FF88' : '#FF6B6B') + '">(' + (bestVariance >= 0 ? '+' : '') + fmt(bestVariance) + ' vs plan)</span>';
+        topMarketVarianceLabel = ' <span style="color:' + (bestVariance >= 0 ? '#00FF88' : '#FF6B6B') + '">(' + Math.round(bestPct*100) + '% of plan)</span>';
       }
     }
 
