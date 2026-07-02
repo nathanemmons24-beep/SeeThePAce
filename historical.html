@@ -267,6 +267,55 @@ function onRepSearchInput() {
     return;
   }
 
+  // ── YTD aggregate stats for this rep ────────────────────────────────────
+  var totalDeals  = rows.reduce(function(s,r){ return s + r.count; }, 0);
+  var totalVolume = rows.reduce(function(s,r){ return s + r.revenue; }, 0);
+  var avgDealSize = totalDeals > 0 ? totalVolume / totalDeals : 0;
+  var totalBadges = rows.reduce(function(s,r){ return s + r.badges.length; }, 0);
+
+  // ── YTD ranking — company-wide and within the rep's own market ─────────
+  // Built from every rep's total YTD volume across all archived months
+  // (chronological order so "most recent market" reflects their latest
+  // known market if they've moved at some point).
+  var ytdByRep = {};
+  monthsSorted.forEach(function(m){
+    (m.deals||[]).forEach(function(deal){
+      if (!deal.name || deal.name.trim().toLowerCase() === 'other') return;
+      var mk = mergedMarketKey(deal.store).replace(/^\d+ - /,'');
+      if (!ytdByRep[deal.name]) ytdByRep[deal.name] = { total: 0, market: mk };
+      ytdByRep[deal.name].total += deal.amount;
+      ytdByRep[deal.name].market = mk; // last write wins — most recent market
+    });
+  });
+
+  var allRepsRanked = Object.keys(ytdByRep).map(function(n){
+    return { name: n, total: ytdByRep[n].total, market: ytdByRep[n].market };
+  }).sort(function(a,b){ return b.total - a.total; });
+
+  var repMarket = ytdByRep[matchedName] ? ytdByRep[matchedName].market : 'Unknown';
+  var companyRank  = allRepsRanked.findIndex(function(r){ return r.name === matchedName; }) + 1;
+  var companyCount = allRepsRanked.length;
+  var marketRepsRanked = allRepsRanked.filter(function(r){ return r.market === repMarket; });
+  var marketRank  = marketRepsRanked.findIndex(function(r){ return r.name === matchedName; }) + 1;
+  var marketCount = marketRepsRanked.length;
+
+  function statTile(label, value, color) {
+    return '<div style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:14px 16px;text-align:center">'
+      + '<div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:1px;color:#475569;margin-bottom:6px">'+label+'</div>'
+      + '<div style="font-family:Orbitron,monospace;font-size:17px;font-weight:900;color:'+color+'">'+value+'</div>'
+    + '</div>';
+  }
+
+  var tilesHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px">'
+    + statTile('MARKET', repMarket, '#00D4FF')
+    + statTile('DEALS SOLD', totalDeals, '#E2E8F0')
+    + statTile('TOTAL VOLUME', fmt(totalVolume), '#00FF88')
+    + statTile('AVG PROJECT SIZE', fmt(avgDealSize), '#FFD700')
+    + statTile('BADGES WON', totalBadges, '#FCD34D')
+    + statTile('COMPANY RANK', '#' + companyRank + ' of ' + companyCount, '#A855F7')
+    + statTile('MARKET RANK', '#' + marketRank + ' of ' + marketCount, '#FF6B35')
+  + '</div>';
+
   var maxRev = Math.max.apply(null, rows.map(function(r){ return r.revenue; })) || 1;
 
   var chartHtml = '<div style="display:flex;align-items:flex-end;gap:10px;height:170px;overflow-x:auto;padding:8px 0 0">'
@@ -302,6 +351,7 @@ function onRepSearchInput() {
     + '</div>';
 
   resultsEl.innerHTML = '<div style="font-family:Orbitron,monospace;font-size:16px;font-weight:900;color:#00D4FF;letter-spacing:1px;margin-bottom:12px">'+matchedName+'</div>'
+    + tilesHtml
     + chartHtml + tableHtml;
 }
 
