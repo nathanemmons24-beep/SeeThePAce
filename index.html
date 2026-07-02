@@ -734,7 +734,7 @@ if (new URLSearchParams(window.location.search).get('tv') === '1') {
       </div>
       <div id="pace-detail" style="font-size:18px;color:#CBD5E1;letter-spacing:1px;font-weight:600;display:flex;align-items:center;gap:8px">
         <span id="pace-detail-static">calculating...</span>
-        <span id="pace-countdown" style="color:#94A3B8;font-size:15px"></span>
+        <span id="pace-countdown" style="color:#94A3B8;font-size:14px;opacity:0.8"></span>
       </div>
     </div>
     <div id="total-display">$0 <span>of $85.40M</span></div>
@@ -765,9 +765,15 @@ if (new URLSearchParams(window.location.search).get('tv') === '1') {
   <!-- STORE RANKINGS -->
   <div id="store-rankings" style="display:none">
     <!-- Rankings header -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
       <h3 style="font-family:Orbitron,monospace;font-size:11px;color:#475569;letter-spacing:2px;margin:0">&#x1F3C6; STORE RANKINGS</h3>
-      <div id="market-filter-banner" style="display:none;font-family:Orbitron,monospace;font-size:9px;color:#7C3AED;cursor:pointer;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);border-radius:20px;padding:3px 10px;letter-spacing:1px" onclick="clearMarketFilter()">FILTERED &mdash; CLEAR &#x2715;</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="rankings-sort-toggle" style="display:flex;gap:4px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:3px">
+          <button id="rankings-sort-plan" onclick="setRankingsSort('plan')" style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:1px;padding:5px 12px;border-radius:16px;border:none;cursor:pointer">% TO PLAN</button>
+          <button id="rankings-sort-total" onclick="setRankingsSort('total')" style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:1px;padding:5px 12px;border-radius:16px;border:none;cursor:pointer">TOTAL</button>
+        </div>
+        <div id="market-filter-banner" style="display:none;font-family:Orbitron,monospace;font-size:9px;color:#7C3AED;cursor:pointer;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);border-radius:20px;padding:3px 10px;letter-spacing:1px" onclick="clearMarketFilter()">FILTERED &mdash; CLEAR &#x2715;</div>
+      </div>
     </div>
     <div id="rankings-list"></div>
   </div>
@@ -1005,7 +1011,7 @@ var streakCounts = {}; // "Name|Team" -> number of deals (not syncs)
 var pollTimer=null,countdownTimer=null,secsLeft=10,CIRC=2*Math.PI*15;
 
 // ── Utility formatters ────────────────────────────────────────────────────────
-var fmt = function(n){ return n>=1000000?"$"+(n/1000000).toFixed(2)+"M":"$"+n.toLocaleString(); };
+var fmt = function(n){ n = Math.round(n); return n>=1000000?"$"+(n/1000000).toFixed(2)+"M":"$"+n.toLocaleString(); };
 function getBadge(amt){ var b=null; for(var i=0;i<IND_BADGES.length;i++) if(amt>=IND_BADGES[i].threshold) b=IND_BADGES[i]; return b; }
 function getAllBadges(amt){ return IND_BADGES.filter(function(b){ return amt>=b.threshold; }); }
 function formatShortDate(d){
@@ -2029,15 +2035,30 @@ function renderLeaderboards(data){
     var endOfMonth = new Date(now.getFullYear(), now.getMonth()+1, 1, 0, 0, 0);
     var msLeft = endOfMonth - now;
     if (msLeft <= 0) { el.textContent = ''; return; }
-    var h = Math.floor(msLeft / (1000*60*60));
+    var totalHours = msLeft / (1000*60*60);
+    var d = Math.floor(totalHours / 24);
+    var h = Math.floor(totalHours % 24);
     var m = Math.floor((msLeft % (1000*60*60)) / (1000*60));
-    var s = Math.floor((msLeft % (1000*60)) / 1000);
-    var pad = function(n){ return n < 10 ? '0'+n : String(n); };
-    el.textContent = '(' + h + 'h ' + pad(m) + 'm ' + pad(s) + 's left)';
+    // Days + hours normally; switch to hours + minutes once under a day left,
+    // since that's when finer precision actually matters.
+    var text = d >= 1 ? (d + 'd ' + h + 'h left') : (h + 'h ' + m + 'm left');
+    el.textContent = '(' + text + ')';
   }
   tickCountdown();
-  setInterval(tickCountdown, 1000);
+  setInterval(tickCountdown, 30000);
 })();
+
+// Compact currency formatter for the pace banner — abbreviates mid-size
+// figures to K (e.g. "$36.3K" instead of "$36,322") so the banner reads at
+// a glance instead of forcing you to count digits.
+function fmtCompact(n) {
+  n = Math.round(n);
+  var sign = n < 0 ? '-' : '';
+  n = Math.abs(n);
+  if (n >= 1000000) return sign + '$' + (n/1000000).toFixed(2) + 'M';
+  if (n >= 10000)   return sign + '$' + (n/1000).toFixed(1) + 'K';
+  return sign + '$' + n.toLocaleString();
+}
 
 function updatePaceBanner(total, goal) {
   var banner = document.getElementById('pace-status');
@@ -2051,10 +2072,20 @@ function updatePaceBanner(total, goal) {
   var completedDays = dayOfMonth - 1;
   var elapsed = completedDays / daysInMonth;
 
-  // Where we SHOULD be through completed days
-  var expectedTotal = goal * elapsed;
+  // Countdown to end of month (midnight on last day) — computed early since
+  // perDayNeeded (used below) depends on it
+  var endOfMonth = new Date(now.getFullYear(), now.getMonth()+1, 1, 0, 0, 0); // midnight 1st of next month
+  var msLeft = endOfMonth - now;
+  var daysLeft = msLeft / (1000 * 60 * 60 * 24); // fractional for math
+  var remaining = goal - total;
+  var perDayNeeded = daysLeft > 0 ? remaining / daysLeft : 0;
+
+  // Ahead/behind is measured against the SAME "per day needed" rate shown in
+  // the detail line below (not a flat monthly average), so both numbers on
+  // this banner tell one consistent story instead of two different math bases.
+  var expectedTotal = perDayNeeded * completedDays;
   var diff = total - expectedTotal;
-  var diffPct = (diff / goal) * 100;
+  var diffPct = goal > 0 ? (diff / goal) * 100 : 0;
 
   // Projected month-end at current pace
   var projected = elapsed > 0.01 ? (total / elapsed) : 0; // pace based on completed days
@@ -2066,7 +2097,7 @@ function updatePaceBanner(total, goal) {
   var label = isAhead ? 'AHEAD' : 'BEHIND';
 
   if (isNaN(diff) || !goal) return; // allow total=0 (new month)
-  banner.textContent = arrow + ' ' + label + ' ' + fmt(Math.abs(diff)) + ' vs plan';
+  banner.textContent = arrow + ' ' + label + ' ' + fmtCompact(Math.abs(diff)) + ' vs plan';
   banner.style.color = color;
   banner.style.textShadow = '0 0 12px ' + (isAhead ? 'rgba(0,255,136,0.4)' : 'rgba(255,68,68,0.4)');
 
@@ -2076,26 +2107,20 @@ function updatePaceBanner(total, goal) {
   var projDiffStr = (projDiff >= 0 ? '+' : '-') + fmt(absProjDiff);
   var projColor = projDiff >= 0 ? '#00FF88' : '#FF4444';
   var projLabel = projDiff >= 0 ? 'on track to finish' : 'projected to miss by';
-  // Countdown to end of month (midnight on last day)
-  var endOfMonth = new Date(now.getFullYear(), now.getMonth()+1, 1, 0, 0, 0); // midnight 1st of next month
-  var msLeft = endOfMonth - now;
-  var daysLeft = msLeft / (1000 * 60 * 60 * 24); // fractional for math
   var hoursLeft = Math.floor(msLeft / (1000*60*60));
   var minsLeft  = Math.floor((msLeft % (1000*60*60)) / (1000*60));
   var secsLeft  = Math.floor((msLeft % (1000*60)) / 1000);
   var pad = function(n){ return n < 10 ? '0'+n : n; };
   var countdownStr = hoursLeft + 'h ' + pad(minsLeft) + 'm ' + pad(secsLeft) + 's';
   var daysLeftDisplay = countdownStr;
-  var remaining = goal - total;
-  var perDayNeeded = daysLeft > 0 ? remaining / daysLeft : 0;
 
   // Update static part only (countdown has its own timer)
   var staticEl = document.getElementById('pace-detail-static');
   if (staticEl) {
     staticEl.innerHTML = 
-      'Through Day ' + completedDays + ' of ' + daysInMonth +
+      'Day ' + dayOfMonth + '/' + daysInMonth +
       ' &nbsp;·&nbsp; ' +
-      '<span style="color:#FFD700;font-weight:900">' + (isNaN(perDayNeeded)||perDayNeeded<=0 ? '—' : fmt(Math.round(perDayNeeded))) + '/day needed</span>';
+      '<span style="color:#FFD700;font-weight:900">' + (isNaN(perDayNeeded)||perDayNeeded<=0 ? '—' : fmtCompact(perDayNeeded)) + '/day needed</span>';
   }
 }
 
@@ -2644,7 +2669,18 @@ function render(){
   var rl=document.getElementById("rankings-list");
   if(rl){
     rl.innerHTML="";
-    var sorted=Object.entries(data.teams).sort(function(a,b){return b[1].total-a[1].total;});
+    updateRankingsSortButtons();
+    // Rank by % to plan OR raw total, depending on the toggle. When ranking
+    // by plan, markets with no configured plan fall to the bottom since
+    // there's no target to measure them against.
+    var sorted=Object.entries(data.teams).map(function(e){
+      var plan = getMarketPlanForStore(e[0]);
+      var planPct = plan > 0 ? (e[1].total / plan) : -1;
+      return [e[0], e[1], planPct];
+    }).sort(function(a,b){
+      if (rankingsSortMode === 'total') return b[1].total - a[1].total;
+      return b[2]-a[2];
+    });
     if(sorted.length===0){
       rl.innerHTML='<div style="font-family:Orbitron,monospace;font-size:9px;color:#334155;padding:12px 18px;text-align:center;letter-spacing:1px">⏳ WAITING FOR 1ST SALE</div>';
     } else {
@@ -3585,6 +3621,23 @@ function resetMilestone(){lastMilestone=-1;}
 var menuOpen = false;
 var filterToday = false;
 var filterDay = null; // ISO date string "YYYY-MM-DD" or null
+var rankingsSortMode = 'total'; // 'plan' or 'total' — Store Rankings sort toggle
+
+function setRankingsSort(mode) {
+  rankingsSortMode = mode;
+  updateRankingsSortButtons();
+  render();
+}
+
+function updateRankingsSortButtons() {
+  var planBtn = document.getElementById('rankings-sort-plan');
+  var totalBtn = document.getElementById('rankings-sort-total');
+  if (!planBtn || !totalBtn) return;
+  var activeStyle = 'background:#00D4FF;color:#0A0F1C;';
+  var inactiveStyle = 'background:transparent;color:#64748B;';
+  planBtn.style.cssText = planBtn.style.cssText.replace(/background:[^;]+;|color:[^;]+;/g,'') + (rankingsSortMode==='plan' ? activeStyle : inactiveStyle);
+  totalBtn.style.cssText = totalBtn.style.cssText.replace(/background:[^;]+;|color:[^;]+;/g,'') + (rankingsSortMode==='total' ? activeStyle : inactiveStyle);
+}
 var filterConsolidated = false;
 var filterRookies = false;
 
