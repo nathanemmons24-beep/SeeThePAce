@@ -19,18 +19,63 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
 #app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px 20px 60px}
 
 /* NAV */
-#stp-nav{position:fixed;top:0;left:0;right:0;height:48px;background:linear-gradient(135deg,#040810,#080E1A,#040810);
-  border-bottom:2px solid rgba(0,200,255,0.25);display:flex;align-items:center;justify-content:space-between;
-  padding:0 24px;z-index:9999;font-family:Orbitron,monospace}
-#stp-brand{display:flex;align-items:center;gap:8px;text-decoration:none;cursor:pointer}
+#stp-nav{position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:48px;background:linear-gradient(135deg,#040810 0%,#080E1A 50%,#040810 100%);border-bottom:2px solid rgba(0,200,255,0.25);box-shadow:0 2px 20px rgba(0,200,255,0.1);font-family:'Orbitron',monospace}
+#stp-brand{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0}
 #stp-bolt{font-size:20px;filter:drop-shadow(0 0 8px #00C8FF)}
-#stp-wordmark{font-family:Orbitron,monospace;font-weight:900;font-size:14px;letter-spacing:3px;
-  background:linear-gradient(90deg,#00C8FF,#E0F8FF,#00C8FF);background-size:200% auto;
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-#nav-back{color:rgba(255,255,255,0.6);font-family:Orbitron,monospace;font-size:10px;font-weight:700;
-  letter-spacing:1.5px;text-decoration:none;padding:6px 16px;border-radius:8px;border:1px solid rgba(0,200,255,0.2);
-  background:transparent;cursor:pointer;transition:all 0.15s}
-#nav-back:hover{color:#00C8FF;border-color:rgba(0,200,255,0.5);background:rgba(0,200,255,0.06)}
+#stp-wordmark{font-family:'Orbitron',monospace;font-weight:900;font-size:14px;letter-spacing:3px;background:linear-gradient(90deg,#00C8FF,#E0F8FF,#00C8FF);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#stp-links{display:flex;align-items:center;gap:4px}
+.stp-link{color:rgba(255,255,255,0.65);font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-decoration:none;padding:6px 14px;border-radius:8px;border:none;background:transparent;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.stp-link:hover{color:#00C8FF;background:rgba(0,200,255,0.08)}
+.stp-dropdown{position:relative}
+.stp-drop-btn{color:rgba(255,255,255,0.65)}
+.stp-drop-menu{display:none;position:absolute;top:calc(100% + 2px);right:0;background:#06091A;border:1px solid rgba(0,200,255,0.2);border-radius:12px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:9600}
+.stp-drop-menu.open{display:block}
+.stp-drop-label{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:rgba(0,200,255,0.5);padding:4px 10px 2px;text-transform:uppercase}
+.stp-drop-divider{height:1px;background:rgba(0,200,255,0.1);margin:6px 4px}
+.stp-drop-item{display:block;padding:8px 12px;border-radius:8px;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;cursor:pointer;transition:all 0.12s;font-family:'Inter',sans-serif;font-weight:500;white-space:nowrap}
+.stp-drop-item:hover{background:rgba(0,200,255,0.08);color:#00C8FF}
+.stp-drop-active{color:#00C8FF !important;background:rgba(0,200,255,0.08);border-left:2px solid #00C8FF;padding-left:10px}
+
+/* LIGHT MODE — overrides both the CSS-variable-driven structural elements
+   (cards, sections defined in this stylesheet) and the inline-styled colors
+   used throughout the JS-generated content (month cards, modal, rep search
+   tiles/table) via attribute selectors matching common inline color values. */
+body.light-mode{--bg:#F0F4F8;--surface:rgba(255,255,255,0.9);--border:rgba(0,0,0,0.1);--text:#0F172A;--muted:#64748B}
+body.light-mode{background:var(--bg)!important;color:var(--text)!important}
+/* Thin black outline on all text — the app's bright neon accent colors
+   (yellow, cyan, gold, etc.) were designed for a dark background and lose
+   contrast against a light one; a subtle stroke keeps them legible without
+   having to redesign every color individually. */
+body.light-mode, body.light-mode *{
+  -webkit-text-stroke:0.4px rgba(0,0,0,0.6);
+  text-shadow:0 0 1px rgba(0,0,0,0.4);
+}
+body.light-mode #stp-nav{background:linear-gradient(135deg,#F8FAFC,#EFF6FF);border-color:rgba(0,200,255,0.3)}
+body.light-mode .stp-link{color:rgba(0,0,0,0.6)}
+body.light-mode #stp-wordmark{background:linear-gradient(90deg,#0369A1,#0891B2,#0369A1);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+body.light-mode .stp-drop-menu{background:#fff;border-color:rgba(0,0,0,0.12)}
+body.light-mode .stp-drop-item{color:#1E293B}
+body.light-mode .month-card:hover{border-color:rgba(0,150,200,0.35)}
+/* Card/panel backgrounds used throughout the JS-generated content */
+body.light-mode [style*="background:rgba(15,23,42,0.8)"]{background:rgba(255,255,255,0.92)!important;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+body.light-mode [style*="background:rgba(0,0,0,0.2)"]{background:rgba(0,0,0,0.04)!important}
+body.light-mode [style*="background:rgba(0,0,0,0.04)"]{background:rgba(0,0,0,0.03)!important}
+body.light-mode [style*="background:rgba(255,255,255,0.02)"]{background:rgba(0,0,0,0.03)!important}
+body.light-mode [style*="background:rgba(255,255,255,0.03)"]{background:rgba(0,0,0,0.03)!important}
+body.light-mode [style*="background:rgba(255,255,255,0.04)"]{background:rgba(0,0,0,0.04)!important}
+body.light-mode [style*="background:rgba(2,8,20,0.95)"]{background:rgba(240,244,248,0.97)!important}
+/* Primary + muted text */
+body.light-mode [style*="color:#E2E8F0"]{color:#0F172A!important}
+body.light-mode [style*="color:#CBD5E1"]{color:#1E293B!important}
+body.light-mode [style*="color:#94A3B8"]{color:#475569!important}
+body.light-mode [style*="color:#475569"]{color:#64748B!important}
+body.light-mode [style*="color:#64748B"]{color:#64748B!important}
+body.light-mode [style*="color:#334155"]{color:#94A3B8!important}
+/* Borders */
+body.light-mode [style*="border:1px solid rgba(255,255,255,0.07)"]{border-color:rgba(0,0,0,0.1)!important}
+body.light-mode [style*="border:1px solid rgba(255,255,255,0.15)"]{border-color:rgba(0,0,0,0.15)!important}
+body.light-mode [style*="border:1px solid rgba(255,255,255,0.1)"]{border-color:rgba(0,0,0,0.12)!important}
+body.light-mode [style*="border-top:1px solid rgba(255,255,255,0.04)"]{border-color:rgba(0,0,0,0.08)!important}
 
 /* HEADER */
 #page-header{text-align:center;padding:72px 0 32px}
@@ -85,11 +130,38 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
 <body>
 
 <nav id="stp-nav">
-  <a id="stp-brand" onclick="history.length>1?history.back():location.href='dashboard.html'" style="cursor:pointer">
-    <span id="stp-bolt">⚡</span>
-    <span id="stp-wordmark">SEE THE PACE</span>
-  </a>
-  <button id="nav-back" onclick="history.length>1?history.back():location.href='dashboard.html'">← PACE</button>
+  <a href="dashboard.html" id="stp-brand"><span id="stp-bolt">⚡</span><span id="stp-wordmark">SEE THE PACE</span></a>
+  <div id="stp-links">
+    <a href="dashboard.html" class="stp-link">PACE</a>
+    <div class="stp-dropdown">
+      <button class="stp-link stp-drop-btn">CONTESTS ▾</button>
+      <div class="stp-drop-menu">
+        <div class="stp-drop-label">CONTESTS</div>
+        <a class="stp-drop-item" href="dashboard.html">⚡ Blitz 2026</a>
+        <a class="stp-drop-item" href="blitz_winners.html">🏆 Winners Board</a>
+        <a class="stp-drop-item" href="record_setters.html">🏆 August 2026</a>
+        <a class="stp-drop-item" href="rookie_100.html">⭐ September 2026</a>
+      </div>
+    </div>
+    <div class="stp-dropdown">
+      <button class="stp-link stp-drop-btn">HELP ▾</button>
+      <div class="stp-drop-menu" style="min-width:220px">
+        <div class="stp-drop-label">SUPPORT</div>
+        <a class="stp-drop-item" href="dashboard.html">💬 Talk To The Data</a>
+        <a class="stp-drop-item stp-drop-active" href="historical.html">📈 Historical</a>
+      </div>
+    </div>
+    <div class="stp-dropdown">
+      <button class="stp-link stp-drop-btn">⚙ SETTINGS</button>
+      <div class="stp-drop-menu" style="min-width:200px">
+        <div class="stp-drop-label">DISPLAY</div>
+        <a class="stp-drop-item" onclick="toggleDarkMode();return false" style="cursor:pointer">☀ Light / Dark</a>
+        <div class="stp-drop-divider"></div>
+        <div class="stp-drop-label">DATA</div>
+        <a class="stp-drop-item" onclick="loadHistorical();return false" style="cursor:pointer">🔄 Refresh Now</a>
+      </div>
+    </div>
+  </div>
 </nav>
 
 <div id="app">
@@ -114,7 +186,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
   </div>
 </div>
 <div id="rep-search-section" style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:28px;margin-bottom:24px">
-  <div class="section-title">&#x1F50D; SEARCH BY REP &mdash; MONTH TO MONTH</div>
+  <div class="section-title" style="color:#F5FF00;text-shadow:0 0 8px #F5FF0088">&#x1F50D; SEARCH BY REP &mdash; MONTH TO MONTH</div>
   <input type="text" id="rep-search-input" list="rep-search-list" placeholder="Type a rep's name, e.g. Josh Ravano..." oninput="onRepSearchInput()"
     style="width:100%;padding:12px 16px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.15);color:#E2E8F0;font-family:'Exo 2',sans-serif;font-size:14px;margin-bottom:16px">
   <datalist id="rep-search-list"></datalist>
@@ -250,15 +322,47 @@ function onRepSearchInput() {
     });
     if (rev > 0 || count > 0) {
       var champs = computeMonthChamps(m.deals);
-      var badges = computeMonthBadges(m.deals);
+      var streakData = computeMonthBadges(m.deals);
+      var marketBadgeData = computeMarketBadges(m.deals);
+      var topRookieData = computeTopRookies(m.deals);
+      var repMarkets = Array.from(marketSet);
       var earnedBadges = [];
       if (matchedName === champs.champ)  earnedBadges.push({icon:'&#x1F451;', label:'Champ'});
       if (matchedName === champs.slayer) earnedBadges.push({icon:'&#x2694;&#xFE0F;', label:'Deal Slayer'});
       if (matchedName === champs.power)  earnedBadges.push({icon:'&#x1F3CB;&#xFE0F;', label:'Powerlifter'});
-      if (badges.rocketNames.indexOf(matchedName) >= 0 && badges.rocketAmt > 0) earnedBadges.push({icon:'&#x1F680;', label:'Rocket'});
-      if (matchedName === badges.streakName && badges.streakDays >= 2) earnedBadges.push({icon:'&#x1F525;', label:'Streaker'});
-      if (ROOKIE_NAMES_H.has(matchedName)) earnedBadges.push({icon:'&#x2B50;', label:'Rookie'});
-      rows.push({ month: m.month, revenue: rev, count: count, markets: Array.from(marketSet).join(', '), badges: earnedBadges });
+      repMarkets.forEach(function(mkDisplay){
+        // repMarkets holds display names (prefix stripped); marketBadgeData
+        // keys are full merged keys, so compare on the stripped display form.
+        Object.keys(marketBadgeData).forEach(function(mkKey){
+          if (mkKey.replace(/^\d+ - /,'') !== mkDisplay) return;
+          if (marketBadgeData[mkKey].leader === matchedName && !earnedBadges.some(function(b){return b.label==='Leader';})) {
+            earnedBadges.push({icon:'&#x1F3C5;', label:'Leader'});
+          }
+          if (marketBadgeData[mkKey].rocket === matchedName && !earnedBadges.some(function(b){return b.label==='Rocket';})) {
+            earnedBadges.push({icon:'&#x1F680;', label:'Rocket'});
+          }
+        });
+      });
+      if (matchedName === streakData.streakName && streakData.streakDays >= 2) earnedBadges.push({icon:'&#x1F525;', label:'Streaker'});
+      if (matchedName === topRookieData.topCompany && topRookieData.topCompany) {
+        earnedBadges.push({icon:'&#x2B50;', label:'Top Rookie (Company)'});
+      } else {
+        repMarkets.forEach(function(mkDisplay){
+          Object.keys(topRookieData.topByMarket).forEach(function(mkKey){
+            if (mkKey.replace(/^\d+ - /,'') !== mkDisplay) return;
+            if (topRookieData.topByMarket[mkKey].name === matchedName && !earnedBadges.some(function(b){return b.label.indexOf('Top Rookie')===0;})) {
+              earnedBadges.push({icon:'&#x1F31F;', label:'Top Rookie (Market)'});
+            }
+          });
+        });
+      }
+      if (getRepCumulativeDealCount(matchedName, m.month) >= 100) {
+        earnedBadges.push({icon:'&#x1F4AF;', label:'100 Club'});
+      }
+      if (getRepCumulativeVolume(matchedName, m.month) >= PRESIDENTIAL_TRIP_THRESHOLD) {
+        earnedBadges.push({icon:'&#x1F985;', label:'Presidential'});
+      }
+      rows.push({ month: m.month, revenue: rev, count: count, markets: repMarkets.join(', '), badges: earnedBadges });
     }
   });
 
@@ -299,17 +403,27 @@ function onRepSearchInput() {
   var marketRank  = marketRepsRanked.findIndex(function(r){ return r.name === matchedName; }) + 1;
   var marketCount = marketRepsRanked.length;
 
-  function statTile(label, value, color) {
+  // 100 Club — has THIS rep personally sold 100+ deals total (career/YTD,
+  // through the most recent month they appear in)?
+  var latestMonthForCumulative = rows.length ? rows[rows.length-1].month : null;
+  var repCumulativeDeals = latestMonthForCumulative ? getRepCumulativeDealCount(matchedName, latestMonthForCumulative) : 0;
+  var repCumulativeVolume = latestMonthForCumulative ? getRepCumulativeVolume(matchedName, latestMonthForCumulative) : 0;
+
+  function statTile(label, value, color, badge) {
+    var badgeRow = badge
+      ? '<div style="margin-top:6px;font-size:10px;color:#FFD700;display:flex;align-items:center;justify-content:center;gap:4px"><span>'+badge.icon+'</span><span>'+badge.name+'</span></div>'
+      : '';
     return '<div style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:14px 16px;text-align:center">'
-      + '<div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:1px;color:#475569;margin-bottom:6px">'+label+'</div>'
+      + '<div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:1px;color:#F5FF00;text-shadow:0 0 6px #F5FF0066;margin-bottom:6px">'+label+'</div>'
       + '<div style="font-family:Orbitron,monospace;font-size:17px;font-weight:900;color:'+color+'">'+value+'</div>'
+      + badgeRow
     + '</div>';
   }
 
   var tilesHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px">'
     + statTile('MARKET', repMarket, '#00D4FF')
-    + statTile('DEALS SOLD', totalDeals, '#E2E8F0')
-    + statTile('TOTAL VOLUME', fmt(totalVolume), '#00FF88')
+    + statTile('DEALS SOLD', totalDeals, '#E2E8F0', repCumulativeDeals >= 100 ? {icon:'&#x1F4AF;', name:'100 Club'} : null)
+    + statTile('TOTAL VOLUME', fmt(totalVolume), '#00FF88', repCumulativeVolume >= PRESIDENTIAL_TRIP_THRESHOLD ? {icon:'&#x1F985;', name:'Presidential'} : null)
     + statTile('AVG PROJECT SIZE', fmt(avgDealSize), '#FFD700')
     + statTile('BADGES WON', totalBadges, '#FCD34D')
     + statTile('COMPANY RANK', '#' + companyRank + ' of ' + companyCount, '#A855F7')
@@ -323,22 +437,22 @@ function onRepSearchInput() {
         var h = r.revenue > 0 ? Math.max(3, (r.revenue/maxRev)*100) : 3;
         var shortM = r.month.replace(/(\w{3})\w+ (\d{4})/, '$1 $2');
         return '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;width:74px">'
-          + '<div style="font-family:Orbitron,monospace;font-size:9px;color:#94A3B8;white-space:nowrap">'+fmt(r.revenue)+'</div>'
+          + '<div style="font-family:Orbitron,monospace;font-size:9px;color:#F5FF00;text-shadow:0 0 6px #F5FF0066;white-space:nowrap">'+fmt(r.revenue)+'</div>'
           + '<div style="height:120px;width:100%;display:flex;align-items:flex-end;flex:none">'
             + '<div style="width:100%;height:'+h+'%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#00D4FF,#0070CC)"></div>'
           + '</div>'
-          + '<div style="font-size:9px;color:#64748B;white-space:nowrap">'+shortM+'</div>'
+          + '<div style="font-size:9px;color:#F5FF00;text-shadow:0 0 6px #F5FF0066;white-space:nowrap">'+shortM+'</div>'
         + '</div>';
       }).join('')
     + '</div>';
 
   var tableHtml = '<div style="background:rgba(0,0,0,0.2);border-radius:12px;overflow:hidden;margin-top:16px">'
-    + '<div style="display:grid;grid-template-columns:1.4fr 1.2fr 1fr 0.8fr 1.6fr;padding:10px 14px;background:rgba(0,212,255,0.06);font-family:Orbitron,monospace;font-size:9px;letter-spacing:1px;color:#475569">'
+    + '<div style="display:grid;grid-template-columns:1.4fr 1.2fr 1fr 0.8fr 1.6fr;padding:10px 14px;background:rgba(0,212,255,0.06);font-family:Orbitron,monospace;font-size:9px;letter-spacing:1px;color:#F5FF00;text-shadow:0 0 6px #F5FF0066">'
       + '<div>MONTH</div><div>MARKET</div><div>REVENUE</div><div>DEALS</div><div>BADGES</div>'
     + '</div>'
     + rows.map(function(r){
         var badgesHtml = r.badges.length
-          ? r.badges.map(function(b){ return '<span title="'+b.label+'" style="margin-right:4px">'+b.icon+'</span>'; }).join('')
+          ? r.badges.map(function(b){ return '<span style="display:inline-flex;align-items:center;gap:4px;margin-right:10px;white-space:nowrap"><span>'+b.icon+'</span><span style="font-size:11px;color:#CBD5E1">'+b.label+'</span></span>'; }).join('')
           : '<span style="color:#334155">&mdash;</span>';
         return '<div style="display:grid;grid-template-columns:1.4fr 1.2fr 1fr 0.8fr 1.6fr;padding:9px 14px;border-top:1px solid rgba(255,255,255,0.04);font-size:12px;align-items:center">'
           + '<div style="color:#E2E8F0">'+r.month+'</div>'
@@ -607,22 +721,19 @@ var _modalMonthGoal = 0;
 var _modalMonthPlans = null;
 var _modalDaysInMonth = 30;
 var _modalChamps = { champ:'', champAmt:0, slayer:'', slayerCount:0, power:'', powerAmt:0 };
-var _modalBadges = { rocketNames: [], rocketAmt: 0, streakName: '', streakDays: 0 };
+var _modalBadges = { streakName: '', streakDays: 0 };
+var _modalMarketBadges = {}; // marketKey -> {leader, leaderAmt, rocket, rocketAmt}
+var _modalTopRookies = { topCompany: '', topCompanyAmt: 0, topByMarket: {} };
+var _modalMonthLabelForCumulative = '';
 
-// Same criteria as the live dashboard's computeTitles(): Rocket = biggest
-// single deal (can tie), Streaker = longest run of consecutive calendar
-// days with at least one sale that month (threshold of 2+ days, matching
-// the live dashboard's "sl>=2" rule).
+// Company-wide streak — longest run of consecutive calendar days with at
+// least one sale that month (2+ days minimum, matching the live dashboard).
 function computeMonthBadges(deals) {
-  var rocketNames = [], rocketAmt = 0;
   var repDayKeys = {}; // repName -> Set of day keys they sold on
 
   (deals||[]).forEach(function(deal) {
     if (!deal.name || deal.amount<=0) return;
     if (deal.name.trim().toLowerCase() === 'other') return;
-    if (deal.amount > rocketAmt) { rocketAmt = deal.amount; rocketNames = [deal.name]; }
-    else if (deal.amount === rocketAmt && rocketAmt > 0 && rocketNames.indexOf(deal.name) < 0) { rocketNames.push(deal.name); }
-
     var dk = dealDayKey(deal);
     if (!dk) return;
     if (!repDayKeys[deal.name]) repDayKeys[deal.name] = new Set();
@@ -644,7 +755,108 @@ function computeMonthBadges(deals) {
     if (longest > streakDays) { streakDays = longest; streakName = name; }
   });
 
-  return { rocketNames: rocketNames, rocketAmt: rocketAmt, streakName: streakName, streakDays: streakDays };
+  return { streakName: streakName, streakDays: streakDays };
+}
+
+// Per-market badges: Leader = top total revenue WITHIN that market that
+// month; Rocket = biggest single deal WITHIN that market that month (the
+// market-scoped analog of the company-wide Powerlifter badge).
+function computeMarketBadges(deals) {
+  var byMarket = {};
+  (deals||[]).forEach(function(deal) {
+    if (!deal.name || deal.amount<=0) return;
+    if (deal.name.trim().toLowerCase() === 'other') return;
+    if (!deal.store) return;
+    var mk = mergedMarketKey(deal.store);
+    if (!byMarket[mk]) byMarket[mk] = { repTotals:{}, repMaxDeal:{} };
+    var b = byMarket[mk];
+    b.repTotals[deal.name] = (b.repTotals[deal.name]||0) + deal.amount;
+    if (!b.repMaxDeal[deal.name] || deal.amount > b.repMaxDeal[deal.name]) b.repMaxDeal[deal.name] = deal.amount;
+  });
+  var result = {};
+  Object.keys(byMarket).forEach(function(mk) {
+    var b = byMarket[mk];
+    var leader = '', leaderAmt = 0;
+    Object.keys(b.repTotals).forEach(function(n){ if (b.repTotals[n] > leaderAmt) { leaderAmt = b.repTotals[n]; leader = n; } });
+    var rocket = '', rocketAmt = 0;
+    Object.keys(b.repMaxDeal).forEach(function(n){ if (b.repMaxDeal[n] > rocketAmt) { rocketAmt = b.repMaxDeal[n]; rocket = n; } });
+    result[mk] = { leader: leader, leaderAmt: leaderAmt, rocket: rocket, rocketAmt: rocketAmt };
+  });
+  return result;
+}
+
+// Rookie badges are now tiered: only ONE rookie company-wide gets the Top
+// Rookie badge each month (highest rookie revenue), and separately, one
+// rookie PER MARKET gets a distinct "Top Rookie in Market" badge — instead
+// of every single rookie getting a star regardless of performance.
+function computeTopRookies(deals) {
+  var repTotals = {};
+  var byMarketRookie = {};
+  (deals||[]).forEach(function(deal) {
+    if (!deal.name || deal.amount<=0) return;
+    if (deal.name.trim().toLowerCase() === 'other') return;
+    if (!ROOKIE_NAMES_H.has(deal.name.trim())) return;
+    repTotals[deal.name] = (repTotals[deal.name]||0) + deal.amount;
+    if (deal.store) {
+      var mk = mergedMarketKey(deal.store);
+      if (!byMarketRookie[mk]) byMarketRookie[mk] = {};
+      byMarketRookie[mk][deal.name] = (byMarketRookie[mk][deal.name]||0) + deal.amount;
+    }
+  });
+  var topCompany = '', topCompanyAmt = 0;
+  Object.keys(repTotals).forEach(function(n){ if (repTotals[n] > topCompanyAmt) { topCompanyAmt = repTotals[n]; topCompany = n; } });
+  var topByMarket = {};
+  Object.keys(byMarketRookie).forEach(function(mk) {
+    var best='', bestAmt=0;
+    Object.keys(byMarketRookie[mk]).forEach(function(n){ if (byMarketRookie[mk][n] > bestAmt) { bestAmt = byMarketRookie[mk][n]; best = n; } });
+    topByMarket[mk] = { name: best, amt: bestAmt };
+  });
+  return { topCompany: topCompany, topCompanyAmt: topCompanyAmt, topByMarket: topByMarket };
+}
+
+// "100 Club" — a market/DC has sold 100+ deals overall (cumulative across
+// every archived month up to and including the one being viewed).
+// The 100 Club counts by the actual DC (raw store code), not the merged
+// "market" grouping — e.g. Atlanta and Eastern GA both roll up into the
+// "Georgia" market for reporting, but they're tracked as separate DCs here
+// so one hitting 100 deals doesn't get inflated by a sibling DC's volume.
+// The "100 Club" is a personal rep milestone — total career deals sold by
+// that individual rep (cumulative across every archived month up to and
+// including the one being viewed), NOT a DC/market-level stat.
+function getRepCumulativeDealCount(repName, uptoMonthLabel) {
+  if (!repName) return 0;
+  var uptoDate = new Date(uptoMonthLabel);
+  var count = 0;
+  _histData.forEach(function(m) {
+    var mDate = new Date(m.month);
+    if (isNaN(mDate.getTime()) || isNaN(uptoDate.getTime()) || mDate > uptoDate) return;
+    (m.deals||[]).forEach(function(deal) {
+      if (!deal.name || deal.amount<=0) return;
+      if (deal.name.trim().toLowerCase() === 'other') return;
+      if (deal.name === repName) count++;
+    });
+  });
+  return count;
+}
+
+// Presidential Trip qualifier — total career/YTD volume (cumulative across
+// every archived month up to and including the one being viewed) reaching
+// $3,000,000.
+var PRESIDENTIAL_TRIP_THRESHOLD = 3000000;
+function getRepCumulativeVolume(repName, uptoMonthLabel) {
+  if (!repName) return 0;
+  var uptoDate = new Date(uptoMonthLabel);
+  var total = 0;
+  _histData.forEach(function(m) {
+    var mDate = new Date(m.month);
+    if (isNaN(mDate.getTime()) || isNaN(uptoDate.getTime()) || mDate > uptoDate) return;
+    (m.deals||[]).forEach(function(deal) {
+      if (!deal.name || deal.amount<=0) return;
+      if (deal.name.trim().toLowerCase() === 'other') return;
+      if (deal.name === repName) total += deal.amount;
+    });
+  });
+  return total;
 }
 
 function computeMonthChamps(deals) {
@@ -720,6 +932,9 @@ function showDeals(idx) {
   _modalMonthIdx  = !isNaN(monthDate.getTime()) ? monthDate.getMonth() : null;
   _modalChamps = computeMonthChamps(_modalAllDeals);
   _modalBadges = computeMonthBadges(_modalAllDeals);
+  _modalMarketBadges = computeMarketBadges(_modalAllDeals);
+  _modalTopRookies = computeTopRookies(_modalAllDeals);
+  _modalMonthLabelForCumulative = d.month;
 
   document.getElementById('deal-modal').style.display = 'block';
   document.getElementById('modal-title').textContent = d.month.toUpperCase() + ' — ALL DEALS';
@@ -892,18 +1107,27 @@ function renderModalContent() {
       if (!aOther && bOther) return -1;
       return mktG.reps[b].total - mktG.reps[a].total;
     });
-    var leaderName = repOrder.find(function(n){ return n.trim().toLowerCase() !== 'other'; });
+    // Market-scoped badges reflect the FULL month's outcome, not whatever
+    // day/market/rookie filters happen to be active right now — a badge
+    // shouldn't flicker on/off just because you clicked a day filter.
+    var mktBadgeData = _modalMarketBadges[mk] || { leader:'', leaderAmt:0, rocket:'', rocketAmt:0 };
+    var marketTopRookie = _modalTopRookies.topByMarket[mk] || { name:'', amt:0 };
     var repsHtml = repOrder.map(function(repName) {
       var r = mktG.reps[repName];
       var isRookie = ROOKIE_NAMES_H.has(String(repName).trim());
       var badges = '';
-      if (repName === leaderName) badges += ' <span title="Market Leader" style="color:#00D4FF">&#x1F3C5;</span>';
-      if (repName === _modalChamps.champ  && _modalChamps.champ)  badges += ' <span title="Champ — '+fmt(_modalChamps.champAmt)+'" style="color:#FFD700">&#x1F451;</span>';
-      if (repName === _modalChamps.slayer && _modalChamps.slayer) badges += ' <span title="Deal Slayer — '+_modalChamps.slayerCount+' deals" style="color:#FF6B6B">&#x2694;&#xFE0F;</span>';
-      if (repName === _modalChamps.power  && _modalChamps.power)  badges += ' <span title="Powerlifter — '+fmt(_modalChamps.powerAmt)+'" style="color:#A855F7">&#x1F3CB;&#xFE0F;</span>';
-      if (_modalBadges.rocketNames.indexOf(repName) >= 0 && _modalBadges.rocketAmt > 0) badges += ' <span title="Rocket — biggest single deal '+fmt(_modalBadges.rocketAmt)+'" style="color:#E2E8F0">&#x1F680;</span>';
+      if (repName === mktBadgeData.leader && mktBadgeData.leader) badges += ' <span title="Leader — top in '+mk.replace(/^\d+ - /,'')+', '+fmt(mktBadgeData.leaderAmt)+'" style="color:#00D4FF">&#x1F3C5;</span>';
+      if (repName === _modalChamps.champ  && _modalChamps.champ)  badges += ' <span title="Champ — company-wide, '+fmt(_modalChamps.champAmt)+'" style="color:#FFD700">&#x1F451;</span>';
+      if (repName === _modalChamps.slayer && _modalChamps.slayer) badges += ' <span title="Deal Slayer — most deals, '+_modalChamps.slayerCount+'" style="color:#FF6B6B">&#x2694;&#xFE0F;</span>';
+      if (repName === _modalChamps.power  && _modalChamps.power)  badges += ' <span title="Powerlifter — biggest single deal company-wide, '+fmt(_modalChamps.powerAmt)+'" style="color:#A855F7">&#x1F3CB;&#xFE0F;</span>';
+      if (repName === mktBadgeData.rocket && mktBadgeData.rocket) badges += ' <span title="Rocket — biggest single deal in '+mk.replace(/^\d+ - /,'')+', '+fmt(mktBadgeData.rocketAmt)+'" style="color:#E2E8F0">&#x1F680;</span>';
       if (repName === _modalBadges.streakName && _modalBadges.streakDays >= 2) badges += ' <span title="Streaker — '+_modalBadges.streakDays+' day streak" style="color:#FF6B35">&#x1F525;</span>';
-      if (isRookie) badges += ' <span title="Rookie" style="color:#FCD34D">&#x2B50;</span>';
+      if (repName === _modalTopRookies.topCompany && _modalTopRookies.topCompany) badges += ' <span title="Top Rookie — company-wide, '+fmt(_modalTopRookies.topCompanyAmt)+'" style="color:#FCD34D">&#x2B50;</span>';
+      else if (repName === marketTopRookie.name && marketTopRookie.name) badges += ' <span title="Top Rookie in '+mk.replace(/^\d+ - /,'')+', '+fmt(marketTopRookie.amt)+'" style="color:#93C5FD">&#x1F31F;</span>';
+      var repCareerDeals = getRepCumulativeDealCount(repName, _modalMonthLabelForCumulative);
+      if (repCareerDeals >= 100) badges += ' <span title="100 Club — '+repCareerDeals+' career deals" style="color:#FFD700">&#x1F4AF;</span>';
+      var repCareerVolume = getRepCumulativeVolume(repName, _modalMonthLabelForCumulative);
+      if (repCareerVolume >= PRESIDENTIAL_TRIP_THRESHOLD) badges += ' <span title="Presidential Trip qualifier — '+fmt(repCareerVolume)+' career volume" style="color:#FFD700">&#x1F985;</span>';
       return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,0.03)">'
         + '<div style="font-size:13px;color:#E2E8F0;font-weight:600">'+repName+badges+'</div>'
         + '<div style="display:flex;gap:14px;align-items:center">'
@@ -950,7 +1174,31 @@ function renderModalContent() {
   if (rookieCb) rookieCb.checked = _modalRookieOnly;
 }
 
+// ── LIGHT / DARK MODE — shares the same preference key as the main dashboard ──
+try {
+  if (localStorage.getItem('stp_theme') === 'light') document.body.classList.add('light-mode');
+} catch(e) {}
+
+function toggleDarkMode() {
+  var isLight = document.body.classList.toggle('light-mode');
+  try { localStorage.setItem('stp_theme', isLight ? 'light' : 'dark'); } catch(e) {}
+}
+
 loadHistorical();
+
+// ── NAV DROPDOWNS ────────────────────────────────────────────────────────
+document.querySelectorAll('.stp-dropdown').forEach(function(dd){
+  var btn = dd.querySelector('.stp-drop-btn'), menu = dd.querySelector('.stp-drop-menu');
+  if (!btn || !menu) return;
+  dd.addEventListener('mouseenter', function(){
+    document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){ if (m!==menu) m.classList.remove('open'); });
+    menu.classList.add('open');
+  });
+  dd.addEventListener('mouseleave', function(){ menu.classList.remove('open'); });
+});
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.stp-dropdown')) document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){ m.classList.remove('open'); });
+});
 
 // Close on backdrop click
 document.getElementById('deal-modal').addEventListener('click', function(e) {
