@@ -1157,6 +1157,29 @@ function ensureHistoricalReady(cb) {
 // The current month is skipped in the archived data on purpose — Historical
 // gets a daily sync of the current month too, so including both would
 // double-count anything already sold this month.
+// Reconstructs a clean date from an archived deal's date field, tolerating
+// the backend bug where dates sometimes arrive as the first 10 characters
+// of a JS Date's toString() (e.g. "Thu Jun 18") instead of an ISO string —
+// that format loses the year entirely, so new Date() on it defaults to some
+// arbitrary base year, silently dropping deals from date-range filters like
+// the Blitz window. The archived month's own label (always correct, since
+// revenue totals are keyed off it) is used as ground truth for year/month;
+// only the day number is trusted from the garbled string itself.
+function parseArchivedDealDate(dateStr, monthLabel) {
+  if (!dateStr) return null;
+  var iso = String(dateStr).match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (iso) return new Date(parseInt(iso[1]), parseInt(iso[2])-1, parseInt(iso[3]));
+  var dayNum = String(dateStr).match(/(\d{1,2})\s*$/);
+  if (dayNum && monthLabel) {
+    var parts = monthLabel.split(' ');
+    var monIdx = MONTH_NAMES_FULL.indexOf(parts[0]);
+    var yr = parseInt(parts[1]);
+    if (monIdx >= 0 && !isNaN(yr)) return new Date(yr, monIdx, parseInt(dayNum[1], 10));
+  }
+  var fallback = new Date(dateStr);
+  return isNaN(fallback.getTime()) ? null : fallback;
+}
+
 function buildCombinedDealsPool() {
   var flat = [];
   var now = new Date();
@@ -1182,8 +1205,8 @@ function buildCombinedDealsPool() {
       if (m.month === curMonthLabel) return; // avoid double-counting the live month
       (m.deals||[]).forEach(function(d) {
         if (!d.date) return;
-        var dt = new Date(d.date);
-        if (isNaN(dt.getTime())) return;
+        var dt = parseArchivedDealDate(d.date, m.month);
+        if (!dt || isNaN(dt.getTime())) return;
         flat.push({store: d.store, name: d.name, amount: d.amount, date: dt});
       });
     });
