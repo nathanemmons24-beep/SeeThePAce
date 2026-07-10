@@ -258,6 +258,26 @@ body{
 .attach-behind{color:#C0392B!important}
 
 /* COMPANY ATTACH RATE BAR */
+#entry-doors-toggle-row{
+  display:flex;align-items:center;gap:10px;padding:8px 24px;
+  background:rgba(139,105,20,0.06);border-bottom:1px solid rgba(184,146,10,0.15);
+}
+.entry-doors-switch{position:relative;display:inline-block;width:38px;height:20px;flex-shrink:0}
+.entry-doors-switch input{opacity:0;width:0;height:0}
+.entry-doors-slider{
+  position:absolute;cursor:pointer;inset:0;background:rgba(139,105,20,0.3);
+  border-radius:20px;transition:0.2s;
+}
+.entry-doors-slider::before{
+  content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;
+  background:#fff;border-radius:50%;transition:0.2s;
+}
+.entry-doors-switch input:checked + .entry-doors-slider{background:#8B6914}
+.entry-doors-switch input:checked + .entry-doors-slider::before{transform:translateX(18px)}
+#entry-doors-toggle-label{
+  font-family:'Orbitron',monospace;font-size:10px;letter-spacing:1px;
+  color:#6B4F2A;text-transform:uppercase;font-weight:700;
+}
 #co-attach-wrap{
   padding:10px 24px 14px;
   background:linear-gradient(135deg,#FFF4DC,#F5E8C0);
@@ -990,6 +1010,14 @@ body.dark-mode .stp-drop-active{color:#FFD700!important;border-color:#C8912A!imp
   </div>
 </div>
 
+<div id="entry-doors-toggle-row">
+  <label class="entry-doors-switch">
+    <input type="checkbox" id="entry-doors-toggle-input" onchange="toggleEntryDoors()">
+    <span class="entry-doors-slider"></span>
+  </label>
+  <span id="entry-doors-toggle-label">Patio Doors Only</span>
+</div>
+
 <!-- $105M GOAL BAR -->
 
 
@@ -1406,11 +1434,47 @@ function normalizeDate(s){
   return null;
 }
 
+// Accumulates one deal's worth of stats into a mode-specific bucket (either
+// patio-only or patio+entry combined) — same logic, just fed a different
+// door count depending on which mode is being computed.
+function accumulateDoorRow(acc, rep, amount, dateStr, doors, acclaim) {
+  if(!acc.repVolume[rep]) acc.repVolume[rep]={volume:0,deals:0,doors:0,acclaim:0};
+  acc.repVolume[rep].volume+=amount;
+  acc.repVolume[rep].deals+=1;
+  acc.repVolume[rep].doors+=doors;
+  acc.repVolume[rep].acclaim+=acclaim;
+  if(doors<=0) return;
+  acc.live[rep]=(acc.live[rep]||0)+doors;
+  var day=normalizeDate(dateStr);
+  if(day){
+    acc.day[day]=(acc.day[day]||0)+doors;
+    if(!acc.repDay[rep]) acc.repDay[rep]={};
+    acc.repDay[rep][day]=(acc.repDay[rep][day]||0)+doors;
+  }
+  if(!acc.attachRaw[rep]) acc.attachRaw[rep]={doorDeals:0,attachedDeals:0};
+  acc.attachRaw[rep].doorDeals+=1;
+  acc.companyDoorDeals+=1;
+  if(acclaim>0){ acc.attachRaw[rep].attachedDeals+=1; acc.companyAttachedDeals+=1; }
+}
+function newDoorAcc(){ return {live:{},day:{},repDay:{},repVolume:{},attachRaw:{},attach:{},companyDoorDeals:0,companyAttachedDeals:0}; }
+
+// Whether Entry Doors count toward "Doors Sold" alongside Patio Doors.
+// Persisted so the toggle sticks across reloads.
+var _includeEntryDoors = (function(){
+  try { return localStorage.getItem('rs_include_entry') === '1'; } catch(e) { return false; }
+})();
+// Previous-totals tracked SEPARATELY per mode, so switching the toggle never
+// looks like "new data crossing a goal" and fires a false celebration —
+// each mode only ever compares against its own last-known state.
+var prevTotalsByMode = (function(){
+  try { return JSON.parse(localStorage.getItem('rs_prev_totals_by_mode') || '{}'); } catch(e) { return {}; }
+})();
+
 function parseDoors(csv){
   var lines=csv.trim().split('\n');
   auditInactiveReps(lines);
-  var newLive={}, newDay={}, newAttach={}, newRepDay={}, newRepVolume={};
-  var companyDoorDeals=0, companyAttachedDeals=0;
+  var accPatio = newDoorAcc();
+  var accCombined = newDoorAcc();
   for(var i=1;i<lines.length;i++){
     var cols=parseCSVLine(lines[i]);
     if(cols.length<9) continue;
@@ -1422,46 +1486,34 @@ function parseDoors(csv){
     var patio=parseInt(cols[6]||'0',10)||0;
     var entry=parseInt(cols[7]||'0',10)||0;
     var acclaim=parseInt(cols[8]||'0',10)||0;
-    var doors=patio; // "Patio Doors Sold" = Patio Doors only; Entry Doors and Acclaim are excluded
-
-    // Volume + deal count — tracked for EVERY deal this rep closed this
-    // month, door or not, so the rep detail popup can show full-month totals.
-    if(!newRepVolume[rep]) newRepVolume[rep]={volume:0,deals:0,doors:0,acclaim:0};
-    newRepVolume[rep].volume+=amount;
-    newRepVolume[rep].deals+=1;
-    newRepVolume[rep].doors+=doors;
-    newRepVolume[rep].acclaim+=acclaim;
-
-    if(doors<=0) continue; // door-specific stats below only apply to door sales
-    newLive[rep]=(newLive[rep]||0)+doors;
-    var day=normalizeDate(dateStr);
-    if(day){
-      newDay[day]=(newDay[day]||0)+doors;
-      // Per-rep day breakdown — powers the hover tooltip and Daily Dominator badge
-      if(!newRepDay[rep]) newRepDay[rep]={};
-      newRepDay[rep][day]=(newRepDay[rep][day]||0)+doors;
-    }
-    // Attach rate: of APPOINTMENTS that sold a Patio Door, what %
-    // also sold at least one Acclaim window on that same appointment?
-    if(!newAttach[rep]) newAttach[rep]={doorDeals:0,attachedDeals:0};
-    newAttach[rep].doorDeals+=1;
-    companyDoorDeals+=1;
-    if(acclaim>0){ newAttach[rep].attachedDeals+=1; companyAttachedDeals+=1; }
+    // "Patio Doors Sold" = Patio Doors only. Combined mode adds Entry Doors.
+    // Acclaim is a window, never counted as a door in either mode.
+    accumulateDoorRow(accPatio, rep, amount, dateStr, patio, acclaim);
+    accumulateDoorRow(accCombined, rep, amount, dateStr, patio+entry, acclaim);
   }
-  repDayData = newRepDay;
-  repVolumeData = newRepVolume;
-  // Compute attach rates (bounded 0-1, i.e. 0-100%)
-  Object.keys(newAttach).forEach(function(rep){
-    var d=newAttach[rep].doorDeals, a=newAttach[rep].attachedDeals;
-    attachData[rep]=d>0?a/d:0;
+  [accPatio, accCombined].forEach(function(acc){
+    Object.keys(acc.attachRaw).forEach(function(rep){
+      var d=acc.attachRaw[rep].doorDeals, a=acc.attachRaw[rep].attachedDeals;
+      acc.attach[rep]=d>0?a/d:0;
+    });
   });
-  // Exact company-wide attach rate — total attached deals / total door deals,
-  // not a weighted average of per-rep ratios (which would be an approximation)
-  window._companyDoorDeals = companyDoorDeals;
-  window._companyAttachedDeals = companyAttachedDeals;
-  // Check for new record setters
+  window._doorModes = { patio: accPatio, combined: accCombined };
+  applyDoorMode();
+}
+
+// Applies whichever mode (patio-only or combined) is currently active to all
+// the working variables the rest of the page reads from, then re-renders.
+function applyDoorMode() {
+  var modes = window._doorModes;
+  if (!modes) return;
+  var modeKey = _includeEntryDoors ? 'combined' : 'patio';
+  var acc = modes[modeKey];
+  var newLive = acc.live;
+  var modePrev = prevTotalsByMode[modeKey] || {};
+
+  // Check for new record setters — compared against THIS mode's own history
   Object.keys(newLive).forEach(function(rep){
-    var prev=prevTotals[rep]||0;
+    var prev=modePrev[rep]||0;
     var curr=newLive[rep];
     if(prev>0 && curr>prev){
       var mkt=findMarket(rep);
@@ -1476,15 +1528,32 @@ function parseDoors(csv){
     return;
   }
   // Detect new data and fire badges BEFORE updating prevTotals
-  var dataChanged = JSON.stringify(newLive) !== JSON.stringify(prevTotals);
-  liveData = newLive; dayData = newDay;
+  var dataChanged = JSON.stringify(newLive) !== JSON.stringify(modePrev);
+  liveData = newLive;
+  dayData = acc.day;
+  repDayData = acc.repDay;
+  repVolumeData = acc.repVolume;
+  attachData = acc.attach;
+  window._companyDoorDeals = acc.companyDoorDeals;
+  window._companyAttachedDeals = acc.companyAttachedDeals;
   render();
   if (dataChanged) {
     checkMarketRecords();
     checkPersonalBests();
   }
-  prevTotals = Object.assign({}, newLive);
-  try { localStorage.setItem('rs_prev_totals', JSON.stringify(prevTotals)); } catch(e) {}
+  prevTotalsByMode[modeKey] = Object.assign({}, newLive);
+  prevTotals = prevTotalsByMode[modeKey]; // kept for backward compatibility with anything still reading prevTotals directly
+  try { localStorage.setItem('rs_prev_totals_by_mode', JSON.stringify(prevTotalsByMode)); } catch(e) {}
+}
+
+function toggleEntryDoors() {
+  _includeEntryDoors = !_includeEntryDoors;
+  try { localStorage.setItem('rs_include_entry', _includeEntryDoors ? '1' : '0'); } catch(e) {}
+  var el = document.getElementById('entry-doors-toggle-label');
+  if (el) el.textContent = _includeEntryDoors ? 'Patio + Entry Doors' : 'Patio Doors Only';
+  var chk = document.getElementById('entry-doors-toggle-input');
+  if (chk) chk.checked = _includeEntryDoors;
+  applyDoorMode();
 }
 
 function findMarket(rep){
@@ -2385,6 +2454,12 @@ setTimeout(function(){
   document.querySelectorAll('.mkt-chevron').forEach(function(c){c.style.transform='rotate(180deg)';});
 },100);
 renderGoalMilestones();
+(function(){
+  var chk = document.getElementById('entry-doors-toggle-input');
+  var lbl = document.getElementById('entry-doors-toggle-label');
+  if (chk) chk.checked = _includeEntryDoors;
+  if (lbl) lbl.textContent = _includeEntryDoors ? 'Patio + Entry Doors' : 'Patio Doors Only';
+})();
 fetchData();
 setInterval(fetchData, 60000);
 </script>
