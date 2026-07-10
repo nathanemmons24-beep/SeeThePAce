@@ -100,6 +100,27 @@ body{
   font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;color:#3A2000;
   text-shadow:0 0 12px rgba(0,0,0,1),0 0 4px rgba(0,0,0,1);z-index:2;
 }
+#entry-goal-bar-wrap{
+  padding:10px 24px 10px;
+  background:linear-gradient(135deg,#EAF6EA,#D6EFD6);
+  border-bottom:1px solid rgba(27,94,32,0.25);
+  position:relative;z-index:1;
+}
+#entry-goal-track{
+  width:100%;height:32px;background:rgba(27,94,32,0.08);
+  border:1px solid rgba(27,94,32,0.3);border-radius:6px;box-shadow:inset 0 1px 4px rgba(27,94,32,0.1);
+  position:relative;overflow:hidden;
+}
+#entry-goal-fill{
+  position:absolute;top:0;left:0;bottom:0;width:0%;
+  background:linear-gradient(90deg,#1B5E20,#2E7D32,#4CAF50);
+  border-radius:5px;transition:width 1.5s cubic-bezier(0.4,0,0.2,1);
+}
+#entry-goal-pct{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:#fff;
+  text-shadow:0 0 8px rgba(0,0,0,0.8);z-index:2;
+}
 /* Record markers */
 .goal-milestone{
   position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,0.2);z-index:3;
@@ -130,6 +151,14 @@ body{
   background:linear-gradient(180deg,#D4A017,#8B5000);transition:height 0.8s ease;
 }
 .bar-body::after{content:'';position:absolute;top:0;left:0;right:0;height:35%;background:linear-gradient(180deg,rgba(255,255,255,0.2),transparent);border-radius:4px 4px 0 0}
+.bar-entry-segment{
+  position:absolute;top:0;left:0;right:0;z-index:2;
+  background:linear-gradient(180deg,#4CAF50,#1B5E20);
+  border-radius:4px 4px 0 0;
+}
+.chart-legend{display:flex;gap:16px;justify-content:center;margin-top:8px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3)}
+.chart-legend-item{display:flex;align-items:center;gap:5px}
+.chart-legend-swatch{width:10px;height:10px;border-radius:2px}
 .bar-lbl{font-size:9px;color:#A08050;text-align:center;white-space:nowrap}
 .bar-cnt{font-size:8px;color:var(--text3);text-align:center}
 
@@ -1032,6 +1061,16 @@ body.dark-mode .stp-drop-active{color:#FFD700!important;border-color:#C8912A!imp
     <div id="goal-milestones"></div>
   </div>
   <div id="goal-milestone-labels"></div>
+</div>
+
+<div id="entry-goal-bar-wrap" style="display:none">
+  <div class="goal-bar-label">
+    <div class="goal-bar-nums" id="entry-goal-bar-nums">Entry Doors</div>
+  </div>
+  <div id="entry-goal-track">
+    <div id="entry-goal-fill"></div>
+    <div id="entry-goal-pct"></div>
+  </div>
 </div>
 
 <div id="co-attach-wrap">
@@ -1969,6 +2008,24 @@ function render(){
   var dayLblSuffix = activeDayFilter ? (function(){var dp=activeDayFilter.split('-');var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return ' on '+mo[parseInt(dp[1])-1]+' '+parseInt(dp[2]);})() : '';
   document.getElementById('goal-bar-nums').textContent=totalDoors+' of 1,500 patio doors'+dayLblSuffix;
 
+  // Entry Doors bar — informational only, shown when the toggle is on.
+  // Uses the same 1,500 scale as the Patio bar just for visual consistency;
+  // Entry Doors have no goal of their own and never count toward records.
+  var entryWrap = document.getElementById('entry-goal-bar-wrap');
+  if (entryWrap) {
+    if (_includeEntryDoors && window._doorModes) {
+      var entryTotal = Object.values(window._doorModes.combined.live).reduce(function(s,v){return s+v;}, 0) - totalDoors;
+      entryTotal = Math.max(0, entryTotal);
+      var entryPct = Math.min(100, Math.round(entryTotal/1500*100));
+      document.getElementById('entry-goal-fill').style.width = entryPct + '%';
+      document.getElementById('entry-goal-pct').textContent = entryTotal + ' entry doors sold';
+      document.getElementById('entry-goal-bar-nums').textContent = 'Entry Doors (not part of the record)';
+      entryWrap.style.display = 'block';
+    } else {
+      entryWrap.style.display = 'none';
+    }
+  }
+
   // Company-wide attach rate bar — reuse hdrAttach from above
   var coAttachBaseline = 28.3;
   var coAttachLive = hdrAttach;
@@ -2000,11 +2057,27 @@ function renderDayChart(){
   }
   var chartEl=document.getElementById('chart');
   chartEl.innerHTML='';
-  var maxV=Math.max.apply(null,days.map(function(d){return dayData[d];}));
+
+  // Entry Doors per day (only computed/shown when the toggle is on) — the
+  // combined accumulator minus the patio-only dayData gives entry-only counts.
+  var entryByDay = {};
+  if (_includeEntryDoors && window._doorModes) {
+    var combinedDay = window._doorModes.combined.day;
+    days.forEach(function(d){ entryByDay[d] = Math.max(0, (combinedDay[d]||0) - (dayData[d]||0)); });
+  }
+
+  var maxV = _includeEntryDoors
+    ? Math.max.apply(null, days.map(function(d){ return dayData[d] + (entryByDay[d]||0); }))
+    : Math.max.apply(null, days.map(function(d){return dayData[d];}));
   var maxH=130;
   var html='';
   days.forEach(function(d){
-    var v=dayData[d], h=maxV>0?Math.max(4,Math.round(v/maxV*maxH)):4;
+    var patioV=dayData[d];
+    var entryV=_includeEntryDoors ? (entryByDay[d]||0) : 0;
+    var totalV=patioV+entryV;
+    var patioH=maxV>0?Math.max(4,Math.round(patioV/maxV*maxH)):4;
+    var entryH=(_includeEntryDoors && maxV>0)?Math.round(entryV/maxV*maxH):0;
+    var totalH=patioH+entryH;
     var dp=d.split('-'); var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var lbl=(dp.length>2?mo[parseInt(dp[1])-1]+' '+parseInt(dp[2]):d);
     var isActive=(activeDayFilter===d);
@@ -2012,14 +2085,30 @@ function renderDayChart(){
     col.className='bar-col';
     col.style.cssText='cursor:pointer;transition:opacity 0.2s;'+(activeDayFilter&&!isActive?'opacity:0.4;':'');
     col.setAttribute('data-day',d);
-    col.innerHTML=(isActive?'<div class="bar-val" style="color:#6B3A00;font-weight:700">&#x25BC;'+v+'</div>':'<div class="bar-val">'+v+'</div>')
-      +'<div class="bar-body" style="height:'+h+'px;'+(isActive?'background:linear-gradient(180deg,#D4A017,#6B3A00);box-shadow:0 0 10px rgba(212,160,23,0.5);':'')+'"></div>'
+    var valLbl = _includeEntryDoors && entryV>0 ? totalV+' <span style="opacity:0.6;font-size:8px">('+patioV+'+'+entryV+')</span>' : String(patioV || totalV);
+    var entrySegment = (entryH>0) ? '<div class="bar-entry-segment" style="height:'+entryH+'px" title="Entry Doors: '+entryV+'"></div>' : '';
+    col.innerHTML=(isActive?'<div class="bar-val" style="color:#6B3A00;font-weight:700">&#x25BC;'+valLbl+'</div>':'<div class="bar-val">'+valLbl+'</div>')
+      +'<div class="bar-body" style="height:'+totalH+'px;'+(isActive?'background:linear-gradient(180deg,#D4A017,#6B3A00);box-shadow:0 0 10px rgba(212,160,23,0.5);':'')+'" title="Patio Doors: '+patioV+'">'+entrySegment+'</div>'
       +(isActive?'<div class="bar-lbl" style="color:#6B3A00;font-weight:700">&#x25BC; '+lbl+'</div>':'<div class="bar-lbl">'+lbl+'</div>');
     col.addEventListener('click',function(){setDayFilter(this.getAttribute('data-day'));});
     chartEl.appendChild(col);
   });
+
+  // Legend when showing the Patio/Entry breakdown
+  var existingLegend = document.getElementById('chart-legend');
+  if (existingLegend) existingLegend.remove();
+  if (_includeEntryDoors) {
+    var legend = document.createElement('div');
+    legend.id = 'chart-legend';
+    legend.className = 'chart-legend';
+    legend.innerHTML =
+      '<div class="chart-legend-item"><div class="chart-legend-swatch" style="background:linear-gradient(180deg,#D4A017,#8B5000)"></div>Patio Doors</div>' +
+      '<div class="chart-legend-item"><div class="chart-legend-swatch" style="background:linear-gradient(180deg,#4CAF50,#1B5E20)"></div>Entry Doors</div>';
+    chartEl.parentNode.appendChild(legend);
+  }
+
   // ── TREND LINE — avg dashed line ──
-  var dayVals = days.map(function(d){ return dayData[d]; });
+  var dayVals = days.map(function(d){ return dayData[d] + (_includeEntryDoors ? (entryByDay[d]||0) : 0); });
   var dayCount = dayVals.length;
   if (dayCount > 1) {
     var avg = dayVals.reduce(function(s,v){return s+v;},0) / dayCount;
@@ -2092,6 +2181,17 @@ function renderMarkets(filterMkt, filterShow, dayFilter) {
     var aStatus = aDoors > 0 ? (aAhead ? '+'+aDiff+'% ahead' : aDiff+'% behind') : '';
     var aColor = aAhead ? '#1E7A3A' : '#C0392B';
 
+    // Entry Doors, per market — informational only, shown when toggled on.
+    // Never affects the record/goal numbers above.
+    var mktEntryTotal = 0;
+    if (_includeEntryDoors && window._doorModes) {
+      GOALS[mkt].reps.forEach(function(r){
+        var patioVal = window._doorModes.patio.live[r.name] || 0;
+        var combinedVal = window._doorModes.combined.live[r.name] || 0;
+        mktEntryTotal += Math.max(0, combinedVal - patioVal);
+      });
+    }
+
     html += '<div class="mkt-card" style="'+(isRecord?'border-color:rgba(212,160,23,0.5);':'')+'">';
     if(isRecord) html += '<div style="background:linear-gradient(90deg,#8B6914,#D4A017,#FFD700,#D4A017,#8B6914);padding:4px 12px;text-align:center;animation:flash 1s infinite"><span style="font-family:Bebas Neue,sans-serif;font-size:12px;letter-spacing:3px;color:#fff">🏆 NEW RECORD!</span></div>';
 
@@ -2123,6 +2223,14 @@ function renderMarkets(filterMkt, filterShow, dayFilter) {
     html += '<div class="mkt-prog-track"><div class="mkt-prog-fill'+(overGoal?' over-goal':'')+'" style="width:'+pct+'%"></div></div>';
     html += '<div class="mkt-prog-labels"><span>2025 Record: '+prev+'</span><span>'+pct+'% to goal</span><span>2026 Goal: '+goal+'</span></div>';
     html += '</div>';
+
+    if (_includeEntryDoors) {
+      var mktEntryPct = goal > 0 ? Math.min(100, Math.round(mktEntryTotal/goal*100)) : 0;
+      html += '<div class="mkt-card-progress">';
+      html += '<div class="mkt-prog-track"><div class="mkt-prog-fill over-goal" style="width:'+mktEntryPct+'%"></div></div>';
+      html += '<div class="mkt-prog-labels"><span>Entry Doors (not part of the record)</span><span>'+mktEntryTotal+'</span></div>';
+      html += '</div>';
+    }
 
     // ── ATTACH RATE BAR ──
     html += '<div class="mkt-attach-row">';
