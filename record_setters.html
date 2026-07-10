@@ -395,7 +395,7 @@ body{
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
 .rec-stat-lbl{font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-top:3px;font-family:'Orbitron',monospace}
-.rec-extra-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.rec-extra-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:8px;margin-bottom:14px}
 .rec-extra-stat{background:rgba(255,255,255,0.04);border:1px solid rgba(212,160,23,0.25);border-radius:8px;padding:8px 4px;text-align:center}
 .rec-extra-val{font-family:'Bebas Neue',sans-serif;font-size:16px;color:#FFD700;line-height:1.1}
 .rec-extra-lbl{font-size:7px;color:rgba(255,255,255,0.45);letter-spacing:0.5px;text-transform:uppercase;margin-top:2px;font-family:'Orbitron',monospace}
@@ -1003,7 +1003,7 @@ body.dark-mode .stp-drop-active{color:#FFD700!important;border-color:#C8912A!imp
     <div class="hdr-sub">August 2026 · Your Best Month + 1</div>
   </div>
   <div class="hdr-stats">
-    <div class="hstat"><div class="hstat-val" id="hs-doors">0</div><div class="hstat-lbl">Patio Doors Sold</div></div>
+    <div class="hstat"><div class="hstat-val" id="hs-doors">0</div><div class="hstat-lbl">Patio Doors Sold</div><div id="hs-doors-breakdown" style="display:none;font-size:9px;color:#8B6914;font-family:'JetBrains Mono',monospace;margin-top:2px"></div></div>
     <div class="hstat"><div class="hstat-val" id="hs-goal">0</div><div class="hstat-lbl">Team Record</div></div>
     <div class="hstat"><div class="hstat-val" id="hs-attach">—</div><div class="hstat-lbl">Attach Rate</div></div>
     <div class="hstat"><div class="hstat-val" id="hs-setters">0</div><div class="hstat-lbl">Record Setters</div></div>
@@ -1290,6 +1290,13 @@ function populateRepExtraStats(repName, prefix) {
   document.getElementById(prefix + '-extra-volume').textContent = fmtMoney(vol.volume);
   document.getElementById(prefix + '-extra-deals').textContent = vol.deals || 0;
   document.getElementById(prefix + '-extra-avgdeal').textContent = fmtMoney(avgDeal);
+  // Total Doors (Patio + Entry combined) — shown for context even though
+  // only Patio Doors count toward records/goals.
+  var totalDoorsEl = document.getElementById(prefix + '-extra-totaldoors');
+  if (totalDoorsEl && window._doorModes) {
+    var combinedVol = window._doorModes.combined.repVolume[repName];
+    totalDoorsEl.textContent = combinedVol ? combinedVol.doors : (vol.doors || 0);
+  }
   document.getElementById(prefix + '-extra-attach').textContent = attachPct;
 
   var dayList = document.getElementById(prefix + '-day-list');
@@ -1463,12 +1470,6 @@ function newDoorAcc(){ return {live:{},day:{},repDay:{},repVolume:{},attachRaw:{
 var _includeEntryDoors = (function(){
   try { return localStorage.getItem('rs_include_entry') === '1'; } catch(e) { return false; }
 })();
-// Previous-totals tracked SEPARATELY per mode, so switching the toggle never
-// looks like "new data crossing a goal" and fires a false celebration —
-// each mode only ever compares against its own last-known state.
-var prevTotalsByMode = (function(){
-  try { return JSON.parse(localStorage.getItem('rs_prev_totals_by_mode') || '{}'); } catch(e) { return {}; }
-})();
 
 function parseDoors(csv){
   var lines=csv.trim().split('\n');
@@ -1503,17 +1504,19 @@ function parseDoors(csv){
 
 // Applies whichever mode (patio-only or combined) is currently active to all
 // the working variables the rest of the page reads from, then re-renders.
+// Records, goals, and badges ALWAYS use Patio Doors only — the toggle never
+// changes what counts toward a record. It only controls whether the header
+// ALSO displays an Entry Doors / Total breakdown alongside the official
+// Patio number, and whether individual popups show a "Total Doors" line.
 function applyDoorMode() {
   var modes = window._doorModes;
   if (!modes) return;
-  var modeKey = _includeEntryDoors ? 'combined' : 'patio';
-  var acc = modes[modeKey];
+  var acc = modes.patio; // always — Entry Doors never affect records
   var newLive = acc.live;
-  var modePrev = prevTotalsByMode[modeKey] || {};
 
-  // Check for new record setters — compared against THIS mode's own history
+  // Check for new record setters
   Object.keys(newLive).forEach(function(rep){
-    var prev=modePrev[rep]||0;
+    var prev=prevTotals[rep]||0;
     var curr=newLive[rep];
     if(prev>0 && curr>prev){
       var mkt=findMarket(rep);
@@ -1528,7 +1531,7 @@ function applyDoorMode() {
     return;
   }
   // Detect new data and fire badges BEFORE updating prevTotals
-  var dataChanged = JSON.stringify(newLive) !== JSON.stringify(modePrev);
+  var dataChanged = JSON.stringify(newLive) !== JSON.stringify(prevTotals);
   liveData = newLive;
   dayData = acc.day;
   repDayData = acc.repDay;
@@ -1541,19 +1544,18 @@ function applyDoorMode() {
     checkMarketRecords();
     checkPersonalBests();
   }
-  prevTotalsByMode[modeKey] = Object.assign({}, newLive);
-  prevTotals = prevTotalsByMode[modeKey]; // kept for backward compatibility with anything still reading prevTotals directly
-  try { localStorage.setItem('rs_prev_totals_by_mode', JSON.stringify(prevTotalsByMode)); } catch(e) {}
+  prevTotals = Object.assign({}, newLive);
+  try { localStorage.setItem('rs_prev_totals', JSON.stringify(prevTotals)); } catch(e) {}
 }
 
 function toggleEntryDoors() {
   _includeEntryDoors = !_includeEntryDoors;
   try { localStorage.setItem('rs_include_entry', _includeEntryDoors ? '1' : '0'); } catch(e) {}
   var el = document.getElementById('entry-doors-toggle-label');
-  if (el) el.textContent = _includeEntryDoors ? 'Patio + Entry Doors' : 'Patio Doors Only';
+  if (el) el.textContent = _includeEntryDoors ? 'Show Entry Doors Breakdown' : 'Patio Doors Only';
   var chk = document.getElementById('entry-doors-toggle-input');
   if (chk) chk.checked = _includeEntryDoors;
-  applyDoorMode();
+  render(); // records/goals never change — this just shows/hides the breakdown line and popup totals
 }
 
 function findMarket(rep){
@@ -1865,6 +1867,20 @@ function render(){
   // Header stats
   document.getElementById('hs-doors').textContent=totalDoors;
   document.getElementById('hs-goal').textContent='1,500';
+  // When the Entry Doors toggle is on, show a Patio/Entry/Total breakdown
+  // beneath the main stat — the main number itself always stays Patio-only,
+  // since that's what actually counts toward records.
+  var breakdownEl = document.getElementById('hs-doors-breakdown');
+  if (breakdownEl) {
+    if (_includeEntryDoors && window._doorModes) {
+      var combinedTotal = Object.values(window._doorModes.combined.live).reduce(function(s,v){return s+v;}, 0);
+      var entryOnly = combinedTotal - totalDoors;
+      breakdownEl.textContent = 'Entry: ' + entryOnly + ' · Total: ' + combinedTotal;
+      breakdownEl.style.display = 'block';
+    } else {
+      breakdownEl.style.display = 'none';
+    }
+  }
   // Exact company-wide attach rate (total attached door-deals / total door-deals)
   var hdrDoors = window._companyDoorDeals || 0;
   var hdrAttach = hdrDoors>0 ? Math.round((window._companyAttachedDeals||0)/hdrDoors*1000)/10 : 0;
@@ -2298,6 +2314,11 @@ function showRepDetail(repName, mkt, sold, goal, prevBest) {
   document.getElementById('rd-name').textContent = repName;
   document.getElementById('rd-market').textContent = mkt.toUpperCase() + ' · AUGUST 2026';
   document.getElementById('rd-doors').textContent = vol.doors || sold || 0;
+  var rdTotalDoorsEl = document.getElementById('rd-totaldoors');
+  if (rdTotalDoorsEl && window._doorModes) {
+    var rdCombinedVol = window._doorModes.combined.repVolume[repName];
+    rdTotalDoorsEl.textContent = rdCombinedVol ? rdCombinedVol.doors : (vol.doors || sold || 0);
+  }
   document.getElementById('rd-volume').textContent = fmtMoney(vol.volume);
   document.getElementById('rd-deals').textContent = vol.deals || 0;
   document.getElementById('rd-avgdeal').textContent = fmtMoney(avgDeal);
@@ -2458,7 +2479,7 @@ renderGoalMilestones();
   var chk = document.getElementById('entry-doors-toggle-input');
   var lbl = document.getElementById('entry-doors-toggle-label');
   if (chk) chk.checked = _includeEntryDoors;
-  if (lbl) lbl.textContent = _includeEntryDoors ? 'Patio + Entry Doors' : 'Patio Doors Only';
+  if (lbl) lbl.textContent = _includeEntryDoors ? 'Show Entry Doors Breakdown' : 'Patio Doors Only';
 })();
 fetchData();
 setInterval(fetchData, 60000);
@@ -2568,6 +2589,7 @@ async function cbSend(){ _trackChatActivity();
           <div class="rec-extra-stat"><div class="rec-extra-val" id="rec-extra-deals">—</div><div class="rec-extra-lbl">Deals Closed</div></div>
           <div class="rec-extra-stat"><div class="rec-extra-val" id="rec-extra-avgdeal">—</div><div class="rec-extra-lbl">Avg Deal</div></div>
           <div class="rec-extra-stat"><div class="rec-extra-val" id="rec-extra-attach">—</div><div class="rec-extra-lbl">Attach Rate</div></div>
+          <div class="rec-extra-stat"><div class="rec-extra-val" id="rec-extra-totaldoors">—</div><div class="rec-extra-lbl">Total Doors</div></div>
         </div>
         <div class="rec-day-title">Patio Doors by Date</div>
         <div class="rec-day-list" id="rec-day-list"></div>
@@ -2613,6 +2635,10 @@ async function cbSend(){ _trackChatActivity();
           <div class="rd-stat-val" id="rd-bestday">—</div>
           <div class="rd-stat-lbl">Best Day</div>
         </div>
+        <div class="rd-stat">
+          <div class="rd-stat-val" id="rd-totaldoors">—</div>
+          <div class="rd-stat-lbl">Total Doors</div>
+        </div>
       </div>
       <div class="rd-progress-row">
         <div class="rd-progress-lbl">Progress to Goal — <span id="rd-goal-nums">0 / 0</span></div>
@@ -2654,6 +2680,7 @@ async function cbSend(){ _trackChatActivity();
           <div class="rec-extra-stat"><div class="rec-extra-val" id="pb-extra-deals">—</div><div class="rec-extra-lbl">Deals Closed</div></div>
           <div class="rec-extra-stat"><div class="rec-extra-val" id="pb-extra-avgdeal">—</div><div class="rec-extra-lbl">Avg Deal</div></div>
           <div class="rec-extra-stat"><div class="rec-extra-val" id="pb-extra-attach">—</div><div class="rec-extra-lbl">Attach Rate</div></div>
+          <div class="rec-extra-stat"><div class="rec-extra-val" id="pb-extra-totaldoors">—</div><div class="rec-extra-lbl">Total Doors</div></div>
         </div>
         <div class="rec-day-title">Patio Doors by Date</div>
         <div class="rec-day-list" id="pb-day-list"></div>
