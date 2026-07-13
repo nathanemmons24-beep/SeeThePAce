@@ -1194,7 +1194,10 @@ body.dark-mode .stp-drop-active{color:#FFD700!important;border-color:#C8912A!imp
 
 <!-- DAY BY DAY -->
 <div class="section">
-  <div class="section-title">📅 DAY BY DAY <span class="section-title-badge">AUGUST</span></div>
+  <div class="section-title" style="display:flex;justify-content:space-between;align-items:center">
+    <span>📅 DAY BY DAY <span class="section-title-badge">AUGUST</span></span>
+    <button id="day-filter-clear-btn" onclick="clearDayFilters()" style="display:none;background:#8B6914;border:none;border-radius:6px;color:#fff;font-size:10px;font-family:'Orbitron',monospace;padding:5px 12px;cursor:pointer;letter-spacing:1px">CLEAR FILTER ✕</button>
+  </div>
   <div id="chart-wrap"><div id="chart"><div style="color:var(--text3);font-size:12px;padding:20px">No patio door data yet — August starts soon</div></div></div>
 </div>
 
@@ -1243,7 +1246,7 @@ var dayData = {};    // date -> doors
 var prevTotals = (function(){
   try { return JSON.parse(localStorage.getItem('rs_prev_totals') || '{}'); } catch(e) { return {}; }
 })();
-var activeDayFilter = null;
+var activeDayFilters = []; // multi-select — array of selected 'YYYY-MM-DD' strings
 var filterRookies = false;
 var filterConsolidated = false;
 var ROOKIE_NAMES = new Set();
@@ -1253,6 +1256,7 @@ ROOKIE_NAMES_FALLBACK.forEach(function(n){ ROOKIE_NAMES.add(n); });
 var APPS_SCRIPT_URL_RS = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
 // Populated entirely by real fetched data (parseDoors) — starts empty.
 var repDayData = {}; // rep -> {date: doors} — used for the Daily Dominator badge
+var repDayAttachData = {}; // rep -> {date: {doorDeals, attachedDeals}} — powers accurate day-filtered attach rate
 var repVolumeData = {}; // rep -> {volume, deals, doors, acclaim} — full-month totals for the rep detail popup
 
 var SLOGANS = [
@@ -1496,13 +1500,20 @@ function accumulateDoorRow(acc, rep, amount, dateStr, doors, acclaim) {
     acc.day[day]=(acc.day[day]||0)+doors;
     if(!acc.repDay[rep]) acc.repDay[rep]={};
     acc.repDay[rep][day]=(acc.repDay[rep][day]||0)+doors;
+    // Per-rep, per-day attach tracking — powers accurate day-filtered attach
+    // rate (previously this didn't exist, so day-filtering just scaled
+    // monthly totals proportionally rather than using real per-day data).
+    if(!acc.repDayAttach[rep]) acc.repDayAttach[rep]={};
+    if(!acc.repDayAttach[rep][day]) acc.repDayAttach[rep][day]={doorDeals:0,attachedDeals:0};
+    acc.repDayAttach[rep][day].doorDeals+=1;
+    if(acclaim>0) acc.repDayAttach[rep][day].attachedDeals+=1;
   }
   if(!acc.attachRaw[rep]) acc.attachRaw[rep]={doorDeals:0,attachedDeals:0};
   acc.attachRaw[rep].doorDeals+=1;
   acc.companyDoorDeals+=1;
   if(acclaim>0){ acc.attachRaw[rep].attachedDeals+=1; acc.companyAttachedDeals+=1; }
 }
-function newDoorAcc(){ return {live:{},day:{},repDay:{},repVolume:{},attachRaw:{},attach:{},companyDoorDeals:0,companyAttachedDeals:0}; }
+function newDoorAcc(){ return {live:{},day:{},repDay:{},repDayAttach:{},repVolume:{},attachRaw:{},attach:{},companyDoorDeals:0,companyAttachedDeals:0}; }
 
 // Whether Entry Doors count toward "Doors Sold" alongside Patio Doors.
 // Persisted so the toggle sticks across reloads.
@@ -1574,6 +1585,7 @@ function applyDoorMode() {
   liveData = newLive;
   dayData = acc.day;
   repDayData = acc.repDay;
+  repDayAttachData = acc.repDayAttach;
   repVolumeData = acc.repVolume;
   attachData = acc.attach;
   window._companyDoorDeals = acc.companyDoorDeals;
@@ -1852,7 +1864,14 @@ function toggleConsolidated() {
 }
 
 function setDayFilter(day) {
-  activeDayFilter = (activeDayFilter === day) ? null : day; // toggle
+  if (day === null) { activeDayFilters = []; render(); return; } // backward-compat with old CLEAR ✕ calls
+  var idx = activeDayFilters.indexOf(day);
+  if (idx >= 0) activeDayFilters.splice(idx, 1); // deselect
+  else activeDayFilters.push(day); // add to selection
+  render();
+}
+function clearDayFilters() {
+  activeDayFilters = [];
   render();
 }
 
@@ -1861,20 +1880,27 @@ function render(){
   var filterShow=document.getElementById('f-show').value;
   var mkts=Object.keys(GOALS);
 
-  // If day filter active, compute per-rep sold counts for that day only
-  // dayData is aggregate; for per-rep day data we use repDayData if available
-  // Since we only have total day counts, we scale rep sold proportionally for display
-  // For real data: wire repDayData[repName][date] = doors
+  // Day filter: uses REAL per-rep, per-day data (repDayData/repDayAttachData)
+  // across every selected day, rather than a proportional scale of the
+  // monthly total — accurate for multi-day selections, not just an estimate.
   var effectiveLive = liveData;
-  // Consolidated: only reps who sold today (have repDayData for today's date)
+  var effectiveAttach = attachData;
   var today = new Date(); var todayIso = today.getFullYear()+'-'+(today.getMonth()<9?'0':'')+(today.getMonth()+1)+'-'+(today.getDate()<10?'0':'')+today.getDate();
-  if (activeDayFilter) {
-    var dayTotal = dayData[activeDayFilter] || 0;
-    var allTotal = Object.values(liveData).reduce(function(s,v){return s+v;},0);
-    var scale = (allTotal > 0 && dayTotal > 0) ? dayTotal / allTotal : 0;
+  if (activeDayFilters.length > 0) {
     effectiveLive = {};
-    Object.keys(liveData).forEach(function(k){
-      effectiveLive[k] = Math.round(liveData[k] * scale);
+    Object.keys(repDayData).forEach(function(rep){
+      var total = 0;
+      activeDayFilters.forEach(function(day){ total += (repDayData[rep][day] || 0); });
+      if (total > 0) effectiveLive[rep] = total;
+    });
+    effectiveAttach = {};
+    Object.keys(repDayAttachData).forEach(function(rep){
+      var dd = 0, ad = 0;
+      activeDayFilters.forEach(function(day){
+        var e = repDayAttachData[rep][day];
+        if (e) { dd += e.doorDeals; ad += e.attachedDeals; }
+      });
+      if (dd > 0) effectiveAttach[rep] = ad / dd;
     });
   }
 
@@ -1889,7 +1915,7 @@ function render(){
       var pct=rep.goal>0?rep.sold/rep.goal:0;
       if(pct>=0.5&&pct<1) chasers++;
       if(pct>=1) breakers++;
-      var ar=attachData[rep.name]||0;
+      var ar=effectiveAttach[rep.name]||0;
       if(rep.sold>=rep.goal && ar>=topAttachRate){ topAttachRate=ar; topAttach=rep.name; }
       if(rep.sold>=rep.goal && ar>=topAttachRate) makers++;
     });
@@ -1898,7 +1924,7 @@ function render(){
   makers=0;
   mkts.forEach(function(mkt){
     GOALS[mkt].reps.forEach(function(rep){
-      var ar=attachData[rep.name]||0;
+      var ar=effectiveAttach[rep.name]||0;
       if(rep.sold>=rep.goal && ar>0 && ar>=topAttachRate-0.01) makers++;
     });
   });
@@ -1945,7 +1971,7 @@ function render(){
   var topAttachRep=null, topAttachVal=0;
   mkts.forEach(function(mkt){
     GOALS[mkt].reps.forEach(function(rep){
-      var ar=attachData[rep.name]||0;
+      var ar=effectiveAttach[rep.name]||0;
       if(rep.sold>=2 && ar>topAttachVal){topAttachVal=ar;topAttachRep=rep.name;}
     });
   });
@@ -2005,7 +2031,11 @@ function render(){
   var doorPct=Math.min(100,Math.round(totalDoors/1500*100));
   document.getElementById('goal-fill').style.width=doorPct+'%';
   document.getElementById('goal-pct').textContent=totalDoors+' / 1,500 · '+doorPct+'% TO RECORD';
-  var dayLblSuffix = activeDayFilter ? (function(){var dp=activeDayFilter.split('-');var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return ' on '+mo[parseInt(dp[1])-1]+' '+parseInt(dp[2]);})() : '';
+  var dayLblSuffix = activeDayFilters.length > 0 ? (function(){
+    var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var lbls = activeDayFilters.slice().sort().map(function(d){var dp=d.split('-');return mo[parseInt(dp[1])-1]+' '+parseInt(dp[2]);});
+    return ' on '+lbls.join(', ');
+  })() : '';
   document.getElementById('goal-bar-nums').textContent=totalDoors+' of 1,500 patio doors'+dayLblSuffix;
 
   // Entry Doors bar — informational only, shown when the toggle is on.
@@ -2045,11 +2075,20 @@ function render(){
   renderDayChart();
   renderMarketChart(filterMkt);
   setTimeout(attachCoinAnimations, 50);
-  renderMarkets(filterMkt, filterShow, activeDayFilter);
+  renderMarkets(filterMkt, filterShow, activeDayFilters, effectiveAttach);
 }
 
 
 function renderDayChart(){
+  var clearBtn = document.getElementById('day-filter-clear-btn');
+  if (clearBtn) {
+    if (activeDayFilters.length > 0) {
+      clearBtn.style.display = 'inline-block';
+      clearBtn.textContent = 'CLEAR FILTER (' + activeDayFilters.length + ') ✕';
+    } else {
+      clearBtn.style.display = 'none';
+    }
+  }
   var days=Object.keys(dayData).sort();
   if(!days.length){
     document.getElementById('chart').innerHTML='<div style="color:var(--text3);font-size:12px;padding:20px">No patio door data yet — August 2026 starts soon</div>';
@@ -2080,10 +2119,10 @@ function renderDayChart(){
     var totalH=patioH+entryH;
     var dp=d.split('-'); var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var lbl=(dp.length>2?mo[parseInt(dp[1])-1]+' '+parseInt(dp[2]):d);
-    var isActive=(activeDayFilter===d);
+    var isActive=(activeDayFilters.indexOf(d) >= 0);
     var col=document.createElement('div');
     col.className='bar-col';
-    col.style.cssText='cursor:pointer;transition:opacity 0.2s;'+(activeDayFilter&&!isActive?'opacity:0.4;':'');
+    col.style.cssText='cursor:pointer;transition:opacity 0.2s;'+(activeDayFilters.length>0&&!isActive?'opacity:0.4;':'');
     col.setAttribute('data-day',d);
     var valLbl = _includeEntryDoors && entryV>0 ? totalV+' <span style="opacity:0.6;font-size:8px">('+patioV+'+'+entryV+')</span>' : String(patioV || totalV);
     var entrySegment = (entryH>0) ? '<div class="bar-entry-segment" style="height:'+entryH+'px" title="Entry Doors: '+entryV+'"></div>' : '';
@@ -2149,7 +2188,8 @@ function renderDayChart(){
   }
 }
 
-function renderMarkets(filterMkt, filterShow, dayFilter) {
+function renderMarkets(filterMkt, filterShow, dayFilters, effectiveAttach) {
+  dayFilters = dayFilters || [];
   var mkts = Object.keys(GOALS);
   if (filterMkt) mkts = mkts.filter(function(m){ return m === filterMkt; });
 
@@ -2171,7 +2211,7 @@ function renderMarkets(filterMkt, filterShow, dayFilter) {
     var aGoal = ATTACH_GOALS_LOCAL[mkt] || 0;
     var aDoors = 0, aWin = 0;
     GOALS[mkt].reps.forEach(function(r){
-      var d = r.sold, ar = attachData[r.name] || 0;
+      var d = r.sold, ar = effectiveAttach[r.name] || 0;
       if (d > 0) { aDoors += d; aWin += ar * d; }
     });
     var aLive = aDoors > 0 ? Math.round(aWin/aDoors*1000)/10 : 0;
@@ -2323,7 +2363,7 @@ function renderMarkets(filterMkt, filterShow, dayFilter) {
       html += '<div class="rep-row-name'+(isSet?' setter':'')+'">'+rep.name+repAwards+rookieBadge+todayBadge+(isSet?' <span style="color:#1E5C20;font-size:12px">🏆</span>':'')+'</div>';
       html += '<div class="rep-row-sub">Best: '+(rep.best||rep.goal-1)+' &nbsp;→&nbsp; Goal: '+rep.goal+'</div>';
       html += '</div>';
-      var repAttach = attachData[rep.name];
+      var repAttach = effectiveAttach[rep.name];
       var attachPct = (repAttach!==undefined && repAttach!==null) ? Math.round(repAttach*100) : null;
       html += '<div class="rep-row-attach" title="Attach Rate — doors sold with a window attached">'+
         '<span class="attach-lbl">ATTACH</span>'+(attachPct!==null?attachPct+'%':'—')+'</div>';
@@ -2339,15 +2379,17 @@ function renderMarkets(filterMkt, filterShow, dayFilter) {
     html += '</div>';  // mkt-card
   });
 
-  // Day filter banner
+  // Day filter banner — shows all selected days
   var dayBanner = '';
-  if (dayFilter) {
-    var dp = dayFilter.split('-');
+  if (dayFilters.length > 0) {
     var mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    var dayLbl = dp.length > 2 ? mo[parseInt(dp[1])-1]+' '+parseInt(dp[2]) : dayFilter;
+    var dayLbls = dayFilters.slice().sort().map(function(d){
+      var dp = d.split('-');
+      return dp.length > 2 ? mo[parseInt(dp[1])-1]+' '+parseInt(dp[2]) : d;
+    });
     dayBanner = '<div style="padding:8px 16px;background:rgba(139,105,20,0.1);border-radius:8px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(139,105,20,0.25)">'
-      +'<span style="font-family:Orbitron,monospace;font-size:11px;color:#6B3A00;letter-spacing:1px">📅 FILTERED: '+dayLbl+'</span>'
-      +'<button onclick="setDayFilter(null)" style="background:#8B6914;border:none;border-radius:6px;color:#fff;font-size:10px;font-family:Orbitron,monospace;padding:4px 10px;cursor:pointer;letter-spacing:1px">CLEAR ✕</button>'
+      +'<span style="font-family:Orbitron,monospace;font-size:11px;color:#6B3A00;letter-spacing:1px">📅 FILTERED: '+dayLbls.join(', ')+'</span>'
+      +'<button onclick="clearDayFilters()" style="background:#8B6914;border:none;border-radius:6px;color:#fff;font-size:10px;font-family:Orbitron,monospace;padding:4px 10px;cursor:pointer;letter-spacing:1px">CLEAR ✕</button>'
       +'</div>';
   }
   document.getElementById('market-list').innerHTML = dayBanner + (html || '<div style="color:var(--text3);padding:20px">No markets match the filter.</div>');
