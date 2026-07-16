@@ -345,6 +345,20 @@ function populateDcSelect(marketFilter) {
 }
 populateDcSelect('ALL');
 
+// Default the board to the current year/month rather than "All" so it opens
+// on what's happening right now. Falls back to All Years if the current
+// year isn't one of the dropdown's options (e.g. data doesn't go that far yet).
+(function setDefaultPeriod(){
+  const now = new Date();
+  const curYear = String(now.getFullYear());
+  const curMonth = String(now.getMonth() + 1);
+  const yearOptionExists = Array.from(yearSelect.options).some(o => o.value === curYear);
+  if (yearOptionExists) {
+    yearSelect.value = curYear;
+    monthSelect.value = curMonth;
+  }
+})();
+
 const MILESTONES = [
   { key:'bmsm', dateInt: 20250201, label: 'Buy More Save More', category: 'Milestones', details: null },
   { key:'ense', dateInt: 20241101, label: 'Started Selling Ensemble', category: 'Milestones', details: null },
