@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Unreasonable Hospitality — Top 10 (July 4-6)</title>
+<title>Unreasonable Hospitality — Top 20 (July 14-15)</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
   :root { --ink:#2B2521; --paper:#FBF7F0; --clay:#C2502E; }
@@ -14,6 +14,15 @@
   .brand-sub { font-style:italic; font-size:12px; color:#6B5D4F; }
   .cover { text-align:left; }
   .cover.card { padding-top:56px; padding-bottom:56px; }
+  /* FILTER BAR */
+  #uh-filters { max-width:8.5in; margin:0 auto 22px; display:flex; flex-wrap:wrap; align-items:flex-end; gap:16px; background:var(--paper); border:1px solid #E4D9C8; border-radius:12px; padding:16px 20px; box-shadow:0 4px 14px rgba(0,0,0,0.06); }
+  .uh-fgroup { display:flex; flex-direction:column; gap:5px; }
+  .uh-fgroup label { font-family:'Helvetica Neue',Arial,sans-serif; font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--clay); }
+  .uh-fgroup select { font-family:'Helvetica Neue',Arial,sans-serif; font-size:14px; color:var(--ink); background:#fff; border:1.5px solid #E0D4BE; border-radius:8px; padding:8px 12px; min-width:190px; cursor:pointer; }
+  .uh-fgroup select:focus { outline:none; border-color:var(--clay); }
+  #uh-clear { font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; font-weight:700; color:var(--clay); background:transparent; border:1.5px solid #E0D4BE; border-radius:8px; padding:9px 16px; cursor:pointer; transition:all 0.15s; }
+  #uh-clear:hover { background:var(--clay); color:#fff; border-color:var(--clay); }
+  #uh-count { font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; color:#6B5D4F; margin-left:auto; align-self:center; }
   .ck { font-family:'Helvetica Neue',Arial,sans-serif; letter-spacing:0.24em; text-transform:uppercase; font-size:12px; color:var(--clay); font-weight:700; margin-bottom:14px; }
   .ct { font-size:48px; line-height:1.03; margin-bottom:12px; }
   .cs { font-size:18px; font-style:italic; color:#6B5D4F; margin-bottom:30px; }
@@ -39,32 +48,37 @@
   .opt-s { background:#EEF1EA; } .s-l { color:#5C6B50; } .pill-s { background:#D9E2CF; color:#42532F; }
   .opt-m { background:#F6ECDD; } .m-l { color:#B07A2E; } .pill-m { background:#EBD7B4; color:#7A5616; }
   .opt-l { background:#F7E4DE; } .l-l { color:#B23A2E; } .pill-l { background:#E9C2B6; color:#8A2E22; }
+  .opt-xl { background:#F0DAD4; } .xl-l { color:#8E2A20; } .pill-xl { background:#DDA99B; color:#6E1F16; }
+  .rec-link { display:inline-block; margin-top:12px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; font-weight:700; color:var(--clay); text-decoration:none; }
+  .rec-link:hover { text-decoration:underline; }
+
+  /* SEE THE PACE NAV BAR */
+  #stp-nav{position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:48px;background:linear-gradient(135deg,#040810 0%,#080E1A 50%,#040810 100%);border-bottom:2px solid rgba(0,200,255,0.25);box-shadow:0 2px 20px rgba(0,200,255,0.1);font-family:'Orbitron',monospace}
+  #stp-brand{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0}
+  #stp-bolt{font-size:20px;filter:drop-shadow(0 0 8px #00C8FF)}
+  #stp-wordmark{font-family:'Orbitron',monospace;font-weight:900;font-size:14px;letter-spacing:3px;background:linear-gradient(90deg,#00C8FF,#E0F8FF,#00C8FF);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  #stp-links{display:flex;align-items:center;gap:4px}
+  .stp-link{color:rgba(255,255,255,0.65);font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-decoration:none;padding:6px 14px;border-radius:8px;border:none;background:transparent;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+  .stp-link:hover{color:#00C8FF;background:rgba(0,200,255,0.08)}
+  .stp-dropdown{position:relative}
+  .stp-drop-btn{color:rgba(255,255,255,0.65)}
+  .stp-drop-menu{display:none;position:absolute;top:calc(100% + 2px);right:0;background:#06091A;border:1px solid rgba(0,200,255,0.2);border-radius:12px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:9600}
+  .stp-drop-menu.open{display:block}
+  .stp-drop-label{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:rgba(0,200,255,0.5);padding:4px 10px 2px;text-transform:uppercase}
+  .stp-drop-item{display:block;padding:8px 12px;border-radius:8px;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;cursor:pointer;transition:all 0.12s;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:500;white-space:nowrap}
+  .stp-drop-item:hover{background:rgba(0,200,255,0.08);color:#00C8FF}
+  .stp-drop-active{color:#00C8FF !important;background:rgba(0,200,255,0.08);border-left:2px solid #00C8FF;padding-left:10px}
 
   @media print {
     @page { size: letter; margin: 0; }
     body { background:var(--paper); padding:0; }
     .wrap { max-width:none; }
+    #stp-nav { display:none!important; }
+    #uh-filters { display:none!important; }
+    .rec-link { display:none!important; }
     .card { width:8.5in; height:11in; border-radius:0; box-shadow:none; margin:0; padding:0.55in 0.7in; page-break-after:always; }
     .card:last-child { page-break-after:auto; }
   }
-/* ── SEE THE PACE NAV BAR ── */
-#stp-nav{position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:48px;background:linear-gradient(135deg,#040810 0%,#080E1A 50%,#040810 100%);border-bottom:2px solid rgba(0,200,255,0.25);box-shadow:0 2px 20px rgba(0,200,255,0.1);font-family:'Orbitron',monospace}
-#stp-brand{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0}
-#stp-bolt{font-size:20px;filter:drop-shadow(0 0 8px #00C8FF)}
-#stp-wordmark{font-family:'Orbitron',monospace;font-weight:900;font-size:14px;letter-spacing:3px;background:linear-gradient(90deg,#00C8FF,#E0F8FF,#00C8FF);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-#stp-links{display:flex;align-items:center;gap:4px}
-.stp-link{color:rgba(255,255,255,0.65);font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-decoration:none;padding:6px 14px;border-radius:8px;border:none;background:transparent;cursor:pointer;transition:all 0.15s;white-space:nowrap}
-.stp-link:hover{color:#00C8FF;background:rgba(0,200,255,0.08)}
-.stp-dropdown{position:relative}
-.stp-drop-btn{color:rgba(255,255,255,0.65)}
-.stp-drop-menu{display:none;position:absolute;top:calc(100% + 2px);right:0;background:#06091A;border:1px solid rgba(0,200,255,0.2);border-radius:12px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:9600}
-.stp-drop-menu.open{display:block}
-.stp-drop-label{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:rgba(0,200,255,0.5);padding:4px 10px 2px;text-transform:uppercase}
-.stp-drop-divider{height:1px;background:rgba(0,200,255,0.1);margin:6px 4px}
-.stp-drop-item{display:block;padding:8px 12px;border-radius:8px;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;cursor:pointer;transition:all 0.12s;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:500;white-space:nowrap}
-.stp-drop-item:hover{background:rgba(0,200,255,0.08);color:#00C8FF}
-.stp-drop-active{color:#00C8FF !important;background:rgba(0,200,255,0.08);border-left:2px solid #00C8FF;padding-left:10px}
-@media print{#stp-nav{display:none!important}body{padding-top:32px}}
 </style></head>
 <body>
 <nav id="stp-nav">
@@ -96,11 +110,11 @@
 </nav>
 <div class="wrap">
 <section class="card cover">
-  <div class="ck">Act-First Cards &middot; July 4-6 batch</div>
-  <h1 class="ct">Top 10 Opportunities</h1>
+  <div class="ck">Act-First Cards &middot; July 14-15 batch</div>
+  <h1 class="ct">Top 20 Opportunities</h1>
   <div class="cs">The Unreasonable Engine &middot; Hospitality at the speed of AI</div>
   <div class="cbox">
-    <p class="lead">The 10 highest-impact conversations from this batch of 326, across all stores, scored 85 to 91. Every card gives four ways to act, at four budgets, so you can pick what fits.</p>
+    <p class="lead">The 20 highest-impact conversations from this batch of 281, across all stores, scored 82 to 88. Every card gives you ways to act, at several budgets, so you can pick what fits.</p>
     <div class="legend">
       <strong>Option 1</strong> &nbsp; Greeting card, the note is written and ready to send<br>
       <strong>Option 2</strong> &nbsp; Small idea, about $25 to $30<br>
@@ -109,157 +123,383 @@
     </div>
   </div>
 </section>
-    <section class="card">
-      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
-      <header class="head">
-        <div class="badge"><span class="num">91</span><span class="tier">Act this week</span></div>
-        <div class="who"><h1>Randy Glisson</h1><div class="meta">Georgia &nbsp;&middot;&nbsp; Rep: Matthew Ciccone</div></div>
-      </header>
-      <p class="context">A 45-year Georgia Power lineman and Army artillery veteran, on a fixed income, whose wife (from Puerto Plata) grieves a stolen dog. They watch hummingbirds out the back window, and Randy jokingly made king crab legs a condition of signing.</p>
-      <div class="notecard">
-        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
-        <div class="note-copy">&ldquo;Randy, it was an honor talking with you. Thank you for your service, on the pole lines and in the Army both. And do not worry, Matt has not forgotten about those crab legs. We are glad to be working with you and your wife.&rdquo;</div>
-      </div>
-      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A glass hummingbird feeder for the back window they love watching, plus a packet of nectar.</div></div>
-      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Make good on the Williams Seafood king crab legs Matt promised, delivered as a signing thank-you the family will laugh about for years.</div></div>
-      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">Help toward repairing a piece of the 155 mph storm damage on the farm, or a professional restoration of the 1926 phone table his grandmother left him.</div></div>
-    </section>
-    <section class="card">
-      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
-      <header class="head">
-        <div class="badge"><span class="num">91</span><span class="tier">Act this week</span></div>
-        <div class="who"><h1>Jackie Mead</h1><div class="meta">Cincinnati &nbsp;&middot;&nbsp; Rep: Andrea O&#x27;Campo</div></div>
-      </header>
-      <p class="context">An animal-loving family with four dogs, three cats, and a daughter, Ava. Their Great Dane, Maybe, turns one year old tomorrow, and they recently lost their beagle Frankie to cancer.</p>
-      <div class="notecard">
-        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
-        <div class="note-copy">&ldquo;Jackie, what a household. Give Maybe a happy first birthday from all of us, and scratch the whole crew behind the ears. We were sorry to hear about Frankie. Thank you for letting us into such a warm, full home.&rdquo;</div>
-      </div>
-      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A first-birthday dog treat box for Maybe the Great Dane, timed to arrive on the 14th.</div></div>
-      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A gift card to a favorite pet store for the whole menagerie, or a small painted portrait of Frankie the beagle from a photo.</div></div>
-      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">A custom deck feature for the renovation they are most excited about, or a commissioned family portrait that includes every dog and cat by name.</div></div>
-    </section>
-    <section class="card">
-      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
-      <header class="head">
-        <div class="badge"><span class="num">91</span><span class="tier">Act this week</span></div>
-        <div class="who"><h1>Chester Tadrzynski (Pierre)</h1><div class="meta">New Jersey &nbsp;&middot;&nbsp; Rep: Pierre Bertran</div></div>
-      </header>
-      <p class="context">A lifelong baseball-stats savant who has been with his company since 1992, has three cats, and is celebrating 25 years with his wife next month, the story of how he kept visiting her bank window until she called.</p>
-      <div class="notecard">
-        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
-        <div class="note-copy">&ldquo;Pierre, 25 years from a bank-window crush to now is the best stat you have got, and that is saying something. Congratulations to you and Fleur. It was a genuine pleasure. Enjoy the anniversary next month.&rdquo;</div>
-      </div>
-      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A vintage-style baseball register or a framed stat card of one of the historical players he can quote from memory.</div></div>
-      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A 25th-anniversary dinner for him and his wife at a nice Italian spot, a nod to the Sunday gravy tradition he described.</div></div>
-      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">A milestone anniversary experience for the couple, a weekend away or a Cooperstown trip for the stat lover, marking 25 years.</div></div>
-    </section>
-    <section class="card">
+<div id="uh-filters">
+  <div class="uh-fgroup">
+    <label for="uh-market">Market</label>
+    <select id="uh-market"><option value="">All markets</option><option value="Cincinnati">Cincinnati</option><option value="Georgia">Georgia</option><option value="Indianapolis">Indianapolis</option><option value="Long Island">Long Island</option><option value="Nashville">Nashville</option><option value="New Jersey">New Jersey</option><option value="South Bend">South Bend</option><option value="Toronto">Toronto</option></select>
+  </div>
+  <div class="uh-fgroup">
+    <label for="uh-rep">Rep</label>
+    <select id="uh-rep"><option value="">All reps</option><option value="Andrea O’Campo">Andrea O’Campo</option><option value="Bray McClain">Bray McClain</option><option value="Brian Frankie">Brian Frankie</option><option value="Brian Harpring">Brian Harpring</option><option value="Christopher Dunn">Christopher Dunn</option><option value="Jackson Dollar">Jackson Dollar</option><option value="James Vander Valk">James Vander Valk</option><option value="John Beckford">John Beckford</option><option value="Justin Long">Justin Long</option><option value="Kris Woodward">Kris Woodward</option><option value="Kyle Spence">Kyle Spence</option><option value="Letty Arellano">Letty Arellano</option><option value="Mike Lepore">Mike Lepore</option><option value="Paul Guetter">Paul Guetter</option><option value="Peter Nantista">Peter Nantista</option><option value="Ricky Oats">Ricky Oats</option><option value="Skye Jones">Skye Jones</option><option value="Talles Cypreste">Talles Cypreste</option><option value="Tanner Simpson">Tanner Simpson</option><option value="Zachary King">Zachary King</option></select>
+  </div>
+  <button id="uh-clear" type="button">Clear</button>
+  <span id="uh-count"></span>
+</div>
+    <section class="card" data-market="Cincinnati" data-rep="Brian Harpring">
       <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
       <header class="head">
         <div class="badge"><span class="num">88</span><span class="tier">Act this week</span></div>
-        <div class="who"><h1>Kristin Mathis (Kristen)</h1><div class="meta">Georgia &nbsp;&middot;&nbsp; Rep: Jennifer Townsend</div></div>
+        <div class="who"><h1>Dan Bach</h1><div class="meta">Cincinnati &nbsp;&middot;&nbsp; Rep: Brian Harpring</div></div>
       </header>
-      <p class="context">A newly engaged blended family: Kristen just earned her Masters in Social Work while working full time, her fiance Frankie is a widower, and his son Jackson (3) is potty-training and obsessed with Toy Story.</p>
+      <p class="context">Dan Bach is a widower - his wife Judy Bach passed away in December 2021, shortly after they moved from Chicago to Liberty Township in February She never got to see the glass front door she always wanted.…</p>
       <div class="notecard">
         <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
-        <div class="note-copy">&ldquo;Kristen, congratulations, on the Masters, the engagement, and a beautiful blended family under one roof. That is a lot of joy in one season, and you have earned every bit of it. It was a pleasure meeting all of you.&rdquo;</div>
+        <div class="note-copy">&ldquo;Dan, thank you for sharing Judy&#x27;s story with us. We hope that one day soon, the light coming through a new front door will feel like a little piece of her dream coming true.&rdquo;</div>
       </div>
-      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A Woody or Toy Story gift for Jackson, and a box of warm Krispy Kreme donuts he loves.</div></div>
-      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A graduation-and-engagement celebration gift for Kristen, or a family session to mark the new household coming together.</div></div>
-      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">A contribution toward the wedding or a professional family portrait, honoring the new family they are building after real loss.</div></div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Send Dan a handwritten card signed by the sales rep and the RBA team.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Given Dan&#x27;s rich history with Rand McNally and maps, a thoughtful vintage-style map of the Lexington/Versailles Kentucky area (where he lived for 10 years) or a framed reproduction of a classic Rand McNally road atlas page could be sent as a gift.</div></div>
+      <div class="opt opt-xl"><div class="opt-head"><span class="opt-lab xl-l">Option 4 &middot; Big idea</span><span class="pill pill-xl">$500+</span></div><div class="opt-txt">Commission a custom piece of art - a watercolor or illustrated print of Dan&#x27;s home at 5070 Pedigree Court with a beautiful glass front door (designed to look like the door they discussed), bathed in warm light, with a small dedication inscription at the bottom reading &#x27;For Judy - may the light always find its way in.&#x27; Frame it beautifully and have it deliver…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=409f5354-f479-4a63-986f-8474c1f40442" target="_blank" rel="noopener">▶ Listen to the recording</a>
     </section>
-    <section class="card">
+    <section class="card" data-market="Indianapolis" data-rep="Tanner Simpson">
       <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
       <header class="head">
         <div class="badge"><span class="num">88</span><span class="tier">Act this week</span></div>
-        <div class="who"><h1>Diego Vele (Stephanie)</h1><div class="meta">Westchester &nbsp;&middot;&nbsp; Rep: Craig Holmes</div></div>
+        <div class="who"><h1>Brenda Breen</h1><div class="meta">Indianapolis &nbsp;&middot;&nbsp; Rep: Tanner Simpson</div></div>
       </header>
-      <p class="context">First-time homeowners expecting a baby on September 2nd, deep in nesting mode. Stephanie is a labor-and-delivery nurse who commutes into the city; they have a big, soft-coated dog.</p>
+      <p class="context">Tom is a 100% service-connected Marine Corps veteran - this is a significant personal detail that deserves recognition and honor.…</p>
       <div class="notecard">
         <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
-        <div class="note-copy">&ldquo;Stephanie, a first home and a first baby in the same year is a lot of wonderful at once. We will make sure the windows are done and settled well before September 2nd, so all you have to think about is the little one. Congratulations.&rdquo;</div>
+        <div class="note-copy">Send a handwritten card signed by Tanner and the RBA team addressed to both Brenda and Tom, thanking Tom specifically for his Marine Corps service and acknowledging how much they&#x27;ve been through this year.</div>
       </div>
-      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A &#x27;baby&#x27;s first home&#x27; keepsake or a soft blanket for the nursery they are preparing.</div></div>
-      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A new-parent care package: prepared meals for the first weeks home, since a labor-and-delivery nurse will be too busy to cook.</div></div>
-      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">A contribution toward the nursery or a professional maternity-and-home photo session, marking their first home and first child together.</div></div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Include a small gift card to a local Italian restaurant or grocery store (referencing the homemade fettuccine they love making for their grandsons) with a note that says something like: &#x27;You&#x27;ve been taking care of everyone else - Bruno, Mars, and all 7 grandsons.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Coordinate a &#x27;Welcome Back to Living&#x27; surprise for the Breens timed around their window installation day. Commission a local artist to create a custom illustrated portrait of Bruno and Mars (the rescue cats) with their names and a small Marine Corps emblem for Tom worked into the design - framed and ready to hang in their newly brightened living room.…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=f72e4d2b-e108-4a07-a39d-2efbceaabbbf" target="_blank" rel="noopener">▶ Listen to the recording</a>
     </section>
-    <section class="card">
+    <section class="card" data-market="Indianapolis" data-rep="Bray McClain">
       <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
       <header class="head">
         <div class="badge"><span class="num">88</span><span class="tier">Act this week</span></div>
-        <div class="who"><h1>Adrey York (Bruce)</h1><div class="meta">Cincinnati &nbsp;&middot;&nbsp; Rep: Gary Wessling</div></div>
+        <div class="who"><h1>Teresa Williams</h1><div class="meta">Indianapolis &nbsp;&middot;&nbsp; Rep: Bray McClain</div></div>
       </header>
-      <p class="context">A Desert Storm veteran who just turned 75 on July 4th and raised two granddaughters he took custody of. His wife has been in a nursing home eight years. He is a bourbon enthusiast who works part-time at a Kroger liquor store.</p>
+      <p class="context">Teresa E. Williams is a nearly 80-year-old woman living in Kokomo, Indiana. Key personal details: She has a dream of flying to Maine (specifically Bar Harbor) just to eat lobster - she said she&#x27;d &#x27;fly out there for just one day or two days and eat two days of lobster and get sick.&#x27; The sales rep is from Maine.…</p>
       <div class="notecard">
         <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
-        <div class="note-copy">&ldquo;Bruce, happy 75th, and thank you for your service. You have carried a lot for the people you love, and done it with grit. It was a real pleasure. Enjoy the reunion up in Bay City.&rdquo;</div>
+        <div class="note-copy">&ldquo;Saving your spot at Bar Harbor - hope to see you there someday. Your windows will be ready when you are. - Brandon from Renewal by Andersen.&rdquo;</div>
       </div>
-      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A quality bourbon glass set or a decanter accessory for the collector with the dragon decanter.</div></div>
-      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A sought-after bottle from his favorite allocation list (Weller or Eagle Rare) as a 75th-birthday thank-you.</div></div>
-      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">Cover a stretch of the reunion trip to Bay City, or a premium bourbon-tasting experience with his poker buddies.</div></div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Send Teresa a handwritten postcard from Maine (Brandon could have family/friends send one) with a note: &#x27;Saving your spot at Bar Harbor - hope to see you there someday.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Coordinate with a premium Maine seafood company (such as Trenton Bridge Lobster Pound in Bar Harbor) to overnight ship live Maine lobsters directly to Teresa&#x27;s home with a full lobster bib, crackers, drawn butter, and a handwritten note from Brandon: &#x27;You said you&#x27;d fly to Maine just for two days of lobster.…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=860d8c63-6003-4fba-8c76-b31d3c3b7834" target="_blank" rel="noopener">▶ Listen to the recording</a>
     </section>
-    <section class="card">
+    <section class="card" data-market="Long Island" data-rep="John Beckford">
       <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
       <header class="head">
         <div class="badge"><span class="num">88</span><span class="tier">Act this week</span></div>
-        <div class="who"><h1>Simonne Allain (Simone)</h1><div class="meta">New Jersey &nbsp;&middot;&nbsp; Rep: Matthew Jones</div></div>
+        <div class="who"><h1>Angela Medina</h1><div class="meta">Long Island &nbsp;&middot;&nbsp; Rep: John Beckford</div></div>
       </header>
-      <p class="context">She just turned 91, and lost her son in October, the carpenter who used to help her, leaving her feeling she has &#x27;nobody.&#x27; She still bartends, loves plants, and wants a bay-window shelf for a fig tree.</p>
+      <p class="context">The customer is a deputy commissioner with the state government, has been in public service for over 30 years, and works closely with the governor&#x27;s office. She is a grandmother who loves spoiling her grandchildren (&#x27;that&#x27;s all I do, spoil them&#x27;). She is a law enforcement family (mentioned for safety/privacy reasons).…</p>
       <div class="notecard">
         <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
-        <div class="note-copy">&ldquo;Simone, happy belated 91st. It was a joy to spend time with you. We heard how much your son did around the house, and we are honored to help look after it now. Please know you are not on your own with this one.&rdquo;</div>
+        <div class="note-copy">Send a handwritten birthday card to her home — since the team learned it was her birthday during the visit — signed personally by the sales rep, with a warm note acknowledging her 30+ years of public …</div>
       </div>
-      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A healthy fig tree or a set of potted plants for the sunny window she wants to fill.</div></div>
-      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A bay-window plant shelf built and installed for her, so the plants she loves finally have their spot.</div></div>
-      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">A standout gesture honoring her son the carpenter: complete a small home project he would have done, with a note that it was done in his memory.</div></div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Include a small box of gourmet chocolates or a gift card to a local bakery so she can treat herself or her grandchildren.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Coordinate with the local Renewal by Andersen office to have a beautiful custom door-themed gift basket delivered to her home on her birthday — filled with items that reflect what she loves: treats for her grandchildren, a bottle of champagne or sparkling cider to celebrate her milestone birthday, a personalized note from the entire team honoring her 30+ yea…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=cf0275fc-d0d4-453b-b07b-91dfe12b984b" target="_blank" rel="noopener">▶ Listen to the recording</a>
     </section>
-    <section class="card">
-      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
-      <header class="head">
-        <div class="badge"><span class="num">88</span><span class="tier">Act this week</span></div>
-        <div class="who"><h1>Trina Bottoms (Harley)</h1><div class="meta">Georgia &nbsp;&middot;&nbsp; Rep: Georgie Price</div></div>
-      </header>
-      <p class="context">Harley is a Vietnam Marine who was at Khe Sanh and appeared in a History Channel documentary; he collects military lighters. The family, back from caring for a sister-in-law with cancer, is renovating to meet VA standards. Grandson AJ (3) loves dinosaurs and Bluey.</p>
-      <div class="notecard">
-        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
-        <div class="note-copy">&ldquo;Harley, it was a genuine honor. Khe Sanh, and still playing cards through it, that is a story worth the documentary. Semper Fi. We are proud to help get the house squared away for you and the family.&rdquo;</div>
-      </div>
-      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A quality military lighter to replace the one that got away at the base, or a dinosaur and Play-Doh set for AJ.</div></div>
-      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A framed tribute to his Marine service and Khe Sanh, or a donation to a Vietnam veterans group in his name.</div></div>
-      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">A meaningful gesture around the VA-standard renovation milestone, or a custom shadowbox of his service medals and lighter collection.</div></div>
-    </section>
-    <section class="card">
-      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
-      <header class="head">
-        <div class="badge"><span class="num">88</span><span class="tier">Act this week</span></div>
-        <div class="who"><h1>Sandy Kappen</h1><div class="meta">Cincinnati &nbsp;&middot;&nbsp; Rep: Justin Long</div></div>
-      </header>
-      <p class="context">She has weathered deep loss, a young niece to leukemia (a Little Mermaid Make-A-Wish child), then both parents, within a few years. She collects piggy and mermaid figurines in her niece&#x27;s honor, works as a school lunch lady and at Hallmark, and just had both knees replaced.</p>
-      <div class="notecard">
-        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
-        <div class="note-copy">&ldquo;Sandy, you have carried more loss than anyone should, and you still spend your days taking care of other people&#x27;s kids. That says everything about you. It was a pleasure to meet you, and we are glad to help.&rdquo;</div>
-      </div>
-      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A mermaid or Miss Piggy figurine for the collection she keeps in honor of her niece.</div></div>
-      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A donation to Make-A-Wish in her niece&#x27;s name, or a Disney-themed gift honoring the Little Mermaid trip they shared.</div></div>
-      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">A larger tribute in her niece&#x27;s memory, a Make-A-Wish gift plus a framed mermaid keepsake, or help with the comfort of her knee recovery at home.</div></div>
-    </section>
-    <section class="card">
+    <section class="card" data-market="Cincinnati" data-rep="Andrea O’Campo">
       <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
       <header class="head">
         <div class="badge"><span class="num">85</span><span class="tier">Act this week</span></div>
-        <div class="who"><h1>Sam Rosenfeld</h1><div class="meta">Westchester &nbsp;&middot;&nbsp; Rep: Jim Lester</div></div>
+        <div class="who"><h1>Brent Brisben</h1><div class="meta">Cincinnati &nbsp;&middot;&nbsp; Rep: Andrea O’Campo</div></div>
       </header>
-      <p class="context">Sam, 76, and his wife Cheryl have been in their starter home 49 years, their move-in anniversary is in about a week. Cheryl is seriously ill and not recovering well. The den where Sam spends his time is the coldest room in the house.</p>
+      <p class="context">Kidney Donation for Dad: Brent is in the process of donating a kidney to his father. This is an incredibly selfless act and a major life event. He mentioned he&#x27;s waiting on more tests and expects surgery around September/October, after which he plans to recuperate in Stuart, Florida (near Jupiter/Palm Beach) for the winter.…</p>
       <div class="notecard">
         <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
-        <div class="note-copy">&ldquo;Sam, it was a pleasure meeting you, and we are thinking of Cheryl. Forty-nine years in one home is a rare and beautiful thing. We will take good care of the house that has taken such good care of your family. Wishing Cheryl real comfort and better days.&rdquo;</div>
+        <div class="note-copy">Send a handwritten card from Andy and the RBA team to Brent&#x27;s home, addressed to both Brent and &#x27;Escudo,&#x27; acknowledging what an extraordinary thing Brent is doing by donating a kidney to his father.</div>
       </div>
-      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A warm throw blanket for the cold den where he spends his days, so he is not layering sweatshirts.</div></div>
-      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A comfort care package for Cheryl and Sam during a hard stretch: prepared meals and a cozy set for the den.</div></div>
-      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">Prioritize and expedite the den windows he mentioned are coldest, or a 49th-anniversary gesture honoring nearly five decades in their home.</div></div>
-    </section></div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Include a small premium dog treat or a Rhodesian Ridgeback-themed item for Escudo.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Escudo-themed surprise: Send a small, high-quality gift related to Escudo — perhaps a custom dog portrait, a Rhodesian Ridgeback-themed item, or a premium dog treat package addressed to &#x27;Escudo&#x27; at the home address.</div></div>
+      <div class="opt opt-xl"><div class="opt-head"><span class="opt-lab xl-l">Option 4 &middot; Big idea</span><span class="pill pill-xl">$500+</span></div><div class="opt-txt">Coordinate with a local Stuart, Florida florist or gift service to deliver a curated &#x27;recovery welcome basket&#x27; to Brent&#x27;s Florida address timed to arrive shortly after his kidney donation surgery.…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=70542192-2af1-4df1-a793-e4e53a9ffdbe" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="New Jersey" data-rep="James Vander Valk">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">85</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>this customer</h1><div class="meta">New Jersey &nbsp;&middot;&nbsp; Rep: James Vander Valk</div></div>
+      </header>
+      <p class="context">The customer has shared several meaningful personal details: She is a new homeowner who just moved in about a month ago - this is her &#x27;forever home&#x27; after 9 years of searching. She grew up as an Air Force kid and served in the Air Force herself, moving around her whole life (approximately 30 homes).…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;Welcome to your forever home. After a lifetime of service and 30 moves, you deserve every moment of this one. Thank you for letting us be part of it.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Include a small packet of wildflower seeds she can plant in her new yard - a symbol of putting down roots.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">RBA could send a personalized housewarming gift that acknowledges her journey - perhaps a beautiful custom &#x27;Home&#x27; sign or a framed piece of art with a note that says something like: &#x27;After 30 homes and a lifetime of service, welcome to your forever home.</div></div>
+      <div class="opt opt-xl"><div class="opt-head"><span class="opt-lab xl-l">Option 4 &middot; Big idea</span><span class="pill pill-xl">$500+</span></div><div class="opt-txt">Commission a custom piece of wall art - a beautiful watercolor or print of her new home&#x27;s exterior - delivered to her door before the window install with a note: &#x27;After 30 homes and a lifetime of serving our country, this one is yours forever.…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=8dcd250f-d2dc-41a0-9f65-80a04e561a0c" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="Long Island" data-rep="Paul Guetter">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">85</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Veronica Rieusicart</h1><div class="meta">Long Island &nbsp;&middot;&nbsp; Rep: Paul Guetter</div></div>
+      </header>
+      <p class="context">Veronica recently lost her father, whose home she now lives in (original owners for 50+ years). She has deep family roots in the house - Sunday dinners with meatballs, family traditions, grandkids and great-grandkids. She has 8 grandchildren, two sons named Mateo and Elias. Her kids are Mary (34) and Matthew (28).…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;It was an honor to be part of preserving your family home. Your father&#x27;s legacy lives on in every Sunday dinner and every grandchild who runs through that back door. We can&#x27;t wait for you to enjoy your beautiful new door this summer with the grandkids.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Include a small packet of Italian meatball seasoning or a Judy Garland movie card/bookmark as a nod to the stories she shared.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">On installation day, coordinate with the install team to leave behind a framed custom print on the wall near the new door that reads something like: &#x27;This home has been filled with love for over 50 years&#x27; - styled beautifully.…</div></div>
+      <div class="opt opt-xl"><div class="opt-head"><span class="opt-lab xl-l">Option 4 &middot; Big idea</span><span class="pill pill-xl">$500+</span></div><div class="opt-txt">A framed vintage Judy Garland movie poster to honor the bond she shared with her late father.</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=0f4ff38b-1dd5-47de-8cde-5e4ab1858af5" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="New Jersey" data-rep="Mike Lepore">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">82</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Linda Roemer</h1><div class="meta">New Jersey &nbsp;&middot;&nbsp; Rep: Mike Lepore</div></div>
+      </header>
+      <p class="context">The customer (Linda) is a nurse at Monmouth Medical working 12-hour shifts Wednesday-Thursday-Friday. She mentioned having recent doctor&#x27;s appointments and said &#x27;we&#x27;re getting there&#x27; when asked if everything was okay - suggesting she or someone close may be dealing with a health issue.…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;We heard you miss these - enjoy a little taste of home. Thank you for welcoming us into your home of 33 years.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Source authentic Polish bakery rolls from a Bayonne or Jersey City bakery (like Pride Bakery or a similar establishment) and have them hand-delivered to Linda and Ricky with a handwritten note.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Since Linda misses the Polish bakery rolls from Bayonne (Pride Bakery / DiFilippo&#x27;s) and can&#x27;t easily find them locally, RBA could source authentic Polish rolls or baked goods from a Bayonne or Jersey City bakery and have them delivered or hand-delivered to Linda and Ricky as a thank-you after the appointment or after…</div></div>
+      <div class="opt opt-xl"><div class="opt-head"><span class="opt-lab xl-l">Option 4 &middot; Big idea</span><span class="pill pill-xl">$500+</span></div><div class="opt-txt">Arrange a surprise &#x27;Shore Day&#x27; experience for Linda, Ricky, and their daughter after the window installation is complete.…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=cdd85df9-f579-44e4-a1a5-56318d7a32a4" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="Nashville" data-rep="Christopher Dunn">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">82</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Randle Frazer</h1><div class="meta">Nashville &nbsp;&middot;&nbsp; Rep: Christopher Dunn</div></div>
+      </header>
+      <p class="context">Jeanette and Randy Frazier are 83 years old and celebrating their 50th wedding anniversary in March. They are planning a final anniversary brunch at their home (692 Lakeview Circle, Mount Juliet, TN — the same home where they&#x27;ve hosted a Christmas brunch for 20-25 years.…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">Send Jeanette and Randy a handwritten card from Christopher (the sales rep) in early March, congratulating them on their upcoming 50th wedding anniversary and wishing their final anniversary brunch at…</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Include a small packet of hummingbird-attracting wildflower seeds as a thoughtful, inexpensive touch tied to a real moment shared during the visit.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Installation Day Experience: On installation day, have the crew bring a small &#x27;housewarming&#x27; touch — perhaps a potted hummingbird-attracting plant (like salvia or bee balm) as a gift, acknowledging their love of hummingbirds visible from the new door.</div></div>
+      <div class="opt opt-xl"><div class="opt-head"><span class="opt-lab xl-l">Option 4 &middot; Big idea</span><span class="pill pill-xl">$500+</span></div><div class="opt-txt">For their 50th wedding anniversary brunch in March, RBA coordinates a surprise delivery to 692 Lakeview Circle on the morning of the brunch: a beautiful arrangement of flowers, a custom-engraved keepsake (e.g., a crystal or wooden plaque reading &#x27;Frazier Home — Est.…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=f5092bce-330e-4ed8-bddb-0649d7a0da6a" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="Indianapolis" data-rep="Kyle Spence">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">82</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Karen Rodgers</h1><div class="meta">Indianapolis &nbsp;&middot;&nbsp; Rep: Kyle Spence</div></div>
+      </header>
+      <p class="context">George (87 years old) is a Vietnam veteran (Air Force) who suffers from Agent Orange-related cancer and receives VA compensation. He was mowing the lawn despite being on oxygen - he&#x27;s a tough, independent spirit. Karen recently broke her ankle in April and also has an artificial knee - she&#x27;s recovering and still managing the household.…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;We heard you run a tight ship on mail delivery - keep up the great work. We&#x27;ll see you at installation day!&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Send a small gift package to Morgan the dog - a bag of premium dog treats or a fun toy addressed directly to &#x27;Morgan Rogers, Chief Mail Inspector, 316 N.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Send a get-well card or flowers to Karen&#x27;s sister at the Marion rehab center (they mentioned the facility).</div></div>
+      <div class="opt opt-xl"><div class="opt-head"><span class="opt-lab xl-l">Option 4 &middot; Big idea</span><span class="pill pill-xl">$500+</span></div><div class="opt-txt">Coordinate with the son in Melbourne, Florida (who resembles the sales rep) to send a surprise video message or arrange a video call during or just after installation day, where the whole family - including grandkids - holds up a sign welcoming the new doors.…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=5cf4b5a5-1b23-46b8-a0e0-4bc2e214fafd" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="South Bend" data-rep="Brian Frankie">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">82</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Michael Troyer</h1><div class="meta">South Bend &nbsp;&middot;&nbsp; Rep: Brian Frankie</div></div>
+      </header>
+      <p class="context">The customer (Mike Troyer) has several personal details worth noting: He&#x27;s a BMW enthusiast - currently owns a 2016 BMW X6 M Sport, has owned multiple BMWs over the years, and is very passionate about them.…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;Mike - you mentioned you&#x27;re back into collecting and going after generational players. Thought this one belonged with a fellow collector who knows the value of investing in the best. Looking forward to helping you invest in your home too. - Brian.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Send Mike a PSA-graded Shohei Ohtani baseball card (even a lower-grade affordable one) with a handwritten note.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Arrange for a professional architectural rendering company to create a stunning photorealistic 3D visualization of Mike&#x27;s entire home exterior - complete with the dark-stained multi-tone brick he described, black Andersen windows and doors, updated gutters, and new garage door - essentially the full vision he and Rachel have been dreaming about but haven&#x27;t b…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=5fd56db1-3f21-4b5c-bd6a-75f6500bcb65" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="New Jersey" data-rep="Letty Arellano">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">82</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Reginald Best</h1><div class="meta">New Jersey &nbsp;&middot;&nbsp; Rep: Letty Arellano</div></div>
+      </header>
+      <p class="context">Reginald and Renee just celebrated their 40th dating anniversary (first date was this month, 40 years ago) and have been officially married 36 years - a major milestone worth acknowledging.…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;It was such a joy to meet you both. Wishing you a beautiful 40th anniversary of your first date - and a stunning new door to welcome the next 40 years together.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Include a small box of chocolates or a gift card to a local restaurant for a date night.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Arthritis Comfort Package: Since Reginald mentioned his arthritis pain was severe during the visit, send a small wellness gift basket with anti-inflammatory teas, turmeric supplements, or a warming hand wrap - referencing the conversation about turmeric and ginger being helpful.</div></div>
+      <div class="opt opt-xl"><div class="opt-head"><span class="opt-lab xl-l">Option 4 &middot; Big idea</span><span class="pill pill-xl">$500+</span></div><div class="opt-txt">Coordinate a &#x27;Grand Reveal&#x27; experience on installation day that ties together everything learned about this family: arrange for a professional photographer to capture the moment Reginald and Renee open their brand-new cranberry door for the first time together.…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=2838eb40-050f-436b-9c70-a33540538e15" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="Indianapolis" data-rep="Kris Woodward">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">82</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Trudy Wardle</h1><div class="meta">Indianapolis &nbsp;&middot;&nbsp; Rep: Kris Woodward</div></div>
+      </header>
+      <p class="context">The Wardle family has a son (Nick) living with them who has stage 4 colon cancer - this is a deeply personal and difficult situation the family is navigating. Chuck and Trudy are celebrating their 51st wedding anniversary on July 25th - just days away from the appointment.…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">Send a handwritten anniversary card to Chuck and Trudy acknowledging their 51st wedding anniversary on July 25th, signed personally by the sales rep Chris and the RBA team.</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Include a small note referencing their Purdue love story and wishing them many more years together.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Coordinate with a local Terre Haute or Vigo County bakery to have a beautiful anniversary cake (perhaps peach-flavored, since that&#x27;s Trudy&#x27;s favorite color/flavor) delivered to the Wardle farm on July 25th for their 51st wedding anniversary, along with a bouquet of flowers and a framed card that reads: &#x27;To Chuck and Trudy - 51 years, one farm, 18 grandchildr…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=d2ba0798-00fd-4def-8974-75e464b8fc4c" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="Long Island" data-rep="Peter Nantista">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">82</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Kevin Rainone</h1><div class="meta">Long Island &nbsp;&middot;&nbsp; Rep: Peter Nantista</div></div>
+      </header>
+      <p class="context">The couple just received devastating news - the husband&#x27;s cousin was found deceased in his apartment (discovered due to odor, medical examiner called them as next of kin). They are managing funeral arrangements mid-appointment. This is a very raw, emotional moment.…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">Send a handwritten sympathy card signed personally by the sales rep (Eric) and a note from the RBA team, referencing the cousin by name and acknowledging how gracious the couple was in keeping the app…</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Include a small gift card to a local restaurant they might enjoy for a quiet dinner together once the funeral arrangements are behind them.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Commission a custom piece of sheet music or a framed art print of a classic song the husband loves (e.g., a Beatles or Rolling Stones song rendered in beautiful calligraphy or illustration) with a handwritten note: &#x27;To a man who saved a piano from a dumpster and gave music to generations of students - thank you for welcoming us into your home during one of t…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=52d84a16-7e43-4afe-b18d-8ae790704ae9" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="Toronto" data-rep="Ricky Oats">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">82</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Denise Casey</h1><div class="meta">Toronto &nbsp;&middot;&nbsp; Rep: Ricky Oats</div></div>
+      </header>
+      <p class="context">Denise Casey is a customer who lives in a condominium community and is having 5 windows replaced (1 back living room + 4 front windows including a half-round). Key personal details: Her father was a celebrated athlete - he won a gold medal at the 1928 St.…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;Denise, it was truly an honor to see your father&#x27;s legacy today. A gold medal at St. Moritz - what an incredible man. Thank you for sharing that with me.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Send Denise a handwritten card after the appointment that acknowledges her father&#x27;s 1928 Olympic gold medal with the University of Toronto Grads - something like: &#x27;Denise, it was truly an honor to see your father&#x27;s legacy today.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Finally, given her pride in her father&#x27;s hockey legacy and the sales rep&#x27;s shared love of hockey (he coaches his son), a small framed print or card referencing the 1928 St.</div></div>
+      <div class="opt opt-xl"><div class="opt-head"><span class="opt-lab xl-l">Option 4 &middot; Big idea</span><span class="pill pill-xl">$500+</span></div><div class="opt-txt">Commission a custom, high-quality archival print or framed art piece celebrating the 1928 University of Toronto Grads Olympic hockey team - ideally sourced from historical archives - and have it delivered to Denise on the day of her window installation with a note: &#x27;In honor of your father and his gold medal legacy - may these new windows let in the light wo…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=f829b630-fad8-4e76-8278-cbcc6a58221b" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="Indianapolis" data-rep="Jackson Dollar">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">82</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Lin Coner</h1><div class="meta">Indianapolis &nbsp;&middot;&nbsp; Rep: Jackson Dollar</div></div>
+      </header>
+      <p class="context">Lynn is a widower who lost his wife Betty about a year ago (June 18th anniversary). They were married 60 years. Betty was the interior decorator of the home - she designed everything, loved the house deeply, and had a great eye for design.…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;Lynn, thank you for welcoming us into the home you built for Betty. Her eye for beauty is evident everywhere. We are honored to be part of its story.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Send Lynn a handwritten card addressed to him personally, referencing Betty by name and acknowledging the beauty of the home she decorated.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">We will treat this project with the same care and pride you both put into building it.&#x27; This personal acknowledgment of Betty would be deeply meaningful.</div></div>
+      <div class="opt opt-xl"><div class="opt-head"><span class="opt-lab xl-l">Option 4 &middot; Big idea</span><span class="pill pill-xl">$500+</span></div><div class="opt-txt">Commission a custom framed art piece - perhaps a watercolor or architectural rendering of Lynn&#x27;s home as it looks today, beautifully illustrated - with a small engraved plaque that reads something like: &#x27;Built with love, for Betty.&#x27; Have it delivered before the installation day so it is waiting for Lynn when the crew arrives.…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=a7d9b4dd-6b7f-44de-9450-4f4cb80deb31" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="New Jersey" data-rep="Talles Cypreste">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">82</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Steven Glassman</h1><div class="meta">New Jersey &nbsp;&middot;&nbsp; Rep: Talles Cypreste</div></div>
+      </header>
+      <p class="context">The family has 4 daughters, 9 grandchildren, and the home has been the family hub for 40+ years with a pool in the backyard used for barbecues and family gatherings.…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">Send Madeline a handwritten congratulations card acknowledging her 6-week volunteer trip to Thailand and Laos teaching English to children, and her impressive 6-mile walk/bike home that day - include …</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">include a Dunkin&#x27; gift card since she stopped there on her journey.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Since the family is the hub for 4 daughters and 9 grandchildren with a pool and barbecues, consider sending a personalized family gift - perhaps a custom engraved item or a gift basket themed around family gatherings.</div></div>
+      <div class="opt opt-xl"><div class="opt-head"><span class="opt-lab xl-l">Option 4 &middot; Big idea</span><span class="pill pill-xl">$500+</span></div><div class="opt-txt">Arrange for a professional before-and-after photo shoot of the home once the black windows are installed, and commission a large canvas print of the finished home to be gifted to Stephen and Ellen - framed and delivered with a personalized note celebrating their 40+ years in the home and the legacy they&#x27;ve built for their 4 daughters and 9 grandchildren.…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=864bc317-bbca-4bd0-9b46-16cba9616263" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="Cincinnati" data-rep="Justin Long">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">82</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Billey Hensley</h1><div class="meta">Cincinnati &nbsp;&middot;&nbsp; Rep: Justin Long</div></div>
+      </header>
+      <p class="context">Billy Hensley is a 92-year-old widow living alone on Social Security. Her husband was a Baptist preacher who pastored multiple churches in Cincinnati and the area, and passed away 26 years ago. Her son passed away on September 25th (recent loss).…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">Send Billy a handwritten card from the sales rep and his family with a warm, personal note referencing their shared faith, a prayer for Angela&#x27;s healing and her son&#x27;s memory, and a Bible verse.</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Include a printed copy of the David Jeremiah book offer information (or order it on her behalf as a gift) since she mentioned she can&#x27;t easily navigate the internet.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">3) Order and send Billy the David Jeremiah book she mentioned (it was advertised as free) on her behalf so she doesn&#x27;t have to navigate the internet.</div></div>
+      <div class="opt opt-xl"><div class="opt-head"><span class="opt-lab xl-l">Option 4 &middot; Big idea</span><span class="pill pill-xl">$500+</span></div><div class="opt-txt">Coordinate with Fort Mitchell Baptist Church to organize a &#x27;care visit&#x27; for Billy - arrange for church members to visit her at home for a small fellowship gathering since she cannot get to church due to mobility issues.…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=c985932a-a871-4ba7-9d2a-a3eae597dc61" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="Georgia" data-rep="Zachary King">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">82</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Dana Shekkle</h1><div class="meta">Georgia &nbsp;&middot;&nbsp; Rep: Zachary King</div></div>
+      </header>
+      <p class="context">The customer recently lost her husband in 2021 due to COVID-19 side effects (he had a heart condition with a defibrillator). She lives alone in a large home she has owned for 33 years.…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">Send a handwritten birthday card to the customer (her birthday was last Friday and she spent it alone) along with a small gift card to a local restaurant or food delivery service like Uber Eats, ackno…</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">along with a small gift card to a local restaurant or food delivery service like Uber Eats, acknowledging that she was hungry and without AC during the appointment.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Include a small gift card to a local restaurant so she can treat herself to a meal without cooking in the heat.</div></div>
+      <div class="opt opt-xl"><div class="opt-head"><span class="opt-lab xl-l">Option 4 &middot; Big idea</span><span class="pill pill-xl">$500+</span></div><div class="opt-txt">Coordinate with her son (who she mentioned wanting to call to help with finances) to surprise her with a fully paid meal delivery from her favorite restaurant on the day her windows are installed - set up a comfortable, cool waiting area in her basement (where she said it&#x27;s cooler) with cold drinks, snacks, and a personalized &#x27;Project 26&#x27; card signed by the…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=75aaab41-19da-4b75-a252-fbd54bb9172d" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+    <section class="card" data-market="Nashville" data-rep="Skye Jones">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">82</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Mike &amp; Bridgette Wakefield</h1><div class="meta">Nashville &nbsp;&middot;&nbsp; Rep: Skye Jones</div></div>
+      </header>
+      <p class="context">June the Dog - The customer&#x27;s golden retriever mix named &#x27;June&#x27; (named after June Carter because her late black lab companion was named &#x27;Cash&#x27;) is clearly their beloved family member. The dog is 8 years old, very protective, lets Bridgette brush her teeth twice a week, and they treat her like a child.…</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;June Carter&#x27; saying something like: &#x27;Heard you&#x27;re a pro at letting Mom brush your teeth - here&#x27;s something to keep that beautiful smile going. See you in 12 weeks! - Sky &amp; the RBA Team.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">Send a premium dog dental kit (enzymatic dog toothpaste and a quality toothbrush set) with a handwritten note addressed to &#x27;June Carter&#x27; saying something like: &#x27;Heard you&#x27;re a pro at letting Mom brush your teeth - here&#x27;s something to keep that beautiful smile going. See you in 12 weeks!…</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Send a small gift basket with dog treats or a premium dog dental chew (since Bridgette brushes June&#x27;s teeth twice a week and cares deeply about her dental health) along with a note that says something like &#x27;For June - because good dental hygiene runs in the family.&#x27; 3.</div></div>
+      <div class="opt opt-xl"><div class="opt-head"><span class="opt-lab xl-l">Option 4 &middot; Big idea</span><span class="pill pill-xl">$500+</span></div><div class="opt-txt">Arrange for a professional pet photographer to come to the home on installation day as a surprise &#x27;thank you for being a loyal customer&#x27; gift. The photographer would spend 30-45 minutes capturing beautiful portraits of June (and the family with June) in their home and garden - Bridgette&#x27;s two great loves together.…</div></div>
+      <a class="rec-link" href="https://app.rilla.com/conversations/single?id=91f93ee7-d99a-4a7e-b202-ac2b9a4e7546" target="_blank" rel="noopener">▶ Listen to the recording</a>
+    </section>
+</div>
 <script>
+var UH_MARKET_REPS = {"Cincinnati": ["Andrea O\u2019Campo", "Brian Harpring", "Justin Long"], "Georgia": ["Zachary King"], "Indianapolis": ["Bray McClain", "Jackson Dollar", "Kris Woodward", "Kyle Spence", "Tanner Simpson"], "Long Island": ["John Beckford", "Paul Guetter", "Peter Nantista"], "Nashville": ["Christopher Dunn", "Skye Jones"], "New Jersey": ["James Vander Valk", "Letty Arellano", "Mike Lepore", "Talles Cypreste"], "South Bend": ["Brian Frankie"], "Toronto": ["Ricky Oats"]};
+function uhApplyFilters(){
+  var mkt=document.getElementById('uh-market').value;
+  var rep=document.getElementById('uh-rep').value;
+  var cards=document.querySelectorAll('section.card:not(.cover)');
+  var shown=0;
+  cards.forEach(function(c){
+    var okM = !mkt || c.getAttribute('data-market')===mkt;
+    var okR = !rep || c.getAttribute('data-rep')===rep;
+    var show = okM && okR;
+    c.style.display = show ? '' : 'none';
+    if(show) shown++;
+  });
+  var cnt=document.getElementById('uh-count');
+  if(cnt){
+    var total=cards.length;
+    cnt.textContent = (mkt||rep) ? ('Showing '+shown+' of '+total) : (total+' opportunities');
+  }
+}
+function uhSyncReps(){
+  var mkt=document.getElementById('uh-market').value;
+  var repSel=document.getElementById('uh-rep');
+  var current=repSel.value;
+  // Build the allowed rep list: reps in the chosen market, else all reps
+  var reps;
+  if(mkt && UH_MARKET_REPS[mkt]){ reps=UH_MARKET_REPS[mkt]; }
+  else {
+    var set={}; Object.keys(UH_MARKET_REPS).forEach(function(m){UH_MARKET_REPS[m].forEach(function(r){set[r]=1;});});
+    reps=Object.keys(set).sort();
+  }
+  repSel.innerHTML='<option value="">All reps</option>'+reps.map(function(r){
+    return '<option value="'+r.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">'+r.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</option>';
+  }).join('');
+  // keep the current rep selected if still valid under the new market
+  if(current && reps.indexOf(current)!==-1){ repSel.value=current; }
+  else { repSel.value=''; }
+}
+function uhInit(){
+  var mkt=document.getElementById('uh-market');
+  var rep=document.getElementById('uh-rep');
+  var clr=document.getElementById('uh-clear');
+  if(!mkt||!rep) return;
+  mkt.addEventListener('change',function(){ uhSyncReps(); uhApplyFilters(); });
+  rep.addEventListener('change',uhApplyFilters);
+  clr.addEventListener('click',function(){ mkt.value=''; uhSyncReps(); rep.value=''; uhApplyFilters(); });
+  uhApplyFilters();
+}
+document.addEventListener('DOMContentLoaded',uhInit);
+
 function stpNavInit(){
   document.querySelectorAll('.stp-dropdown').forEach(function(dd){
     var btn=dd.querySelector('.stp-drop-btn'),menu=dd.querySelector('.stp-drop-menu');
