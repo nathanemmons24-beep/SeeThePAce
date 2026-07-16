@@ -1,0 +1,275 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unreasonable Hospitality — Top 10 (July 4-6)</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#2B2521; --paper:#FBF7F0; --clay:#C2502E; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:Georgia,'Times New Roman',serif; color:var(--ink); background:#EFE7DA; padding:80px 16px 32px; }
+  .wrap { max-width:8.5in; margin:0 auto; }
+  .card { background:var(--paper); border-radius:14px; padding:44px 46px; margin:0 auto 26px;
+          box-shadow:0 6px 22px rgba(0,0,0,0.10); display:flex; flex-direction:column; }
+  .brandbar { display:flex; justify-content:space-between; align-items:baseline; border-bottom:1.5px solid #E4D9C8; padding-bottom:7px; margin-bottom:16px; }
+  .brand { font-family:'Helvetica Neue',Arial,sans-serif; font-size:11.5px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--clay); }
+  .brand-sub { font-style:italic; font-size:12px; color:#6B5D4F; }
+  .cover { text-align:left; }
+  .cover.card { padding-top:56px; padding-bottom:56px; }
+  .ck { font-family:'Helvetica Neue',Arial,sans-serif; letter-spacing:0.24em; text-transform:uppercase; font-size:12px; color:var(--clay); font-weight:700; margin-bottom:14px; }
+  .ct { font-size:48px; line-height:1.03; margin-bottom:12px; }
+  .cs { font-size:18px; font-style:italic; color:#6B5D4F; margin-bottom:30px; }
+  .cbox { border-top:2px solid #E4D9C8; padding-top:22px; }
+  .lead { font-size:15.5px; line-height:1.62; color:#3A322C; margin-bottom:16px; }
+  .legend { font-family:'Helvetica Neue',Arial,sans-serif; font-size:12.5px; color:#6B5D4F; line-height:2.0; }
+  .head { display:flex; gap:16px; align-items:flex-start; margin-bottom:12px; }
+  .badge { flex-shrink:0; width:90px; border-radius:10px; padding:11px 8px; text-align:center; color:#fff; background:#B23A2E; font-family:'Helvetica Neue',Arial,sans-serif; }
+  .num { display:block; font-size:30px; font-weight:800; line-height:1; }
+  .tier { display:block; font-size:8.5px; letter-spacing:0.04em; text-transform:uppercase; margin-top:5px; font-weight:600; }
+  .who h1 { font-size:26px; line-height:1.08; margin-bottom:5px; }
+  .meta { font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; color:#6B5D4F; }
+  .context { font-size:13px; line-height:1.45; font-style:italic; color:#5A4F45; border-left:4px solid var(--clay); padding-left:14px; margin-bottom:16px; }
+  .opt-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .opt-lab { font-family:'Helvetica Neue',Arial,sans-serif; font-size:10.5px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; }
+  .pill { font-family:'Helvetica Neue',Arial,sans-serif; font-size:10.5px; font-weight:800; padding:3px 11px; border-radius:20px; white-space:nowrap; }
+  .notecard { background:#fff; border:1.5px solid #E0D4BE; border-radius:12px; padding:15px 18px; margin-bottom:12px; }
+  .note-l { color:var(--clay); } .pill-card { background:#F0E6D6; color:#8A6A3A; }
+  .note-copy { font-size:15px; line-height:1.55; font-style:italic; color:var(--ink); }
+  .opt { border-radius:10px; padding:12px 16px; margin-bottom:11px; }
+  .opt:last-child { margin-bottom:0; }
+  .opt-txt { font-size:13.5px; line-height:1.48; }
+  .opt-s { background:#EEF1EA; } .s-l { color:#5C6B50; } .pill-s { background:#D9E2CF; color:#42532F; }
+  .opt-m { background:#F6ECDD; } .m-l { color:#B07A2E; } .pill-m { background:#EBD7B4; color:#7A5616; }
+  .opt-l { background:#F7E4DE; } .l-l { color:#B23A2E; } .pill-l { background:#E9C2B6; color:#8A2E22; }
+
+  @media print {
+    @page { size: letter; margin: 0; }
+    body { background:var(--paper); padding:0; }
+    .wrap { max-width:none; }
+    .card { width:8.5in; height:11in; border-radius:0; box-shadow:none; margin:0; padding:0.55in 0.7in; page-break-after:always; }
+    .card:last-child { page-break-after:auto; }
+  }
+/* ── SEE THE PACE NAV BAR ── */
+#stp-nav{position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:48px;background:linear-gradient(135deg,#040810 0%,#080E1A 50%,#040810 100%);border-bottom:2px solid rgba(0,200,255,0.25);box-shadow:0 2px 20px rgba(0,200,255,0.1);font-family:'Orbitron',monospace}
+#stp-brand{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0}
+#stp-bolt{font-size:20px;filter:drop-shadow(0 0 8px #00C8FF)}
+#stp-wordmark{font-family:'Orbitron',monospace;font-weight:900;font-size:14px;letter-spacing:3px;background:linear-gradient(90deg,#00C8FF,#E0F8FF,#00C8FF);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#stp-links{display:flex;align-items:center;gap:4px}
+.stp-link{color:rgba(255,255,255,0.65);font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-decoration:none;padding:6px 14px;border-radius:8px;border:none;background:transparent;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.stp-link:hover{color:#00C8FF;background:rgba(0,200,255,0.08)}
+.stp-dropdown{position:relative}
+.stp-drop-btn{color:rgba(255,255,255,0.65)}
+.stp-drop-menu{display:none;position:absolute;top:calc(100% + 2px);right:0;background:#06091A;border:1px solid rgba(0,200,255,0.2);border-radius:12px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:9600}
+.stp-drop-menu.open{display:block}
+.stp-drop-label{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:rgba(0,200,255,0.5);padding:4px 10px 2px;text-transform:uppercase}
+.stp-drop-divider{height:1px;background:rgba(0,200,255,0.1);margin:6px 4px}
+.stp-drop-item{display:block;padding:8px 12px;border-radius:8px;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;cursor:pointer;transition:all 0.12s;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:500;white-space:nowrap}
+.stp-drop-item:hover{background:rgba(0,200,255,0.08);color:#00C8FF}
+.stp-drop-active{color:#00C8FF !important;background:rgba(0,200,255,0.08);border-left:2px solid #00C8FF;padding-left:10px}
+@media print{#stp-nav{display:none!important}body{padding-top:32px}}
+</style></head>
+<body>
+<nav id="stp-nav">
+  <a href="dashboard.html" id="stp-brand"><span id="stp-bolt">⚡</span><span id="stp-wordmark">SEE THE PACE</span></a>
+  <div id="stp-links">
+    <a href="dashboard.html" class="stp-link">PACE</a>
+    <div class="stp-dropdown">
+      <button class="stp-link stp-drop-btn">CONTESTS ▾</button>
+      <div class="stp-drop-menu">
+        <div class="stp-drop-label">CONTESTS</div>
+        <a class="stp-drop-item" href="dashboard.html">⚡ Blitz 2026</a>
+        <a class="stp-drop-item" href="blitz_winners.html">🏆 Winners Board</a>
+        <a class="stp-drop-item" href="record_setters.html">🏆 August 2026</a>
+        <a class="stp-drop-item" href="rookie_100.html">⭐ September 2026</a>
+      </div>
+    </div>
+    <div class="stp-dropdown">
+      <button class="stp-link stp-drop-btn">HELP ▾</button>
+      <div class="stp-drop-menu" style="min-width:220px">
+        <div class="stp-drop-label">SUPPORT</div>
+        <a class="stp-drop-item" href="dashboard.html">💬 Talk To The Data</a>
+        <a class="stp-drop-item" href="sales_dashboard.html">📊 Sales Dashboard</a>
+        <a class="stp-drop-item" href="historical.html">📈 Historical</a>
+        <a class="stp-drop-item" href="missed_connections.html">💔 Missed Connections</a>
+        <a class="stp-drop-item stp-drop-active" href="unreasonable_hospitality.html">✨ Unreasonable Hospitality</a>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="wrap">
+<section class="card cover">
+  <div class="ck">Act-First Cards &middot; July 4-6 batch</div>
+  <h1 class="ct">Top 10 Opportunities</h1>
+  <div class="cs">The Unreasonable Engine &middot; Hospitality at the speed of AI</div>
+  <div class="cbox">
+    <p class="lead">The 10 highest-impact conversations from this batch of 326, across all stores, scored 85 to 91. Every card gives four ways to act, at four budgets, so you can pick what fits.</p>
+    <div class="legend">
+      <strong>Option 1</strong> &nbsp; Greeting card, the note is written and ready to send<br>
+      <strong>Option 2</strong> &nbsp; Small idea, about $25 to $30<br>
+      <strong>Option 3</strong> &nbsp; Big idea, about $100 to $200<br>
+      <strong>Option 4</strong> &nbsp; Big idea, $500 and up
+    </div>
+  </div>
+</section>
+    <section class="card">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">91</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Randy Glisson</h1><div class="meta">Georgia &nbsp;&middot;&nbsp; Rep: Matthew Ciccone</div></div>
+      </header>
+      <p class="context">A 45-year Georgia Power lineman and Army artillery veteran, on a fixed income, whose wife (from Puerto Plata) grieves a stolen dog. They watch hummingbirds out the back window, and Randy jokingly made king crab legs a condition of signing.</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;Randy, it was an honor talking with you. Thank you for your service, on the pole lines and in the Army both. And do not worry, Matt has not forgotten about those crab legs. We are glad to be working with you and your wife.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A glass hummingbird feeder for the back window they love watching, plus a packet of nectar.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">Make good on the Williams Seafood king crab legs Matt promised, delivered as a signing thank-you the family will laugh about for years.</div></div>
+      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">Help toward repairing a piece of the 155 mph storm damage on the farm, or a professional restoration of the 1926 phone table his grandmother left him.</div></div>
+    </section>
+    <section class="card">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">91</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Jackie Mead</h1><div class="meta">Cincinnati &nbsp;&middot;&nbsp; Rep: Andrea O&#x27;Campo</div></div>
+      </header>
+      <p class="context">An animal-loving family with four dogs, three cats, and a daughter, Ava. Their Great Dane, Maybe, turns one year old tomorrow, and they recently lost their beagle Frankie to cancer.</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;Jackie, what a household. Give Maybe a happy first birthday from all of us, and scratch the whole crew behind the ears. We were sorry to hear about Frankie. Thank you for letting us into such a warm, full home.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A first-birthday dog treat box for Maybe the Great Dane, timed to arrive on the 14th.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A gift card to a favorite pet store for the whole menagerie, or a small painted portrait of Frankie the beagle from a photo.</div></div>
+      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">A custom deck feature for the renovation they are most excited about, or a commissioned family portrait that includes every dog and cat by name.</div></div>
+    </section>
+    <section class="card">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">91</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Chester Tadrzynski (Pierre)</h1><div class="meta">New Jersey &nbsp;&middot;&nbsp; Rep: Pierre Bertran</div></div>
+      </header>
+      <p class="context">A lifelong baseball-stats savant who has been with his company since 1992, has three cats, and is celebrating 25 years with his wife next month, the story of how he kept visiting her bank window until she called.</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;Pierre, 25 years from a bank-window crush to now is the best stat you have got, and that is saying something. Congratulations to you and Fleur. It was a genuine pleasure. Enjoy the anniversary next month.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A vintage-style baseball register or a framed stat card of one of the historical players he can quote from memory.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A 25th-anniversary dinner for him and his wife at a nice Italian spot, a nod to the Sunday gravy tradition he described.</div></div>
+      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">A milestone anniversary experience for the couple, a weekend away or a Cooperstown trip for the stat lover, marking 25 years.</div></div>
+    </section>
+    <section class="card">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">88</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Kristin Mathis (Kristen)</h1><div class="meta">Georgia &nbsp;&middot;&nbsp; Rep: Jennifer Townsend</div></div>
+      </header>
+      <p class="context">A newly engaged blended family: Kristen just earned her Masters in Social Work while working full time, her fiance Frankie is a widower, and his son Jackson (3) is potty-training and obsessed with Toy Story.</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;Kristen, congratulations, on the Masters, the engagement, and a beautiful blended family under one roof. That is a lot of joy in one season, and you have earned every bit of it. It was a pleasure meeting all of you.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A Woody or Toy Story gift for Jackson, and a box of warm Krispy Kreme donuts he loves.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A graduation-and-engagement celebration gift for Kristen, or a family session to mark the new household coming together.</div></div>
+      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">A contribution toward the wedding or a professional family portrait, honoring the new family they are building after real loss.</div></div>
+    </section>
+    <section class="card">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">88</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Diego Vele (Stephanie)</h1><div class="meta">Westchester &nbsp;&middot;&nbsp; Rep: Craig Holmes</div></div>
+      </header>
+      <p class="context">First-time homeowners expecting a baby on September 2nd, deep in nesting mode. Stephanie is a labor-and-delivery nurse who commutes into the city; they have a big, soft-coated dog.</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;Stephanie, a first home and a first baby in the same year is a lot of wonderful at once. We will make sure the windows are done and settled well before September 2nd, so all you have to think about is the little one. Congratulations.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A &#x27;baby&#x27;s first home&#x27; keepsake or a soft blanket for the nursery they are preparing.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A new-parent care package: prepared meals for the first weeks home, since a labor-and-delivery nurse will be too busy to cook.</div></div>
+      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">A contribution toward the nursery or a professional maternity-and-home photo session, marking their first home and first child together.</div></div>
+    </section>
+    <section class="card">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">88</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Adrey York (Bruce)</h1><div class="meta">Cincinnati &nbsp;&middot;&nbsp; Rep: Gary Wessling</div></div>
+      </header>
+      <p class="context">A Desert Storm veteran who just turned 75 on July 4th and raised two granddaughters he took custody of. His wife has been in a nursing home eight years. He is a bourbon enthusiast who works part-time at a Kroger liquor store.</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;Bruce, happy 75th, and thank you for your service. You have carried a lot for the people you love, and done it with grit. It was a real pleasure. Enjoy the reunion up in Bay City.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A quality bourbon glass set or a decanter accessory for the collector with the dragon decanter.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A sought-after bottle from his favorite allocation list (Weller or Eagle Rare) as a 75th-birthday thank-you.</div></div>
+      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">Cover a stretch of the reunion trip to Bay City, or a premium bourbon-tasting experience with his poker buddies.</div></div>
+    </section>
+    <section class="card">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">88</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Simonne Allain (Simone)</h1><div class="meta">New Jersey &nbsp;&middot;&nbsp; Rep: Matthew Jones</div></div>
+      </header>
+      <p class="context">She just turned 91, and lost her son in October, the carpenter who used to help her, leaving her feeling she has &#x27;nobody.&#x27; She still bartends, loves plants, and wants a bay-window shelf for a fig tree.</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;Simone, happy belated 91st. It was a joy to spend time with you. We heard how much your son did around the house, and we are honored to help look after it now. Please know you are not on your own with this one.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A healthy fig tree or a set of potted plants for the sunny window she wants to fill.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A bay-window plant shelf built and installed for her, so the plants she loves finally have their spot.</div></div>
+      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">A standout gesture honoring her son the carpenter: complete a small home project he would have done, with a note that it was done in his memory.</div></div>
+    </section>
+    <section class="card">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">88</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Trina Bottoms (Harley)</h1><div class="meta">Georgia &nbsp;&middot;&nbsp; Rep: Georgie Price</div></div>
+      </header>
+      <p class="context">Harley is a Vietnam Marine who was at Khe Sanh and appeared in a History Channel documentary; he collects military lighters. The family, back from caring for a sister-in-law with cancer, is renovating to meet VA standards. Grandson AJ (3) loves dinosaurs and Bluey.</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;Harley, it was a genuine honor. Khe Sanh, and still playing cards through it, that is a story worth the documentary. Semper Fi. We are proud to help get the house squared away for you and the family.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A quality military lighter to replace the one that got away at the base, or a dinosaur and Play-Doh set for AJ.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A framed tribute to his Marine service and Khe Sanh, or a donation to a Vietnam veterans group in his name.</div></div>
+      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">A meaningful gesture around the VA-standard renovation milestone, or a custom shadowbox of his service medals and lighter collection.</div></div>
+    </section>
+    <section class="card">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">88</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Sandy Kappen</h1><div class="meta">Cincinnati &nbsp;&middot;&nbsp; Rep: Justin Long</div></div>
+      </header>
+      <p class="context">She has weathered deep loss, a young niece to leukemia (a Little Mermaid Make-A-Wish child), then both parents, within a few years. She collects piggy and mermaid figurines in her niece&#x27;s honor, works as a school lunch lady and at Hallmark, and just had both knees replaced.</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;Sandy, you have carried more loss than anyone should, and you still spend your days taking care of other people&#x27;s kids. That says everything about you. It was a pleasure to meet you, and we are glad to help.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A mermaid or Miss Piggy figurine for the collection she keeps in honor of her niece.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A donation to Make-A-Wish in her niece&#x27;s name, or a Disney-themed gift honoring the Little Mermaid trip they shared.</div></div>
+      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">A larger tribute in her niece&#x27;s memory, a Make-A-Wish gift plus a framed mermaid keepsake, or help with the comfort of her knee recovery at home.</div></div>
+    </section>
+    <section class="card">
+      <div class="brandbar"><span class="brand">The Unreasonable Engine</span><span class="brand-sub">Hospitality at the speed of AI</span></div>
+      <header class="head">
+        <div class="badge"><span class="num">85</span><span class="tier">Act this week</span></div>
+        <div class="who"><h1>Sam Rosenfeld</h1><div class="meta">Westchester &nbsp;&middot;&nbsp; Rep: Jim Lester</div></div>
+      </header>
+      <p class="context">Sam, 76, and his wife Cheryl have been in their starter home 49 years, their move-in anniversary is in about a week. Cheryl is seriously ill and not recovering well. The den where Sam spends his time is the coldest room in the house.</p>
+      <div class="notecard">
+        <div class="opt-head"><span class="opt-lab note-l">Option 1 &middot; Greeting card</span><span class="pill pill-card">Card + stamp</span></div>
+        <div class="note-copy">&ldquo;Sam, it was a pleasure meeting you, and we are thinking of Cheryl. Forty-nine years in one home is a rare and beautiful thing. We will take good care of the house that has taken such good care of your family. Wishing Cheryl real comfort and better days.&rdquo;</div>
+      </div>
+      <div class="opt opt-s"><div class="opt-head"><span class="opt-lab s-l">Option 2 &middot; Small idea</span><span class="pill pill-s">$25-$30</span></div><div class="opt-txt">A warm throw blanket for the cold den where he spends his days, so he is not layering sweatshirts.</div></div>
+      <div class="opt opt-m"><div class="opt-head"><span class="opt-lab m-l">Option 3 &middot; Big idea</span><span class="pill pill-m">$100-$200</span></div><div class="opt-txt">A comfort care package for Cheryl and Sam during a hard stretch: prepared meals and a cozy set for the den.</div></div>
+      <div class="opt opt-l"><div class="opt-head"><span class="opt-lab l-l">Option 4 &middot; Big idea</span><span class="pill pill-l">$500+</span></div><div class="opt-txt">Prioritize and expedite the den windows he mentioned are coldest, or a 49th-anniversary gesture honoring nearly five decades in their home.</div></div>
+    </section></div>
+<script>
+function stpNavInit(){
+  document.querySelectorAll('.stp-dropdown').forEach(function(dd){
+    var btn=dd.querySelector('.stp-drop-btn'),menu=dd.querySelector('.stp-drop-menu');
+    if(!btn||!menu)return;
+    dd.addEventListener('mouseenter',function(){document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){if(m!==menu)m.classList.remove('open');});menu.classList.add('open');});
+    dd.addEventListener('mouseleave',function(){setTimeout(function(){if(!dd.matches(':hover'))menu.classList.remove('open');},150);});
+    btn.addEventListener('click',function(e){e.stopPropagation();menu.classList.toggle('open');});
+  });
+  document.addEventListener('click',function(e){if(!e.target.closest('.stp-dropdown'))document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){m.classList.remove('open');});});
+}
+document.addEventListener('DOMContentLoaded',stpNavInit);
+</script>
+</body></html>
