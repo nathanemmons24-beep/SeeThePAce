@@ -1256,6 +1256,7 @@ ROOKIE_NAMES_FALLBACK.forEach(function(n){ ROOKIE_NAMES.add(n); });
 var APPS_SCRIPT_URL_RS = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
 // Populated entirely by real fetched data (parseDoors) — starts empty.
 var repDayData = {}; // rep -> {date: doors} — used for the Daily Dominator badge
+var repDayEntryData = {}; // rep -> {date: entryDoors} — display-only, doesn't affect records/badges
 var repDayAttachData = {}; // rep -> {date: {doorDeals, attachedDeals}} — powers accurate day-filtered attach rate
 var repVolumeData = {}; // rep -> {volume, deals, doors, acclaim} — full-month totals for the rep detail popup
 
@@ -1344,14 +1345,20 @@ function populateRepExtraStats(repName, prefix) {
 
   var dayList = document.getElementById(prefix + '-day-list');
   var rd = repDayData[repName];
-  if (rd && Object.keys(rd).length > 0) {
+  var rdEntry = repDayEntryData[repName];
+  var allDayKeys = {};
+  if (rd) Object.keys(rd).forEach(function(d){ if (rd[d] > 0) allDayKeys[d] = true; });
+  if (rdEntry) Object.keys(rdEntry).forEach(function(d){ if (rdEntry[d] > 0) allDayKeys[d] = true; });
+  var days = Object.keys(allDayKeys).sort();
+  if (days.length > 0) {
     var mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    var days = Object.keys(rd).filter(function(d){ return rd[d] > 0; }).sort();
     var html = '';
     days.forEach(function(d){
       var dp = d.split('-');
       var lbl = dp.length > 2 ? mo[parseInt(dp[1])-1]+' '+parseInt(dp[2]) : d;
-      html += '<div class="rec-day-row"><span>'+lbl+'</span><span class="rec-day-val">'+rd[d]+' patio door'+(rd[d]!==1?'s':'')+'</span></div>';
+      var pCount = (rd && rd[d]) || 0;
+      var eCount = (rdEntry && rdEntry[d]) || 0;
+      html += '<div class="rec-day-row"><span>'+lbl+'</span><span class="rec-day-val">'+fmtDoorsByDate(pCount, eCount)+'</span></div>';
     });
     dayList.innerHTML = html;
   } else {
@@ -1515,6 +1522,15 @@ function accumulateDoorRow(acc, rep, amount, dateStr, doors, acclaim) {
 }
 function newDoorAcc(){ return {live:{},day:{},repDay:{},repDayAttach:{},repVolume:{},attachRaw:{},attach:{},companyDoorDeals:0,companyAttachedDeals:0}; }
 
+// Shared formatter for the "Doors by Date" popups/tooltips — shows patio and
+// entry door counts side by side, omitting whichever one is zero.
+function fmtDoorsByDate(patioCount, entryCount) {
+  var parts = [];
+  if (patioCount > 0) parts.push(patioCount + ' patio');
+  if (entryCount > 0) parts.push(entryCount + ' entry');
+  return parts.length ? parts.join(', ') : '0';
+}
+
 // Whether Entry Doors count toward "Doors Sold" alongside Patio Doors.
 // Persisted so the toggle sticks across reloads.
 var _includeEntryDoors = (function(){
@@ -1526,6 +1542,7 @@ function parseDoors(csv){
   auditInactiveReps(lines);
   var accPatio = newDoorAcc();
   var accCombined = newDoorAcc();
+  repDayEntryData = {}; // reset each parse — rebuilt fresh from this fetch, not accumulated across fetches
   for(var i=1;i<lines.length;i++){
     var cols=parseCSVLine(lines[i]);
     if(cols.length<9) continue;
@@ -1541,6 +1558,16 @@ function parseDoors(csv){
     // Acclaim is a window, never counted as a door in either mode.
     accumulateDoorRow(accPatio, rep, amount, dateStr, patio, acclaim);
     accumulateDoorRow(accCombined, rep, amount, dateStr, patio+entry, acclaim);
+    // Track entry doors per rep/day too — display-only (doesn't feed badges
+    // or records, per the "Entry Doors never affect records" rule above),
+    // just so the "Doors by Date" popup can show both breakdowns.
+    if (entry > 0) {
+      var entryDay = normalizeDate(dateStr);
+      if (entryDay) {
+        if (!repDayEntryData[rep]) repDayEntryData[rep] = {};
+        repDayEntryData[rep][entryDay] = (repDayEntryData[rep][entryDay] || 0) + entry;
+      }
+    }
   }
   [accPatio, accCombined].forEach(function(acc){
     Object.keys(acc.attachRaw).forEach(function(rep){
@@ -2333,14 +2360,20 @@ function renderMarkets(filterMkt, filterShow, dayFilters, effectiveAttach) {
 
       // Hover tooltip with per-day breakdown
       var rd = repDayData[rep.name];
-      var tipHtml = '<div class="rep-tip"><div class="rep-tip-title">🚪 Patio Doors by Date</div>';
-      if (rd && Object.keys(rd).length > 0) {
-        var rdDays = Object.keys(rd).filter(function(d){ return rd[d] > 0; }).sort();
+      var rdEntry = repDayEntryData[rep.name];
+      var tipHtml = '<div class="rep-tip"><div class="rep-tip-title">🚪 Doors by Date</div>';
+      var rdDayKeys = {};
+      if (rd) Object.keys(rd).forEach(function(d){ if (rd[d] > 0) rdDayKeys[d] = true; });
+      if (rdEntry) Object.keys(rdEntry).forEach(function(d){ if (rdEntry[d] > 0) rdDayKeys[d] = true; });
+      var rdDays = Object.keys(rdDayKeys).sort();
+      if (rdDays.length > 0) {
         var mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         rdDays.forEach(function(d){
           var dp = d.split('-');
           var lbl = dp.length > 2 ? mo[parseInt(dp[1])-1]+' '+parseInt(dp[2]) : d;
-          tipHtml += '<div class="rep-tip-row"><span class="rep-tip-date">'+lbl+'</span><span class="rep-tip-val">'+rd[d]+'</span></div>';
+          var pCount = (rd && rd[d]) || 0;
+          var eCount = (rdEntry && rdEntry[d]) || 0;
+          tipHtml += '<div class="rep-tip-row"><span class="rep-tip-date">'+lbl+'</span><span class="rep-tip-val">'+fmtDoorsByDate(pCount, eCount)+'</span></div>';
         });
       } else {
         tipHtml += '<div class="rep-tip-empty">No sales recorded yet</div>';
@@ -2758,7 +2791,7 @@ async function cbSend(){ _trackChatActivity();
           <div class="rec-extra-stat"><div class="rec-extra-val" id="rec-extra-attach">—</div><div class="rec-extra-lbl">Attach Rate</div></div>
           <div class="rec-extra-stat"><div class="rec-extra-val" id="rec-extra-totaldoors">—</div><div class="rec-extra-lbl">Total Doors</div></div>
         </div>
-        <div class="rec-day-title">Patio Doors by Date</div>
+        <div class="rec-day-title">Doors by Date</div>
         <div class="rec-day-list" id="rec-day-list"></div>
       </div>
       <div class="rec-slogan" id="rec-slogan">History Is Not Given. It Is Earned.</div>
@@ -2811,7 +2844,7 @@ async function cbSend(){ _trackChatActivity();
         <div class="rd-progress-lbl">Progress to Goal — <span id="rd-goal-nums">0 / 0</span></div>
         <div class="rd-progress-track"><div class="rd-progress-fill" id="rd-progress-fill"></div></div>
       </div>
-      <div class="rec-day-title" style="margin-top:14px">Patio Doors by Date</div>
+      <div class="rec-day-title" style="margin-top:14px">Doors by Date</div>
       <div class="rec-day-list" id="rd-day-list"></div>
       <div id="rd-record-callout" style="display:none;margin-top:14px;padding:10px 12px;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.4);border-radius:8px;font-family:'Orbitron',monospace;font-size:11px;color:#FFD700;text-align:center"></div>
     </div>
@@ -2849,7 +2882,7 @@ async function cbSend(){ _trackChatActivity();
           <div class="rec-extra-stat"><div class="rec-extra-val" id="pb-extra-attach">—</div><div class="rec-extra-lbl">Attach Rate</div></div>
           <div class="rec-extra-stat"><div class="rec-extra-val" id="pb-extra-totaldoors">—</div><div class="rec-extra-lbl">Total Doors</div></div>
         </div>
-        <div class="rec-day-title">Patio Doors by Date</div>
+        <div class="rec-day-title">Doors by Date</div>
         <div class="rec-day-list" id="pb-day-list"></div>
       </div>
       <div class="pb-slogan" id="pb-slogan">Your Best Month Starts Here.</div>
