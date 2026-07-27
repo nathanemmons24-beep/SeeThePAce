@@ -1032,7 +1032,7 @@ body.dark-mode .stp-drop-active{color:#FFD700!important;border-color:#C8912A!imp
     <div class="hdr-sub">August 2026 · Your Best Month + 1</div>
   </div>
   <div class="hdr-stats">
-    <div class="hstat"><div class="hstat-val" id="hs-doors">0</div><div class="hstat-lbl">Patio Doors Sold</div><div id="hs-doors-breakdown" style="display:none;font-size:9px;color:#8B6914;font-family:'JetBrains Mono',monospace;margin-top:2px"></div></div>
+    <div class="hstat"><div class="hstat-val" id="hs-doors">0</div><div class="hstat-lbl">Doors Sold</div><div id="hs-doors-breakdown" style="display:none;font-size:9px;color:#8B6914;font-family:'JetBrains Mono',monospace;margin-top:2px"></div></div>
     <div class="hstat"><div class="hstat-val" id="hs-goal">0</div><div class="hstat-lbl">Team Record</div></div>
     <div class="hstat"><div class="hstat-val" id="hs-attach">—</div><div class="hstat-lbl">Attach Rate</div></div>
     <div class="hstat"><div class="hstat-val" id="hs-setters">0</div><div class="hstat-lbl">Record Setters</div></div>
@@ -1125,7 +1125,7 @@ body.dark-mode .stp-drop-active{color:#FFD700!important;border-color:#C8912A!imp
   <div class="award-pill">
     <span class="award-icon">🚪</span>
     <div class="award-text-col">
-      <div class="award-title">PATIO LEADER</div>
+      <div class="award-title">DOOR LEADER</div>
       <div class="award-text">Most patio doors sold</div>
       <div class="award-name" id="aw-doors">—</div>
     </div>
@@ -1373,7 +1373,7 @@ function showBadge(rep, mkt, sold, goal) {
   document.getElementById('rec-icon').textContent = '🏆';
   document.getElementById('rec-subhead').textContent = rep + ' Hit Their Goal!';
   document.getElementById('rec-val1').textContent = sold;
-  document.getElementById('rec-lbl1').textContent = 'Patio Doors Sold';
+  document.getElementById('rec-lbl1').textContent = 'Doors Sold';
   document.getElementById('rec-val2').textContent = goal;
   document.getElementById('rec-lbl2').textContent = 'Monthly Goal';
   document.getElementById('rec-val3').textContent = '+' + over;
@@ -1554,7 +1554,9 @@ function parseDoors(csv){
     var patio=parseInt(cols[6]||'0',10)||0;
     var entry=parseInt(cols[7]||'0',10)||0;
     var acclaim=parseInt(cols[8]||'0',10)||0;
-    // "Patio Doors Sold" = Patio Doors only. Combined mode adds Entry Doors.
+    // Two parallel accumulators: patio-only (for the separate Patio stat
+    // and the day-by-day breakdown) and combined patio+entry (this is what
+    // now drives records, goals, and rankings — see applyDoorMode()).
     // Acclaim is a window, never counted as a door in either mode.
     accumulateDoorRow(accPatio, rep, amount, dateStr, patio, acclaim);
     accumulateDoorRow(accCombined, rep, amount, dateStr, patio+entry, acclaim);
@@ -1579,16 +1581,19 @@ function parseDoors(csv){
   applyDoorMode();
 }
 
-// Applies whichever mode (patio-only or combined) is currently active to all
-// the working variables the rest of the page reads from, then re-renders.
-// Records, goals, and badges ALWAYS use Patio Doors only — the toggle never
-// changes what counts toward a record. It only controls whether the header
-// ALSO displays an Entry Doors / Total breakdown alongside the official
-// Patio number, and whether individual popups show a "Total Doors" line.
+// Applies the blended (Patio + Entry) totals to all the working variables
+// the rest of the page reads from, then re-renders. Records, goals, and
+// badges are based on combined doors sold — a rep can break a 5-door record
+// with any mix, e.g. 4 patio + 2 entry. The day-by-day breakdown further
+// below still tracks and displays Patio and Entry counts separately.
 function applyDoorMode() {
   var modes = window._doorModes;
   if (!modes) return;
-  var acc = modes.patio; // always — Entry Doors never affect records
+  // Records/goals are now blended: Patio + Entry Doors combined count toward
+  // a rep's total and toward breaking a record (e.g. a 5-door record can be
+  // broken with 4 patio + 2 entry). Patio and Entry are still tracked and
+  // displayed separately in the day-by-day breakdown further below.
+  var acc = modes.combined;
   var newLive = acc.live;
 
   // Check for new record setters
@@ -1611,7 +1616,7 @@ function applyDoorMode() {
   var dataChanged = JSON.stringify(newLive) !== JSON.stringify(prevTotals);
   liveData = newLive;
   dayData = acc.day;
-  repDayData = acc.repDay;
+  repDayData = modes.patio.repDay; // patio-only, paired with repDayEntryData for the breakdown popup
   repDayAttachData = acc.repDayAttach;
   repVolumeData = acc.repVolume;
   attachData = acc.attach;
@@ -1985,7 +1990,7 @@ function render(){
   document.getElementById('lv-maker').textContent=makers;
 
   // Awards bar
-  // 1. PATIO LEADER — most total doors
+  // 1. DOOR LEADER — most total doors
   var topDoors=null, topDoorsN=0;
   mkts.forEach(function(mkt){
     GOALS[mkt].reps.forEach(function(rep){
@@ -2355,7 +2360,7 @@ function renderMarkets(filterMkt, filterShow, dayFilters, effectiveAttach) {
       var repAwards = '';
       if (awardHolders.streaker === rep.name)   repAwards += '<span class="rep-award streaker">🔥 STREAKER</span>';
       if (awardHolders.attachKing === rep.name) repAwards += '<span class="rep-award attach">📎 ATTACH ACE</span>';
-      if (awardHolders.patioKing === rep.name)  repAwards += '<span class="rep-award patio">🚪 PATIO LEADER</span>';
+      if (awardHolders.patioKing === rep.name)  repAwards += '<span class="rep-award patio">🚪 DOOR LEADER</span>';
       if (awardHolders.dailyDom === rep.name)   repAwards += '<span class="rep-award daily">⚡ DAILY DOM</span>';
 
       // Hover tooltip with per-day breakdown
@@ -2772,7 +2777,7 @@ async function cbSend(){ _trackChatActivity();
       <div class="rec-stats">
         <div class="rec-stat">
           <div class="rec-stat-val" id="rec-val1">—</div>
-          <div class="rec-stat-lbl" id="rec-lbl1">Patio Doors Sold</div>
+          <div class="rec-stat-lbl" id="rec-lbl1">Doors Sold</div>
         </div>
         <div class="rec-stat">
           <div class="rec-stat-val" id="rec-val2">—</div>
@@ -2813,7 +2818,7 @@ async function cbSend(){ _trackChatActivity();
       <div class="rd-grid">
         <div class="rd-stat">
           <div class="rd-stat-val" id="rd-doors">—</div>
-          <div class="rd-stat-lbl">Patio Doors Sold</div>
+          <div class="rd-stat-lbl">Doors Sold</div>
         </div>
         <div class="rd-stat">
           <div class="rd-stat-val" id="rd-volume">—</div>
