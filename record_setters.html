@@ -26,8 +26,8 @@ body{
 #hdr{margin-top:48px;
   background:linear-gradient(135deg,#F2FAEA 0%,#E4F3CE 40%,#D4EAAC 70%,#E4F3CE 100%);
   border-bottom:2px solid #6FA82F;
-  padding:12px 24px;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  padding:7px 20px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
   position:sticky;top:48px;z-index:200;
   box-shadow:0 2px 20px rgba(92,143,42,0.2),0 2px 0 rgba(111,168,47,0.4);
 }
@@ -36,26 +36,26 @@ body{
 /* The badge is designed for a dark backdrop — its lettering is silver/white and
    its outer stroke is light, so it disappears on the pale header. Mounting it
    on a dark plate restores the contrast it was drawn for. */
-#rs-logo{height:118px;width:auto;flex-shrink:0;display:block;
+#rs-logo{height:72px;width:auto;flex-shrink:0;display:block;
   background:radial-gradient(circle at 50% 38%, #143A1D 0%, #071409 78%);
-  border:1px solid rgba(140,198,63,0.5);border-radius:16px;
-  padding:8px 14px;
-  box-shadow:0 3px 12px rgba(0,0,0,0.32), inset 0 0 24px rgba(140,198,63,0.14)}
+  border:1px solid rgba(140,198,63,0.5);border-radius:12px;
+  padding:5px 9px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3), inset 0 0 18px rgba(140,198,63,0.13)}
 .rs-logo-clone{
   background:radial-gradient(circle at 50% 38%, #143A1D 0%, #071409 78%);
   border:1px solid rgba(140,198,63,0.5);border-radius:16px;padding:10px 16px}
-@media (max-width:700px){#rs-logo{height:76px;padding:6px 10px;border-radius:12px}.hdr-left{gap:10px}}
+@media (max-width:700px){#rs-logo{height:56px;padding:4px 7px;border-radius:10px}.hdr-left{gap:9px}}
 .hdr-title{
   font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:4px;
   background:linear-gradient(90deg,#14421C,#5C8F2A,#6FA82F,#5C8F2A,#14421C);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
   line-height:1;
 }
-.hdr-sub{font-size:13px;font-weight:600;color:#2F6B18;letter-spacing:3px;text-transform:uppercase}
+.hdr-sub{font-size:11px;font-weight:600;color:#2F6B18;letter-spacing:2px;text-transform:uppercase}
 .hdr-stats{display:flex;gap:10px;flex-wrap:wrap}
 .hstat{
   background:rgba(255,255,255,0.7);border:1px solid rgba(111,168,47,0.3);border-radius:8px;box-shadow:0 1px 4px rgba(92,143,42,0.1);
-  padding:7px 14px;text-align:center;min-width:85px;
+  padding:5px 12px;text-align:center;min-width:78px;
 }
 .hstat-val{font-family:'Orbitron',monospace;font-size:17px;font-weight:700;color:#14421C}
 .hstat-lbl{font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-top:1px}
@@ -161,14 +161,19 @@ body{
 .bar-val{font-size:10px;font-family:'JetBrains Mono',monospace;color:#14421C;font-weight:700}
 .bar-body{
   width:100%;border-radius:4px 4px 0 0;min-height:4px;position:relative;overflow:hidden;
-  background:linear-gradient(180deg,#8CC63F,#1B5E20);transition:height 0.8s ease;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  background:transparent;transition:height 0.8s ease;
 }
-.bar-body::after{content:'';position:absolute;top:0;left:0;right:0;height:35%;background:linear-gradient(180deg,rgba(255,255,255,0.2),transparent);border-radius:4px 4px 0 0}
-.bar-entry-segment{
-  position:absolute;top:0;left:0;right:0;z-index:2;
-  background:linear-gradient(180deg,#4CAF50,#1B5E20);
+.bar-seg{width:100%;flex-shrink:0}
+/* Patio = the logo's lime; Entry = its chrome/silver. Two different hues rather
+   than two greens, so the split is readable at a glance. */
+.bar-seg-patio{background:linear-gradient(180deg,#8CC63F,#4A7C1E)}
+.bar-seg-entry{
+  background:linear-gradient(180deg,#E4EAEE,#94A4AE);
+  box-shadow:inset 0 -1px 0 rgba(0,0,0,0.35);
   border-radius:4px 4px 0 0;
 }
+.bar-body.bar-active{box-shadow:0 0 10px rgba(140,198,63,0.55)}
 .chart-legend{display:flex;gap:16px;justify-content:center;margin-top:8px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3)}
 .chart-legend-item{display:flex;align-items:center;gap:5px}
 .chart-legend-swatch{width:10px;height:10px;border-radius:2px}
@@ -300,26 +305,6 @@ body{
 .attach-behind{color:#C0392B!important}
 
 /* COMPANY ATTACH RATE BAR */
-#entry-doors-toggle-row{
-  display:flex;align-items:center;gap:10px;padding:8px 24px;
-  background:rgba(92,143,42,0.06);border-bottom:1px solid rgba(111,168,47,0.15);
-}
-.entry-doors-switch{position:relative;display:inline-block;width:38px;height:20px;flex-shrink:0}
-.entry-doors-switch input{opacity:0;width:0;height:0}
-.entry-doors-slider{
-  position:absolute;cursor:pointer;inset:0;background:rgba(92,143,42,0.3);
-  border-radius:20px;transition:0.2s;
-}
-.entry-doors-slider::before{
-  content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;
-  background:#fff;border-radius:50%;transition:0.2s;
-}
-.entry-doors-switch input:checked + .entry-doors-slider{background:#5C8F2A}
-.entry-doors-switch input:checked + .entry-doors-slider::before{transform:translateX(18px)}
-#entry-doors-toggle-label{
-  font-family:'Orbitron',monospace;font-size:10px;letter-spacing:1px;
-  color:#3D5C24;text-transform:uppercase;font-weight:700;
-}
 #co-attach-wrap{
   padding:10px 24px 14px;
   background:linear-gradient(135deg,#F0F9E6,#E8F5D2);
@@ -1103,14 +1088,6 @@ body.dark-mode .stp-drop-active{color:#A8E05F!important;border-color:#6FA82F!imp
   </div>
 </div>
 
-<div id="entry-doors-toggle-row">
-  <label class="entry-doors-switch">
-    <input type="checkbox" id="entry-doors-toggle-input" onchange="toggleEntryDoors()">
-    <span class="entry-doors-slider"></span>
-  </label>
-  <span id="entry-doors-toggle-label">Patio Doors Only</span>
-</div>
-
 <!-- $105M GOAL BAR -->
 
 
@@ -1597,9 +1574,9 @@ function fmtDoorsByDate(patioCount, entryCount) {
 
 // Whether Entry Doors count toward "Doors Sold" alongside Patio Doors.
 // Persisted so the toggle sticks across reloads.
-var _includeEntryDoors = (function(){
-  try { return localStorage.getItem('rs_include_entry') === '1'; } catch(e) { return false; }
-})();
+// Entry Doors are part of the blended record, so breakdowns always include
+// them. Kept as a constant so the existing breakdown code reads unchanged.
+var _includeEntryDoors = true;
 
 function parseDoors(csv){
   var lines=csv.trim().split('\n');
@@ -1693,16 +1670,6 @@ function applyDoorMode() {
   }
   prevTotals = Object.assign({}, newLive);
   try { localStorage.setItem('rs_prev_totals', JSON.stringify(prevTotals)); } catch(e) {}
-}
-
-function toggleEntryDoors() {
-  _includeEntryDoors = !_includeEntryDoors;
-  try { localStorage.setItem('rs_include_entry', _includeEntryDoors ? '1' : '0'); } catch(e) {}
-  var el = document.getElementById('entry-doors-toggle-label');
-  if (el) el.textContent = _includeEntryDoors ? 'Show Entry Doors Breakdown' : 'Patio Doors Only';
-  var chk = document.getElementById('entry-doors-toggle-input');
-  if (chk) chk.checked = _includeEntryDoors;
-  render(); // records/goals never change — this just shows/hides the breakdown line and popup totals
 }
 
 function findMarket(rep){
@@ -2209,11 +2176,13 @@ function renderDayChart(){
   var html='';
   days.forEach(function(d){
     var patioV=dayData[d];
-    var entryV=_includeEntryDoors ? (entryByDay[d]||0) : 0;
+    var entryV=entryByDay[d]||0;
     var totalV=patioV+entryV;
-    var patioH=maxV>0?Math.max(4,Math.round(patioV/maxV*maxH)):4;
-    var entryH=(_includeEntryDoors && maxV>0)?Math.round(entryV/maxV*maxH):0;
-    var totalH=patioH+entryH;
+    // Each segment is sized on its own; a zero segment must render nothing,
+    // otherwise an entry-only day would show a phantom patio stub.
+    var patioH=(maxV>0 && patioV>0)?Math.max(2,Math.round(patioV/maxV*maxH)):0;
+    var entryH=(maxV>0 && entryV>0)?Math.max(2,Math.round(entryV/maxV*maxH)):0;
+    var totalH=Math.max(4, patioH+entryH);
     var dp=d.split('-'); var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var lbl=(dp.length>2?mo[parseInt(dp[1])-1]+' '+parseInt(dp[2]):d);
     var isActive=(activeDayFilters.indexOf(d) >= 0);
@@ -2221,10 +2190,16 @@ function renderDayChart(){
     col.className='bar-col';
     col.style.cssText='cursor:pointer;transition:opacity 0.2s;'+(activeDayFilters.length>0&&!isActive?'opacity:0.4;':'');
     col.setAttribute('data-day',d);
-    var valLbl = _includeEntryDoors && entryV>0 ? totalV+' <span style="opacity:0.6;font-size:8px">('+patioV+'+'+entryV+')</span>' : String(patioV || totalV);
-    var entrySegment = (entryH>0) ? '<div class="bar-entry-segment" style="height:'+entryH+'px" title="Entry Doors: '+entryV+'"></div>' : '';
+    var valLbl = entryV>0
+      ? totalV+' <span style="opacity:0.6;font-size:8px">('+patioV+'+'+entryV+')</span>'
+      : String(totalV);
+    // Entry sits on top of Patio. Rendered as two real stacked segments (not an
+    // overlay) so each is independently sized and hoverable.
+    var segEntry = entryH>0
+      ? '<div class="bar-seg bar-seg-entry" style="height:'+entryH+'px" title="Entry Doors: '+entryV+'"></div>' : '';
+    var segPatio = '<div class="bar-seg bar-seg-patio" style="height:'+patioH+'px" title="Patio Doors: '+patioV+'"></div>';
     col.innerHTML=(isActive?'<div class="bar-val" style="color:#14421C;font-weight:700">&#x25BC;'+valLbl+'</div>':'<div class="bar-val">'+valLbl+'</div>')
-      +'<div class="bar-body" style="height:'+totalH+'px;'+(isActive?'background:linear-gradient(180deg,#8CC63F,#14421C);box-shadow:0 0 10px rgba(140,198,63,0.5);':'')+'" title="Patio Doors: '+patioV+'">'+entrySegment+'</div>'
+      +'<div class="bar-body'+(isActive?' bar-active':'')+'" style="height:'+totalH+'px" title="Total '+totalV+' — Patio '+patioV+' / Entry '+entryV+'">'+segEntry+segPatio+'</div>'
       +(isActive?'<div class="bar-lbl" style="color:#14421C;font-weight:700">&#x25BC; '+lbl+'</div>':'<div class="bar-lbl">'+lbl+'</div>');
     col.addEventListener('click',function(){setDayFilter(this.getAttribute('data-day'));});
     chartEl.appendChild(col);
@@ -2238,8 +2213,8 @@ function renderDayChart(){
     legend.id = 'chart-legend';
     legend.className = 'chart-legend';
     legend.innerHTML =
-      '<div class="chart-legend-item"><div class="chart-legend-swatch" style="background:linear-gradient(180deg,#8CC63F,#1B5E20)"></div>Patio Doors</div>' +
-      '<div class="chart-legend-item"><div class="chart-legend-swatch" style="background:linear-gradient(180deg,#4CAF50,#1B5E20)"></div>Entry Doors</div>';
+      '<div class="chart-legend-item"><div class="chart-legend-swatch" style="background:linear-gradient(180deg,#8CC63F,#4A7C1E)"></div>Patio Doors</div>' +
+      '<div class="chart-legend-item"><div class="chart-legend-swatch" style="background:linear-gradient(180deg,#E4EAEE,#94A4AE)"></div>Entry Doors</div>';
     chartEl.parentNode.appendChild(legend);
   }
 
@@ -2827,10 +2802,6 @@ setTimeout(function(){
 },100);
 renderGoalMilestones();
 (function(){
-  var chk = document.getElementById('entry-doors-toggle-input');
-  var lbl = document.getElementById('entry-doors-toggle-label');
-  if (chk) chk.checked = _includeEntryDoors;
-  if (lbl) lbl.textContent = _includeEntryDoors ? 'Show Entry Doors Breakdown' : 'Patio Doors Only';
 })();
 fetchData();
 setInterval(fetchData, 60000);
