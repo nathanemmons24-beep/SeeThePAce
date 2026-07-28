@@ -353,6 +353,43 @@ body{
 #record-overlay.show{display:flex}
 
 /* REP DETAIL POPUP */
+#mkt-detail-overlay{
+  position:fixed;inset:0;z-index:999998;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);
+}
+#mkt-detail-overlay.show{display:flex}
+#mkt-detail-card{
+  background:linear-gradient(135deg,#0A0600,#1A1000,#0A0600);
+  border:2px solid rgba(212,160,23,0.5);border-radius:18px;
+  max-width:480px;width:92%;max-height:88vh;overflow-y:auto;
+  box-shadow:0 0 60px rgba(0,0,0,0.6);
+  animation:rd-pop 0.25s ease;
+}
+.md-header{padding:16px 20px;background:linear-gradient(135deg,rgba(212,160,23,0.22),rgba(212,160,23,0.05));
+  border-bottom:1px solid rgba(212,160,23,0.3)}
+.md-mktnum{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;color:#A08050}
+.md-mktname{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:#F0D080;letter-spacing:1px}
+.md-body{padding:16px 20px 20px}
+.md-sect{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:#8B6914;
+  margin:16px 0 8px;text-transform:uppercase}
+.md-sect:first-child{margin-top:0}
+.md-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.md-stat{background:rgba(212,160,23,0.07);border:1px solid rgba(212,160,23,0.18);
+  border-radius:10px;padding:9px 6px;text-align:center}
+.md-stat-val{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:700;color:#F0D080;display:block;line-height:1.2}
+.md-stat-lbl{font-size:8px;color:#A08050;letter-spacing:0.5px;text-transform:uppercase}
+.md-rec{background:rgba(212,160,23,0.05);border:1px solid rgba(212,160,23,0.16);
+  border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.md-rec-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.md-rec-name{font-size:12px;font-weight:600;color:#E8D5A8}
+.md-rec-nums{font-family:'JetBrains Mono',monospace;font-size:11px;color:#C0A060}
+.md-rec-track{height:7px;background:rgba(0,0,0,0.45);border-radius:4px;overflow:hidden;margin-bottom:5px}
+.md-rec-fill{height:100%;border-radius:4px;transition:width 0.4s ease}
+.md-rec-note{font-family:'JetBrains Mono',monospace;font-size:10px}
+.md-close{width:100%;padding:11px;margin-top:16px;border:none;border-radius:10px;cursor:pointer;
+  background:linear-gradient(135deg,#D4A017,#8B5000);color:#fff;
+  font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:1.5px}
 #rep-detail-overlay{
   position:fixed;inset:0;z-index:999998;display:none;
   align-items:center;justify-content:center;
@@ -1937,6 +1974,7 @@ function render(){
   }
 
   // Totals
+  window._effectiveAttach = effectiveAttach;   // reused by the market detail popup
   var totalDoors=0, totalGoal=0, chasers=0, breakers=0, makers=0;
   var topAttach=null, topAttachRate=0;
   mkts.forEach(function(mkt){
@@ -2226,6 +2264,7 @@ function renderMarkets(filterMkt, filterShow, dayFilters, effectiveAttach) {
   if (filterMkt) mkts = mkts.filter(function(m){ return m === filterMkt; });
 
   var ATTACH_GOALS_LOCAL = {"0930 - Georgia":25.4,"0792 - Chattanooga":30.8,"0576 - Cincinnati":26.8,"0867 - Indy":39.5,"0790 - Knoxville":36.0,"0800 - Long Island":15.7,"0791 - Nashville":24.1,"0535 - New Jersey":31.8,"0890 - San Francisco":22.4,"0868 - South Bend":40.0,"0914 - Toronto":36.4,"0534 - Westchester":30.0};
+  window._attachGoals = ATTACH_GOALS_LOCAL;   // reused by the market detail popup
   var BEST_LOCAL = {"0930 - Georgia": 603, "0792 - Chattanooga": 90, "0576 - Cincinnati": 402, "0867 - Indy": 310, "0790 - Knoxville": 170, "0800 - Long Island": 502, "0791 - Nashville": 306, "0535 - New Jersey": 673, "0890 - San Francisco": 392, "0868 - South Bend": 204, "0914 - Toronto": 92, "0534 - Westchester": 271};
 
   var html = '';
@@ -2277,7 +2316,7 @@ function renderMarkets(filterMkt, filterShow, dayFilters, effectiveAttach) {
     // ── HEADER ── (headline stats now reflect the blended Total Doors goal)
     var mktSoldSnap = patioSold; var mktPrevSnap = prev; var mktNameSnap = mkt;
     html += '<div class="mkt-card-header" onclick="handleMktHeaderClick(this,'+
-      jsonAttr(mkt)+','+patioSold+','+prev+')">';
+      jsonAttr(mkt)+','+totalSold+','+prev+')">';
     html += '<div class="mkt-card-header-left">';
     // Split "XXXX - Name" into number and name
     var mktNum = mkt.indexOf(' - ') > -1 ? mkt.split(' - ')[0] : '';
@@ -2287,7 +2326,7 @@ function renderMarkets(filterMkt, filterShow, dayFilters, effectiveAttach) {
       + mktName
       
       + '</div>';
-    html += '<div class="mkt-card-subtitle">Blended Goal (Patio + Entry): '+totalGoal+'</div>';
+    html += '<div class="mkt-card-subtitle">Total Doors Goal: '+totalGoal+' &nbsp;·&nbsp; tap for records</div>';
     html += '</div>';
     html += '<div class="mkt-card-header-right">';
     html += '<div class="mkt-card-stat"><span class="mkt-card-stat-val">'+totalSold+'</span><span class="mkt-card-stat-lbl">Current</span></div>';
@@ -2297,25 +2336,12 @@ function renderMarkets(filterMkt, filterShow, dayFilters, effectiveAttach) {
     html += '<span style="color:#A08050;font-size:12px;transition:transform 0.2s" class="mkt-chevron">▼</span>';
     html += '</div></div>';
 
-    // ── BLENDED BAR (PRIMARY — this is the market's goal) ──
+    // ── TOTAL DOORS BAR (the market's goal) ──
+    // Patio/Entry breakdowns live in the market detail popup, not on the card.
     html += '<div class="mkt-card-progress mkt-blended-progress">';
-    html += '<div class="mkt-blended-lbl">🔗 BLENDED — PATIO + ENTRY (Market Goal)</div>';
+    html += '<div class="mkt-blended-lbl">🚪 TOTAL DOORS (Patio + Entry)</div>';
     html += '<div class="mkt-prog-track mkt-blended-track"><div class="mkt-prog-fill mkt-blended-fill" style="width:'+totalPct+'%"></div></div>';
     html += '<div class="mkt-prog-labels"><span>All-Time Record: '+(totalGoal-1)+'</span><span>'+totalPct+'% to goal</span><span>Goal: '+totalGoal+'</span></div>';
-    html += '</div>';
-
-    // ── PATIO DOORS BAR ──
-    html += '<div class="mkt-card-progress">';
-    html += '<div class="mkt-prog-sublbl">🚪 Patio Doors</div>';
-    html += '<div class="mkt-prog-track"><div class="mkt-prog-fill'+(overGoal?' over-goal':'')+'" style="width:'+patioPct+'%"></div></div>';
-    html += '<div class="mkt-prog-labels"><span>Record: '+prev+'</span><span>'+patioPct+'% to goal</span><span>Goal: '+patioGoal+'</span></div>';
-    html += '</div>';
-
-    // ── ENTRY DOORS BAR ──
-    html += '<div class="mkt-card-progress">';
-    html += '<div class="mkt-prog-sublbl">🪟 Entry Doors</div>';
-    html += '<div class="mkt-prog-track"><div class="mkt-prog-fill entry-color" style="width:'+entryPct+'%"></div></div>';
-    html += '<div class="mkt-prog-labels"><span>Record: '+(entryGoal-1)+'</span><span>'+entryPct+'% to goal</span><span>Goal: '+entryGoal+'</span></div>';
     html += '</div>';
 
     // ── ATTACH RATE BAR ──
@@ -2568,17 +2594,78 @@ function closeRepDetail() {
 
 function handleMktHeaderClick(el, mkt, sold, prevRecord) {
   toggleMkt(el);
-  if (sold <= 0) return;
-  if (sold > prevRecord) {
-    // Market beat their record — show the record badge
+  if (sold > 0 && sold > prevRecord) {
+    // Market beat their all-time Total Doors record — celebrate first
     showMarketRecord(mkt, sold, prevRecord);
-  } else {
-    // Show market progress toast
-    var goal = GOALS[mkt] ? GOALS[mkt].goal : 0;
-    var pct = goal > 0 ? Math.round(sold/goal*100) : 0;
-    showToast('🏛️', 'MARKET PROGRESS', mkt,
-      sold+' / '+goal+' doors · '+pct+'% to goal', '#6B3A00', 4000);
+    return;
   }
+  showMktDetail(mkt);
+}
+
+// Market detail popup: this month's numbers plus each record and the gap to it.
+function showMktDetail(mkt) {
+  var md = GOALS[mkt];
+  if (!md) return;
+
+  var totalSold = md.reps.reduce(function(s,r){ return s + r.sold; }, 0);
+  var patioSold = 0;
+  if (window._doorModes) {
+    md.reps.forEach(function(r){ patioSold += window._doorModes.patio.live[r.name] || 0; });
+  }
+  var entrySold = Math.max(0, totalSold - patioSold);
+  var setters = md.reps.filter(function(r){ return r.sold >= r.goal; }).length;
+
+  var num = mkt.indexOf(' - ') > -1 ? mkt.split(' - ')[0] : '';
+  var name = mkt.indexOf(' - ') > -1 ? mkt.split(' - ').slice(1).join(' - ') : mkt;
+  document.getElementById('md-mktnum').textContent = num;
+  document.getElementById('md-mktname').textContent = name;
+
+  // Attach rate, same basis as the market card
+  var aDoors = 0, aWin = 0;
+  md.reps.forEach(function(r){
+    var ea = window._effectiveAttach || attachData;
+    var ar = ea[r.name] || 0;
+    if (r.sold > 0) { aDoors += r.sold; aWin += ar * r.sold; }
+  });
+  var aLive = aDoors > 0 ? Math.round(aWin/aDoors*1000)/10 : 0;
+
+  document.getElementById('md-stats').innerHTML =
+    stat(totalSold, 'Total Doors') + stat(patioSold, 'Patio') +
+    stat(entrySold, 'Entry') + stat(setters, 'Setters');
+  function stat(v, l){
+    return '<div class="md-stat"><span class="md-stat-val">'+v+'</span><span class="md-stat-lbl">'+l+'</span></div>';
+  }
+
+  var rows = [
+    { label:'🚪 Total Doors', sold:totalSold, rec:(md.totalGoal||1)-1, color:'linear-gradient(90deg,#D4A017,#F0D080)' },
+    { label:'🚪 Patio Doors', sold:patioSold, rec:(md.goal||1)-1,      color:'linear-gradient(90deg,#D4A017,#8B5000)' },
+    { label:'🪟 Entry Doors', sold:entrySold, rec:(md.entryGoal||1)-1, color:'linear-gradient(90deg,#4CAF50,#1B5E20)' },
+    { label:'📎 Attach Rate', sold:aLive, rec:(window._attachGoals && window._attachGoals[mkt]) || 0, pct:true,
+      color:'linear-gradient(90deg,#00C8FF,#0077AA)' }
+  ];
+
+  var html = '';
+  rows.forEach(function(r){
+    var target = r.rec + (r.pct ? 0 : 1);          // beat the record by one
+    var gap = Math.round((target - r.sold) * 10) / 10;
+    var pct = target > 0 ? Math.min(100, Math.round(r.sold / target * 100)) : 0;
+    var suffix = r.pct ? '%' : '';
+    var beaten = r.sold >= target;
+    var note = beaten
+      ? '<span style="color:#4CAF50">🏆 Record broken — ahead by '+(Math.round((r.sold-r.rec)*10)/10)+suffix+'</span>'
+      : '<span style="color:#C0A060">'+gap+suffix+' more to break the record</span>';
+    html += '<div class="md-rec">'
+      + '<div class="md-rec-top"><span class="md-rec-name">'+r.label+'</span>'
+      + '<span class="md-rec-nums">'+r.sold+suffix+' / '+target+suffix+'</span></div>'
+      + '<div class="md-rec-track"><div class="md-rec-fill" style="width:'+pct+'%;background:'+r.color+'"></div></div>'
+      + '<div class="md-rec-note">Record: '+r.rec+suffix+' &nbsp;·&nbsp; '+note+'</div>'
+      + '</div>';
+  });
+  document.getElementById('md-records').innerHTML = html;
+  document.getElementById('mkt-detail-overlay').classList.add('show');
+}
+function closeMktDetail() {
+  document.getElementById('mkt-detail-overlay').classList.remove('show');
 }
 
 // ── MARKET / COMPANY RECORD BADGE ────────────────────────────────────────────
@@ -2804,6 +2891,22 @@ async function cbSend(){ _trackChatActivity();
 
 
 <!-- REP DETAIL STATS POPUP -->
+<div id="mkt-detail-overlay" onclick="closeMktDetail()">
+  <div id="mkt-detail-card" onclick="event.stopPropagation()">
+    <div class="md-header">
+      <div class="md-mktnum" id="md-mktnum"></div>
+      <div class="md-mktname" id="md-mktname"></div>
+    </div>
+    <div class="md-body">
+      <div class="md-sect">This Month</div>
+      <div class="md-stats" id="md-stats"></div>
+      <div class="md-sect">Records — How Close To Breaking Them</div>
+      <div id="md-records"></div>
+      <button class="md-close" onclick="closeMktDetail()">CLOSE</button>
+    </div>
+  </div>
+</div>
+
 <div id="rep-detail-overlay" onclick="closeRepDetail()">
   <div id="rep-detail-card" onclick="event.stopPropagation()">
     <div class="rd-header">
