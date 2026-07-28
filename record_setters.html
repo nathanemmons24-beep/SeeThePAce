@@ -1239,7 +1239,7 @@ body.dark-mode .stp-drop-active{color:#A8E05F!important;border-color:#6FA82F!imp
     <span>📅 DAY BY DAY <span class="section-title-badge">AUGUST</span></span>
     <button id="day-filter-clear-btn" onclick="clearDayFilters()" style="display:none;background:#5C8F2A;border:none;border-radius:6px;color:#fff;font-size:10px;font-family:'Orbitron',monospace;padding:5px 12px;cursor:pointer;letter-spacing:1px">CLEAR FILTER ✕</button>
   </div>
-  <div id="chart-wrap"><div id="chart"><div style="color:var(--text3);font-size:12px;padding:20px">No patio door data yet — August starts soon</div></div></div>
+  <div id="chart-wrap"><div id="chart"><div style="color:var(--text3);font-size:12px;padding:20px">No door data yet — August starts soon</div></div></div>
 </div>
 
 <!-- MARKET SCOREBOARD -->
@@ -2155,29 +2155,29 @@ function renderDayChart(){
   }
   var days=Object.keys(dayData).sort();
   if(!days.length){
-    document.getElementById('chart').innerHTML='<div style="color:var(--text3);font-size:12px;padding:20px">No patio door data yet — August 2026 starts soon</div>';
+    document.getElementById('chart').innerHTML='<div style="color:var(--text3);font-size:12px;padding:20px">No door data yet — August 2026 starts soon</div>';
     return;
   }
   var chartEl=document.getElementById('chart');
   chartEl.innerHTML='';
 
-  // Entry Doors per day (only computed/shown when the toggle is on) — the
-  // combined accumulator minus the patio-only dayData gives entry-only counts.
+  // dayData is the COMBINED (patio+entry) total per day. Patio comes from the
+  // patio-only accumulator; entry is the remainder. Previously this subtracted
+  // combined from dayData — which is combined — so entry was always zero and
+  // the whole bar rendered as patio.
+  var patioByDay = (window._doorModes && window._doorModes.patio.day) || {};
   var entryByDay = {};
-  if (_includeEntryDoors && window._doorModes) {
-    var combinedDay = window._doorModes.combined.day;
-    days.forEach(function(d){ entryByDay[d] = Math.max(0, (combinedDay[d]||0) - (dayData[d]||0)); });
-  }
+  days.forEach(function(d){
+    entryByDay[d] = Math.max(0, (dayData[d]||0) - (patioByDay[d]||0));
+  });
 
-  var maxV = _includeEntryDoors
-    ? Math.max.apply(null, days.map(function(d){ return dayData[d] + (entryByDay[d]||0); }))
-    : Math.max.apply(null, days.map(function(d){return dayData[d];}));
+  var maxV = Math.max.apply(null, days.map(function(d){ return dayData[d]||0; })) || 1;
   var maxH=130;
   var html='';
   days.forEach(function(d){
-    var patioV=dayData[d];
-    var entryV=entryByDay[d]||0;
-    var totalV=patioV+entryV;
+    var totalV=dayData[d]||0;
+    var patioV=Math.min(patioByDay[d]||0, totalV);
+    var entryV=Math.max(0, totalV-patioV);
     // Each segment is sized on its own; a zero segment must render nothing,
     // otherwise an entry-only day would show a phantom patio stub.
     var patioH=(maxV>0 && patioV>0)?Math.max(2,Math.round(patioV/maxV*maxH)):0;
@@ -2219,7 +2219,8 @@ function renderDayChart(){
   }
 
   // ── TREND LINE — avg dashed line ──
-  var dayVals = days.map(function(d){ return dayData[d] + (_includeEntryDoors ? (entryByDay[d]||0) : 0); });
+  // dayData is already Patio+Entry, so no entry is added here (that double-counted).
+  var dayVals = days.map(function(d){ return dayData[d]||0; });
   var dayCount = dayVals.length;
   if (dayCount > 1) {
     var avg = dayVals.reduce(function(s,v){return s+v;},0) / dayCount;
