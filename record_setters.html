@@ -960,6 +960,92 @@ body.dark-mode #co-attach-bignum{color:#A8E05F!important}
 
 <style>
 /* ── STP NAV ── */
+
+/* ── MOBILE JUMP BAR (hidden on desktop) ── */
+#mobile-jump{display:none}
+
+/* ══════════════════════════════════════════════════════════════════════
+   MOBILE LAYOUT
+   The nav is fixed (48px) and the header was sticky on top of it, so ~146px
+   of a ~650px viewport was permanently occupied before any content appeared.
+   Below 700px the header scrolls away, chrome shrinks, tap targets grow,
+   and a jump bar replaces hunting through a very long page.
+   ══════════════════════════════════════════════════════════════════════ */
+@media (max-width:700px){
+
+  /* Header scrolls away instead of sticking — reclaims ~100px */
+  #hdr{position:static;padding:6px 12px;gap:8px}
+  #rs-logo{height:46px;padding:3px 7px;border-radius:9px}
+  .hdr-sub{font-size:9px;letter-spacing:1px}
+  .hdr-left{gap:8px}
+
+  /* Header stats: even 4-across row filling the width */
+  .hdr-stats{gap:5px;width:100%;display:flex}
+  .hstat{flex:1 1 0;min-width:0;padding:4px 2px}
+  .hstat-val{font-size:15px}
+  .hstat-lbl{font-size:7px;letter-spacing:0}
+
+  /* Sticky section jump bar, directly under the nav */
+  #mobile-jump{
+    display:flex;position:sticky;top:48px;z-index:190;
+    gap:4px;padding:6px 8px;
+    background:rgba(242,250,234,0.97);
+    border-bottom:1px solid rgba(111,168,47,0.3);
+    overflow-x:auto;-webkit-overflow-scrolling:touch;
+  }
+  #mobile-jump a{
+    flex:1 0 auto;text-align:center;white-space:nowrap;
+    padding:8px 10px;border-radius:8px;text-decoration:none;
+    background:rgba(140,198,63,0.14);border:1px solid rgba(111,168,47,0.28);
+    font-family:'Orbitron',monospace;font-size:9px;font-weight:700;
+    letter-spacing:0.5px;color:#2F6B18;
+  }
+  #mobile-jump a:active{background:rgba(140,198,63,0.32)}
+
+  /* Anchors must clear the fixed nav + jump bar when jumped to */
+  #lb-row,#sec-markets,#sec-chart,#sec-records{scroll-margin-top:104px}
+
+  .section{padding:10px 12px}
+  .section-title{font-size:11px;letter-spacing:1px}
+
+  /* Leaderboards: one per row, capped height so all four stay reachable */
+  #lb-row{padding:8px 12px 2px;gap:8px}
+  .lb-list{max-height:210px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .lb-item{padding:6px 10px;font-size:12px}
+  .lb-head{font-size:9px;padding:8px 10px}
+
+  /* Market cards: tighter header, bigger tap area */
+  .mkt-card-header{padding:10px 12px}
+  .mkt-card-mktname{font-size:14px}
+  .mkt-card-subtitle{font-size:8px}
+  .mkt-card-header-right{gap:8px}
+  .mkt-card-stat-val{font-size:14px}
+  .mkt-card-stat-lbl{font-size:7px}
+  .mkt-chevron{font-size:17px !important;padding:8px 10px !important;margin:-8px -6px -8px 0 !important}
+
+  /* Rep rows: taller for thumbs */
+  .rep-row-new{padding:10px;gap:8px}
+  .rep-row-name{font-size:13px}
+  .rep-row-sub{font-size:9px}
+
+  /* Day chart scrolls sideways rather than crushing 31 bars together */
+  #chart-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #chart{min-width:560px}
+
+  /* Popups use the full screen */
+  #mkt-detail-card,#rep-detail-card{width:96%;max-height:88vh}
+  .md-stats{grid-template-columns:repeat(2,1fr)}
+
+  #collapse-all-btn{padding:7px 12px;font-size:9px}
+}
+
+/* Very narrow phones */
+@media (max-width:400px){
+  .hstat-val{font-size:13px}
+  .mkt-card-mktname{font-size:13px}
+  #mobile-jump a{font-size:8px;padding:7px 8px}
+}
+
 #stp-nav{
   position:fixed;top:0;left:0;right:0;z-index:9999;
   display:flex;align-items:center;justify-content:space-between;
@@ -1118,6 +1204,14 @@ body.dark-mode .stp-drop-active{color:#A8E05F!important;border-color:#6FA82F!imp
   <span id="slogan-ticker">⚡ BREAK RECORDS. BUILD MOMENTUM. &nbsp;·&nbsp; YOUR BEST MONTH STARTS HERE. &nbsp;·&nbsp; ONE MORE CHANGES EVERYTHING. &nbsp;·&nbsp; HISTORY ISN'T GIVEN. IT'S EARNED. &nbsp;·&nbsp; EVERY PATIO DOOR COUNTS. &nbsp;·&nbsp; RECORD SETTERS DON'T CHASE AVERAGE. &nbsp;·&nbsp; BEAT YESTERDAY. BEAT LAST YEAR. &nbsp;·&nbsp; THE NEXT PATIO DOOR MAKES HISTORY. &nbsp;·&nbsp; ONE MORE DOOR. ONE MORE RECORD. &nbsp;·&nbsp; AUGUST IS FOR RECORD SETTERS. &nbsp;·&nbsp; 105 MILLION ISN'T ONE GOAL. IT'S HUNDREDS OF PERSONAL RECORDS. &nbsp;·&nbsp;</span>
 </div>
 
+<!-- MOBILE SECTION JUMP BAR -->
+<div id="mobile-jump">
+  <a href="#lb-row">🏆 Leaders</a>
+  <a href="#sec-markets">🏛 Markets</a>
+  <a href="#sec-chart">📅 Daily</a>
+  <a href="#sec-records">📋 Records</a>
+</div>
+
 <!-- TOP 10 LEADERBOARDS -->
 <div id="lb-row">
   <div class="lb-panel">
@@ -1138,7 +1232,7 @@ body.dark-mode .stp-drop-active{color:#A8E05F!important;border-color:#6FA82F!imp
   </div>
 </div>
 
-<div class="section">
+<div class="section" id="sec-markets">
   <div class="section-title">🏛️ MARKET TOTALS <span class="section-title-badge" id="mkt-chart-filter-lbl" style="display:none">FILTERED</span></div>
   <div id="mkt-chart-wrap">
     <div id="mkt-chart"></div>
@@ -1146,7 +1240,7 @@ body.dark-mode .stp-drop-active{color:#A8E05F!important;border-color:#6FA82F!imp
 </div>
 
 <!-- DAY BY DAY -->
-<div class="section">
+<div class="section" id="sec-chart">
   <div class="section-title" style="display:flex;justify-content:space-between;align-items:center">
     <span>📅 DAY BY DAY <span class="section-title-badge">AUGUST</span></span>
     <button id="day-filter-clear-btn" onclick="clearDayFilters()" style="display:none;background:#5C8F2A;border:none;border-radius:6px;color:#fff;font-size:10px;font-family:'Orbitron',monospace;padding:5px 12px;cursor:pointer;letter-spacing:1px">CLEAR FILTER ✕</button>
@@ -1155,7 +1249,7 @@ body.dark-mode .stp-drop-active{color:#A8E05F!important;border-color:#6FA82F!imp
 </div>
 
 <!-- MARKET SCOREBOARD -->
-<div class="section">
+<div class="section" id="sec-records">
   <div class="section-title" style="display:flex;justify-content:space-between;align-items:center">
     <span>🏛️ MARKET RECORDS</span>
     <button id="collapse-all-btn" onclick="toggleCollapseAll()" style="background:#5C8F2A;border:none;border-radius:6px;color:#fff;font-size:10px;font-family:'Orbitron',monospace;padding:5px 12px;cursor:pointer;letter-spacing:1px">COLLAPSE ALL ▲</button>
@@ -2472,14 +2566,22 @@ function showRepDetail(repName, mkt, sold, goal, prevBest) {
     return '$'+Math.round(n);
   };
 
-  // Best single day from repDayData
+  // Per-day totals. repDayData is PATIO-ONLY, so a DC who sold nothing but
+  // entry doors used to show "No sales recorded yet" despite having sales.
+  // Merge in the entry-door day map to get true totals.
+  var mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var rdPatio = repDayData[repName] || {};
+  var rdEntryD = repDayEntryData[repName] || {};
+  var rd = {};
+  Object.keys(rdPatio).forEach(function(d){ rd[d] = (rd[d]||0) + rdPatio[d]; });
+  Object.keys(rdEntryD).forEach(function(d){ rd[d] = (rd[d]||0) + rdEntryD[d]; });
+
   var bestDayLbl = '—';
-  var rd = repDayData[repName];
-  if (rd && Object.keys(rd).length > 0) {
+  var dayKeys = Object.keys(rd).filter(function(d){ return rd[d] > 0; });
+  if (dayKeys.length) {
     var bestDate = null, bestCount = -1;
-    Object.keys(rd).forEach(function(d){ if (rd[d] > bestCount) { bestCount = rd[d]; bestDate = d; } });
+    dayKeys.forEach(function(d){ if (rd[d] > bestCount) { bestCount = rd[d]; bestDate = d; } });
     if (bestDate) {
-      var mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       var dp = bestDate.split('-');
       var lbl = dp.length > 2 ? mo[parseInt(dp[1])-1]+' '+parseInt(dp[2]) : bestDate;
       bestDayLbl = lbl + ' (' + bestCount + ')';
@@ -2502,13 +2604,16 @@ function showRepDetail(repName, mkt, sold, goal, prevBest) {
 
   var dayListEl = document.getElementById('rd-day-list');
   if (dayListEl) {
-    if (rd && Object.keys(rd).length > 0) {
-      var rdDays = Object.keys(rd).filter(function(d){ return rd[d] > 0; }).sort();
+    if (dayKeys.length > 0) {
       var dayHtml = '';
-      rdDays.forEach(function(d){
+      dayKeys.sort().forEach(function(d){
         var dp = d.split('-');
         var lbl = dp.length > 2 ? mo[parseInt(dp[1])-1]+' '+parseInt(dp[2]) : d;
-        dayHtml += '<div class="rec-day-row"><span>'+lbl+'</span><span class="rec-day-val">'+rd[d]+' patio door'+(rd[d]!==1?'s':'')+'</span></div>';
+        var p = rdPatio[d] || 0, e = rdEntryD[d] || 0;
+        var parts = [];
+        if (p > 0) parts.push(p + ' patio');
+        if (e > 0) parts.push(e + ' entry');
+        dayHtml += '<div class="rec-day-row"><span>'+lbl+'</span><span class="rec-day-val">'+parts.join(' · ')+'</span></div>';
       });
       dayListEl.innerHTML = dayHtml;
     } else {
@@ -2568,6 +2673,18 @@ function chevronClick(ev, chevEl) {
 }
 
 var _allCollapsed = false;
+
+// On phones the market list expands to ~555 rep rows, which makes the page
+// enormous to scroll. Start collapsed there so you land on 12 market headers
+// and open only the one you want. Desktop is unchanged.
+(function(){
+  try {
+    if (window.matchMedia && window.matchMedia('(max-width:700px)').matches) {
+      _allCollapsed = true;
+    }
+  } catch(e) {}
+})();
+
 function toggleCollapseAll() {
   _allCollapsed = !_allCollapsed;
   document.querySelectorAll('.mkt-card-header').forEach(function(h){
@@ -3478,6 +3595,12 @@ document.addEventListener('click', function(e) {
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', syncLogos);
   else syncLogos();
+})();
+
+// Button label must match the starting state (mobile starts collapsed).
+(function(){
+  var b = document.getElementById('collapse-all-btn');
+  if (b) b.textContent = _allCollapsed ? 'EXPAND ALL \u25BC' : 'COLLAPSE ALL \u25B2';
 })();
 </script>
 </body>
