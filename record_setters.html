@@ -1121,6 +1121,7 @@ body.dark-mode .stp-drop-active{color:#A8E05F!important;border-color:#6FA82F!imp
   <div class="goal-bar-label">
     <div class="goal-bar-nums" id="goal-bar-nums">$0 of $105M</div>
   </div>
+  <div id="goal-record-row"></div>
   <div id="goal-track">
     <div id="goal-fill"></div>
     <div id="goal-pct">BEAT THE RECORD</div>
@@ -1231,9 +1232,9 @@ var GOALS = {"0930 - Georgia": {"goal": 165, "reps": [{"name": "Erik Ciceraro", 
 
 // The all-time best single month of TOTAL doors (Patio + Entry): 3,829 in
 // May 2026. Kept separate from the goal so the bar can aim past the record.
-var COMPANY_RECORD = 3829;
-// Stretch target for the month. The record is marked on the bar itself.
-var COMPANY_GOAL = 4000;
+var COMPANY_RECORD = 3900;
+// Goal matches the record, so hitting the goal IS breaking the record.
+var COMPANY_GOAL = 3900;
 
 // Milestone ticks on the company progress bar. Spacing scales with the goal so
 // a larger target doesn't produce an unreadable wall of ticks.
@@ -1252,12 +1253,32 @@ function renderGoalMilestones() {
       labelHtml += '<div class="goal-tick-lbl" style="left:'+pct+'%">'+n.toLocaleString()+'</div>';
     }
   }
-  // The record gets its own marker so it's visible when the team passes it.
+  // The record gets its own marker line on the bar — but only when it sits
+  // meaningfully inside it. With the goal set equal to the record the marker
+  // would land on the bar's own right edge, which reads as a rendering glitch.
   var recPct = Math.min(100, (COMPANY_RECORD / COMPANY_GOAL) * 100);
-  tickHtml += '<div class="goal-tick goal-tick-record" style="left:'+recPct+'%"></div>';
-  labelHtml += '<div class="goal-tick-lbl goal-tick-lbl-record" style="left:'+recPct+'%">RECORD '+COMPANY_RECORD.toLocaleString()+'</div>';
+  var showRecordMarker = recPct < 99;
+  if (showRecordMarker) {
+    tickHtml += '<div class="goal-tick goal-tick-record" style="left:'+recPct+'%"></div>';
+  }
   container.innerHTML = tickHtml;
   labelContainer.innerHTML = labelHtml;
+
+  // Its label sits ABOVE the bar, in its own row. Below the bar it collided
+  // with the 3,000 milestone, since the record sits at ~96% of the scale.
+  var recRow = document.getElementById('goal-record-row');
+  if (recRow && !showRecordMarker) {
+    // Goal and record are the same number, so the bar's end IS the record.
+    recRow.innerHTML = '<div class="goal-record-lbl" style="right:0;left:auto;transform:none;text-align:right">'
+      + 'RECORD TO BEAT: ' + COMPANY_RECORD.toLocaleString() + '</div>';
+  } else if (recRow) {
+    // Anchor right when close to the end so the text runs inward, not off-screen.
+    var recAnchor = recPct > 82
+      ? 'right:' + (100 - recPct) + '%;left:auto;transform:none;text-align:right'
+      : 'left:' + recPct + '%';
+    recRow.innerHTML = '<div class="goal-record-lbl" style="'+recAnchor+'">'
+      + '\u25BC RECORD ' + COMPANY_RECORD.toLocaleString() + '</div>';
+  }
 }
 var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQOHO7f8rMT2IkprmU9FjIFNAPEaPmCxWL9xsrqbpiX_BtgLSp-Wyig0xP3MwYN9ve/exec';
 
@@ -3338,6 +3359,50 @@ async function cbSend(){ _trackChatActivity();
   .mkt-card-stat-lbl{font-size:8px !important;white-space:nowrap !important}
   .mkt-card-progress,.mkt-blended-progress{padding-left:14px !important;padding-right:14px !important}
   .mkt-prog-labels{font-size:9px !important}
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   MOBILE — PROGRESS BAR + ATTACH GAUGE
+   The milestone labels are 30px Bebas, which on a phone collide with each
+   other and with the record marker. The attach gauge's baseline label sits
+   at top:-16px and was overlapping the section title.
+   ══════════════════════════════════════════════════════════════════════ */
+@media (max-width:700px){
+  /* company goal bar */
+  #goal-milestone-labels{height:20px !important}
+  .goal-tick-lbl{font-size:15px !important;letter-spacing:0 !important}
+  
+  #goal-pct{font-size:11px !important;letter-spacing:1px !important;
+    text-shadow:0 0 5px rgba(242,250,234,0.95),0 0 3px rgba(242,250,234,0.95) !important}
+  .goal-bar-nums{font-size:11px !important}
+
+  /* attach gauge — give the baseline label its own room above the track */
+  #co-attach-wrap{padding:10px 14px 14px !important}
+  #co-attach-title{margin-bottom:20px !important}
+  #co-attach-gauge-row{gap:12px !important}
+  #co-attach-bignum{font-size:30px !important;min-width:52px !important}
+  #co-attach-baseline-lbl{font-size:8px !important;top:-15px !important}
+}
+@media (max-width:400px){
+  .goal-tick-lbl{font-size:13px !important}
+  #goal-pct{font-size:10px !important;letter-spacing:0 !important}
+  #co-attach-bignum{font-size:26px !important;min-width:44px !important}
+}
+
+/* ── RECORD MARKER LABEL — sits ABOVE the goal bar ──────────────────────
+   Previously rendered in the labels row beneath the bar, where it overlapped
+   the 3,000 milestone (the record sits at ~96% of the scale). Its own row
+   above the track keeps both readable. */
+#goal-record-row{position:relative;width:100%;height:16px;margin-bottom:3px}
+.goal-record-lbl{
+  position:absolute;bottom:0;transform:translateX(-50%);
+  font-family:'Orbitron',monospace;font-size:10px;font-weight:900;
+  letter-spacing:1px;white-space:nowrap;
+  color:#FF6B00;text-shadow:0 0 6px rgba(255,107,0,0.35);
+}
+@media (max-width:700px){
+  #goal-record-row{height:14px;margin-bottom:2px}
+  .goal-record-lbl{font-size:8px;letter-spacing:0.5px}
 }
 </style>
 
