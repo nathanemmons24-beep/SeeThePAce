@@ -3267,6 +3267,35 @@ async function cbSend(){ _trackChatActivity();
 .rs-filter-banner.rookie{background:rgba(140,198,63,0.1);border-bottom:1px solid rgba(140,198,63,0.2);color:#5C8F2A}
 .rs-filter-banner.consolidated{background:rgba(92,143,42,0.08);border-bottom:1px solid rgba(92,143,42,0.15);color:#14421C}
 .rs-filter-clear{background:#5C8F2A;border:none;border-radius:5px;color:#fff;font-size:9px;font-family:'Orbitron',monospace;padding:3px 8px;cursor:pointer;letter-spacing:1px}
+
+/* ══════════════════════════════════════════════════════════════════════
+   RESPONSIVE MARKET GRID — must live in the LAST style block.
+   #market-list is declared twice (once here, once earlier), both at the
+   same specificity, so the later declaration wins. Media queries placed
+   in the earlier block were being silently overridden, which is why the
+   cards stayed 4-across on phones.
+   ══════════════════════════════════════════════════════════════════════ */
+@media (max-width:1100px){
+  #market-list{grid-template-columns:repeat(2,1fr) !important}
+}
+@media (max-width:700px){
+  #market-list{grid-template-columns:1fr !important;gap:10px !important}
+  .mkt-card{padding:0 !important;margin-bottom:0 !important}
+
+  /* Header was wrapping into itself at ~90px wide. Full width fixes the
+     squeeze; these keep the two halves on one line and readable. */
+  .mkt-card-header{padding:11px 14px !important;align-items:center !important;gap:10px !important}
+  .mkt-card-header-left{min-width:0 !important;flex:1 1 auto !important}
+  .mkt-card-mktname{font-size:16px !important;white-space:nowrap !important;
+    overflow:hidden !important;text-overflow:ellipsis !important}
+  .mkt-card-subtitle{font-size:9px !important;white-space:nowrap !important;
+    overflow:hidden !important;text-overflow:ellipsis !important}
+  .mkt-card-header-right{flex:0 0 auto !important;gap:14px !important}
+  .mkt-card-stat-val{font-size:16px !important}
+  .mkt-card-stat-lbl{font-size:8px !important;white-space:nowrap !important}
+  .mkt-card-progress,.mkt-blended-progress{padding-left:14px !important;padding-right:14px !important}
+  .mkt-prog-labels{font-size:9px !important}
+}
 </style>
 
 <script>
