@@ -873,6 +873,15 @@ body.dark-mode #co-attach-bignum{color:#A8E05F!important}
 </style>
 </head>
 <body>
+<div id="rs-loader">
+  <img id="rs-loader-logo" class="rs-logo-clone" alt="Record Setter">
+  <div id="rs-loader-title">RECORD SETTERS</div>
+  <div id="rs-loader-track"><div id="rs-loader-fill"></div></div>
+  <div id="rs-loader-msg">Connecting…</div>
+  <div id="rs-loader-sub">August 2026</div>
+</div>
+
+
 <!-- ── SEE THE PACE NAV BAR ── -->
 <style>
 /* ── STP NAV ── */
@@ -1418,11 +1427,44 @@ function showBadge(rep, mkt, sold, goal) {
 })();
 
 // ── FETCH ────────────────────────────────────────────────────────────────────
+
+// ── LOADING SCREEN CONTROL ──────────────────────────────────────────────────
+// Hidden as soon as the first fetch resolves (success OR failure), with a
+// hard timeout so a dead feed can never leave the board stuck behind it.
+var _rsLoaderDone = false;
+var _rsLoaderMsgs = ['Connecting\u2026','Pulling today\u2019s deals\u2026',
+                     'Counting doors\u2026','Ranking the leaders\u2026','Almost there\u2026'];
+var _rsLoaderStep = 0;
+var _rsLoaderTimer = setInterval(function(){
+  var el = document.getElementById('rs-loader-msg');
+  if (!el || _rsLoaderDone) return;
+  _rsLoaderStep = (_rsLoaderStep + 1) % _rsLoaderMsgs.length;
+  el.textContent = _rsLoaderMsgs[_rsLoaderStep];
+}, 900);
+
+function hideLoader(reason){
+  if (_rsLoaderDone) return;
+  _rsLoaderDone = true;
+  clearInterval(_rsLoaderTimer);
+  var el = document.getElementById('rs-loader');
+  if (el) {
+    var msg = document.getElementById('rs-loader-msg');
+    if (msg) msg.textContent = reason || 'Ready';
+    // brief beat so the final message registers rather than flashing past
+    setTimeout(function(){ el.classList.add('done'); }, 220);
+    setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 900);
+  }
+  console.log('[loader] hidden:', reason || 'ready');
+}
+
+// Safety net: never trap the board behind the curtain.
+setTimeout(function(){ hideLoader('Showing saved data'); }, 8000);
+
 function fetchData(){
   fetch(APPS_SCRIPT_URL + '?tab=Dashboard')
     .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
-    .then(parseDoors)
-    .catch(function(e){ console.log('Fetch error',e); });
+    .then(function(csv){ parseDoors(csv); hideLoader('Ready'); })
+    .catch(function(e){ console.log('Fetch error',e); hideLoader('Offline \u2014 showing saved data'); });
 }
 
 // ── AUDIT: flag reps baked into GOALS who show no sales activity anywhere
@@ -3365,6 +3407,70 @@ async function cbSend(){ _trackChatActivity();
 @media (max-width:700px){
   #goal-record-row{height:14px;margin-bottom:2px}
   .goal-record-lbl{font-size:8px;letter-spacing:0.5px}
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   LOADING SCREEN
+   The board renders immediately from the baked-in GOALS with every DC at
+   zero, then re-renders once the live feed lands. Without a cover you see
+   a flash of "0 doors sold" before the real numbers arrive. This holds the
+   curtain until the first fetch resolves.
+   ══════════════════════════════════════════════════════════════════════ */
+#rs-loader{
+  position:fixed;inset:0;z-index:999999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  background:radial-gradient(circle at 50% 40%,#123018 0%,#08160C 60%,#050D07 100%);
+  transition:opacity .55s ease, visibility .55s ease;
+}
+#rs-loader.done{opacity:0;visibility:hidden;pointer-events:none}
+
+#rs-loader-logo{
+  width:150px;height:auto;border-radius:18px;
+  background:radial-gradient(circle at 50% 38%,#143A1D 0%,#071409 78%);
+  border:1px solid rgba(140,198,63,.45);padding:10px 16px;
+  animation:rsPulse 1.9s ease-in-out infinite;
+}
+@keyframes rsPulse{
+  0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(140,198,63,.35)}
+  50%    {transform:scale(1.045);box-shadow:0 0 34px 6px rgba(140,198,63,.22)}
+}
+
+#rs-loader-title{
+  font-family:'Orbitron',monospace;font-size:13px;letter-spacing:5px;font-weight:900;
+  background:linear-gradient(90deg,#5C8F2A,#A8E05F,#5C8F2A);background-size:200% auto;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:rsShine 2.6s linear infinite;
+}
+@keyframes rsShine{to{background-position:200% center}}
+
+#rs-loader-track{
+  width:220px;height:4px;border-radius:4px;overflow:hidden;
+  background:rgba(140,198,63,.14);
+}
+#rs-loader-fill{
+  height:100%;width:35%;border-radius:4px;
+  background:linear-gradient(90deg,transparent,#8CC63F,#A8E05F,transparent);
+  animation:rsSweep 1.25s ease-in-out infinite;
+}
+@keyframes rsSweep{
+  0%  {transform:translateX(-100%)}
+  100%{transform:translateX(320%)}
+}
+
+#rs-loader-msg{
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;
+  color:#7FA05C;min-height:14px;text-transform:uppercase;
+}
+#rs-loader-sub{
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:#4A6B34;letter-spacing:1px;
+}
+@media (max-width:700px){
+  #rs-loader-logo{width:118px;padding:8px 12px}
+  #rs-loader-title{font-size:11px;letter-spacing:3px}
+  #rs-loader-track{width:180px}
+}
+@media (prefers-reduced-motion:reduce){
+  #rs-loader-logo,#rs-loader-title,#rs-loader-fill{animation:none}
 }
 </style>
 
