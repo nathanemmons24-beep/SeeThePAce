@@ -2098,10 +2098,11 @@ function render(){
   window._effectiveAttach = effectiveAttach;   // reused by the market detail popup
   var totalDoors=0, totalGoal=0, chasers=0, breakers=0, makers=0;
   var topAttach=null, topAttachRate=0;
+  var rosterDoors=0;
   mkts.forEach(function(mkt){
     GOALS[mkt].reps.forEach(function(rep){
       rep.sold=effectiveLive[rep.name]||0;
-      totalDoors+=rep.sold;
+      rosterDoors+=rep.sold;
       totalGoal+=rep.goal;
       var pct=rep.goal>0?rep.sold/rep.goal:0;
       if(pct>=0.5&&pct<1) chasers++;
@@ -2119,6 +2120,34 @@ function render(){
       if(rep.sold>=rep.goal && ar>0 && ar>=topAttachRate-0.01) makers++;
     });
   });
+
+
+  // The roster total only counts DCs who exist in GOALS. Anyone selling under a
+  // name the board doesn't know contributes nothing to it, while the day chart
+  // reads straight from the feed and counts everyone — which is why the header
+  // could read 100 while the chart read 103. The headline number now uses the
+  // FEED total so every figure on the page agrees, and the unattributed
+  // remainder is reported so the roster gap can be closed.
+  var feedDoors = 0, orphanReps = [];
+  var rosterNames = {};
+  Object.keys(GOALS).forEach(function(m){
+    GOALS[m].reps.forEach(function(r){ rosterNames[r.name] = 1; });
+  });
+  Object.keys(effectiveLive).forEach(function(n){
+    var v = effectiveLive[n] || 0;
+    feedDoors += v;
+    if (!rosterNames[n] && v > 0) orphanReps.push({ name: n, doors: v });
+  });
+  // When a market filter is on, the feed total spans every market, so stay
+  // with the scoped roster figure instead.
+  totalDoors = filterMkt ? rosterDoors : feedDoors;
+  window._orphanReps = orphanReps;
+  if (!filterMkt && orphanReps.length) {
+    orphanReps.sort(function(a,b){ return b.doors - a.doors; });
+    console.warn('[roster] ' + (feedDoors - rosterDoors) + ' doors from ' +
+      orphanReps.length + ' rep(s) with no tracker: ' +
+      orphanReps.map(function(o){ return o.name + ' (' + o.doors + ')'; }).join(', '));
+  }
 
   // Header stats
   document.getElementById('hs-doors').textContent=totalDoors.toLocaleString();
