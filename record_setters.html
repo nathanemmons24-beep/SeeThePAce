@@ -3,6 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- HOME SCREEN ICON — iOS + Android. Files must sit next to this HTML page.
+     Referenced as real files rather than data URIs: iOS has a long history of
+     silently ignoring a data-URI apple-touch-icon on "Add to Home Screen",
+     which is what produces a plain grey monogram instead of the real icon. -->
+<link rel="apple-touch-icon" href="apple-touch-icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-180.png">
+<link rel="apple-touch-icon" sizes="167x167" href="apple-touch-icon-167.png">
+<link rel="apple-touch-icon" sizes="152x152" href="apple-touch-icon-152.png">
+<link rel="apple-touch-icon" sizes="120x120" href="apple-touch-icon-120.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="manifest" href="manifest-recordsetters.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Record Setters">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#07140B">
 <title>RECORD SETTERS — August 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
@@ -1503,7 +1521,8 @@ function hideLoader(reason){
 setTimeout(function(){ hideLoader('Showing saved data'); }, 8000);
 
 function fetchData(){
-  fetch(APPS_SCRIPT_URL + '?tab=Dashboard')
+  fetch(APPS_SCRIPT_URL + '?tab=Dashboard&month=' + CONTEST_MONTH)  // server-side
+    // filter: only the contest month is scored, so don't ship the rest
     .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
     .then(function(csv){ parseDoors(csv); hideLoader('Ready'); })
     .catch(function(e){ console.log('Fetch error',e); hideLoader('Offline \u2014 showing saved data'); });
