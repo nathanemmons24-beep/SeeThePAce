@@ -1,0 +1,13 @@
+{
+  "name": "Record Setters",
+  "short_name": "Record Setters",
+  "description": "August 2026 Record Setters contest board",
+  "start_url": "board.html",
+  "display": "standalone",
+  "background_color": "#07140B",
+  "theme_color": "#07140B",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
