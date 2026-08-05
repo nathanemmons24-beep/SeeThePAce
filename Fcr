@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>2nd Look Scoreboard | See The Pace</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230A0118'/%3E%3Cpolygon points='58,10 25,58 48,58 42,90 75,42 52,42 60,10' fill='%2300D4FF'/%3E%3C/svg%3E"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#05070A;color:#E7EBF0;font-family:"Exo 2",sans-serif;min-height:100vh;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);background-size:60px 60px}
+  @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+  @keyframes stp-fadein{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes stp-ring{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+  @keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(255,70,70,0.6)}50%{opacity:.55;box-shadow:0 0 0 5px rgba(255,70,70,0)}}
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
+
+  /* ── LOADING / PASSWORD SPLASH (separate from main site) ── */
+  #loading-overlay{position:fixed;inset:0;z-index:99999;background:#020B18;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;transition:opacity 0.6s ease}
+  #loading-overlay.fade-out{opacity:0;pointer-events:none}
+  .stp-title{font-family:"Orbitron",monospace;font-weight:900;font-size:clamp(26px,5.5vw,44px);letter-spacing:6px;background:linear-gradient(135deg,#00D4FF,#00FF88,#FFD700);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s linear infinite}
+  .stp-ring{width:56px;height:56px;border:3px solid rgba(0,212,255,0.15);border-top:3px solid #00D4FF;border-radius:50%;animation:stp-ring 1s linear infinite;display:none}
+  .stp-dots::after{content:"";animation:stp-dots 1.5s steps(1) infinite}
+  @keyframes stp-dots{0%{content:""}33%{content:"."}66%{content:".."}100%{content:"..."}}
+  #stp-loading-text{display:none;font-family:Orbitron,monospace;font-size:13px;letter-spacing:3px;color:#475569}
+  #stp-enter-btn{font-family:Orbitron,monospace;font-size:17px;font-weight:700;letter-spacing:6px;color:#00D4FF;background:transparent;border:1.5px solid rgba(0,212,255,0.5);border-radius:40px;padding:14px 48px;cursor:pointer;transition:all 0.3s;animation:stp-fadein 0.8s ease both;margin-top:8px}
+  #stp-enter-btn:hover{background:rgba(0,212,255,0.1);box-shadow:0 0 20px rgba(0,212,255,0.3)}
+  #stp-pw-input{background:rgba(255,255,255,0.04);border:1px solid rgba(0,212,255,0.25);border-radius:10px;padding:12px 24px;color:#fff;font-family:Orbitron,monospace;font-size:16px;letter-spacing:4px;width:220px;text-align:center;outline:none}
+  #stp-pw-err{color:#FF4444;font-family:Orbitron,monospace;font-size:11px;letter-spacing:2px;display:none}
+  #stp-pw-submit{font-family:Orbitron,monospace;font-size:15px;font-weight:700;letter-spacing:4px;color:#00D4FF;background:transparent;border:1.5px solid rgba(0,212,255,0.5);border-radius:40px;padding:10px 36px;cursor:pointer;transition:all 0.3s}
+  #stp-pw-submit:hover{background:rgba(0,212,255,0.1)}
+
+  /* ── NAV (SeeThePace branding, same look as main site) ── */
+  #stp-nav{position:fixed;top:0;left:0;right:0;z-index:9999;display:none;align-items:center;justify-content:space-between;padding:0 24px;height:48px;background:linear-gradient(135deg,#040810 0%,#080E1A 50%,#040810 100%);border-bottom:2px solid rgba(0,200,255,0.25);box-shadow:0 2px 20px rgba(0,200,255,0.1);font-family:'Orbitron',monospace}
+  #stp-nav.stp-nav-visible{display:flex}
+  #stp-brand{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0;cursor:pointer}
+  #stp-bolt{font-size:22px;filter:drop-shadow(0 0 8px #00C8FF)}
+  #stp-wordmark{font-family:'Orbitron',monospace;font-weight:900;font-size:15px;letter-spacing:3px;background:linear-gradient(90deg,#00C8FF,#E0F8FF,#00C8FF);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  #stp-sub-wordmark{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.35);border-left:1px solid rgba(255,255,255,0.15);padding-left:10px;margin-left:2px}
+  #stp-links{display:flex;align-items:center;gap:4px}
+  .stp-link{color:rgba(255,255,255,0.65);font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:1.5px;text-decoration:none;padding:6px 14px;border-radius:8px;border:none;background:transparent;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+  .stp-link:hover{color:#00C8FF;background:rgba(0,200,255,0.08)}
+  .stp-dropdown{position:relative}
+  .stp-drop-menu{display:none;position:absolute;top:calc(100% + 2px);right:0;background:#06091A;border:1px solid rgba(0,200,255,0.2);border-radius:12px;padding:8px;min-width:210px;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:9600}
+  .stp-drop-menu.open{display:block}
+  .stp-drop-label{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;color:rgba(0,200,255,0.5);padding:4px 10px 2px;text-transform:uppercase}
+  .stp-drop-divider{height:1px;background:rgba(0,200,255,0.1);margin:6px 4px}
+  .stp-drop-item{display:block;padding:8px 12px;border-radius:8px;font-size:14px;color:rgba(255,255,255,0.75);text-decoration:none;cursor:pointer;transition:all 0.12s;font-family:'Inter',sans-serif;font-weight:500;white-space:nowrap;background:transparent;border:none;width:100%;text-align:left}
+  .stp-drop-item:hover{background:rgba(0,200,255,0.08);color:#00C8FF}
+
+  /* ── HISTORY MENU ── */
+  .hist-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:all 0.12s;background:transparent;border:none;width:100%;text-align:left;font-family:'Inter',sans-serif}
+  .hist-item:hover{background:rgba(0,200,255,0.08)}
+  .hist-item.active{background:rgba(0,200,255,0.1);border-left:2px solid #00C8FF;padding-left:8px}
+  .hist-item-check{width:16px;flex-shrink:0;color:#00C8FF;font-size:13px}
+  .hist-item-body{flex:1;min-width:0}
+  .hist-item-date{font-size:14px;color:#E2E8F0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hist-item-meta{font-size:11.5px;color:rgba(255,255,255,0.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+  .hist-empty{padding:10px 10px;font-size:13.5px;color:rgba(255,255,255,0.35);font-style:italic}
+
+  /* ── LIGHT MODE — full theme, including the arena board itself ── */
+  body.light-mode{background:#EEF1F5!important}
+  body.light-mode #stp-nav{background:linear-gradient(135deg,#F8FAFC,#EFF6FF);border-color:rgba(0,200,255,0.3)}
+  body.light-mode .stp-link{color:rgba(0,0,0,0.6)}
+  body.light-mode .stp-drop-menu{background:#fff;border-color:rgba(0,0,0,0.12)}
+  body.light-mode .stp-drop-item{color:#1E293B}
+  body.light-mode .hist-item:hover{background:rgba(0,150,220,0.08)}
+  body.light-mode .hist-item-date{color:#0F172A}
+  body.light-mode .hist-item-meta{color:rgba(15,23,42,0.45)}
+  body.light-mode .hist-empty{color:rgba(15,23,42,0.35)}
+
+  body.light-mode #sb-empty{border-color:rgba(0,0,0,0.15);background:rgba(0,0,0,0.02)}
+  body.light-mode #sb-empty h2{color:#0F172A}
+  body.light-mode #sb-empty p{color:#475569}
+  body.light-mode .sb-upload-btn{background:#0F172A;border-color:#0F172A;color:#fff}
+  body.light-mode #sb-msg-line1{color:#B45309}
+  body.light-mode #sb-msg-line2{color:#334155}
+  body.light-mode #sb-file-meta{color:#0F172A}
+
+  body.light-mode #arena-board{
+    background:radial-gradient(circle at 15% 0%,rgba(0,0,0,0.03),transparent 45%),linear-gradient(150deg,#FFFFFF 0%,#F3F5F8 45%,#ECEFF3 100%);
+    border-color:rgba(0,0,0,0.1);box-shadow:0 30px 60px rgba(15,23,42,0.12), inset 0 0 60px rgba(0,0,0,0.01);
+  }
+  body.light-mode .hud-corner{border-color:rgba(15,23,42,0.28)!important}
+  body.light-mode #arena-topbar{border-bottom-color:rgba(0,0,0,0.08)}
+  body.light-mode .arena-pill{background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.12);color:#64748B}
+  body.light-mode .arena-pill b{color:#0F172A}
+  body.light-mode #arena-title{color:#0F172A}
+  body.light-mode #arena-subtitle{color:#94A3B8}
+  body.light-mode .hud-panel{background:rgba(0,0,0,0.02);border-color:rgba(0,0,0,0.09)}
+  body.light-mode .hud-panel-head{border-bottom-color:rgba(0,0,0,0.07)}
+  body.light-mode .hud-panel-title{color:#0F172A}
+  body.light-mode .hud-panel-tag{color:#94A3B8}
+  body.light-mode .gauge::before{background:#F3F5F8}
+  body.light-mode .gauge-num{color:#0F172A}
+  body.light-mode .gauge-lbl{color:#64748B}
+  body.light-mode .metric-top{color:#64748B}
+  body.light-mode .metric-top b{color:#0F172A}
+  body.light-mode .metric-bar{background:rgba(0,0,0,0.08)}
+  body.light-mode .metric-bar-fill{background:linear-gradient(90deg,#475569,#0F172A)}
+  body.light-mode .core-stat-lbl{color:#94A3B8}
+  body.light-mode .core-stat-val{color:#0F172A}
+  body.light-mode .minibars i{background:linear-gradient(180deg,#0F172A,#475569)}
+  body.light-mode .momentum-svg polyline{stroke:#0F172A!important}
+  body.light-mode .champion-ring{border-color:rgba(0,0,0,0.16)}
+  body.light-mode .champion-ring::before{border-color:rgba(0,0,0,0.08)}
+  body.light-mode .champion-label,body.light-mode .champion-sub{color:#94A3B8}
+  body.light-mode .champion-name,body.light-mode .champion-total{color:#0F172A}
+  body.light-mode .podium-tab{background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.12);color:#0F172A}
+  body.light-mode .tier-row{border-bottom-color:rgba(0,0,0,0.06)}
+  body.light-mode .tier-name{color:#94A3B8}
+  body.light-mode .tier-analyst,body.light-mode .tier-amount{color:#0F172A}
+  body.light-mode .tier-dots i{background:rgba(0,0,0,0.1)}
+  body.light-mode .tier-dots i.on{background:#0F172A}
+  body.light-mode #panel-rewards .hud-panel-foot{border-top-color:rgba(0,0,0,0.07)}
+  body.light-mode #panel-rewards .hud-panel-foot .fv{color:#0F172A}
+  body.light-mode #panel-rewards .hud-panel-foot .fl{color:#94A3B8}
+  body.light-mode .snap-row{border-bottom-color:rgba(0,0,0,0.05)}
+  body.light-mode .snap-rank{background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.14);color:#0F172A}
+  body.light-mode .snap-name,body.light-mode .snap-amount{color:#0F172A}
+  body.light-mode .snap-sub{color:#94A3B8}
+  body.light-mode .snap-bar{background:rgba(0,0,0,0.08)}
+  body.light-mode .snap-bar-fill{background:linear-gradient(90deg,#475569,#0F172A)}
+  body.light-mode .lb-table thead th{color:#94A3B8}
+  body.light-mode .lb-table tbody td{color:#334155;border-bottom-color:rgba(0,0,0,0.05)}
+  body.light-mode .lb-table td.num,body.light-mode .lb-name{color:#0F172A}
+  body.light-mode .lb-rank{color:#94A3B8}
+  body.light-mode .lb-power-bar{background:rgba(0,0,0,0.08)}
+  body.light-mode .lb-power-fill{background:linear-gradient(90deg,#475569,#0F172A)}
+  body.light-mode .lb-state{background:rgba(0,0,0,0.06);color:#475569}
+  body.light-mode .lb-state.elite{background:rgba(180,83,9,0.12);color:#B45309}
+  body.light-mode .lb-state.hold{background:rgba(0,0,0,0.03);color:#94A3B8}
+  body.light-mode .log-row{border-bottom-color:rgba(0,0,0,0.05)}
+  body.light-mode .log-time{color:#94A3B8}
+  body.light-mode .log-label{color:#334155}
+  body.light-mode .log-val{color:#0F172A}
+  body.light-mode #log-total{border-top-color:rgba(0,0,0,0.08)}
+  body.light-mode #log-total .lt-lbl{color:#94A3B8}
+  body.light-mode #log-total .lt-val{color:#0F172A}
+  body.light-mode #arena-footer{border-top-color:rgba(0,0,0,0.08)}
+  body.light-mode .arena-foot-item{color:#94A3B8}
+  body.light-mode .arena-foot-item b{color:#334155}
+
+  /* ============================================================
+     ARENA RANK BOARD — main scoreboard shell
+     ============================================================ */
+  #app{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:24px 16px 60px;padding-top:86px;display:none}
+  #app.visible{display:block}
+
+  #sb-empty{max-width:520px;margin:100px auto 0;text-align:center;padding:40px 24px;border:2px dashed rgba(255,255,255,0.18);border-radius:18px;background:rgba(255,255,255,0.02)}
+  #sb-empty.dragover{border-color:#00D4FF;background:rgba(0,212,255,0.08)}
+  #sb-empty h2{font-family:Orbitron,monospace;font-size:19px;letter-spacing:2px;color:#fff;margin:0 0 10px}
+  #sb-empty p{font-size:15px;color:#8B96A5;margin:0 0 20px;line-height:1.6}
+  .sb-upload-btn{font-family:Orbitron,monospace;font-size:14px;font-weight:700;letter-spacing:2px;color:#0b0d10;background:#fff;border:1.5px solid #fff;border-radius:40px;padding:12px 32px;cursor:pointer;transition:all 0.2s}
+  .sb-upload-btn:hover{opacity:.85}
+  #sb-file-error{color:#FF6B6B;font-size:14px;margin-top:14px;display:none}
+
+  #arena-board{position:relative;background:
+      radial-gradient(circle at 15% 0%,rgba(255,255,255,0.05),transparent 45%),
+      linear-gradient(150deg,#14171C 0%,#0B0D11 45%,#0A0C10 100%);
+    border:1px solid rgba(255,255,255,0.12);border-radius:26px;padding:26px 26px 18px;
+    box-shadow:0 30px 60px rgba(0,0,0,0.55), inset 0 0 60px rgba(255,255,255,0.015);
+  }
+  .hud-corner{position:absolute;width:16px;height:16px;pointer-events:none;z-index:2}
+  .hud-corner.tl{top:8px;left:8px;border-top:2px solid rgba(255,255,255,0.32);border-left:2px solid rgba(255,255,255,0.32)}
+  .hud-corner.tr{top:8px;right:8px;border-top:2px solid rgba(255,255,255,0.32);border-right:2px solid rgba(255,255,255,0.32)}
+  .hud-corner.bl{bottom:8px;left:8px;border-bottom:2px solid rgba(255,255,255,0.32);border-left:2px solid rgba(255,255,255,0.32)}
+  .hud-corner.br{bottom:8px;right:8px;border-bottom:2px solid rgba(255,255,255,0.32);border-right:2px solid rgba(255,255,255,0.32)}
+  .hud-host{position:relative}
+
+  /* Top bar */
+  #arena-topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 4px 20px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:20px;flex-wrap:wrap}
+  .arena-pill-group{display:flex;gap:8px;flex-wrap:wrap}
+  .arena-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.14);border-radius:20px;padding:7px 16px;font-family:Orbitron,monospace;font-size:11.5px;letter-spacing:1.5px;color:#9AA5B1;white-space:nowrap}
+  .arena-pill b{color:#fff;font-weight:900;margin-left:2px}
+  .arena-live-dot{width:6px;height:6px;border-radius:50%;background:#FF4646;animation:livePulse 1.4s infinite}
+  .arena-title-wrap{text-align:center;flex:1;min-width:240px}
+  #arena-title{font-family:Orbitron,monospace;font-weight:900;font-size:clamp(24px,4vw,34px);letter-spacing:5px;color:#fff;margin:0}
+  #arena-subtitle{font-family:"Exo 2",sans-serif;font-size:12px;letter-spacing:3px;color:#6B7684;text-transform:uppercase;margin-top:4px}
+
+  /* Messages banner */
+  #sb-messages{max-width:900px;margin:0 auto 20px;text-align:center}
+  #sb-msg-line1,#sb-msg-line2{font-size:17px;line-height:1.55;margin:4px 0;color:#C6CDD6}
+  #sb-msg-line1{font-weight:700;color:#FFD166}
+  #sb-file-meta{text-align:center;font-family:Orbitron,monospace;font-weight:900;font-size:clamp(30px,5vw,46px);letter-spacing:2px;color:#fff;margin:0 auto 22px;text-transform:uppercase;line-height:1.1}
+
+  #ytd-banner{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;max-width:900px;margin:0 auto 22px}
+  .ytd-stat{flex:1;min-width:220px;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:14px 20px;text-align:center}
+  .ytd-stat-label{font-family:Orbitron,monospace;font-size:10.5px;letter-spacing:2px;color:#8B96A5;text-transform:uppercase;margin-bottom:6px}
+  .ytd-stat-value{font-family:Orbitron,monospace;font-size:28px;font-weight:900;color:#fff;line-height:1}
+  .ytd-stat-sub{font-family:Orbitron,monospace;font-size:9px;letter-spacing:1px;color:#5B6472;margin-top:6px;text-transform:uppercase}
+  body.light-mode .ytd-stat{background:rgba(0,0,0,0.02);border-color:rgba(0,0,0,0.1)}
+  body.light-mode .ytd-stat-label,body.light-mode .ytd-stat-sub{color:#94A3B8}
+  body.light-mode .ytd-stat-value{color:#0F172A}
+
+  /* Panel grid */
+  .arena-row{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:18px;margin-bottom:18px}
+  @media (max-width:980px){.arena-row{grid-template-columns:1fr}}
+
+  .hud-panel{position:relative;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:18px}
+  .hud-panel-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.07)}
+  .hud-panel-title{font-family:Orbitron,monospace;font-weight:900;font-size:14.5px;letter-spacing:2px;color:#fff}
+  .hud-panel-tag{font-family:Orbitron,monospace;font-size:10px;letter-spacing:2px;color:#5B6472;text-transform:uppercase}
+
+  /* ── Team metrics (left, top row) ── */
+  .gauge-wrap{display:flex;justify-content:center;margin:6px 0 16px}
+  .gauge{width:128px;height:128px;border-radius:50%;position:relative;background:conic-gradient(#fff calc(var(--pct)*3.6deg), rgba(255,255,255,0.08) 0)}
+  .gauge::before{content:"";position:absolute;inset:9px;background:#101318;border-radius:50%}
+  .gauge-val{position:absolute;inset:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .gauge-num{font-family:Orbitron,monospace;font-weight:900;font-size:31px;color:#fff;line-height:1}
+  .gauge-lbl{font-family:Orbitron,monospace;font-size:10px;letter-spacing:1.5px;color:#7A8492;margin-top:3px}
+  .metric-row{margin-bottom:11px}
+  .metric-row:last-child{margin-bottom:0}
+  .metric-top{display:flex;justify-content:space-between;font-family:Orbitron,monospace;font-size:11px;letter-spacing:1px;color:#8B96A5;margin-bottom:5px}
+  .metric-top b{color:#fff;font-size:13px}
+  .metric-bar{height:6px;border-radius:4px;background:rgba(255,255,255,0.08);overflow:hidden}
+  .metric-bar-fill{height:100%;background:linear-gradient(90deg,#9AA5B1,#fff);border-radius:4px}
+
+  /* ── Top performer core (center, top row) ── */
+  #panel-core .hud-panel-head{justify-content:center;gap:24px}
+  .core-stat{text-align:center}
+  .core-stat-lbl{font-family:Orbitron,monospace;font-size:10px;letter-spacing:2px;color:#5B6472}
+  .core-stat-val{font-family:Orbitron,monospace;font-size:15px;font-weight:900;color:#fff;margin-top:2px}
+  .core-mid{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .core-side{width:78px;text-align:center;flex-shrink:0}
+  .core-side .core-stat-lbl{margin-bottom:6px}
+  .core-side .core-stat-val{font-size:23px}
+  .minibars{display:flex;align-items:flex-end;gap:3px;height:36px;justify-content:center;margin-top:6px}
+  .minibars i{display:block;width:5px;background:linear-gradient(180deg,#fff,#9AA5B1);border-radius:2px}
+  .momentum-svg{margin-top:4px}
+  .champion-ring{width:190px;height:190px;border-radius:50%;border:2px dashed rgba(255,255,255,0.18);display:flex;align-items:center;justify-content:center;margin:6px auto 10px;position:relative}
+  .champion-ring::before{content:"";position:absolute;inset:14px;border-radius:50%;border:1px solid rgba(255,255,255,0.1)}
+  .champion-inner{text-align:center;position:relative;z-index:1;padding:0 10px}
+  .champion-trophy{font-size:28px;filter:drop-shadow(0 0 10px rgba(255,215,0,0.35))}
+  .champion-label{font-family:Orbitron,monospace;font-size:10px;letter-spacing:3px;color:#8B96A5;margin-top:2px}
+  .champion-name{font-family:Orbitron,monospace;font-size:14.5px;font-weight:900;color:#fff;letter-spacing:0.5px;margin-top:8px;text-align:center;max-width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .champion-total{font-family:Orbitron,monospace;font-size:26px;font-weight:900;color:#fff;text-align:center;margin-top:3px;line-height:1}
+  .champion-sub{font-family:Orbitron,monospace;font-size:9.5px;letter-spacing:2px;color:#5B6472;text-align:center;margin-top:3px}
+  .podium-tabs{display:flex;justify-content:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .podium-tab{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14);border-radius:20px;padding:7px 16px;font-family:Orbitron,monospace;font-size:12px;font-weight:700}
+  .podium-tab .rank-num{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#0b0d10}
+  .rank-1 .rank-num{background:#FFD166}
+  .rank-2 .rank-num{background:#C9D2DC}
+  .rank-3 .rank-num{background:#D89A5C}
+  .podium-tab.rank-1{border-color:rgba(255,209,102,0.5)}
+
+  /* ── Reward tiers (right, top row) ── */
+  .tier-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+  .tier-row:last-child{border-bottom:none}
+  .tier-trophy{font-size:22px;flex-shrink:0}
+  .tier-info{flex:1;min-width:0}
+  .tier-name{font-family:Orbitron,monospace;font-size:10px;letter-spacing:1.5px;color:#7A8492;text-transform:uppercase}
+  .tier-analyst{font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tier-amount{font-family:Orbitron,monospace;font-size:15px;font-weight:900;color:#fff;text-align:right;flex-shrink:0}
+  .tier-dots{display:flex;gap:2px;margin-top:5px}
+  .tier-dots i{width:9px;height:5px;border-radius:1px;background:rgba(255,255,255,0.12)}
+  .tier-dots i.on{background:#fff}
+  #panel-rewards .hud-panel-foot{display:flex;justify-content:space-around;padding-top:12px;margin-top:6px;border-top:1px solid rgba(255,255,255,0.07)}
+  #panel-rewards .hud-panel-foot div{text-align:center;font-family:Orbitron,monospace}
+  #panel-rewards .hud-panel-foot .fv{font-size:17px;font-weight:900;color:#fff}
+  #panel-rewards .hud-panel-foot .fl{font-size:9.5px;letter-spacing:1.5px;color:#5B6472;margin-top:2px}
+
+  /* ── Bottom row: Top Five / Leaderboard / Event Log ── */
+  .snap-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+  .snap-row:last-child{border-bottom:none}
+  .snap-rank{width:29px;height:29px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-family:Orbitron,monospace;font-size:13px;font-weight:900;color:#fff;flex-shrink:0}
+  .snap-rank.gold{background:rgba(255,209,102,0.18);border-color:#FFD166;color:#FFD166}
+  .snap-body{flex:1;min-width:0}
+  .snap-name{font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .snap-sub{font-family:Orbitron,monospace;font-size:10.5px;letter-spacing:1px;color:#5B6472;margin-bottom:4px}
+  .snap-bar{height:5px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden}
+  .snap-bar-fill{height:100%;background:linear-gradient(90deg,#9AA5B1,#fff)}
+  .snap-amount{font-family:Orbitron,monospace;font-size:15px;font-weight:900;color:#fff;text-align:right;flex-shrink:0;white-space:nowrap;padding-left:6px}
+
+  .lb-table{width:100%;border-collapse:collapse;font-size:14.5px}
+  .lb-table thead th{font-family:Orbitron,monospace;font-size:10.5px;letter-spacing:1.5px;color:#5B6472;text-transform:uppercase;text-align:left;padding:0 8px 8px;font-weight:700}
+  .lb-table thead th.num{text-align:right}
+  .lb-table tbody td{padding:8px 8px;border-bottom:1px solid rgba(255,255,255,0.05);color:#D7DCE2;vertical-align:middle}
+  .lb-table tbody tr:last-child td{border-bottom:none}
+  .lb-table td.num{text-align:right;font-family:Orbitron,monospace;font-weight:700;color:#fff}
+  .lb-rank{font-family:Orbitron,monospace;font-weight:900;color:#8B96A5}
+  .lb-rank.gold{color:#FFD166}
+  .lb-name{font-weight:700;color:#fff}
+  .lb-power{width:90px}
+  .lb-power-bar{height:5px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden}
+  .lb-power-fill{height:100%;background:linear-gradient(90deg,#9AA5B1,#fff)}
+  .lb-state{font-family:Orbitron,monospace;font-size:10px;letter-spacing:1px;font-weight:700;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,0.08);color:#C6CDD6;white-space:nowrap}
+  .lb-state.elite{background:rgba(255,209,102,0.16);color:#FFD166}
+  .lb-state.hold{background:rgba(255,255,255,0.04);color:#5B6472}
+  #lb-legend{margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;line-height:1.9;color:#5B6472}
+  body.light-mode #lb-legend{border-top-color:rgba(0,0,0,0.07);color:#94A3B8}
+
+  .log-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-family:Orbitron,monospace}
+  .log-row:last-child{border-bottom:none}
+  .log-time{font-size:11px;color:#5B6472;width:40px;flex-shrink:0}
+  .log-label{flex:1;font-size:14px;font-weight:700;color:#D7DCE2;font-family:"Exo 2",sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .log-val{font-size:14px;font-weight:900;color:#fff;flex-shrink:0}
+  #log-total{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);font-family:Orbitron,monospace}
+  #log-total .lt-lbl{font-size:11px;letter-spacing:1.5px;color:#5B6472}
+  #log-total .lt-val{font-size:19px;font-weight:900;color:#fff}
+
+  /* ── Footer strip ── */
+  #arena-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 4px 4px;margin-top:6px;border-top:1px solid rgba(255,255,255,0.08)}
+  .arena-foot-item{font-family:Orbitron,monospace;font-size:10.5px;letter-spacing:1.5px;color:#5B6472;white-space:nowrap}
+  .arena-foot-item b{color:#C6CDD6;font-weight:700}
+
+  #sb-empty-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+  /* ── ANALYST HISTORY MODAL ── */
+  .click-analyst{cursor:pointer;transition:color 0.12s}
+  .click-analyst:hover{color:#fff!important;text-decoration:underline;text-decoration-color:rgba(255,255,255,0.4)}
+  #analyst-modal-overlay{position:fixed;inset:0;z-index:20000;background:rgba(2,4,8,0.75);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
+  #analyst-modal-overlay.open{display:flex}
+  #analyst-modal{position:relative;width:100%;max-width:720px;max-height:82vh;overflow-y:auto;background:linear-gradient(150deg,#14171C 0%,#0B0D11 45%,#0A0C10 100%);border:1px solid rgba(255,255,255,0.14);border-radius:18px;box-shadow:0 30px 70px rgba(0,0,0,0.6);animation:stp-fadein 0.2s ease both}
+  #analyst-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 22px 14px;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;background:inherit;z-index:1}
+  #analyst-modal-name{font-family:Orbitron,monospace;font-weight:900;font-size:22px;letter-spacing:1px;color:#fff}
+  #analyst-modal-sub{font-family:Orbitron,monospace;font-size:11px;letter-spacing:2.5px;color:#5B6472;margin-top:4px}
+  #analyst-modal-close{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#E7EBF0;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:15px;flex-shrink:0;transition:all 0.15s}
+  #analyst-modal-close:hover{background:rgba(255,80,80,0.18);border-color:rgba(255,80,80,0.5);color:#FF8080}
+  #analyst-modal-body{padding:18px 22px 22px}
+  #analyst-modal-spark-wrap{margin-bottom:18px}
+  #analyst-modal-spark{display:flex;align-items:flex-end;gap:6px;height:70px;padding:0 2px}
+  .spark-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;min-width:0}
+  .spark-bar{width:100%;max-width:34px;border-radius:4px 4px 2px 2px;background:linear-gradient(180deg,#fff,#9AA5B1)}
+  .spark-bar.zero{background:rgba(255,255,255,0.08)}
+  .spark-date{font-family:Orbitron,monospace;font-size:9.5px;letter-spacing:0.5px;color:#5B6472;white-space:nowrap}
+  #analyst-modal-empty{font-size:14.5px;color:#8B96A5;text-align:center;padding:20px 10px;line-height:1.6}
+  #analyst-modal-table td.trend-up{color:#5CE87A!important}
+  #analyst-modal-table td.trend-down{color:#FF6B6B!important}
+
+  body.light-mode #analyst-modal{background:linear-gradient(150deg,#FFFFFF 0%,#F3F5F8 45%,#ECEFF3 100%);border-color:rgba(0,0,0,0.1)}
+  body.light-mode #analyst-modal-head{border-bottom-color:rgba(0,0,0,0.08)}
+  body.light-mode #analyst-modal-name{color:#0F172A}
+  body.light-mode #analyst-modal-sub{color:#94A3B8}
+  body.light-mode #analyst-modal-close{background:rgba(0,0,0,0.05);border-color:rgba(0,0,0,0.15);color:#334155}
+  body.light-mode .spark-bar{background:linear-gradient(180deg,#0F172A,#475569)}
+  body.light-mode .spark-bar.zero{background:rgba(0,0,0,0.08)}
+  body.light-mode .spark-date{color:#94A3B8}
+  body.light-mode #analyst-modal-empty{color:#475569}
+
+  /* ── MARKET / QUARTER BREAKDOWN MODAL ── */
+  .click-breakdown{cursor:pointer;transition:all 0.15s}
+  .click-breakdown:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.28);transform:translateY(-1px)}
+  #breakdown-modal-overlay{position:fixed;inset:0;z-index:20000;background:rgba(2,4,8,0.75);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
+  #breakdown-modal-overlay.open{display:flex}
+  #breakdown-modal{position:relative;width:100%;max-width:760px;max-height:86vh;overflow-y:auto;background:linear-gradient(150deg,#14171C 0%,#0B0D11 45%,#0A0C10 100%);border:1px solid rgba(255,255,255,0.14);border-radius:18px;box-shadow:0 30px 70px rgba(0,0,0,0.6);animation:stp-fadein 0.2s ease both}
+  #breakdown-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 22px 14px;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;background:inherit;z-index:1}
+  #breakdown-modal-title{font-family:Orbitron,monospace;font-weight:900;font-size:20px;letter-spacing:1px;color:#fff}
+  #breakdown-modal-sub{font-family:Orbitron,monospace;font-size:11px;letter-spacing:2px;color:#5B6472;margin-top:4px}
+  #breakdown-modal-close{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#E7EBF0;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:15px;flex-shrink:0;transition:all 0.15s}
+  #breakdown-modal-close:hover{background:rgba(255,80,80,0.18);border-color:rgba(255,80,80,0.5);color:#FF8080}
+  #breakdown-modal-body{padding:20px 22px 24px}
+  #breakdown-empty{font-size:14.5px;color:#8B96A5;text-align:center;padding:20px 10px;line-height:1.6}
+
+  #breakdown-legend{display:flex;flex-wrap:wrap;gap:9px 18px;justify-content:center;margin-bottom:18px}
+  .legend-item{display:flex;align-items:center;gap:6px;font-family:Orbitron,monospace;font-size:10.5px;letter-spacing:0.5px;color:#C6CDD6}
+  .legend-swatch{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+  #breakdown-chart{display:flex;align-items:flex-end;justify-content:center;gap:20px;height:220px;padding:0 6px 10px;margin-bottom:22px;border-bottom:1px solid rgba(255,255,255,0.08);overflow-x:auto}
+  .bq-group{display:flex;flex-direction:column;align-items:center;gap:9px;flex:1;min-width:90px;max-width:170px}
+  .bq-bars{display:flex;align-items:flex-end;gap:3px;height:180px}
+  .bq-bar{width:13px;border-radius:3px 3px 1px 1px;min-height:2px;transition:opacity 0.15s}
+  .bq-bar:hover{opacity:0.7}
+  .bq-group-label{font-family:Orbitron,monospace;font-size:12px;letter-spacing:1px;color:#8B96A5;font-weight:700}
+
+  body.light-mode #breakdown-modal{background:linear-gradient(150deg,#FFFFFF 0%,#F3F5F8 45%,#ECEFF3 100%);border-color:rgba(0,0,0,0.1)}
+  body.light-mode #breakdown-modal-head{border-bottom-color:rgba(0,0,0,0.08)}
+  body.light-mode #breakdown-modal-title{color:#0F172A}
+  body.light-mode #breakdown-modal-sub{color:#94A3B8}
+  body.light-mode #breakdown-modal-close{background:rgba(0,0,0,0.05);border-color:rgba(0,0,0,0.15);color:#334155}
+  body.light-mode #breakdown-empty{color:#475569}
+  body.light-mode #breakdown-chart{border-bottom-color:rgba(0,0,0,0.08)}
+  body.light-mode .bq-group-label{color:#64748B}
+  body.light-mode .legend-item{color:#334155}
+  body.light-mode .click-breakdown:hover{background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.2)}
+
+  /* ── HOW TO USE THIS SITE ── */
+  #help-modal-overlay{position:fixed;inset:0;z-index:20000;background:rgba(2,4,8,0.75);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
+  #help-modal-overlay.open{display:flex}
+  #help-modal{position:relative;width:100%;max-width:640px;max-height:84vh;overflow-y:auto;background:linear-gradient(150deg,#14171C 0%,#0B0D11 45%,#0A0C10 100%);border:1px solid rgba(255,255,255,0.14);border-radius:18px;box-shadow:0 30px 70px rgba(0,0,0,0.6);animation:stp-fadein 0.2s ease both}
+  #help-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 22px 14px;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;background:inherit;z-index:1}
+  #help-modal-title{font-family:Orbitron,monospace;font-weight:900;font-size:20px;letter-spacing:1px;color:#fff}
+  #help-modal-sub{font-family:Orbitron,monospace;font-size:11px;letter-spacing:2px;color:#5B6472;margin-top:4px}
+  #help-modal-close{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#E7EBF0;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:15px;flex-shrink:0;transition:all 0.15s}
+  #help-modal-close:hover{background:rgba(255,80,80,0.18);border-color:rgba(255,80,80,0.5);color:#FF8080}
+  #help-modal-body{padding:18px 22px 24px}
+  .help-h{font-family:Orbitron,monospace;font-size:12px;letter-spacing:1.5px;color:#00D4FF;text-transform:uppercase;margin:20px 0 8px}
+  .help-p{font-size:13.5px;line-height:1.65;color:#C6CDD6;margin:0 0 8px}
+  .help-ul{margin:0 0 8px;padding-left:20px;font-size:13.5px;line-height:1.8;color:#C6CDD6}
+  .help-ul li{margin-bottom:2px}
+  .help-ul b,.help-p b{color:#fff}
+
+  body.light-mode #help-modal{background:linear-gradient(150deg,#FFFFFF 0%,#F3F5F8 45%,#ECEFF3 100%);border-color:rgba(0,0,0,0.1)}
+  body.light-mode #help-modal-head{border-bottom-color:rgba(0,0,0,0.08)}
+  body.light-mode #help-modal-title{color:#0F172A}
+  body.light-mode #help-modal-sub{color:#94A3B8}
+  body.light-mode #help-modal-close{background:rgba(0,0,0,0.05);border-color:rgba(0,0,0,0.15);color:#334155}
+  body.light-mode .help-h{color:#0369A1}
+  body.light-mode .help-p,body.light-mode .help-ul{color:#334155}
+  body.light-mode .help-ul b,body.light-mode .help-p b{color:#0F172A}
+  body.light-mode .click-analyst:hover{color:#0F172A!important}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ SPLASH / LOGIN (own password, not connected to main site) ══════════════ -->
+<div id="loading-overlay">
+  <div class="stp-title">SEE THE PACE</div>
+  <div style="font-family:Orbitron,monospace;font-size:13px;color:#334155;letter-spacing:4px;margin-top:-12px">2ND LOOK SCOREBOARD</div>
+  <div style="width:200px;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.3),transparent);margin:4px 0"></div>
+  <button id="stp-enter-btn" onclick="showPwField()">ENTER</button>
+  <div id="stp-pw-wrap" style="display:none;flex-direction:column;align-items:center;gap:10px;animation:stp-fadein 0.4s ease both">
+    <input id="stp-pw-input" type="password" placeholder="PASSWORD" maxlength="30" onkeydown="if(event.key==='Enter')checkPw()"/>
+    <div id="stp-pw-err">INCORRECT PASSWORD</div>
+    <button id="stp-pw-submit" onclick="checkPw()">SUBMIT</button>
+  </div>
+  <div id="stp-loading-ring" class="stp-ring"></div>
+  <div id="stp-loading-text">LOADING SCOREBOARD<span class="stp-dots"></span></div>
+</div>
+
+<!-- ══════════════ NAV (SeeThePace branding — separate page, not linked to main dashboard) ══════════════ -->
+<nav id="stp-nav">
+  <a id="stp-brand" onclick="location.reload()"><span id="stp-bolt">⚡</span><span id="stp-wordmark">SEE THE PACE</span><span id="stp-sub-wordmark">2ND LOOK</span></a>
+  <div id="stp-links">
+    <button class="stp-link" onclick="document.getElementById('sb-file-input').click()">📁 UPLOAD DATA</button>
+    <div class="stp-dropdown">
+      <button class="stp-link" onclick="toggleDropdown(this)">🕘 HISTORY ▾</button>
+      <div class="stp-drop-menu" id="stp-history-menu" style="min-width:260px">
+        <div class="stp-drop-label">LAST 10 UPLOADS</div>
+        <div id="stp-history-list"></div>
+        <div class="stp-drop-divider"></div>
+        <button class="stp-drop-item" onclick="clearScoreboardHistory()">🗑 Clear Upload History</button>
+      </div>
+    </div>
+    <div class="stp-dropdown">
+      <button class="stp-link" onclick="toggleDropdown(this)">⚙ SETTINGS ▾</button>
+      <div class="stp-drop-menu">
+        <div class="stp-drop-label">DISPLAY</div>
+        <button class="stp-drop-item" onclick="toggleLightMode()">☀ Light / Dark</button>
+        <div class="stp-drop-divider"></div>
+        <div class="stp-drop-label">DATA</div>
+        <button class="stp-drop-item" onclick="document.getElementById('sb-file-input').click()">📁 Upload New File</button>
+        <button class="stp-drop-item" onclick="clearScoreboardData()">🗑 Clear Current View</button>
+        <div class="stp-drop-divider"></div>
+        <div class="stp-drop-label">HELP</div>
+        <button class="stp-drop-item" onclick="openHelpModal()">📖 How To Use This Site</button>
+      </div>
+    </div>
+    <button class="stp-link" onclick="signOut()" style="margin-left:4px">EXIT</button>
+  </div>
+</nav>
+
+<input type="file" id="sb-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleFileSelect(event)"/>
+
+<!-- ══════════════ MAIN APP ══════════════ -->
+<div id="app">
+
+  <div id="sb-empty">
+    <h2>📊 UPLOAD YOUR REPORT</h2>
+    <p>Drag &amp; drop your "2nd Look Reporting" Excel file here, or click below to browse. The board is built from the <b>Calculator</b> tab automatically, and stays loaded until you upload a new file.</p>
+    <div id="sb-empty-actions">
+      <button class="sb-upload-btn" onclick="document.getElementById('sb-file-input').click()">CHOOSE FILE</button>
+    </div>
+    <div id="sb-file-error"></div>
+  </div>
+
+  <div id="sb-content" style="display:none">
+    <div id="sb-file-meta"></div>
+
+    <div id="ytd-banner">
+      <div class="ytd-stat click-breakdown" data-breakdown="pullthrough">
+        <div class="ytd-stat-label">YTD Pull Through Rate</div>
+        <div class="ytd-stat-value" id="ytd-pullthrough">—</div>
+        <div class="ytd-stat-sub" id="ytd-pullthrough-sub">All Quarters tab</div>
+      </div>
+      <div class="ytd-stat click-breakdown" data-breakdown="booked">
+        <div class="ytd-stat-label">Total Booked (Year)</div>
+        <div class="ytd-stat-value" id="ytd-booked">—</div>
+        <div class="ytd-stat-sub" id="ytd-booked-sub">All Quarters tab</div>
+      </div>
+    </div>
+
+    <div id="sb-messages">
+      <div id="sb-msg-line1"></div>
+      <div id="sb-msg-line2"></div>
+    </div>
+
+    <div id="arena-board">
+      <div id="arena-topbar">
+        <div class="arena-pill-group">
+          <span class="arena-pill"><span class="arena-live-dot"></span>MODE <b>LIVE</b></span>
+          <span class="arena-pill" id="pill-date">DATE <b>—</b></span>
+        </div>
+        <div class="arena-title-wrap">
+          <div id="arena-title">2ND LOOK SCOREBOARD</div>
+          <div id="arena-subtitle">DAILY ANALYST ANALYTICS</div>
+        </div>
+        <div class="arena-pill-group">
+          <span class="arena-pill" id="pill-pace">PACE <b>—</b></span>
+          <span class="arena-pill" id="pill-goal">GOAL <b>—</b></span>
+        </div>
+      </div>
+
+      <div class="arena-row">
+        <!-- LEFT: TEAM METRICS -->
+        <div class="hud-panel" id="panel-metrics">
+          <div class="hud-panel-head">
+            <div class="hud-panel-title">TEAM METRICS</div>
+            <div class="hud-panel-tag">ANALYTICS</div>
+          </div>
+          <div class="gauge-wrap">
+            <div class="gauge" id="team-gauge">
+              <div class="gauge-val">
+                <div class="gauge-num" id="team-gauge-num">—</div>
+                <div class="gauge-lbl">APPROVAL %</div>
+              </div>
+            </div>
+          </div>
+          <div id="team-metric-rows"></div>
+        </div>
+
+        <!-- CENTER: TOP PERFORMANCE CORE -->
+        <div class="hud-panel" id="panel-core">
+          <div class="hud-panel-head">
+            <div class="hud-panel-title">TOP PERFORMANCE CORE</div>
+            <div class="hud-panel-tag">CHAMPION</div>
+          </div>
+          <div class="core-mid">
+            <div class="core-side">
+              <div class="core-stat-lbl">ACCURACY</div>
+              <div class="core-stat-val" id="core-accuracy">—</div>
+              <div class="minibars" id="core-minibars"></div>
+            </div>
+            <div style="text-align:center">
+              <div class="champion-ring">
+                <div class="champion-inner">
+                  <div class="champion-trophy">🏆</div>
+                  <div class="champion-label">CHAMPION</div>
+                  <div class="champion-name click-analyst" id="champion-name" data-analyst="">—</div>
+                  <div class="champion-total" id="champion-total">—</div>
+                  <div class="champion-sub">TOTAL BOOKED</div>
+                </div>
+              </div>
+            </div>
+            <div class="core-side">
+              <div class="core-stat-lbl">PULL THROUGH</div>
+              <div class="core-stat-val" id="core-pullthru">—</div>
+              <div class="metric-bar" style="margin-top:8px"><div class="metric-bar-fill" id="core-pullthru-bar" style="width:0%"></div></div>
+            </div>
+          </div>
+          <div class="podium-tabs" id="podium-tabs"></div>
+        </div>
+
+        <!-- RIGHT: REWARD TIERS -->
+        <div class="hud-panel" id="panel-rewards">
+          <div class="hud-panel-head">
+            <div class="hud-panel-title">REWARD TIERS</div>
+            <div class="hud-panel-tag">SCORE PANELS</div>
+          </div>
+          <div id="tier-rows"></div>
+          <div class="hud-panel-foot" id="tier-foot"></div>
+        </div>
+      </div>
+
+      <div class="arena-row">
+        <!-- LEFT: PLAYER SNAPSHOT -->
+        <div class="hud-panel" id="panel-snapshot">
+          <div class="hud-panel-head">
+            <div class="hud-panel-title">ANALYST SNAPSHOT</div>
+            <div class="hud-panel-tag">TOP FIVE</div>
+          </div>
+          <div id="snap-rows"></div>
+        </div>
+
+        <!-- CENTER: GLOBAL LEADERBOARD -->
+        <div class="hud-panel" id="panel-leaderboard">
+          <div class="hud-panel-head">
+            <div class="hud-panel-title">GLOBAL LEADERBOARD</div>
+            <div class="hud-panel-tag">RANKING COLUMNS</div>
+          </div>
+          <table class="lb-table">
+            <thead><tr><th>Rank</th><th>Analyst</th><th class="num">Booked</th><th>Power</th><th>State</th></tr></thead>
+            <tbody id="lb-body"></tbody>
+          </table>
+          <div id="lb-legend">Power = $ booked vs. the top analyst &middot; State: <span class="lb-state elite" style="padding:2px 6px">ELITE</span> = 90%+ approval, <span class="lb-state" style="padding:2px 6px">ACTIVE</span> = booked something, <span class="lb-state hold" style="padding:2px 6px">HOLD</span> = $0 booked</div>
+        </div>
+
+        <!-- RIGHT: EVENT LOG -->
+        <div class="hud-panel" id="panel-log">
+          <div class="hud-panel-head">
+            <div class="hud-panel-title">EVENT LOG</div>
+            <div class="hud-panel-tag">YESTERDAY</div>
+          </div>
+          <div id="log-rows"></div>
+          <div id="log-total"><span class="lt-lbl">TOTAL BOOKED</span><span class="lt-val" id="log-total-val">—</span></div>
+        </div>
+      </div>
+
+      <div id="arena-footer">
+        <span class="arena-foot-item">SYSTEM <b>STABLE</b></span>
+        <span class="arena-foot-item">SOURCE <b id="foot-source">—</b></span>
+        <span class="arena-foot-item">SHEET <b id="foot-sheet">—</b></span>
+        <span class="arena-foot-item">ANALYSTS <b id="foot-count">0</b></span>
+        <span class="arena-foot-item">VIEW <b>RANKED</b></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ ANALYST HISTORY MODAL ══════════════ -->
+<div id="analyst-modal-overlay">
+  <div id="analyst-modal">
+    <div id="analyst-modal-head">
+      <div>
+        <div id="analyst-modal-name">Analyst</div>
+        <div id="analyst-modal-sub">HISTORICAL PERFORMANCE</div>
+      </div>
+      <button id="analyst-modal-close" onclick="closeAnalystModal()">✕</button>
+    </div>
+    <div id="analyst-modal-body">
+      <div id="analyst-modal-spark-wrap">
+        <div class="hud-panel-tag" style="margin-bottom:8px">$ BOOKED TREND</div>
+        <div id="analyst-modal-spark"></div>
+      </div>
+      <div class="sb-table-scroll">
+        <table class="lb-table" id="analyst-modal-table">
+          <thead><tr>
+            <th>Date</th><th class="num">Approval %</th><th class="num">Pull Thru %</th>
+            <th class="num">$ Booked</th><th class="num">Apps</th><th class="num">Approved $</th><th class="num">Reviewed $</th>
+          </tr></thead>
+          <tbody id="analyst-modal-rows"></tbody>
+        </table>
+      </div>
+      <div id="analyst-modal-empty" style="display:none">No historical data yet for this analyst — history builds automatically each time a new file is uploaded (up to the last 10).</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MARKET / QUARTER BREAKDOWN MODAL ══════════════ -->
+<div id="breakdown-modal-overlay">
+  <div id="breakdown-modal">
+    <div id="breakdown-modal-head">
+      <div>
+        <div id="breakdown-modal-title">Breakdown</div>
+        <div id="breakdown-modal-sub">BY MARKET &amp; QUARTER &middot; ALL QUARTERS TAB</div>
+      </div>
+      <button id="breakdown-modal-close" onclick="closeBreakdownModal()">✕</button>
+    </div>
+    <div id="breakdown-modal-body">
+      <div id="breakdown-legend"></div>
+      <div id="breakdown-chart"></div>
+      <div class="sb-table-scroll">
+        <table class="lb-table" id="breakdown-table"></table>
+      </div>
+      <div id="breakdown-empty" style="display:none">No quarterly market data found — make sure the "All Quarters" tab is included in the workbook.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ HOW TO USE THIS SITE ══════════════ -->
+<div id="help-modal-overlay">
+  <div id="help-modal">
+    <div id="help-modal-head">
+      <div>
+        <div id="help-modal-title">How To Use This Site</div>
+        <div id="help-modal-sub">2ND LOOK SCOREBOARD &middot; QUICK GUIDE</div>
+      </div>
+      <button id="help-modal-close" onclick="closeHelpModal()">✕</button>
+    </div>
+    <div id="help-modal-body">
+
+      <div class="help-h" style="margin-top:0">Getting Started</div>
+      <p class="help-p">This page has its own password, separate from the main SeeThePace dashboard. Once you're in, the board stays empty until you upload the "2nd Look Reporting" Excel file — drag &amp; drop it onto the upload box, or use <b>📁 Upload Data</b> in the nav bar.</p>
+      <p class="help-p">Everything is read directly from the file in your browser — nothing is sent to a server. The board automatically finds the right tabs (the one with an "Analyst" table, and the "All Quarters" tab), so it still works if rows get added or the file changes slightly from week to week.</p>
+
+      <div class="help-h">Reading The Board</div>
+      <ul class="help-ul">
+        <li><b>YTD banner (top)</b> — Pull Through Rate and Total Booked for the year, pulled from the "All Quarters" tab.</li>
+        <li><b>Team Metrics</b> — the team's overall Approval %, Pull Through %, Booked/Reviewed ratio, and MTD Pace.</li>
+        <li><b>Top Performance Core</b> — whoever booked the most gets the champion ring, plus a gold/silver/bronze podium for the top 3.</li>
+        <li><b>Reward Tiers</b> — top 3 analysts by yesterday's bookings.</li>
+        <li><b>Analyst Snapshot</b> — top 5 analysts ranked by total $ booked.</li>
+        <li><b>Global Leaderboard</b> — every analyst ranked, with a State tag: <b>ELITE</b> (90%+ approval), <b>ACTIVE</b> (booked something), or <b>HOLD</b> ($0 booked).</li>
+        <li><b>Event Log</b> — yesterday's bookings, analyst by analyst.</li>
+      </ul>
+
+      <div class="help-h">Digging Deeper</div>
+      <ul class="help-ul">
+        <li><b>Click any analyst's name</b> anywhere on the board to pop up their history — a $ booked trend chart plus a full stats table across your last uploads.</li>
+        <li><b>Click the YTD Pull Through or Total Booked card</b> to see that metric broken down by market and quarter, with a chart and an exact-numbers table.</li>
+      </ul>
+
+      <div class="help-h">Upload History</div>
+      <p class="help-p">Every file you upload is saved under <b>🕘 History</b> in the nav — the last 10 uploads. Click any entry to reload that version instantly, no re-upload needed. The dot (●) marks whichever one is currently on screen. "Clear Upload History" wipes that list without touching what's currently displayed.</p>
+
+      <div class="help-h">Data Stays Put</div>
+      <p class="help-p">Whatever is on screen stays exactly as-is — even after closing the tab or refreshing — until you upload a new file, pick a different version from History, or use <b>Clear Current View</b> in Settings.</p>
+
+      <div class="help-h">Settings</div>
+      <ul class="help-ul">
+        <li><b>Light / Dark</b> — switches the whole board's theme.</li>
+        <li><b>Upload New File</b> — same as the nav button, opens the file picker.</li>
+        <li><b>Clear Current View</b> — empties the board (upload history is untouched).</li>
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+<!-- SheetJS for client-side Excel parsing -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* ============================================================
+   CONFIG — edit these to customize this page
+   ============================================================ */
+var SCOREBOARD_PW   = "Rbafcr";         // <-- password for THIS page only (separate from the main site)
+var AUTH_KEY         = "stp2l_auth";     // sessionStorage key (kept separate from main dashboard's "stp_auth")
+var AUTH_TTL_MS      = 8 * 60 * 60 * 1000; // stay logged in 8 hours
+var DATA_KEY         = "stp2l_data_v1";  // localStorage key used to remember the CURRENTLY DISPLAYED file — data
+                                          // persists here until a new file is uploaded, an older version is picked
+                                          // from HISTORY, or "Clear Current View" is clicked
+var HISTORY_KEY       = "stp2l_history_v1"; // localStorage key holding the last 10 uploads (independent of DATA_KEY)
+var HISTORY_MAX       = 10;
+
+/* ============================================================
+   LOGIN / SPLASH
+   ============================================================ */
+function showPwField(){
+  document.getElementById('stp-enter-btn').style.display = 'none';
+  var wrap = document.getElementById('stp-pw-wrap');
+  wrap.style.display = 'flex';
+  setTimeout(function(){ document.getElementById('stp-pw-input').focus(); }, 50);
+}
+
+function checkPw(){
+  var inp = document.getElementById('stp-pw-input');
+  var err = document.getElementById('stp-pw-err');
+  var val = inp.value.trim();
+  if (val === SCOREBOARD_PW){
+    err.style.display = 'none';
+    storeAuth();
+    enterApp();
+  } else {
+    err.style.display = 'block';
+    inp.value = '';
+    inp.style.borderColor = 'rgba(255,68,68,0.6)';
+    setTimeout(function(){ inp.style.borderColor = 'rgba(0,212,255,0.25)'; }, 1200);
+    inp.focus();
+  }
+}
+
+function checkStoredAuth(){
+  try{
+    var raw = sessionStorage.getItem(AUTH_KEY);
+    if (!raw) return false;
+    var data = JSON.parse(raw);
+    if (Date.now() - data.ts > AUTH_TTL_MS){ sessionStorage.removeItem(AUTH_KEY); return false; }
+    return true;
+  }catch(e){ return false; }
+}
+function storeAuth(){
+  try{ sessionStorage.setItem(AUTH_KEY, JSON.stringify({ts: Date.now()})); }catch(e){}
+}
+
+function enterApp(){
+  var btn = document.getElementById('stp-enter-btn');
+  var wrap = document.getElementById('stp-pw-wrap');
+  var ring = document.getElementById('stp-loading-ring');
+  var txt  = document.getElementById('stp-loading-text');
+  if (btn) btn.style.display = 'none';
+  if (wrap) wrap.style.display = 'none';
+  if (ring) ring.style.display = 'block';
+  if (txt) txt.style.display = 'block';
+
+  setTimeout(function(){
+    revealApp();
+  }, 500);
+}
+
+function revealApp(){
+  var lo = document.getElementById('loading-overlay');
+  lo.classList.add('fade-out');
+  setTimeout(function(){ lo.style.display = 'none'; }, 650);
+  document.getElementById('stp-nav').classList.add('stp-nav-visible');
+  document.getElementById('app').classList.add('visible');
+  addHudCorners();
+  tryLoadSavedData();
+  populateHistoryMenu();
+}
+
+function signOut(){
+  try{ sessionStorage.removeItem(AUTH_KEY); }catch(e){}
+  location.reload();
+}
+
+(function(){
+  if (checkStoredAuth()){
+    document.getElementById('stp-enter-btn').style.display = 'none';
+    document.getElementById('stp-loading-ring').style.display = 'block';
+    document.getElementById('stp-loading-text').style.display = 'block';
+    setTimeout(revealApp, 500);
+  }
+})();
+
+/* ============================================================
+   NAV DROPDOWN
+   ============================================================ */
+function toggleDropdown(btn){
+  var menu = btn.nextElementSibling;
+  var open = menu.classList.contains('open');
+  document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){ m.classList.remove('open'); });
+  if (!open) menu.classList.add('open');
+}
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.stp-dropdown')) {
+    document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){ m.classList.remove('open'); });
+  }
+});
+
+function toggleLightMode(){
+  document.body.classList.toggle('light-mode');
+  try{ localStorage.setItem('stp2l_light', document.body.classList.contains('light-mode') ? '1':'0'); }catch(e){}
+}
+(function(){
+  try{ if (localStorage.getItem('stp2l_light')==='1') document.body.classList.add('light-mode'); }catch(e){}
+})();
+
+/* Decorative HUD corner brackets, added to every panel + the main board */
+function addHudCorners(){
+  document.querySelectorAll('.hud-panel, #arena-board').forEach(function(el){
+    if (el.dataset.huddone) return;
+    el.dataset.huddone = '1';
+    el.classList.add('hud-host');
+    ['tl','tr','bl','br'].forEach(function(pos){
+      var s = document.createElement('span');
+      s.className = 'hud-corner ' + pos;
+      el.appendChild(s);
+    });
+  });
+}
+
+/* ============================================================
+   FILE HANDLING (drag/drop + click-to-browse)
+   ============================================================ */
+var emptyEl = document.getElementById('sb-empty');
+['dragenter','dragover'].forEach(function(evt){
+  emptyEl.addEventListener(evt, function(e){ e.preventDefault(); emptyEl.classList.add('dragover'); });
+});
+['dragleave','drop'].forEach(function(evt){
+  emptyEl.addEventListener(evt, function(e){ e.preventDefault(); emptyEl.classList.remove('dragover'); });
+});
+emptyEl.addEventListener('drop', function(e){
+  var f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) processFile(f);
+});
+
+function handleFileSelect(e){
+  var f = e.target.files && e.target.files[0];
+  if (f) processFile(f);
+  e.target.value = '';
+}
+
+function processFile(file){
+  var errEl = document.getElementById('sb-file-error');
+  errEl.style.display = 'none';
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var wb = XLSX.read(e.target.result, {type:'array', cellDates:true});
+      var data = parseWorkbook(wb);
+      data.fileName = file.name;
+      data.loadedAt = Date.now();
+      data.histId = 'h' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+      // Overwriting DATA_KEY here is the ONLY thing that replaces the CURRENT VIEW —
+      // it stays exactly as-is across refreshes/closes until a new file comes in
+      // (or an older version is picked from the History menu).
+      try{ localStorage.setItem(DATA_KEY, JSON.stringify(data)); }catch(err){}
+      saveToHistory(data);
+      renderScoreboard(data);
+    }catch(err){
+      console.error(err);
+      errEl.textContent = err.message || 'Could not read that file. Please double check it\'s the 2nd Look Reporting workbook.';
+      errEl.style.display = 'block';
+    }
+  };
+  reader.onerror = function(){
+    errEl.textContent = 'Could not read that file.';
+    errEl.style.display = 'block';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function tryLoadSavedData(){
+  try{
+    var raw = localStorage.getItem(DATA_KEY);
+    if (raw){ renderScoreboard(JSON.parse(raw)); }
+  }catch(e){}
+}
+
+function clearScoreboardData(){
+  try{ localStorage.removeItem(DATA_KEY); }catch(e){}
+  document.getElementById('sb-content').style.display = 'none';
+  document.getElementById('sb-empty').style.display = 'block';
+  populateHistoryMenu();
+}
+
+/* ============================================================
+   UPLOAD HISTORY — keeps the last 10 files that were uploaded so
+   an older version can be reloaded from the nav at any time.
+   This list is separate from DATA_KEY (the "currently displayed" file):
+   uploading a new file always adds to history, but switching between
+   history entries never removes anything from the list.
+   ============================================================ */
+function getHistory(){
+  try{
+    var raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+
+function saveToHistory(data){
+  var hist = getHistory();
+  hist.unshift(data);              // newest first
+  if (hist.length > HISTORY_MAX) hist = hist.slice(0, HISTORY_MAX);
+  try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(hist)); }catch(e){}
+  populateHistoryMenu();
+}
+
+function loadHistoryEntry(histId){
+  var hist = getHistory();
+  var entry = hist.find(function(h){ return h.histId === histId; });
+  if (!entry) return;
+  try{ localStorage.setItem(DATA_KEY, JSON.stringify(entry)); }catch(e){}
+  renderScoreboard(entry);
+  populateHistoryMenu();
+  document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){ m.classList.remove('open'); });
+}
+
+function clearScoreboardHistory(){
+  try{ localStorage.removeItem(HISTORY_KEY); }catch(e){}
+  populateHistoryMenu();
+}
+
+function populateHistoryMenu(){
+  var listEl = document.getElementById('stp-history-list');
+  if (!listEl) return;
+  var hist = getHistory();
+  var activeId = null;
+  try{
+    var cur = localStorage.getItem(DATA_KEY);
+    if (cur) activeId = JSON.parse(cur).histId;
+  }catch(e){}
+
+  if (!hist.length){
+    listEl.innerHTML = '<div class="hist-empty">No uploads yet — upload a file to start building history.</div>';
+    return;
+  }
+  var html = '';
+  hist.forEach(function(entry){
+    var isActive = entry.histId === activeId;
+    var dateLabel = entry.reportDate ? fmtDateShort(entry.reportDate) : 'Undated';
+    var whenLabel = entry.loadedAt ? new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(entry.loadedAt)) : '';
+    html += '<button class="hist-item' + (isActive?' active':'') + '" onclick="loadHistoryEntry(\'' + entry.histId + '\')">' +
+      '<span class="hist-item-check">' + (isActive?'●':'') + '</span>' +
+      '<span class="hist-item-body">' +
+        '<span class="hist-item-date">' + escapeHtml(dateLabel) + '</span>' +
+        '<span class="hist-item-meta">' + escapeHtml(entry.fileName || 'file') + ' &middot; uploaded ' + whenLabel + '</span>' +
+      '</span>' +
+      '</button>';
+  });
+  listEl.innerHTML = html;
+}
+
+/* ============================================================
+   PARSING — reads the "Calculator" style table out of the workbook.
+   Looks for a row whose first cell is "Analyst" to locate the table,
+   so it still works if the sheet name or row position changes.
+   ============================================================ */
+function norm(v){ return (v===null||v===undefined) ? '' : String(v).trim().toLowerCase(); }
+function num(v){
+  if (v===null || v===undefined || v==='') return null;
+  if (typeof v === 'number') return v;
+  var n = parseFloat(String(v).replace(/[^0-9.\-]/g,''));
+  return isNaN(n) ? null : n;
+}
+
+function parseWorkbook(wb){
+  var rows = null, sheetName = null, headerIdx = -1;
+  for (var s=0; s<wb.SheetNames.length; s++){
+    var name = wb.SheetNames[s];
+    var r = XLSX.utils.sheet_to_json(wb.Sheets[name], {header:1, raw:true, defval:null});
+    var idx = r.findIndex(function(row){ return row && norm(row[0]) === 'analyst'; });
+    if (idx > -1){ rows = r; sheetName = name; headerIdx = idx; break; }
+  }
+  if (!rows) throw new Error('Could not find an "Analyst" table in this workbook. Make sure the Calculator/2nd Look tab is included.');
+
+  var reportDate = null;
+  var dateRow = rows[headerIdx-1];
+  if (dateRow && dateRow[0]){
+    var dv = dateRow[0];
+    reportDate = (dv instanceof Date) ? dv : new Date(dv);
+    if (isNaN(reportDate.getTime())) reportDate = null;
+  }
+
+  var analysts = [];
+  var i = headerIdx + 1;
+  while (i < rows.length && rows[i] && norm(rows[i][0]) !== ''){
+    var r2 = rows[i];
+    analysts.push({
+      name: String(r2[0]).trim(),
+      approvalPct: num(r2[1]), pullPct: num(r2[2]),
+      booked: num(r2[3]), bookedApps: num(r2[4]),
+      approved: num(r2[5]), approvedApps: num(r2[6]),
+      reviewed: num(r2[7]), reviewedApps: num(r2[8])
+    });
+    i++;
+  }
+  var totals = null;
+  if (rows[i]){
+    var tr = rows[i];
+    totals = {
+      approvalPct: num(tr[1]), pullPct: num(tr[2]),
+      booked: num(tr[3]), bookedApps: num(tr[4]),
+      approved: num(tr[5]), approvedApps: num(tr[6]),
+      reviewed: num(tr[7]), reviewedApps: num(tr[8])
+    };
+    i++;
+  }
+
+  var yesterday = [], yesterdayTotal = null;
+  var ybIdx = -1;
+  for (var j=i; j<rows.length && j<i+40; j++){
+    if (rows[j] && norm(rows[j][0]).indexOf('dollars booked yesterday') === 0){ ybIdx = j; break; }
+  }
+  var afterYesterdayIdx = i;
+  if (ybIdx > -1){
+    var k = ybIdx + 2;
+    while (k < rows.length && rows[k] && norm(rows[k][0]) !== '' && norm(rows[k][0]).indexOf('dollars booked') !== 0){
+      var yr = rows[k];
+      yesterday.push({ name: String(yr[0]).trim(), booked: num(yr[1]), apps: num(yr[2]) });
+      k++;
+    }
+    if (rows[k] && norm(rows[k][0]).indexOf('dollars booked') === 0){
+      yesterdayTotal = { booked: num(rows[k][1]), apps: num(rows[k][2]) };
+      k++;
+    }
+    afterYesterdayIdx = k;
+  }
+
+  var pace = {};
+  var paceIdx = -1;
+  for (var m=afterYesterdayIdx; m<rows.length; m++){
+    if (rows[m] && norm(rows[m][0]).indexOf('pace report') === 0){ paceIdx = m; break; }
+  }
+  if (paceIdx > -1){
+    for (var p=paceIdx+1; p<rows.length && p<paceIdx+8; p++){
+      var lab = rows[p] ? norm(rows[p][0]) : '';
+      if (!lab) break;
+      var val = rows[p][1];
+      if (lab.indexOf('august goal') > -1 || (lab.indexOf('goal') > -1 && lab.indexOf('daily') === -1)) pace.goal = val;
+      else if (lab.indexOf('mtd $') > -1 || lab.indexOf('mtd booked') > -1 || (lab.indexOf('mtd') > -1 && lab.indexOf('booked') > -1)) pace.mtdBooked = val;
+      else if (lab.indexOf('mtd pace %') > -1) pace.pacePct = val;
+      else if (lab.indexOf('mtd pace $') > -1) pace.paceDollar = val;
+      else if (lab.indexOf('daily goal') > -1) pace.dailyGoal = val;
+    }
+  }
+
+  return { sheetName: sheetName, reportDate: reportDate ? reportDate.toISOString() : null,
+           analysts: analysts, totals: totals, yesterday: yesterday, yesterdayTotal: yesterdayTotal, pace: pace,
+           allQuarters: parseAllQuarters(wb) };
+}
+
+/* ============================================================
+   "ALL QUARTERS" TAB — YTD Pull Through Rate & Total Booked (Year),
+   plus a full per-market/per-quarter breakdown for the drill-down
+   popups. Walks each "Q# Second Look Results" block, grabs the
+   6-market row (NY/NJ Metro, Long Island, Georgia, San Francisco,
+   MidWest, Fairchester) plus the sheet's own Totals column (index 7),
+   for: Total Apps, Total Booked (count), Approval %, Pull Through %,
+   and Booked $ (from the Totals-by-$ section). YTD figures are summed
+   across every quarter found, so this adapts automatically as more
+   quarters fill in.
+   ============================================================ */
+function parseAllQuarters(wb){
+  var sheetName = null, ws = null;
+  for (var i=0; i<wb.SheetNames.length; i++){
+    if (norm(wb.SheetNames[i]).indexOf('all quarters') > -1){ sheetName = wb.SheetNames[i]; ws = wb.Sheets[sheetName]; break; }
+  }
+  if (!ws) return null;
+
+  var rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+  var quarters = [];
+  var current = null;
+
+  for (var r=0; r<rows.length; r++){
+    var row = rows[r];
+    if (!row) continue;
+    var cell0 = (row[0] !== null && row[0] !== undefined) ? String(row[0]).trim() : '';
+    var qMatch = cell0.match(/^Q(\d+)\b.*second look results/i);
+    if (qMatch){
+      if (current) quarters.push(current);
+      current = { label: 'Q' + qMatch[1], regions: null, apps: null, bookedCount: null, approvalPct: null, pullThroughPct: null, bookedDollar: null };
+      continue;
+    }
+    if (!current) continue;
+
+    // Region header: 6 consecutive text cells in columns 1-6 (appears blank-labeled, and again
+    // on the "Key Metrics:" / "Totals (Volume by $):" rows — first occurrence is enough).
+    if (!current.regions){
+      var candidates = row.slice(1,7);
+      if (candidates.length === 6 && candidates.every(function(c){ return typeof c === 'string' && c.trim() !== ''; })){
+        current.regions = candidates.map(function(c){ return c.trim(); });
+        continue;
+      }
+    }
+
+    var lab = norm(cell0).replace(/:\s*$/,'').trim();
+    var vals = row.slice(1,8).map(num); // 6 markets + the sheet's own Totals column (7 values)
+    if (lab === 'total apps' || lab === 'total applications') current.apps = vals;
+    else if (lab === 'total booked') current.bookedCount = vals;
+    else if (lab === 'approval %') current.approvalPct = vals;
+    else if (lab === 'pull through %') current.pullThroughPct = vals;
+    else if (lab === 'booked') current.bookedDollar = vals;
+  }
+  if (current) quarters.push(current);
+  if (!quarters.length) return null;
+
+  var appsTotal = 0, bookedCountTotal = 0, bookedDollarTotal = 0;
+  quarters.forEach(function(q){
+    if (q.apps && q.apps[6] !== null) appsTotal += q.apps[6];
+    if (q.bookedCount && q.bookedCount[6] !== null) bookedCountTotal += q.bookedCount[6];
+    if (q.bookedDollar && q.bookedDollar[6] !== null) bookedDollarTotal += q.bookedDollar[6];
+  });
+
+  return {
+    sheetName: sheetName,
+    quarters: quarters,
+    ytdApps: appsTotal,
+    ytdBookedCount: bookedCountTotal,
+    ytdBookedDollars: bookedDollarTotal,
+    ytdPullThroughRate: appsTotal ? (bookedCountTotal / appsTotal) : null
+  };
+}
+
+/* ============================================================
+   FORMATTING HELPERS
+   ============================================================ */
+function fmtMoney(n){
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+}
+function fmtMoneyShort(n){
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  n = Number(n);
+  if (Math.abs(n) >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+  if (Math.abs(n) >= 1000) return '$' + Math.round(n/1000) + 'K';
+  return '$' + Math.round(n);
+}
+function fmtInt(n){
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return Number(n).toLocaleString('en-US');
+}
+function fmtPct(n, decimals){
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return (n*100).toFixed(decimals===undefined?1:decimals) + '%';
+}
+function fmtDate(iso){
+  if (!iso) return '';
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'}).format(d);
+}
+function fmtDateShort(iso){
+  if (!iso) return '—';
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
+  return new Intl.DateTimeFormat('en-US',{month:'short', day:'numeric'}).format(d);
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+/* ============================================================
+   MESSAGE GENERATION — mirrors the "shout out" style banner
+   ============================================================ */
+function buildMessages(data){
+  var big = (data.yesterday || []).filter(function(a){ return a.booked !== null && a.booked >= 100000; });
+  var line1;
+  if (big.length){
+    var names = big.map(function(a){ return a.name; });
+    var joined = names.length === 1 ? names[0]
+      : names.length === 2 ? names.join(' and ')
+      : names.slice(0,-1).join(', ') + ' and ' + names[names.length-1];
+    line1 = '🎉 We had a BIG day yesterday! Shout out to ' + joined + ' for booking over $100k' + (names.length>1?' each':'') + '!';
+  } else if (data.yesterdayTotal && data.yesterdayTotal.booked){
+    line1 = '💪 Nice work yesterday — the team booked ' + fmtMoney(data.yesterdayTotal.booked) + ' across ' + fmtInt(data.yesterdayTotal.apps) + ' apps.';
+  } else {
+    line1 = '📈 Let\'s get the board moving today!';
+  }
+
+  var line2 = '';
+  if (data.totals && data.totals.approvalPct !== null && data.totals.pullPct !== null){
+    var ap = data.totals.approvalPct, pt = data.totals.pullPct;
+    if (ap - pt > 0.2){
+      line2 = 'Approval % is at ' + fmtPct(ap) + ' — let\'s close the gap on Pull Through, which is at ' + fmtPct(pt) + '.';
+    } else {
+      line2 = 'Approval % is at ' + fmtPct(ap) + ' and Pull Through isn\'t too far behind at ' + fmtPct(pt) + '. Let\'s keep these numbers up all month.';
+    }
+  }
+  return [line1, line2];
+}
+
+/* ============================================================
+   RENDERING
+   ============================================================ */
+function renderScoreboard(data){
+  document.getElementById('sb-empty').style.display = 'none';
+  document.getElementById('sb-content').style.display = 'block';
+
+  var msgs = buildMessages(data);
+  document.getElementById('sb-msg-line1').textContent = msgs[0];
+  document.getElementById('sb-msg-line2').textContent = msgs[1];
+
+  document.getElementById('sb-file-meta').textContent = data.reportDate ? fmtDate(data.reportDate) : 'Daily Scoreboard';
+
+  renderYtdBanner(data);
+  renderTopBar(data);
+  renderTeamMetrics(data);
+  renderCore(data);
+  renderRewardTiers(data);
+  renderSnapshot(data);
+  renderLeaderboard(data);
+  renderEventLog(data);
+  renderFooter(data);
+}
+
+function renderYtdBanner(data){
+  var aq = data.allQuarters;
+  var pEl = document.getElementById('ytd-pullthrough');
+  var bEl = document.getElementById('ytd-booked');
+  var pSub = document.getElementById('ytd-pullthrough-sub');
+  var bSub = document.getElementById('ytd-booked-sub');
+
+  if (aq){
+    pEl.textContent = aq.ytdPullThroughRate !== null ? fmtPct(aq.ytdPullThroughRate, 1) : '—';
+    bEl.textContent = fmtMoney(aq.ytdBookedDollars);
+    pSub.textContent = fmtInt(aq.ytdBookedCount) + ' / ' + fmtInt(aq.ytdApps) + ' apps \u00B7 click for breakdown';
+    bSub.textContent = aq.sheetName + ' \u00B7 click for breakdown';
+  } else {
+    pEl.textContent = '—';
+    bEl.textContent = '—';
+    pSub.textContent = '"All Quarters" tab not found in this file';
+    bSub.textContent = '"All Quarters" tab not found in this file';
+  }
+}
+
+function renderTopBar(data){
+  document.getElementById('pill-date').innerHTML = 'DATE <b>' + fmtDateShort(data.reportDate) + '</b>';
+  var pace = data.pace || {};
+  document.getElementById('pill-pace').innerHTML = 'PACE <b>' + (typeof pace.pacePct === 'number' ? fmtPct(pace.pacePct,0) : '—') + '</b>';
+  document.getElementById('pill-goal').innerHTML = 'GOAL <b>' + (typeof pace.goal === 'number' ? fmtMoneyShort(pace.goal) : '—') + '</b>';
+}
+
+function renderTeamMetrics(data){
+  var t = data.totals || {};
+  var ap = t.approvalPct !== undefined ? t.approvalPct : null;
+  var pct = ap !== null ? Math.round(ap*100) : 0;
+  var gauge = document.getElementById('team-gauge');
+  gauge.style.setProperty('--pct', pct);
+  document.getElementById('team-gauge-num').textContent = ap !== null ? Math.round(ap*100) : '—';
+
+  var pull = t.pullPct;
+  var convRatio = (t.bookedApps !== null && t.reviewedApps) ? (t.bookedApps / t.reviewedApps) : null;
+  var pace = data.pace || {};
+  var pacePctRaw = typeof pace.pacePct === 'number' ? pace.pacePct : null;
+
+  var rows = [
+    ['PULL THROUGH %', pull, pull!==null ? Math.min(100, pull*100) : 0, pull!==null ? fmtPct(pull) : '—'],
+    ['BOOKED / REVIEWED', convRatio, convRatio!==null ? Math.min(100, convRatio*100) : 0, convRatio!==null ? fmtPct(convRatio) : '—'],
+    ['MTD PACE', pacePctRaw, pacePctRaw!==null ? Math.min(100, pacePctRaw*100) : 0, pacePctRaw!==null ? fmtPct(pacePctRaw,0) : '—']
+  ];
+  var html = '';
+  rows.forEach(function(r){
+    html += '<div class="metric-row"><div class="metric-top"><span>' + r[0] + '</span><b>' + r[3] + '</b></div>' +
+      '<div class="metric-bar"><div class="metric-bar-fill" style="width:' + r[2] + '%"></div></div></div>';
+  });
+  document.getElementById('team-metric-rows').innerHTML = html;
+}
+
+function renderCore(data){
+  var analysts = (data.analysts || []).slice().sort(function(a,b){ return (b.booked||0)-(a.booked||0); });
+  var top = analysts[0];
+
+  document.getElementById('core-accuracy').textContent = top && top.approvalPct !== null ? fmtPct(top.approvalPct,1) : '—';
+  document.getElementById('core-pullthru').textContent = top && top.pullPct !== null ? fmtPct(top.pullPct,1) : '—';
+  document.getElementById('core-pullthru-bar').style.width = (top && top.pullPct !== null ? Math.round(top.pullPct*100) : 0) + '%';
+  document.getElementById('champion-name').textContent = top ? top.name : 'No Data';
+  document.getElementById('champion-name').setAttribute('data-analyst', top ? top.name : '');
+  document.getElementById('champion-total').textContent = top ? fmtMoneyShort(top.booked) : '—';
+
+  var bars = '';
+  analysts.slice(0,6).forEach(function(a){
+    var h = a.approvalPct !== null ? Math.max(6, Math.round(a.approvalPct*36)) : 6;
+    bars += '<i style="height:' + h + 'px"></i>';
+  });
+  document.getElementById('core-minibars').innerHTML = bars || '<i style="height:6px"></i>';
+
+  var top3 = analysts.slice(0,3);
+  var order = top3.length === 3 ? [top3[1], top3[0], top3[2]] : top3;
+  var html = '';
+  order.forEach(function(a){
+    if (!a) return;
+    var rank = analysts.indexOf(a) + 1;
+    html += '<div class="podium-tab click-analyst rank-' + rank + '" data-analyst="' + escapeHtml(a.name) + '"><span class="rank-num">' + rank + '</span>' +
+      escapeHtml(a.name.split(' ')[0]) + ' ' + fmtMoneyShort(a.booked) + '</div>';
+  });
+  document.getElementById('podium-tabs').innerHTML = html;
+}
+
+function renderRewardTiers(data){
+  var top3 = (data.yesterday || []).slice().sort(function(a,b){ return (b.booked||0)-(a.booked||0); }).slice(0,3);
+  var trophies = ['🥇','🥈','🥉'];
+  var html = '';
+  top3.forEach(function(a, idx){
+    html += '<div class="tier-row">' +
+      '<div class="tier-trophy">' + trophies[idx] + '</div>' +
+      '<div class="tier-info"><div class="tier-name">TIER ' + (idx+1) + '</div><div class="tier-analyst click-analyst" data-analyst="' + escapeHtml(a.name) + '">' + escapeHtml(a.name) + '</div></div>' +
+      '<div class="tier-amount">' + fmtMoneyShort(a.booked) + '</div>' +
+      '</div>';
+  });
+  if (!top3.length) html = '<div style="color:#5B6472;font-size:14px;text-align:center;padding:20px 0">No bookings yesterday</div>';
+  document.getElementById('tier-rows').innerHTML = html;
+
+  var footHtml = '';
+  top3.forEach(function(a){
+    footHtml += '<div><div class="fv">' + fmtInt(a.apps) + '</div><div class="fl">APPS</div></div>';
+  });
+  document.getElementById('tier-foot').innerHTML = footHtml;
+}
+
+function renderSnapshot(data){
+  var analysts = (data.analysts || []).slice().sort(function(a,b){ return (b.booked||0)-(a.booked||0); }).slice(0,5);
+  var maxBooked = analysts.length ? (analysts[0].booked || 1) : 1;
+  var html = '';
+  analysts.forEach(function(a, idx){
+    var pct = maxBooked ? Math.max(4, Math.round((a.booked||0)/maxBooked*100)) : 0;
+    html += '<div class="snap-row">' +
+      '<div class="snap-rank' + (idx===0?' gold':'') + '">' + (idx+1) + '</div>' +
+      '<div class="snap-body"><div class="snap-name click-analyst" data-analyst="' + escapeHtml(a.name) + '">' + escapeHtml(a.name) + '</div>' +
+      '<div class="snap-sub">' + fmtInt(a.bookedApps) + ' APPS &middot; ' + fmtPct(a.approvalPct,0) + ' APPROVAL</div>' +
+      '<div class="snap-bar"><div class="snap-bar-fill" style="width:' + pct + '%"></div></div></div>' +
+      '<div class="snap-amount">' + fmtMoneyShort(a.booked) + '</div>' +
+      '</div>';
+  });
+  if (!analysts.length) html = '<div style="color:#5B6472;font-size:14px;text-align:center;padding:20px 0">No analyst data</div>';
+  document.getElementById('snap-rows').innerHTML = html;
+}
+
+function stateFor(a){
+  if (!a.booked) return {label:'HOLD', cls:'hold'};
+  if (a.approvalPct !== null && a.approvalPct >= 0.9) return {label:'ELITE', cls:'elite'};
+  return {label:'ACTIVE', cls:''};
+}
+
+function renderLeaderboard(data){
+  var analysts = (data.analysts || []).slice().sort(function(a,b){ return (b.booked||0)-(a.booked||0); });
+  var maxBooked = analysts.length ? (analysts[0].booked || 1) : 1;
+  var html = '';
+  analysts.forEach(function(a, idx){
+    var rank = idx+1;
+    var pct = maxBooked ? Math.max(4, Math.round((a.booked||0)/maxBooked*100)) : 0;
+    var st = stateFor(a);
+    html += '<tr>' +
+      '<td class="lb-rank' + (rank===1?' gold':'') + '">' + (rank===1?'🏆 ':'') + rank + '</td>' +
+      '<td class="lb-name click-analyst" data-analyst="' + escapeHtml(a.name) + '">' + escapeHtml(a.name) + '</td>' +
+      '<td class="num">' + fmtMoneyShort(a.booked) + '</td>' +
+      '<td class="lb-power"><div class="lb-power-bar"><div class="lb-power-fill" style="width:' + pct + '%"></div></div></td>' +
+      '<td><span class="lb-state ' + st.cls + '">' + st.label + '</span></td>' +
+      '</tr>';
+  });
+  if (!analysts.length) html = '<tr><td colspan="5" style="text-align:center;color:#5B6472;padding:20px 0">No analyst data</td></tr>';
+  document.getElementById('lb-body').innerHTML = html;
+}
+
+function renderEventLog(data){
+  var yesterday = (data.yesterday || []).slice().sort(function(a,b){ return (b.booked||0)-(a.booked||0); });
+  var html = '';
+  yesterday.forEach(function(a){
+    html += '<div class="log-row">' +
+      '<div class="log-time">' + fmtInt(a.apps) + 'x</div>' +
+      '<div class="log-label click-analyst" data-analyst="' + escapeHtml(a.name) + '">' + escapeHtml(a.name) + '</div>' +
+      '<div class="log-val">' + fmtMoneyShort(a.booked) + '</div>' +
+      '</div>';
+  });
+  if (!yesterday.length) html = '<div style="color:#5B6472;font-size:14px;text-align:center;padding:20px 0">No activity logged</div>';
+  document.getElementById('log-rows').innerHTML = html;
+  document.getElementById('log-total-val').textContent = data.yesterdayTotal ? fmtMoney(data.yesterdayTotal.booked) : '—';
+}
+
+function renderFooter(data){
+  document.getElementById('foot-source').textContent = data.fileName || '—';
+  document.getElementById('foot-sheet').textContent = data.sheetName || '—';
+  document.getElementById('foot-count').textContent = (data.analysts || []).length;
+}
+
+/* ============================================================
+   ANALYST HISTORY MODAL — click any analyst name across the board
+   to see how they've trended over the last 10 uploads.
+   ============================================================ */
+document.addEventListener('click', function(e){
+  var el = e.target.closest('[data-analyst]');
+  if (el && el.getAttribute('data-analyst')) {
+    openAnalystModal(el.getAttribute('data-analyst'));
+    return;
+  }
+  var bd = e.target.closest('[data-breakdown]');
+  if (bd) {
+    openBreakdownModal(bd.getAttribute('data-breakdown'));
+    return;
+  }
+  if (e.target.id === 'analyst-modal-overlay') closeAnalystModal();
+  if (e.target.id === 'breakdown-modal-overlay') closeBreakdownModal();
+  if (e.target.id === 'help-modal-overlay') closeHelpModal();
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape'){ closeAnalystModal(); closeBreakdownModal(); closeHelpModal(); }
+});
+
+function trendClass(cur, prev){
+  if (cur === null || cur === undefined || prev === null || prev === undefined) return '';
+  if (cur > prev) return ' trend-up';
+  if (cur < prev) return ' trend-down';
+  return '';
+}
+
+/* Pulls this analyst's stats out of every saved upload (current view + history),
+   de-duplicated by upload id, oldest first. */
+function collectAnalystHistory(name){
+  var seen = {};
+  var pool = [];
+  getHistory().forEach(function(entry){ if (!seen[entry.histId]) { seen[entry.histId] = 1; pool.push(entry); } });
+  try{
+    var cur = JSON.parse(localStorage.getItem(DATA_KEY) || 'null');
+    if (cur && !seen[cur.histId]) pool.push(cur);
+  }catch(e){}
+
+  pool.sort(function(a,b){
+    var da = a.reportDate ? new Date(a.reportDate).getTime() : (a.loadedAt||0);
+    var db = b.reportDate ? new Date(b.reportDate).getTime() : (b.loadedAt||0);
+    return da - db;
+  });
+
+  var rows = [];
+  pool.forEach(function(entry){
+    var match = (entry.analysts || []).find(function(a){ return norm(a.name) === norm(name); });
+    if (match){
+      rows.push({
+        date: entry.reportDate || null,
+        approvalPct: match.approvalPct, pullPct: match.pullPct,
+        booked: match.booked, bookedApps: match.bookedApps,
+        approved: match.approved, reviewed: match.reviewed
+      });
+    }
+  });
+  return rows;
+}
+
+function openAnalystModal(name){
+  document.getElementById('analyst-modal-name').textContent = name;
+  document.getElementById('analyst-modal-overlay').classList.add('open');
+
+  var rows = collectAnalystHistory(name);
+  var tableEl = document.getElementById('analyst-modal-table');
+  var sparkWrapEl = document.getElementById('analyst-modal-spark-wrap');
+  var emptyEl = document.getElementById('analyst-modal-empty');
+
+  if (!rows.length){
+    tableEl.style.display = 'none';
+    sparkWrapEl.style.display = 'none';
+    emptyEl.style.display = 'block';
+    return;
+  }
+  tableEl.style.display = '';
+  sparkWrapEl.style.display = '';
+  emptyEl.style.display = 'none';
+
+  var maxBooked = Math.max.apply(null, rows.map(function(r){ return r.booked || 0; }).concat([1]));
+  var sparkHtml = '';
+  rows.forEach(function(r){
+    var h = maxBooked ? Math.max(4, Math.round((r.booked||0)/maxBooked*60)) : 4;
+    sparkHtml += '<div class="spark-col"><div class="spark-bar' + ((r.booked||0)===0?' zero':'') + '" style="height:' + h + 'px" title="' + fmtMoney(r.booked) + '"></div><div class="spark-date">' + (r.date ? fmtDateShort(r.date) : '—') + '</div></div>';
+  });
+  document.getElementById('analyst-modal-spark').innerHTML = sparkHtml;
+
+  var tableHtml = '';
+  for (var i = rows.length - 1; i >= 0; i--){
+    var r = rows[i], prev = rows[i-1];
+    tableHtml += '<tr>' +
+      '<td class="lb-name">' + (r.date ? fmtDateShort(r.date) : '—') + '</td>' +
+      '<td class="num' + trendClass(r.approvalPct, prev && prev.approvalPct) + '">' + fmtPct(r.approvalPct) + '</td>' +
+      '<td class="num' + trendClass(r.pullPct, prev && prev.pullPct) + '">' + fmtPct(r.pullPct) + '</td>' +
+      '<td class="num' + trendClass(r.booked, prev && prev.booked) + '">' + fmtMoney(r.booked) + '</td>' +
+      '<td class="num">' + fmtInt(r.bookedApps) + '</td>' +
+      '<td class="num">' + fmtMoney(r.approved) + '</td>' +
+      '<td class="num">' + fmtMoney(r.reviewed) + '</td>' +
+      '</tr>';
+  }
+  document.getElementById('analyst-modal-rows').innerHTML = tableHtml;
+}
+
+function closeAnalystModal(){
+  document.getElementById('analyst-modal-overlay').classList.remove('open');
+}
+
+/* ============================================================
+   MARKET / QUARTER BREAKDOWN MODAL — click either YTD stat card
+   (Pull Through Rate or Total Booked) to see it broken out by
+   market and quarter, straight from the "All Quarters" tab.
+   ============================================================ */
+var BREAKDOWN_COLORS = ['#00D4FF','#00FF88','#FFD166','#FF6B6B','#C77DFF','#9AA5B1'];
+
+function getCurrentData(){
+  try{ return JSON.parse(localStorage.getItem(DATA_KEY) || 'null'); }catch(e){ return null; }
+}
+
+function openBreakdownModal(metric){
+  var overlay = document.getElementById('breakdown-modal-overlay');
+  overlay.classList.add('open');
+  document.getElementById('breakdown-modal-title').textContent = metric === 'booked' ? 'Total Booked' : 'Pull Through Rate';
+
+  var cur = getCurrentData();
+  var aq = cur && cur.allQuarters;
+  var chartEl = document.getElementById('breakdown-chart');
+  var legendEl = document.getElementById('breakdown-legend');
+  var tableEl = document.getElementById('breakdown-table');
+  var emptyEl = document.getElementById('breakdown-empty');
+
+  var quartersWithRegions = (aq && aq.quarters) ? aq.quarters.filter(function(q){ return q.regions; }) : [];
+  if (!quartersWithRegions.length){
+    chartEl.style.display = 'none';
+    legendEl.style.display = 'none';
+    tableEl.style.display = 'none';
+    emptyEl.style.display = 'block';
+    return;
+  }
+  chartEl.style.display = 'flex';
+  legendEl.style.display = 'flex';
+  tableEl.style.display = 'table';
+  emptyEl.style.display = 'none';
+
+  var regions = quartersWithRegions[0].regions;
+
+  var legendHtml = '';
+  regions.forEach(function(r, idx){
+    legendHtml += '<span class="legend-item"><span class="legend-swatch" style="background:' + BREAKDOWN_COLORS[idx % BREAKDOWN_COLORS.length] + '"></span>' + escapeHtml(r) + '</span>';
+  });
+  legendEl.innerHTML = legendHtml;
+
+  function valueFor(q, regionIdx){
+    var arr = metric === 'booked' ? q.bookedDollar : q.pullThroughPct;
+    return (arr && arr[regionIdx] !== undefined) ? arr[regionIdx] : null;
+  }
+
+  var maxVal = 0;
+  quartersWithRegions.forEach(function(q){
+    regions.forEach(function(r, idx){
+      var v = valueFor(q, idx);
+      if (v !== null && v > maxVal) maxVal = v;
+    });
+  });
+  if (!maxVal) maxVal = 1;
+
+  var chartHtml = '';
+  quartersWithRegions.forEach(function(q){
+    var barsHtml = '';
+    regions.forEach(function(r, idx){
+      var v = valueFor(q, idx);
+      var h = v !== null ? Math.max(2, Math.round((v / maxVal) * 180)) : 2;
+      var label = v !== null ? (metric === 'booked' ? fmtMoneyShort(v) : fmtPct(v,1)) : 'No data';
+      barsHtml += '<div class="bq-bar" style="height:' + h + 'px;background:' + BREAKDOWN_COLORS[idx % BREAKDOWN_COLORS.length] + '" title="' + escapeHtml(r) + ': ' + label + '"></div>';
+    });
+    chartHtml += '<div class="bq-group"><div class="bq-bars">' + barsHtml + '</div><div class="bq-group-label">' + q.label + '</div></div>';
+  });
+  chartEl.innerHTML = chartHtml;
+
+  var theadHtml = '<thead><tr><th>Market</th>';
+  quartersWithRegions.forEach(function(q){ theadHtml += '<th class="num">' + q.label + '</th>'; });
+  theadHtml += '</tr></thead>';
+
+  var bodyHtml = '<tbody>';
+  regions.forEach(function(r, idx){
+    bodyHtml += '<tr><td class="lb-name">' + escapeHtml(r) + '</td>';
+    quartersWithRegions.forEach(function(q){
+      var v = valueFor(q, idx);
+      bodyHtml += '<td class="num">' + (v !== null ? (metric === 'booked' ? fmtMoney(v) : fmtPct(v,1)) : '—') + '</td>';
+    });
+    bodyHtml += '</tr>';
+  });
+  bodyHtml += '<tr class="sb-total-row"><td class="lb-name">TOTAL</td>';
+  quartersWithRegions.forEach(function(q){
+    var arr = metric === 'booked' ? q.bookedDollar : q.pullThroughPct;
+    var v = (arr && arr[6] !== undefined) ? arr[6] : null;
+    bodyHtml += '<td class="num">' + (v !== null ? (metric === 'booked' ? fmtMoney(v) : fmtPct(v,1)) : '—') + '</td>';
+  });
+  bodyHtml += '</tr></tbody>';
+
+  tableEl.innerHTML = theadHtml + bodyHtml;
+}
+
+function closeBreakdownModal(){
+  document.getElementById('breakdown-modal-overlay').classList.remove('open');
+}
+
+function openHelpModal(){
+  document.getElementById('help-modal-overlay').classList.add('open');
+  document.querySelectorAll('.stp-drop-menu.open').forEach(function(m){ m.classList.remove('open'); });
+}
+function closeHelpModal(){
+  document.getElementById('help-modal-overlay').classList.remove('open');
+}
+</script>
+</body>
+</html>
