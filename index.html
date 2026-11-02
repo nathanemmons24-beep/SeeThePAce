@@ -1087,6 +1087,14 @@ function parseCsv(csv){
         isToday=(dd.getTime()===today.getTime());
       }
     }
+    // ── CURRENT-MONTH FILTER ─────────────────────────────────────────
+    // Only the current calendar month's deals count on the live board.
+    // Prior months are preserved in the Historical archive, so stale rows
+    // still sitting in the Dashboard tab (e.g. last month's data not yet
+    // cleared) are ignored and the board resets itself automatically at
+    // each month rollover.
+    if(!dealDate) continue;
+    if(dealDate.getFullYear()!==today.getFullYear() || dealDate.getMonth()!==today.getMonth()) continue;
     if(!data.teams[store]){
       var storeColors=["#00FF88","#00D4FF","#FFD700","#FF6B35","#A855F7","#FF4EFF","#00FFC8","#4ADE80","#38BDF8","#FB923C","#E879F9","#34D399"];
       var colorIdx=Object.keys(data.teams).length%storeColors.length;
